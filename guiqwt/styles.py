@@ -131,13 +131,12 @@ MARKERS = {
           "<" : QwtSymbol.LTriangle,
           "h" : QwtSymbol.Star2,
           }
-COLOR_KEYS = "bgrcmykG" # utilisé pour l'attribution automatique de styles
 
-def style_generator():
+def style_generator(color_keys="bgrcmykG"):
     """Cycling through curve styles"""
     while True:
         for linestyle in sorted(LINESTYLES.keys()):
-            for color in COLOR_KEYS:
+            for color in color_keys:
                 yield color+linestyle
 
 def update_style_attr(style, param):
