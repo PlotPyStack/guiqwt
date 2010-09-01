@@ -808,7 +808,8 @@ class TrImageItem(ImageItem):
         
 assert_interfaces_valid(TrImageItem)
 
-def assemble_imageitems(items, srcrect, destw, desth, align=1, sampling=(0,)):
+def assemble_imageitems(items, srcrect, destw, desth, align=1, sampling=(0,),
+                        apply_lut=False):
     """
     Assemble together image items and return resulting pixel data
     <!> Does not support XYImageItem objects
@@ -821,8 +822,11 @@ def assemble_imageitems(items, srcrect, destw, desth, align=1, sampling=(0,)):
     tr = translate(x, y)*scale(w/float(aligned_destw), h/float(aligned_desth))
     destrect = (0, 0, int(aligned_destw), int(aligned_desth))
     for it in items:
-        a, b, bg, cmap = it.lut
-        lut = a, b, None
+        if apply_lut:
+            a, b, bg, cmap = it.lut
+            lut = a, b, None
+        else:
+            lut = 1., 0., None
         if isinstance(it, TrImageItem):
             mat = it.tr*tr
             # The mask needs to be of the same type as the source
@@ -843,7 +847,7 @@ def get_plot_source_rect(plot, p0, p1):
     w, h = (p1x-p0x+1), (p1y-p0y+1)
     return p0x, p0y, w, h
     
-def get_image_from_plot(plot, p0, p1, destw=None, desth=None):
+def get_image_from_plot(plot, p0, p1, destw=None, desth=None, apply_lut=False):
     """
     Return pixel data of a rectangular plot area (image items only)
     p0, p1: resp. top-left and bottom-right points (QPoint objects)
@@ -857,7 +861,7 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None):
              if isinstance(itm, (ImageItem, TrImageItem))]
     srcrect = get_plot_source_rect(plot, p0, p1)
     return assemble_imageitems(items, srcrect, destw, desth,
-                               align=4, sampling=(0,))
+                               align=4, sampling=(0,), apply_lut=apply_lut)
 
 
 #===============================================================================

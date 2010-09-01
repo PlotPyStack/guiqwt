@@ -973,7 +973,8 @@ def save_snapshot(plot, p0, p1):
     dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
                        text=_("Destination size:"))
     if dlg.exec_():
-        data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height)
+        data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height,
+                                   apply_lut=True)
     else:
         return
 
