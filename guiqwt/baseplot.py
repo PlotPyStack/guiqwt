@@ -126,7 +126,6 @@ class EnhancedQwtPlot(QwtPlot):
         """Set axis title"""
         self.axes_styles[axis_id].title = text
         self.update_axis_style(axis_id)
-        self.emit(SIG_PLOT_LABELS_CHANGED, self)
     
     def set_axis_font(self, axis_id, font):
         """Set axis font"""
@@ -157,6 +156,7 @@ class EnhancedQwtPlot(QwtPlot):
         axis_text.setText(style.title)
         axis_text.setColor(QColor(style.color))
         self.setAxisTitle(axis_id, axis_text)
+        self.emit(SIG_PLOT_LABELS_CHANGED, self)
 
     def update_all_axes_styles(self):
         for axis_id in self.AXES.itervalues():
