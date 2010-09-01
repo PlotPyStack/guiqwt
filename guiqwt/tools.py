@@ -960,12 +960,14 @@ def save_snapshot(plot, p0, p1):
         QMessageBox.critical(plot, _("Rectangle snapshot"),
                      _("There is no supported image item in current plot."))
         return
+    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
+    original_size = (src_w, src_h)
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
-    dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams]+[1.])
-    dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams]+[1.])
-    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
-    original_size = (src_w/dx_max, src_h/dy_max)
+    if trparams:
+        dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
+        dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
+        original_size = (src_w/dx_max, src_h/dy_max)
     screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
     from guiqwt.resizedialog import ResizeDialog
     dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
