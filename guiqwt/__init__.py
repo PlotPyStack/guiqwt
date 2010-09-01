@@ -521,7 +521,7 @@ jurisdiction, by the more diligent Party.
 Version 2.0 dated 2006-09-05.
 """
 
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
 # following path to module's data (images) and translations:

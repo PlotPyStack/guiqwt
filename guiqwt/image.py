@@ -408,17 +408,35 @@ class BaseImageItem(QwtPlotItem):
 
     def get_xsection(self, y0):
         """Return cross section along x-axis at y=y0"""
-        assert isinstance(y0, (float, int, np.ndarray))
-        if isinstance(y0, (float, int)):
-            _ix, iy = self.get_closest_indexes(0, y0)
-            return self.get_x_values(0, self.data.shape[1]), self.data[iy, :]
+        _ix, iy = self.get_closest_indexes(0, y0)
+        return self.get_x_values(0, self.data.shape[1]), self.data[iy, :]
         
     def get_ysection(self, x0):
         """Return cross section along y-axis at x=x0"""
-        assert isinstance(x0, (float, int, np.ndarray))
-        if isinstance(x0, (float, int)):
-            ix, _iy = self.get_closest_indexes(x0, 0)
-            return self.get_y_values(0, self.data.shape[0]), self.data[:, ix]
+        ix, _iy = self.get_closest_indexes(x0, 0)
+        return self.get_y_values(0, self.data.shape[0]), self.data[:, ix]
+
+    def get_average_xsection(self, x0, y0, x1, y1):
+        """Return average cross section along x-axis"""
+        ix0, iy0 = self.get_closest_indexes(x0, y0)
+        ix1, iy1 = self.get_closest_indexes(x1, y1)
+        if ix0 > ix1:
+            ix1, ix0 = ix0, ix1
+        if iy0 > iy1:
+            iy1, iy0 = iy0, iy1
+        return (self.get_x_values(ix0, ix1),
+                self.data[iy0:iy1, ix0:ix1].mean(axis=0))
+
+    def get_average_ysection(self, x0, y0, x1, y1):
+        """Return average cross section along y-axis"""
+        ix0, iy0 = self.get_closest_indexes(x0, y0)
+        ix1, iy1 = self.get_closest_indexes(x1, y1)
+        if ix0 > ix1:
+            ix1, ix0 = ix0, ix1
+        if iy0 > iy1:
+            iy1, iy0 = iy0, iy1
+        return (self.get_y_values(iy0, iy1),
+                self.data[iy0:iy1, ix0:ix1].mean(axis=1))
 
 assert_interfaces_valid(BaseImageItem)
 

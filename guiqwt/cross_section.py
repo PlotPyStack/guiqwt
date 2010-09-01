@@ -9,13 +9,15 @@
 Cross section related objects
 """
 
-from PyQt4.QtCore import QSize, QPoint
-from PyQt4.QtGui import QVBoxLayout, QWidget, QSizePolicy
+from PyQt4.QtGui import (QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout,
+                         QToolBar)
+from PyQt4.QtCore import QSize, QPoint, Qt
 
 import numpy as np
 
 from guidata.utils import assert_interfaces_valid
 from guidata.configtools import get_icon
+from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -26,7 +28,7 @@ from guiqwt.styles import CurveParam, style_generator, update_style_attr
 from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
-                            SIG_ITEMS_CHANGED)
+                            SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
@@ -39,6 +41,8 @@ class CrossSectionItem(CurveItem):
     
     def __init__(self, curveparam=None):
         super(CrossSectionItem, self).__init__(curveparam)
+        self.perimage_mode = True
+        self.autoscale_mode = True
 
     def set_source_image(self, src):
         """
@@ -52,18 +56,18 @@ class CrossSectionItem(CurveItem):
         """Get cross section data from source image"""
         raise NotImplementedError
         
-    def update_plot(self, obj):
+    def update_item(self, obj):
         if self.source is None:
             return
         sectx, secty = self.get_cross_section(obj)
+        if secty.size == 0 or np.all(np.isnan(secty)):
+            sectx, secty = np.array([]), np.array([])
         if self._inverted:
             self.set_data(secty, sectx)
         else:
             self.set_data(sectx, secty)
-        self.update_scale()
-#        plot = self.plot()
-#        if plot is not None:
-#            plot.do_autoscale(replot=True)
+        if not self.autoscale_mode:
+            self.update_scale()
 
     def update_scale(self):
         raise NotImplementedError
@@ -83,12 +87,112 @@ def get_image_data(plot, p0, p1):
              and not isinstance(item, XYImageItem)]
     if not items:
         return
+    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
-    dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams]+[1.])
-    dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams]+[1.])
-    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
-    return get_image_from_plot(plot, p0, p1, src_w/dx_max, src_h/dy_max)
+    if trparams:
+        src_w /= max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
+        src_h /= max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
+    return get_image_from_plot(plot, p0, p1, src_w, src_h, apply_lut=False)
+
+
+def get_plot_x_section(obj):
+    """
+    Return plot cross section along x-axis,
+    at the y value defined by 'obj', a Marker object
+    """
+    plot = obj.plot()
+    xmap = plot.canvasMap(plot.AXES["bottom"])
+    xc0, xc1 = xmap.p1(), xmap.p2()
+    _xc0, yc0 = obj.axes_to_canvas(0, obj.yValue())
+    if plot.get_axis_direction("left"):
+        yc1 = yc0+1
+    else:
+        yc1 = yc0-1
+    try:
+        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1))
+    except (ValueError, ZeroDivisionError):
+        return np.array([]), np.array([])
+    y = data.mean(axis=0)
+    x0, _y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
+    x1, _y1 = obj.canvas_to_axes(QPoint(xc1, yc1))
+    x = np.linspace(x0, x1, len(y))
+    return x, y
+
+def get_plot_y_section(obj):
+    """
+    Return plot cross section along y-axis,
+    at the x value defined by 'obj', a Marker object
+    """
+    plot = obj.plot()
+    ymap = plot.canvasMap(plot.AXES["left"])
+    yc0, yc1 = ymap.p1(), ymap.p2()
+    if plot.get_axis_direction("left"):
+        yc1, yc0 = yc0, yc1
+    xc0, _yc0 = obj.axes_to_canvas(obj.xValue(), 0)
+    xc1 = xc0+1
+    try:
+        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1))
+    except (ValueError, ZeroDivisionError):
+        return np.array([]), np.array([])
+    y = data.mean(axis=1)
+    _x0, y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
+    _x1, y1 = obj.canvas_to_axes(QPoint(xc1, yc1))
+    x = np.linspace(y0, y1, len(y))
+    return x, y
+
+
+def get_plot_average_x_section(obj):
+    """
+    Return cross section along x-axis, averaged on ROI defined by 'obj'
+    'obj' is an AbstractShape object supporting the 'get_rect' method
+    (RectangleShape, AnnotatedRectangle, etc.)
+    """
+    x0, y0, x1, y1 = obj.get_rect()
+    xc0, yc0 = obj.axes_to_canvas(x0, y0)
+    xc1, yc1 = obj.axes_to_canvas(x1, y1)
+    invert = False
+    if xc0 > xc1:
+        invert = True
+        xc1, xc0 = xc0, xc1
+    ydir = obj.plot().get_axis_direction("left")
+    if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):
+        yc1, yc0 = yc0, yc1
+    try:
+        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1))
+    except (ValueError, ZeroDivisionError):
+        return np.array([]), np.array([])
+    y = data.mean(axis=0)
+    if invert:
+        y = y[::-1]
+    x = np.linspace(x0, x1, len(y))
+    return x, y
+    
+def get_plot_average_y_section(obj):
+    """
+    Return cross section along y-axis, averaged on ROI defined by 'obj'
+    'obj' is an AbstractShape object supporting the 'get_rect' method
+    (RectangleShape, AnnotatedRectangle, etc.)
+    """
+    x0, y0, x1, y1 = obj.get_rect()
+    xc0, yc0 = obj.axes_to_canvas(x0, y0)
+    xc1, yc1 = obj.axes_to_canvas(x1, y1)
+    invert = False
+    ydir = obj.plot().get_axis_direction("left")
+    if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):
+        invert = True
+        yc1, yc0 = yc0, yc1
+    if xc0 > xc1:
+        xc1, xc0 = xc0, xc1
+    try:
+        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1))
+    except (ValueError, ZeroDivisionError):
+        return np.array([]), np.array([])
+    y = data.mean(axis=1)
+    x = np.linspace(y0, y1, len(y))
+    if invert:
+        x = x[::-1]
+    return x, y
 
 
 class XCrossSectionItem(CrossSectionItem):
@@ -97,18 +201,17 @@ class XCrossSectionItem(CrossSectionItem):
     def get_cross_section(self, obj):
         """Get x-cross section data from source image"""
         if isinstance(obj, Marker):
-            return self.source.get_xsection(obj.yValue())
+            # obj is a Marker object
+            if self.perimage_mode:
+                return self.source.get_xsection(obj.yValue())
+            else:
+                return get_plot_x_section(obj)
         else:
-            x0, y0, x1, y1 = obj.shape.get_rect()
-            p0 = QPoint(x0, y0)
-            p1 = QPoint(x1, y1)
-            try:
-                data = get_image_data(obj.plot(), p0, p1)
-            except (ValueError, ZeroDivisionError):
-                return [], []
-            y = data.mean(axis=0)
-            x = np.linspace(x0, x1, len(y))
-            return x, y
+            # obj is an AnnotatedRectangle object
+            if self.perimage_mode:
+                return self.source.get_average_xsection(*obj.get_rect())
+            else:
+                return get_plot_average_x_section(obj)
             
     def update_scale(self):
         plot = self.plot()
@@ -123,18 +226,17 @@ class YCrossSectionItem(CrossSectionItem):
     def get_cross_section(self, obj):
         """Get y-cross section data from source image"""
         if isinstance(obj, Marker):
-            return self.source.get_ysection(obj.xValue())
+            # obj is a Marker object
+            if self.perimage_mode:
+                return self.source.get_ysection(obj.xValue())
+            else:
+                return get_plot_y_section(obj)
         else:
-            x0, y0, x1, y1 = obj.shape.get_rect()
-            p0 = QPoint(x0, y0)
-            p1 = QPoint(x1, y1)
-            try:
-                data = get_image_data(obj.plot(), p0, p1)
-            except (ValueError, ZeroDivisionError):
-                return [], []
-            y = data.mean(axis=1)
-            x = np.linspace(y0, y1, len(y))
-            return x, y
+            # obj is an AnnotatedRectangle object
+            if self.perimage_mode:
+                return self.source.get_average_ysection(*obj.get_rect())
+            else:
+                return get_plot_average_y_section(obj)
             
     def update_scale(self):
         plot = self.plot()
@@ -154,8 +256,11 @@ class CrossSectionPlot(CurvePlot):
     def __init__(self, parent=None):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
                                                section="cross_section")
-
-        self.style = style_generator()
+        
+        self.perimage_mode = True
+        self.autoscale_mode = True
+                                               
+        self.style = style_generator(color_keys="bgrmkG")
                                                
         # a dict of dict : plot -> selected items -> CurveItem
         self._tracked_items = {}
@@ -181,6 +286,7 @@ class CrossSectionPlot(CurvePlot):
             # curve widgets for the same plot manager -- e.g. in pyplot)
             return
         self.connect(plot, SIG_ITEMS_CHANGED, self.items_changed)
+        self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
         self.connect(plot, SIG_MARKER_CHANGED, self.marker_changed)
         self.connect(plot, SIG_ANNOTATION_CHANGED, self.shape_changed)
         self.connect(plot, SIG_PLOT_LABELS_CHANGED, self.plot_labels_changed)
@@ -269,6 +375,10 @@ class CrossSectionPlot(CurvePlot):
 #        for item, curve in self.tracked_items_gen():
 #            self.curveparam.update_curve(curve)
 
+    def active_item_changed(self, plot):
+        """Active item has just changed"""
+        self.shape_changed(plot.get_active_item())
+
     def plot_labels_changed(self, plot):
         """Plot labels have changed"""
         raise NotImplementedError
@@ -294,12 +404,33 @@ class CrossSectionPlot(CurvePlot):
     def update_plot(self, obj):
         if obj.plot() is None:
             self.unregister_shape(obj)
-            print "unregister_shape:", repr(obj)            
             return
         if self.label.isVisible():
             self.label.hide()
-        for _item, curve in self.tracked_items_gen():
-            curve.update_plot(obj)
+        for index, (_item, curve) in enumerate(self.tracked_items_gen()):
+            if not self.perimage_mode and index > 0:
+                curve.hide()
+            else:
+                curve.show()
+                curve.perimage_mode = self.perimage_mode
+                curve.autoscale_mode = self.autoscale_mode
+                curve.update_item(obj)
+        if self.autoscale_mode:
+            self.do_autoscale(replot=True)
+
+    def update_all_items(self):
+        for plot in self._shapes:
+            for shape in self._shapes[plot]:
+                if shape.plot() is not None:
+                    self.update_plot(shape)
+            
+    def toggle_perimage_mode(self, state):
+        self.perimage_mode = state
+        self.update_all_items()
+                    
+    def toggle_autoscale(self, state):
+        self.autoscale_mode = state
+        self.update_all_items()
 
 
 class XCrossSectionPlot(CrossSectionPlot):
@@ -360,14 +491,31 @@ class CrossSectionWidget(QWidget):
         widget_title = _("Cross section tool")
         widget_icon = "cross_section.png"
         
-        self.manager = None
-        
-        vlayout = QVBoxLayout()
-        self.setLayout(vlayout)
-        
         self.manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
-        vlayout.addWidget(self.cs_plot)
+        
+        peritem_ac = create_action(self, _("Per image cross-section"),
+                                   icon=get_icon('csperimage.png'),
+                                   toggled=self.cs_plot.toggle_perimage_mode)
+        peritem_ac.setChecked(True)
+        autoscale_ac = create_action(self, _("Auto-scale"),
+                                   icon=get_icon('csautoscale.png'),
+                                   toggled=self.cs_plot.toggle_autoscale)
+        autoscale_ac.setChecked(True)
+        
+        toolbar = QToolBar(self)
+        add_actions(toolbar, (peritem_ac, autoscale_ac))
+        if self.CrossSectionPlotKlass is YCrossSectionPlot:
+            toolbar.setOrientation(Qt.Horizontal)
+            layout = QVBoxLayout()
+        else:
+            toolbar.setOrientation(Qt.Vertical)
+            layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.cs_plot)
+        layout.addWidget(toolbar)
+        self.setLayout(layout)
+        
         self.manager.add_plot(self.cs_plot, "default")
         
         self.cs_plot.standard_tools(self.manager)
