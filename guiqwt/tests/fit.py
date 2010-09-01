@@ -1,0 +1,33 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2009-2010 CEA
+# Pierre Raybaut
+# Licensed under the terms of the CECILL License
+# (see guiqwt/__init__.py for details)
+
+"""Curve fitting tools"""
+
+import numpy as np
+
+from guiqwt.fit import FitParam, guifit
+
+SHOW = True # Show test in GUI-based test launcher
+
+def test():
+    x = np.linspace(-10, 10, 1000)
+    y = np.cos(1.5*x)+np.random.rand(x.shape[0])*.2
+    
+    def fit(x, params):
+        a, b = params
+        return np.cos(b*x)+a
+    
+    a = FitParam("Offset", 1., 0., 2.)
+    b = FitParam("Frequency", 2., 1., 10., logscale=True)
+    params = [a, b]
+    values = guifit(x, y, fit, params)
+    
+    print values
+    print [param.value for param in params]
+
+if __name__ == "__main__":
+    test()

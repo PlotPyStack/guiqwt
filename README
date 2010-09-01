@@ -1,0 +1,42 @@
+guiqwt
+======
+
+
+Copyright © 2009-2010 CEA
+Pierre Raybaut <pierre.raybaut@cea.fr>
+Licensed under the terms of the CECILL License (see below)
+
+
+    Overview
+
+	Extension to PyQt4.Qwt5:
+	  * set of tools for curve and image plotting
+	  * GUI-based application development helpers
+
+    Dependencies
+    
+        Requirements
+	    guidata v1.x (x>=2)
+            Qwt5 5.x (x>=2) (PyQt4 additional module)
+            scipy v0.x (x>=7) (signal and image processing library)
+            
+	Optional modules
+	    pydicom v0.9.x (x>=3)
+
+    Installation
+    
+        On GNU/Linux and MacOS platforms:
+            python setup.py build install
+
+	    If gfortran is not your default Fortran compiler:
+	        python setup.py build --fcompiler=gfortran install
+	    
+	On Windows platforms (requires MinGW with gfortran):
+	    python setup.py build -c mingw32 install
+            
+    More informations
+    
+        Downloads, bug reports and feature requests:
+            http://guiqwt.googlecode.com
+        Discussions:
+            http://groups.google.com/group/guiqwt

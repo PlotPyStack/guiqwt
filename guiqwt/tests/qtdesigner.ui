@@ -1,0 +1,42 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>779</width>
+    <height>1056</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <item>
+    <widget class="ImagePlotWidget" name="imageplotwidget" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="CurvePlotWidget" name="curveplotwidget" />
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImagePlotWidget</class>
+   <extends>CurvePlotWidget</extends>
+   <header>guiqwt.plot</header>
+  </customwidget>
+  <customwidget>
+   <class>CurvePlotWidget</class>
+   <extends>QwtPlot</extends>
+   <header>guiqwt.plot</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

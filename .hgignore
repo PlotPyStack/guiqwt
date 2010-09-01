@@ -1,0 +1,16 @@
+\.pyc$
+\.settings$
+\.ropeproject$
+\.orig$
+\.pyd$
+\.gui$
+^build/
+^dist/
+^tests/build
+^tests/dist
+Thumbs.db$
+MANIFEST$
+contrast.png$
+loadsavecanvas.gui$
+\.pot$
+~$

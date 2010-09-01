@@ -1,0 +1,7 @@
+recursive-include guiqwt *.png *.mo *.dcm
+recursive-include src *.hpp *.cpp
+include guiqwt-tests
+include guiqwt-tests.py
+include MANIFEST.in
+include Licence_CeCILL_V2-en.txt
+include README

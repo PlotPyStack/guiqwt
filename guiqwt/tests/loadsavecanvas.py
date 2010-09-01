@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2009-2010 CEA
+# Pierre Raybaut
+# Licensed under the terms of the CECILL License
+# (see guiqwt/__init__.py for details)
+
+"""Load/save test"""
+
+from PyQt4.QtGui import QFont
+
+import os, os.path as osp
+from numpy import linspace, sin
+
+from guiqwt.plot import ImagePlotDialog
+from guiqwt.builder import make
+from guiqwt.shapes import Axes
+from guiqwt.tools import LoadItemsTool, SaveItemsTool
+
+SHOW = True # Show test in GUI-based test launcher
+
+FNAME = "loadsavecanvas.gui"
+
+def build_items():
+    x = linspace(-10, 10, 200)
+    y = sin(sin(sin(x)))
+    filename = osp.join(osp.dirname(__file__), "brain.png")
+    items = [ make.curve(x, y, color="b"),
+              make.image(filename=filename, colormap="bone"),
+              make.label("Relative position <b>outside</b>",
+                         (x[0], y[0]), (-10, -10), "BR"),
+              make.label("Relative position <i>inside</i>",
+                         (x[0], y[0]), (10, 10), "TL"),
+              make.label("Absolute position", "R", (0,0), "R"),
+              make.legend("TR"),
+              make.rectangle(-3, -0.8, -0.5, -1., "rc1"),
+              make.ellipse(-10, 0.0, 0, 0, .5, "el1"),
+              make.annotated_rectangle(0.5, 0.8, 3, 1., "rc1", "tutu"),
+              make.annotated_segment(-1,-1, 1, 1., "rc1", "tutu"),
+              Axes( (0,0), (1,0), (0,1) ),
+              ]
+    return items
+
+def test():
+    import guidata
+    guidata.qapplication()
+    win = ImagePlotDialog(edit=False, toolbar=True, wintitle="Load/save test",
+                          options=dict(title="Title", xlabel="xlabel",
+                                       ylabel="ylabel"))
+    win.manager.add_separator_tool()
+    win.register_tool(LoadItemsTool)
+    win.register_tool(SaveItemsTool)
+    plot = win.get_plot()
+
+    if os.access(FNAME, os.R_OK):
+        f = file(FNAME, "rb")
+        plot.restore_items(f)
+    else:
+        for item in build_items():
+            plot.add_item(item)
+    plot.set_axis_font("left", QFont("Courier"))
+    win.get_panel("itemlist").show()
+    plot.set_items_readonly(False)
+    win.show()
+    win.exec_()
+    f = file(FNAME, "wb")
+    plot.save_items(f)
+
+if __name__ == "__main__":
+    test()
