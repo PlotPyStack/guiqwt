@@ -234,9 +234,12 @@ class CurveItem(QwtPlotCurve):
         return self._x, self._y
 
     def set_data(self, x, y):
-        self._x = np.array(x,copy=False)
-        self._y = np.array(y,copy=False)
+        self._x = np.array(x, copy=False)
+        self._y = np.array(y, copy=False)
         self.setData(self._x, self._y)
+        
+    def is_empty(self):
+        return self._y.size == 0
 
     def hit_test(self, pos):
         """Calcul de la distance d'un point à une courbe
@@ -866,7 +869,8 @@ class CurvePlot(EnhancedQwtPlot):
         """Do autoscale on all axes"""
         rect = None
         for item in self.get_items():
-            if isinstance(item, CurveItem):
+            if isinstance(item, CurveItem) and not item.is_empty() \
+               and item.isVisible():
                 bounds = item.boundingRect()
                 if rect is None:
                     rect = bounds
