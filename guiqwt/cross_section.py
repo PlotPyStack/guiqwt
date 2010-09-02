@@ -11,7 +11,7 @@ Cross section related objects
 
 from PyQt4.QtGui import (QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout,
                          QToolBar)
-from PyQt4.QtCore import QSize, QPoint, Qt
+from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
 
@@ -28,7 +28,8 @@ from guiqwt.styles import CurveParam, style_generator, update_style_attr
 from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
-                            SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED)
+                            SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
+                            SIG_LUT_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
@@ -43,6 +44,7 @@ class CrossSectionItem(CurveItem):
         super(CrossSectionItem, self).__init__(curveparam)
         self.perimage_mode = True
         self.autoscale_mode = True
+        self.apply_lut = False
 
     def set_source_image(self, src):
         """
@@ -75,7 +77,7 @@ class CrossSectionItem(CurveItem):
 assert_interfaces_valid(CrossSectionItem)
 
 
-def get_image_data(plot, p0, p1):
+def get_image_data(plot, p0, p1, apply_lut=False):
     """
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
@@ -93,10 +95,10 @@ def get_image_data(plot, p0, p1):
     if trparams:
         src_w /= max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
         src_h /= max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
-    return get_image_from_plot(plot, p0, p1, src_w, src_h, apply_lut=False)
+    return get_image_from_plot(plot, p0, p1, src_w, src_h, apply_lut=apply_lut)
 
 
-def get_plot_x_section(obj):
+def get_plot_x_section(obj, apply_lut=False):
     """
     Return plot cross section along x-axis,
     at the y value defined by 'obj', a Marker object
@@ -110,7 +112,8 @@ def get_plot_x_section(obj):
     else:
         yc1 = yc0-1
     try:
-        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1))
+        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                              apply_lut=apply_lut)
     except (ValueError, ZeroDivisionError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
@@ -119,7 +122,7 @@ def get_plot_x_section(obj):
     x = np.linspace(x0, x1, len(y))
     return x, y
 
-def get_plot_y_section(obj):
+def get_plot_y_section(obj, apply_lut=False):
     """
     Return plot cross section along y-axis,
     at the x value defined by 'obj', a Marker object
@@ -132,7 +135,8 @@ def get_plot_y_section(obj):
     xc0, _yc0 = obj.axes_to_canvas(obj.xValue(), 0)
     xc1 = xc0+1
     try:
-        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1))
+        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                              apply_lut=apply_lut)
     except (ValueError, ZeroDivisionError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
@@ -142,7 +146,7 @@ def get_plot_y_section(obj):
     return x, y
 
 
-def get_plot_average_x_section(obj):
+def get_plot_average_x_section(obj, apply_lut=False):
     """
     Return cross section along x-axis, averaged on ROI defined by 'obj'
     'obj' is an AbstractShape object supporting the 'get_rect' method
@@ -159,7 +163,8 @@ def get_plot_average_x_section(obj):
     if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):
         yc1, yc0 = yc0, yc1
     try:
-        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1))
+        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
+                              apply_lut=apply_lut)
     except (ValueError, ZeroDivisionError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
@@ -168,7 +173,7 @@ def get_plot_average_x_section(obj):
     x = np.linspace(x0, x1, len(y))
     return x, y
     
-def get_plot_average_y_section(obj):
+def get_plot_average_y_section(obj, apply_lut=False):
     """
     Return cross section along y-axis, averaged on ROI defined by 'obj'
     'obj' is an AbstractShape object supporting the 'get_rect' method
@@ -185,7 +190,8 @@ def get_plot_average_y_section(obj):
     if xc0 > xc1:
         xc1, xc0 = xc0, xc1
     try:
-        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1))
+        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
+                              apply_lut=apply_lut)
     except (ValueError, ZeroDivisionError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
@@ -205,13 +211,13 @@ class XCrossSectionItem(CrossSectionItem):
             if self.perimage_mode:
                 return self.source.get_xsection(obj.yValue())
             else:
-                return get_plot_x_section(obj)
+                return get_plot_x_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
                 return self.source.get_average_xsection(*obj.get_rect())
             else:
-                return get_plot_average_x_section(obj)
+                return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
             
     def update_scale(self):
         plot = self.plot()
@@ -230,13 +236,13 @@ class YCrossSectionItem(CrossSectionItem):
             if self.perimage_mode:
                 return self.source.get_ysection(obj.xValue())
             else:
-                return get_plot_y_section(obj)
+                return get_plot_y_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
                 return self.source.get_average_ysection(*obj.get_rect())
             else:
-                return get_plot_average_y_section(obj)
+                return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
             
     def update_scale(self):
         plot = self.plot()
@@ -259,6 +265,7 @@ class CrossSectionPlot(CurvePlot):
         
         self.perimage_mode = True
         self.autoscale_mode = True
+        self.apply_lut = False
                                                
         self.style = style_generator(color_keys="bgrmkG")
                                                
@@ -286,6 +293,7 @@ class CrossSectionPlot(CurvePlot):
             # curve widgets for the same plot manager -- e.g. in pyplot)
             return
         self.connect(plot, SIG_ITEMS_CHANGED, self.items_changed)
+        self.connect(plot, SIG_LUT_CHANGED, self.lut_changed)
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
         self.connect(plot, SIG_MARKER_CHANGED, self.marker_changed)
         self.connect(plot, SIG_ANNOTATION_CHANGED, self.shape_changed)
@@ -414,15 +422,21 @@ class CrossSectionPlot(CurvePlot):
                 curve.show()
                 curve.perimage_mode = self.perimage_mode
                 curve.autoscale_mode = self.autoscale_mode
+                curve.apply_lut = self.apply_lut
                 curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
 
-    def update_all_items(self):
-        for plot in self._shapes:
+    def update_all_items(self, plot=None):
+        def _update(plot):
             for shape in self._shapes[plot]:
                 if shape.plot() is not None:
                     self.update_plot(shape)
+        if plot in self._shapes:
+            _update(plot)
+        else:
+            for plot in self._shapes:
+                _update(plot)
             
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
@@ -431,6 +445,14 @@ class CrossSectionPlot(CurvePlot):
     def toggle_autoscale(self, state):
         self.autoscale_mode = state
         self.update_all_items()
+        
+    def toggle_apply_lut(self, state):
+        self.apply_lut = state
+        self.update_all_items()
+        
+    def lut_changed(self, plot):
+        if self.apply_lut:
+            self.update_all_items(plot)
 
 
 class XCrossSectionPlot(CrossSectionPlot):
@@ -483,6 +505,7 @@ class YCrossSectionPlot(CrossSectionPlot):
 class CrossSectionWidget(QWidget):
     """Cross section widget"""
     CrossSectionPlotKlass = None
+    OTHER_PANEL_ID = None
 
     __implements__ = (IPanel,)
 
@@ -494,17 +517,27 @@ class CrossSectionWidget(QWidget):
         self.manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
         
-        peritem_ac = create_action(self, _("Per image cross-section"),
-                                   icon=get_icon('csperimage.png'),
-                                   toggled=self.cs_plot.toggle_perimage_mode)
-        peritem_ac.setChecked(True)
-        autoscale_ac = create_action(self, _("Auto-scale"),
+        self.peritem_ac = create_action(self, _("Per image cross-section"),
+                                    icon=get_icon('csperimage.png'),
+                                    toggled=self.cs_plot.toggle_perimage_mode)
+        self.applylut_ac = create_action(self,
+                                    _("Apply LUT\n(contrast settings)"),
+                                    icon=get_icon('csapplylut.png'),
+                                    toggled=self.cs_plot.toggle_apply_lut)
+        self.connect(self.peritem_ac, SIGNAL('toggled(bool)'),
+                     self.applylut_ac.setDisabled)
+        self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
-        autoscale_ac.setChecked(True)
+        self.refresh_ac = create_action(self, _("Refresh"),
+                                   icon=get_icon('refresh.png'),
+                                   triggered=self.cs_plot.update_all_items)
+
+        self.peritem_ac.setChecked(True)
+        self.autoscale_ac.setChecked(True)
+        self.applylut_ac.setChecked(False)
         
-        toolbar = QToolBar(self)
-        add_actions(toolbar, (peritem_ac, autoscale_ac))
+        self.toolbar = toolbar = QToolBar(self)
         if self.CrossSectionPlotKlass is YCrossSectionPlot:
             toolbar.setOrientation(Qt.Horizontal)
             layout = QVBoxLayout()
@@ -529,6 +562,23 @@ class CrossSectionWidget(QWidget):
         self.manager = manager
         for plot in manager.get_plots():
             self.cs_plot.connect_plot(plot)
+        other = manager.get_panel(self.OTHER_PANEL_ID)
+        if other is None:
+            add_actions(self.toolbar,
+                        (self.peritem_ac, self.applylut_ac, None,
+                         self.autoscale_ac, self.refresh_ac))
+        else:
+            add_actions(self.toolbar,
+                        (other.peritem_ac, other.applylut_ac, None,
+                         other.autoscale_ac, other.refresh_ac))
+            self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_perimage_mode)
+            self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_apply_lut)
+            self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_autoscale)
+            self.connect(other.refresh_ac, SIGNAL("triggered()"),
+                         self.cs_plot.update_all_items)
 
     def get_plot(self):
         return self.manager.get_active_plot()
@@ -547,11 +597,13 @@ assert_interfaces_valid(CrossSectionWidget)
 class XCrossSectionWidget(CrossSectionWidget):
     """X-axis cross section widget"""
     CrossSectionPlotKlass = XCrossSectionPlot
+    OTHER_PANEL_ID = "y_cross_section"
     def panel_id(self):
         return "x_cross_section"
 
 class YCrossSectionWidget(CrossSectionWidget):
     """Y-axis cross section widget"""
     CrossSectionPlotKlass = YCrossSectionPlot
+    OTHER_PANEL_ID = "x_cross_section"
     def panel_id(self):
         return "y_cross_section"

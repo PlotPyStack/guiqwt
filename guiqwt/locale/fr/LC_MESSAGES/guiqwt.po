@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2010-09-01 15:43+Paris, Madrid\n"
+"POT-Creation-Date: 2010-09-02 10:53+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,7 +52,7 @@ msgstr "Grille..."
 msgid "Axes style..."
 msgstr "Style des axes..."
 
-#: guiqwt\baseplot.py:37 guiqwt\curve.py:409
+#: guiqwt\baseplot.py:37 guiqwt\curve.py:412
 msgid "Parameters..."
 msgstr "Paramètres..."
 
@@ -88,13 +88,13 @@ msgstr "Axes"
 msgid "Axes associated to selected item"
 msgstr "Axes associés à l'objet sélectionné"
 
-#: guiqwt\builder.py:84 guiqwt\curve.py:104 guiqwt\curve.py:643
-#: guiqwt\curve.py:672
+#: guiqwt\builder.py:84 guiqwt\curve.py:104 guiqwt\curve.py:646
+#: guiqwt\curve.py:675
 msgid "Grid"
 msgstr "Grille"
 
 #: guiqwt\builder.py:228 guiqwt\builder.py:264 guiqwt\builder.py:282
-#: guiqwt\builder.py:321 guiqwt\cross_section.py:268 guiqwt\histogram.py:172
+#: guiqwt\builder.py:321 guiqwt\cross_section.py:275 guiqwt\histogram.py:172
 msgid "Curve"
 msgstr "Courbe"
 
@@ -141,43 +141,55 @@ msgstr "Pixels"
 msgid "Intensity"
 msgstr "Intensité"
 
-#: guiqwt\cross_section.py:276
+#: guiqwt\cross_section.py:283
 msgid "Enable a marker"
 msgstr "Activer un marqueur"
 
-#: guiqwt\cross_section.py:490
+#: guiqwt\cross_section.py:502
 msgid "Cross section tool"
 msgstr "Profils d'images"
 
-#: guiqwt\cross_section.py:499
+#: guiqwt\cross_section.py:508
 msgid "Per image cross-section"
 msgstr "Un profil par image"
 
-#: guiqwt\cross_section.py:501
+#: guiqwt\cross_section.py:511
+msgid ""
+"Apply LUT\n"
+"(contrast settings)"
+msgstr ""
+"Appliquer la LUT\n"
+"(réglages de contraste)"
+
+#: guiqwt\cross_section.py:516
 msgid "Auto-scale"
 msgstr "Échelle automatique"
 
-#: guiqwt\curve.py:403
+#: guiqwt\cross_section.py:519
+msgid "Refresh"
+msgstr "Rafraîchir"
+
+#: guiqwt\curve.py:406
 msgid "Move to back"
 msgstr "Déplacer vers l'arrière-plan"
 
-#: guiqwt\curve.py:406
+#: guiqwt\curve.py:409
 msgid "Move to front"
 msgstr "Déplacer vers le premier plan"
 
-#: guiqwt\curve.py:412 guiqwt\curve.py:553 guiqwt\tools.py:1230
+#: guiqwt\curve.py:415 guiqwt\curve.py:556 guiqwt\tools.py:1230
 msgid "Remove"
 msgstr "Supprimer"
 
-#: guiqwt\curve.py:550
+#: guiqwt\curve.py:553
 msgid "Do you really want to remove this item?"
 msgstr "Souhaitez-vous vraiment supprimer cet objet ?"
 
-#: guiqwt\curve.py:552
+#: guiqwt\curve.py:555
 msgid "Do you really want to remove selected items?"
 msgstr "Souhaitez-vous vraiment supprimer les objets sélectionnés ?"
 
-#: guiqwt\curve.py:567 guiqwt\tools.py:911
+#: guiqwt\curve.py:570 guiqwt\tools.py:911
 msgid "Item list"
 msgstr "Liste des objets"
 
@@ -1477,33 +1489,6 @@ msgstr "Sélectionne l'échelle de couleurs de l'image active"
 
 #~ msgid "Transform"
 #~ msgstr "Transformation"
-
-#, fuzzy
-#~ msgid "QuadGrid"
-#~ msgstr "Grille"
-
-#~ msgid "X-Axis line"
-#~ msgstr "Axe des abscisses"
-
-#~ msgid "Y-Axis line"
-#~ msgstr "Axe des ordonnées"
-
-#~ msgid "X-Axis brush"
-#~ msgstr "Classes en x"
-
-#, fuzzy
-#~ msgid "Y-Axis brush"
-#~ msgstr "Classes en y"
-
-#~ msgid "Min/max levels"
-#~ msgstr "Niveaux min/max"
-
-#~ msgid ""
-#~ "Scale the image's display range according to selected minimum and maximum "
-#~ "levels"
-#~ msgstr ""
-#~ "Adapte l'échelle d'affichage des niveaux de l'image aux niveaux minimum "
-#~ "et maximum sélectionnés"
 
 #~ msgid "Error"
 #~ msgstr "Erreur"
