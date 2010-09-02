@@ -30,7 +30,7 @@ from guiqwt.curve import CurvePlot
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import ImageParam, ImageAxesParam
 from guiqwt.shapes import RectangleShape
-from guiqwt.signals import SIG_ITEM_MOVED
+from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
 
 stderr = sys.stderr
 try:
@@ -1345,6 +1345,7 @@ class ImagePlot(CurvePlot):
         if item is not None:
             self.update_colormap_axis(item)
         self.replot()
+        self.emit(SIG_LUT_CHANGED, self)
 
     def update_colormap_axis(self, item):
         zaxis = self.colormap_axis

@@ -30,23 +30,29 @@ SIG_ANNOTATION_CHANGED = SIGNAL("annotation_changed(PyQt_PyObject)")
 # Emitted by shapes.XRangeSelection when the range changes
 SIG_RANGE_CHANGED = SIGNAL("range_changed(PyQt_PyObject,double,double)")
 
-# Item list has changed (item removed, added, ...)
+# Emitted by plot when item list has changed (item removed, added, ...)
 SIG_ITEMS_CHANGED = SIGNAL('items_changed(plot)')
 
-# Selected item has changed
+# Emitted by plot when selected item has changed
 SIG_ACTIVE_ITEM_CHANGED = SIGNAL('active_item_changed(plot)')
 
-# Item was deleted from the item list widget
+# Emitted by "itemlist" panel when an item was deleted from the list
 SIG_ITEM_REMOVED = SIGNAL('item_removed(PyQt_PyObject)')
 
-# Emitted when an item is selected
+# Emitted by plot when an item is selected
 SIG_ITEM_SELECTION_CHANGED = SIGNAL('item_selection_changed(plot)')
 
-# Emitted when plot's title or any axis label has changed
+# Emitted (by plot) when plot's title or any axis label has changed
 SIG_PLOT_LABELS_CHANGED = SIGNAL('plot_labels_changed(plot)')
 
-# Emitted when any plot axis direction has changed
+# Emitted (by plot) when any plot axis direction has changed
 SIG_AXIS_DIRECTION_CHANGED = SIGNAL('axis_direction_changed(plot,PyQt_PyObject)')
 
-# Emitted when the lut range of some items changed
+# Emitted by "contrast" panel's histogram when the lut range of 
+# some items changed (for now, this signal is for guiqwt.histogram module's
+# internal use only - the 'public' counterpart of this signal 
+# is SIG_LUT_CHANGED, see below)
 SIG_VOI_CHANGED = SIGNAL("voi_changed")
+
+# Emitted by plot when LUT has been changed by the user
+SIG_LUT_CHANGED = SIGNAL("lut_changed(plot)")
