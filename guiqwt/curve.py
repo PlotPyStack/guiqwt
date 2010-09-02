@@ -239,7 +239,7 @@ class CurveItem(QwtPlotCurve):
         self.setData(self._x, self._y)
         
     def is_empty(self):
-        return self._y.size == 0
+        return self._x is None or self._y is None or self._y.size == 0
 
     def hit_test(self, pos):
         """Calcul de la distance d'un point à une courbe
