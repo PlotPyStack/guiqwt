@@ -405,18 +405,27 @@ class BaseImageItem(QwtPlotItem):
         else:
             res = self.histogram_cache
         return res
+        
+    def __process_cross_section(self, ydata, apply_lut):
+        if apply_lut:
+            a, b, bg, cmap = self.lut
+            return ydata*a+b
+        else:
+            return ydata
 
-    def get_xsection(self, y0):
+    def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
         _ix, iy = self.get_closest_indexes(0, y0)
-        return self.get_x_values(0, self.data.shape[1]), self.data[iy, :]
+        return (self.get_x_values(0, self.data.shape[1]),
+                self.__process_cross_section(self.data[iy, :], apply_lut))
         
-    def get_ysection(self, x0):
+    def get_ysection(self, x0, apply_lut=False):
         """Return cross section along y-axis at x=x0"""
         ix, _iy = self.get_closest_indexes(x0, 0)
-        return self.get_y_values(0, self.data.shape[0]), self.data[:, ix]
+        return (self.get_y_values(0, self.data.shape[0]),
+                self.__process_cross_section(self.data[:, ix], apply_lut))
 
-    def get_average_xsection(self, x0, y0, x1, y1):
+    def get_average_xsection(self, x0, y0, x1, y1, apply_lut=False):
         """Return average cross section along x-axis"""
         ix0, iy0 = self.get_closest_indexes(x0, y0)
         ix1, iy1 = self.get_closest_indexes(x1, y1)
@@ -424,10 +433,11 @@ class BaseImageItem(QwtPlotItem):
             ix1, ix0 = ix0, ix1
         if iy0 > iy1:
             iy1, iy0 = iy0, iy1
+        ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=0)
         return (self.get_x_values(ix0, ix1),
-                self.data[iy0:iy1, ix0:ix1].mean(axis=0))
+                self.__process_cross_section(ydata, apply_lut))
 
-    def get_average_ysection(self, x0, y0, x1, y1):
+    def get_average_ysection(self, x0, y0, x1, y1, apply_lut=False):
         """Return average cross section along y-axis"""
         ix0, iy0 = self.get_closest_indexes(x0, y0)
         ix1, iy1 = self.get_closest_indexes(x1, y1)
@@ -435,8 +445,9 @@ class BaseImageItem(QwtPlotItem):
             ix1, ix0 = ix0, ix1
         if iy0 > iy1:
             iy1, iy0 = iy0, iy1
+        ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=1)
         return (self.get_y_values(iy0, iy1),
-                self.data[iy0:iy1, ix0:ix1].mean(axis=1))
+                self.__process_cross_section(ydata, apply_lut))
 
 assert_interfaces_valid(BaseImageItem)
 

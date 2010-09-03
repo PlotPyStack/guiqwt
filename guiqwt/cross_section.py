@@ -209,13 +209,15 @@ class XCrossSectionItem(CrossSectionItem):
         if isinstance(obj, Marker):
             # obj is a Marker object
             if self.perimage_mode:
-                return self.source.get_xsection(obj.yValue())
+                return self.source.get_xsection(obj.yValue(),
+                                                apply_lut=self.apply_lut)
             else:
                 return get_plot_x_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return self.source.get_average_xsection(*obj.get_rect())
+                return self.source.get_average_xsection(*obj.get_rect(),
+                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
             
@@ -234,13 +236,15 @@ class YCrossSectionItem(CrossSectionItem):
         if isinstance(obj, Marker):
             # obj is a Marker object
             if self.perimage_mode:
-                return self.source.get_ysection(obj.xValue())
+                return self.source.get_ysection(obj.xValue(),
+                                                apply_lut=self.apply_lut)
             else:
                 return get_plot_y_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return self.source.get_average_ysection(*obj.get_rect())
+                return self.source.get_average_ysection(*obj.get_rect(),
+                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
             
@@ -524,8 +528,6 @@ class CrossSectionWidget(QWidget):
                                     _("Apply LUT\n(contrast settings)"),
                                     icon=get_icon('csapplylut.png'),
                                     toggled=self.cs_plot.toggle_apply_lut)
-        self.connect(self.peritem_ac, SIGNAL('toggled(bool)'),
-                     self.applylut_ac.setDisabled)
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)

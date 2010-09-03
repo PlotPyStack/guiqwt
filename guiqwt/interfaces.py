@@ -60,14 +60,22 @@ class IVoiImageItemType(IItemType):
 
 class ICSImageItemType(IItemType):
     """An image with cross section methods implemented"""
-    def get_xsection(self, y0):
+    def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
-        assert isinstance(y0, (float, int, np.ndarray))
+        assert isinstance(y0, (float, int))
         return np.array([])
         
-    def get_ysection(self, x0):
+    def get_ysection(self, x0, apply_lut=False):
         """Return cross section along y-axis at x=x0"""
-        assert isinstance(x0, (float, int, np.ndarray))
+        assert isinstance(x0, (float, int))
+        return np.array([])
+        
+    def get_average_xsection(self, x0, y0, x1, y1, apply_lut=False):
+        """Return average cross section along x-axis"""
+        return np.array([])
+
+    def get_average_ysection(self, x0, y0, x1, y1, apply_lut=False):
+        """Return average cross section along y-axis"""
         return np.array([])
 
 class IColormapImageItemType(IItemType):
