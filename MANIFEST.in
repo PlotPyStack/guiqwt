@@ -1,5 +1,6 @@
 recursive-include guiqwt *.png *.mo *.dcm
 recursive-include src *.hpp *.cpp
+recursive-include doc_src *.py *.rst *.png *.
 include guiqwt-tests
 include guiqwt-tests.py
 include MANIFEST.in
