@@ -10,6 +10,11 @@ scientific modules NumPy and SciPy, `guiqwt` is a Python library for efficient
 processing application development.
 
 
+SourceForge website:
+
+ http://sourceforge.net/projects/guiqwt/
+
+
 Contents:
 
 .. toctree::
