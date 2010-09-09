@@ -14,7 +14,7 @@ from guidata.utils import update_dataset
 from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
-                           SegmentShape)
+                           SegmentShape, PointShape)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
@@ -217,6 +217,61 @@ class AnnotatedRectangle(AnnotatedShape):
         return u"%(center_n)s ( %(center)s )<br>%(size_n)s %(size)s" % tdict
 
 
+class AnnotatedPoint(AnnotatedRectangle):
+    SHAPE_CLASS = PointShape
+    LABEL_ANCHOR = "C"
+    def __init__(self, x=0, y=0, annotationparam=None):
+        AnnotatedShape.__init__(self, annotationparam)
+        self.set_pos(x, y)
+        
+    #----Public API-------------------------------------------------------------
+    def set_pos(self, x, y):
+        self.shape.set_pos(x, y)
+        self.set_label_position()
+
+    def get_pos(self):
+        return self.shape.get_pos()
+    
+    def get_shape(self):
+        shape = self.SHAPE_CLASS(0, 0)
+        shape.set_style("plot", "shape/drag")
+        return shape
+
+    def set_label_position(self):
+        x, y = self.shape.points[0]
+        y_offset = self.label.text.size().height()/2+4
+        self.label.set_position(x, y+y_offset)
+    
+    def get_infos(self):
+        f = self.annotationparam.format
+        xt, yt = self.apply_transform_matrix(*self.shape.points[0])
+        return {'position': ( "", f+u" ; "+f, (xt, yt) )}
+        
+    def get_position_and_size_text(self):
+        """Return formatted string with position and size of current shape"""
+        tdict = self.get_string_dict()
+        return u"( %(position)s )" % tdict
+
+
+class AnnotatedSegment(AnnotatedRectangle):
+    SHAPE_CLASS = SegmentShape
+    LABEL_ANCHOR = "C"
+    def set_label_position(self):
+        x0, y0 = self.shape.points[0]
+        x2, y2 = self.shape.points[2]
+        self.label.set_position(*compute_center(x0, y0, x2, y2))
+
+    def get_infos(self):
+        f = self.annotationparam.format
+        distance = compute_distance(*self.get_transformed_coords(0, 2))
+        return {'distance':   ( _("Distance:"), f, distance )}
+        
+    def get_position_and_size_text(self):
+        """Return formatted string with position and size of current shape"""
+        tdict = self.get_string_dict()
+        return u"%(distance_n)s %(distance)s" % tdict
+
+
 class AnnotatedEllipse(AnnotatedRectangle):
     SHAPE_CLASS = EllipseShape
     LABEL_ANCHOR = "C"
@@ -278,22 +333,3 @@ class AnnotatedCircle(AnnotatedEllipse):
         tdict = self.get_string_dict()
         return u"%(center_n)s ( %(center)s )<br>" \
                u"%(diameter_n)s %(diameter)s" % tdict
-
-
-class AnnotatedSegment(AnnotatedRectangle):
-    SHAPE_CLASS = SegmentShape
-    LABEL_ANCHOR = "C"
-    def set_label_position(self):
-        x0, y0 = self.shape.points[0]
-        x2, y2 = self.shape.points[2]
-        self.label.set_position(*compute_center(x0, y0, x2, y2))
-
-    def get_infos(self):
-        f = self.annotationparam.format
-        distance = compute_distance(*self.get_transformed_coords(0, 2))
-        return {'distance':   ( _("Distance:"), f, distance )}
-        
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        tdict = self.get_string_dict()
-        return u"%(distance_n)s %(distance)s" % tdict

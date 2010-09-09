@@ -13,7 +13,8 @@ from guiqwt.plot import ImagePlotDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           MultiLineTool, FreeFormTool, SegmentTool, CircleTool,
                           AnnotatedRectangleTool, AnnotatedEllipseTool,
-                          AnnotatedSegmentTool, AnnotatedCircleTool)
+                          AnnotatedSegmentTool, AnnotatedCircleTool,
+                          AnnotatedPointTool)
 from guiqwt.builder import make
 
 SHOW = True # Show test in GUI-based test launcher
@@ -24,7 +25,8 @@ def create_window():
     for toolklass in (SegmentTool, RectangleTool, CircleTool, EllipseTool,
                       MultiLineTool, FreeFormTool, PlaceAxesTool, HRangeTool,
                       AnnotatedRectangleTool, AnnotatedCircleTool,
-                      AnnotatedEllipseTool, AnnotatedSegmentTool):
+                      AnnotatedEllipseTool, AnnotatedSegmentTool,
+                      AnnotatedPointTool):
         win.register_tool(toolklass)
     return win
 

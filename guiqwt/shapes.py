@@ -450,6 +450,28 @@ class PolygonShape(AbstractShape):
 assert_interfaces_valid(PolygonShape)
 
 
+class PointShape(PolygonShape):
+    def __init__(self, x, y):
+        super(PointShape, self).__init__([], closed=False)
+        self.set_pos(x, y)
+        
+    def set_pos(self, x, y):
+        self.set_points([(x, y)])
+        
+    def get_pos(self):
+        return tuple(self.points[0])
+    
+    def move_point_to(self, handle, pos):
+        nx, ny = pos
+        self.points[0] = (nx, ny)
+
+    def __reduce__(self):
+        state = (self.shapeparam, self.points, self.z())
+        return (self.__class__, (0,0), state)
+
+assert_interfaces_valid(PointShape)
+
+
 class SegmentShape(PolygonShape):
     def __init__(self, x1, y1, x2, y2):
         super(SegmentShape, self).__init__([], closed=False)
@@ -457,6 +479,9 @@ class SegmentShape(PolygonShape):
         
     def set_rect(self, x1, y1, x2, y2):
         self.set_points([(x1, y1), (0, 0), (x2, y2)])
+
+    def get_rect(self):
+        return tuple(self.points[0])+tuple(self.points[2])
 
     def draw(self, painter, xMap, yMap, canvasRect):
         self.points[1] = (self.points[0]+self.points[2])/2.

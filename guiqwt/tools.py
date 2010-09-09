@@ -41,9 +41,10 @@ from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, QtDragHandler, ZoomRectHandler,
                            RectangularSelectionHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
-                           EllipseShape, SegmentShape)
+                           EllipseShape, SegmentShape, PointShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
-                                AnnotatedEllipse, AnnotatedSegment)
+                                AnnotatedEllipse, AnnotatedSegment,
+                                AnnotatedPoint)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType)
@@ -504,6 +505,15 @@ class RectangleTool(RectangularShapeTool):
     NAME = _("Rectangle")
     ICON = "rectangle.png"
 
+class PointTool(RectangularShapeTool):
+    NAME = _("Point")
+    ICON = "point_shape.png"
+    SHAPE_STYLE_KEY = "shape/point"
+    def create_shape(self):
+        shape = PointShape(0, 0)
+        self.set_shape_style(shape)
+        return shape, 0, 0
+
 class SegmentTool(RectangularShapeTool):
     NAME = _("Segment")
     ICON = "segment.png"
@@ -558,6 +568,10 @@ class AnnotatedEllipseTool(EllipseTool):
     def handle_final_shape(self, shape):
         shape.shape.switch_to_ellipse()
         super(EllipseTool, self).handle_final_shape(shape)
+
+class AnnotatedPointTool(PointTool):
+    def create_shape(self):
+        return AnnotatedPoint(0, 0), 0, 0
 
 class AnnotatedSegmentTool(SegmentTool):
     def create_shape(self):

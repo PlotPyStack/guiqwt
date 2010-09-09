@@ -451,9 +451,12 @@ class ItemListWidget(QListWidget):
         
     def __get_item_icon(self, item):
         from guiqwt.label import LegendBoxItem, LabelItem
-        from guiqwt.annotations import AnnotatedShape
+        from guiqwt.annotations import (AnnotatedShape, AnnotatedRectangle,
+                                        AnnotatedCircle, AnnotatedEllipse,
+                                        AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
-                                   Axes, XRangeSelection, PolygonShape)
+                                   PointShape, PolygonShape, Axes,
+                                   XRangeSelection)
         from guiqwt.errorbar import ErrorBarCurveItem
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
@@ -466,9 +469,15 @@ class ItemListWidget(QListWidget):
                             (GridItem, 'grid.png'),
                             (LegendBoxItem, 'legend.png'),
                             (LabelItem, 'label.png'),
+                            (AnnotatedSegment, 'segment.png'),
+                            (AnnotatedPoint, 'point_shape.png'),
+                            (AnnotatedCircle, 'circle.png'),
+                            (AnnotatedEllipse, 'ellipse_shape.png'),
+                            (AnnotatedRectangle, 'rectangle.png'),
                             (AnnotatedShape, 'annotation.png'),
                             (SegmentShape, 'segment.png'),
                             (RectangleShape, 'rectangle.png'),
+                            (PointShape, 'point_shape.png'),
                             (EllipseShape, 'ellipse_shape.png'),
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
