@@ -9,6 +9,7 @@
 Interactive plotting interface with MATLAB-like syntax
 """
 
+import sys
 from PyQt4.QtGui import (QMainWindow, QPrinter, QPainter, QFrame, QVBoxLayout,
                          QGridLayout, QToolBar, QPixmap)
 from PyQt4.QtCore import QRect, Qt
@@ -175,8 +176,9 @@ class Figure(object):
 
 def do_mainloop(mainloop):
     global _current_fig
-    assert _current_fig
-    if mainloop:
+    if not _current_fig:
+        print >>sys.stderr, "Warning: must create a figure before showing it"
+    elif mainloop:
         guidata.exec_qapplication_eventloop()
         
 
