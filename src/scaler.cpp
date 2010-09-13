@@ -135,6 +135,10 @@ struct LinearInterpolation {
 	int ny = p.iy();
 	double v = src.value(nx, ny);
 	double a=0;
+
+	if (nx==0||nx==src.nj-1) return (T)v;
+	if (ny==0||ny==src.ni-1) return (T)v;
+
 	if (nx<src.nj-1) {
 	    a = p.x()-nx;
 	    v = (1-a)*v+a*src.value(nx+1,ny);
@@ -182,6 +186,10 @@ struct LinearInterpolation<T,XYScale> {
 	int ny = p.iy();
 	double v = src.value(nx, ny);
 	double a=0;
+
+	if (nx==0||nx==src.nj-1) return (T)v;
+	if (ny==0||ny==src.ni-1) return (T)v;
+
 	if (nx<src.nj-1) {
 	    double x0 = tr.ax.value(nx);
 	    double x1 = tr.ax.value(nx+1);
