@@ -447,7 +447,6 @@ class ContrastAdjustment(QWidget):
                                        tip=_("Select maximum level on image"),
                                        toolbar_id="contrast",
                                        end_callback=self.apply_max_selection)        
-        return 
     
     def eliminate_outliers(self):
         def apply(param):

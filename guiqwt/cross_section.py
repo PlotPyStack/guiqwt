@@ -488,6 +488,10 @@ class YCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.yLeft
     Z_AXIS = CurvePlot.xBottom
     Z_MAX_MAJOR = 3
+    def __init__(self, parent=None):
+        CrossSectionPlot.__init__(self, parent)
+        self.set_axis_direction("bottom", reverse=True)
+        
     def sizeHint(self):
         return QSize(self._width, self.height())
     
@@ -543,12 +547,14 @@ class CrossSectionWidget(QWidget):
         if self.CrossSectionPlotKlass is YCrossSectionPlot:
             toolbar.setOrientation(Qt.Horizontal)
             layout = QVBoxLayout()
+            layout.addWidget(toolbar)
+            layout.addWidget(self.cs_plot)
         else:
             toolbar.setOrientation(Qt.Vertical)
             layout = QHBoxLayout()
+            layout.addWidget(self.cs_plot)
+            layout.addWidget(toolbar)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.cs_plot)
-        layout.addWidget(toolbar)
         self.setLayout(layout)
         
         self.manager.add_plot(self.cs_plot, "default")

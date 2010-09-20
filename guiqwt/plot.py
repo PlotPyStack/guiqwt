@@ -11,7 +11,7 @@ Ready-to-use curve and image plotting dialog boxes
 import weakref
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QWidget)
+                         QWidget, QSpacerItem, QSizePolicy, QApplication)
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
@@ -216,11 +216,17 @@ assert_interfaces_valid(PlotManager)
 #===============================================================================
 # Curve Plot Widget/Dialog with integrated Item list widget
 #===============================================================================
-def configure_plot_splitter(qsplit):
+def configure_plot_splitter(qsplit, decreasing_size=True):
+    qsplit.setChildrenCollapsible(False)
     qsplit.setHandleWidth(4)
-    qsplit.setStretchFactor(0, 1)
-    qsplit.setStretchFactor(1, 0)
-    qsplit.setSizes([2, 1])    
+    if decreasing_size:
+        qsplit.setStretchFactor(0, 1)
+        qsplit.setStretchFactor(1, 0)
+        qsplit.setSizes([2, 1])
+    else:
+        qsplit.setStretchFactor(0, 0)
+        qsplit.setStretchFactor(1, 1)
+        qsplit.setSizes([1, 2])
 
 class CurvePlotWidget(QSplitter):
     """
@@ -367,15 +373,27 @@ class ImagePlotWidget(QSplitter):
         from guiqwt.cross_section import XCrossSectionWidget
         self.xcsw = XCrossSectionWidget(self)
         self.xcsw.setVisible(show_xsection)
-                              
-        plot_layout = QGridLayout()
-        plot_layout.addWidget(self.xcsw, 0, 0)
-        plot_layout.addWidget(self.plot, 1, 0)
-        plot_layout.addWidget(self.ycsw, 1, 1)
         
-        plot_with_cs = QWidget(self)
-        plot_with_cs.setLayout(plot_layout)
-        self.sub_splitter.addWidget(plot_with_cs)
+        xcsw_splitter = QSplitter(Qt.Vertical, self) 
+        xcsw_splitter.addWidget(self.xcsw)
+        xcsw_splitter.addWidget(self.plot)
+        self.connect(xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
+                     lambda pos, index: self.adjust_ycsw_height())
+        
+        self.ycsw_layout = ycsw_layout = QVBoxLayout()
+        ycsw_layout.setContentsMargins(0, 0, 0, 0)
+        self.spacer = QSpacerItem(1,
+                                  self.xcsw.height()-self.xcsw.toolbar.height())
+        ycsw_layout.addSpacerItem(self.spacer)
+        ycsw_layout.addWidget(self.ycsw)
+        
+        ycsw_splitter = QSplitter(Qt.Horizontal, self) 
+        ycsw_layout_widget = QWidget()
+        ycsw_layout_widget.setLayout(ycsw_layout)
+        ycsw_splitter.addWidget(ycsw_layout_widget)
+        ycsw_splitter.addWidget(xcsw_splitter)
+        
+        self.sub_splitter.addWidget(ycsw_splitter)
         
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
@@ -389,6 +407,8 @@ class ImagePlotWidget(QSplitter):
         
         configure_plot_splitter(self)
         configure_plot_splitter(self.sub_splitter)
+        configure_plot_splitter(xcsw_splitter, decreasing_size=False)
+        configure_plot_splitter(ycsw_splitter, decreasing_size=False)
         
         self.manager = PlotManager(self)
         self.manager.add_plot(self.plot, id(self.plot))
@@ -396,6 +416,12 @@ class ImagePlotWidget(QSplitter):
         self.manager.add_panel(self.xcsw)
         self.manager.add_panel(self.ycsw)
         self.manager.add_panel(self.contrast)
+        
+    def adjust_ycsw_height(self):
+        self.spacer.changeSize(1, self.xcsw.height()-self.ycsw.toolbar.height(),
+                               QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.ycsw_layout.invalidate()
+        QApplication.processEvents()
 
 
 class ImagePlotDialog(CurvePlotDialog):
