@@ -26,7 +26,7 @@ from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
                                IColormapImageItemType, IVoiImageItemType,
                                ISerializableType, ICSImageItemType)
-from guiqwt.curve import CurvePlot
+from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import ImageParam, ImageAxesParam
 from guiqwt.shapes import RectangleShape
@@ -313,6 +313,9 @@ class BaseImageItem(QwtPlotItem):
     def unselect(self):
         self.selected = False
         self.border_rect.unselect()
+    
+    def is_empty(self):
+        return self.data is None or self.data.size == 0
         
     def set_selectable(self, state):
         """Set image selectable state"""
@@ -1249,6 +1252,7 @@ class ImagePlot(CurvePlot):
     aspect_ratio: height to width ratio (float)
     lock_aspect_ratio: locking aspect ratio (bool)
     """
+    AUTOSCALE_TYPES = (CurveItem, BaseImageItem)
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)
     def __init__(self, parent=None,
                  title=None, xlabel=None, ylabel=None, zlabel=None,
@@ -1391,24 +1395,14 @@ class ImagePlot(CurvePlot):
             self.update_colormap_axis(item)
             if autoscale:
                 self.do_autoscale()
-        
+    
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        rect = None
-        for item in self.get_items():
-            if isinstance(item, BaseImageItem):
-                bounds = item.boundingRect()
-                if rect is None:
-                    rect = bounds
-                else:
-                    rect = rect.united(bounds)
-        if rect is not None:
-            self.set_plot_limits(rect.left(), rect.right(),
-                                 rect.top(), rect.bottom())
-            if self.lock_aspect_ratio:
-                self.apply_aspect_ratio(full_scale=True)
-            if replot:
-                self.replot()
+        super(ImagePlot, self).do_autoscale(replot=False)
+        if self.lock_aspect_ratio:
+            self.apply_aspect_ratio(full_scale=True)
+        if replot:
+            self.replot()
     
     def get_axesparam_class(self, item):
         """Return AxesParam dataset class associated to item's type"""
