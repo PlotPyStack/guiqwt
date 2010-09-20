@@ -976,7 +976,11 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(self.yLeft, y0+dy, y0)
         else:
             self.setAxisScale(self.yLeft, y0, y0+dy)
-        self.setAxisScale(self.xBottom, x0, x1)
+        dx = x1-x0
+        if self.get_axis_direction(self.xBottom):
+            self.setAxisScale(self.xBottom, x0+dx, x0)
+        else:
+            self.setAxisScale(self.xBottom, x0, x0+dx)
         self.updateAxes()
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.yLeft)
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.xBottom)
