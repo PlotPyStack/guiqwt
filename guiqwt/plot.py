@@ -380,7 +380,6 @@ class ImagePlotWidget(QSplitter):
         self.xcsw.setVisible(show_xsection)
         
         self.connect(self.xcsw, SIG_VISIBILITY_CHANGED, self.xcsw_is_visible)
-        self.connect(self.ycsw, SIG_VISIBILITY_CHANGED, self.ycsw_is_visible)
         
         xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
@@ -431,9 +430,7 @@ class ImagePlotWidget(QSplitter):
         
     def adjust_ycsw_height(self, height=None):
         if height is None:
-            height = self.xcsw.height()
-            if self.ycsw.toolbar.isVisible():
-                height -= self.ycsw.toolbar.height()
+            height = self.xcsw.height()-self.ycsw.toolbar.height()
         self.ycsw_spacer.changeSize(0, height,
                                     QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.ycsw.layout().invalidate()
@@ -441,15 +438,11 @@ class ImagePlotWidget(QSplitter):
             QApplication.processEvents()
         
     def xcsw_is_visible(self, state):
-        self.ycsw.toolbar.setVisible(not state)
         if state:
             QApplication.processEvents()
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
-        
-    def ycsw_is_visible(self, state):
-        self.ycsw.toolbar.setVisible(state and not self.xcsw.isVisible())
 
 
 class ImagePlotDialog(CurvePlotDialog):

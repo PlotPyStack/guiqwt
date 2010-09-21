@@ -10,14 +10,14 @@ Cross section related objects
 """
 
 from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem)
+                         QSpacerItem, QFileDialog, QMessageBox)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
 
 from guidata.utils import assert_interfaces_valid
 from guidata.configtools import get_icon
-from guidata.qthelpers import create_action, add_actions
+from guidata.qthelpers import create_action, add_actions, get_std_icon
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -30,7 +30,7 @@ from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_LUT_CHANGED)
+                            SIG_LUT_CHANGED, SIG_ITEM_SELECTION_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
@@ -441,7 +441,22 @@ class CrossSectionPlot(CurvePlot):
         else:
             for plot in self._shapes:
                 _update(plot)
-            
+                
+    def export(self):
+        """Export cross-section plot in a text file"""
+        fname = QFileDialog.getSaveFileName(self, _("Export"),
+                                            "", _("Text file")+" (*.txt)")
+        if fname:
+            x, y = self.get_selected_items()[0].get_data()
+            data = np.array([x, y]).T
+            try:
+                np.savetxt(unicode(fname), data, delimiter=',')
+            except RuntimeError, error:
+                QMessageBox.critical(self, _("Export"),
+                                     _("Unable to export cross section data.")+\
+                                     "<br><br>"+_("Error message:")+"<br>"+\
+                                     str(error))
+        
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
         self.update_all_items()
@@ -532,6 +547,13 @@ class CrossSectionWidget(PanelWidget):
                                     _("Apply LUT\n(contrast settings)"),
                                     icon=get_icon('csapplylut.png'),
                                     toggled=self.cs_plot.toggle_apply_lut)
+        self.export_ac = create_action(self, _("Export"),
+                                   icon=get_std_icon("DialogSaveButton", 16),
+                                   triggered=self.cs_plot.export,
+                                   tip=_("Export selected cross section curve"))
+        self.export_ac.setEnabled(False)
+        self.connect(self.cs_plot, SIG_ITEM_SELECTION_CHANGED,
+                     self.item_selection_changed)
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
@@ -579,11 +601,11 @@ class CrossSectionWidget(PanelWidget):
         if other is None:
             add_actions(self.toolbar,
                         (self.peritem_ac, self.applylut_ac, None,
-                         self.autoscale_ac, self.refresh_ac))
+                         self.export_ac, self.autoscale_ac, self.refresh_ac))
         else:
             add_actions(self.toolbar,
                         (other.peritem_ac, other.applylut_ac, None,
-                         other.autoscale_ac, other.refresh_ac))
+                         self.export_ac, other.autoscale_ac, other.refresh_ac))
             self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
                          self.cs_plot.toggle_perimage_mode)
             self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
@@ -603,6 +625,9 @@ class CrossSectionWidget(PanelWidget):
     def register_shape(self, shape, final):
         plot = self.get_plot()
         self.cs_plot.register_shape(plot, shape, final)
+        
+    def item_selection_changed(self, plot):
+        self.export_ac.setEnabled(len(plot.get_selected_items()) == 1)
 
 assert_interfaces_valid(CrossSectionWidget)
 
