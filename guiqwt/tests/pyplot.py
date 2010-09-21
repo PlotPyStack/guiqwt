@@ -36,6 +36,10 @@ def main():
     gray()
     imshow(img)
 #    savefig("D:\\test1.pdf", draft=True)
+
+    figure("table plot")
+    data = np.array([x, np.sin(x), np.cos(x)]).T
+    plot(data)
     
     figure("simple plot")
     subplot(1, 2, 1)

@@ -9,7 +9,7 @@
 A builder singleton class used to simplify the creation of plot items
 """
 
-from numpy import arange, array, zeros, meshgrid
+from numpy import arange, array, zeros, meshgrid, ndarray
 
 from PyQt4.Qwt5 import QwtPlot
 
@@ -157,23 +157,33 @@ class PlotItemBuilder(object):
             param.shade = shade
         if fitted is not None:
             param.fitted = fitted
-
+            
     def __get_arg_triple_plot(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
+        def get_x_y_from_data(data):
+            if len(data.shape) == 1 or data.shape[0] == 1 or data.shape[1] == 1:
+                x = arange(data.size)
+                y = data
+            else:
+                x = arange(len(data[:, 0]))
+                y = [data[:, i] for i in range(len(data[0, :]))]
+            return x, y
+            
         if len(args)==1:
             if isinstance(args[0], basestring):
                 x = array((), float)
                 y = array((), float)
                 style = args[0]
             else:
-                y = args[0]
-                x = arange(len(y))
-                style = self.style.next()
+                x, y = get_x_y_from_data(args[0])
+                if isinstance(y, ndarray):
+                    style = self.style.next()
+                else:
+                    style = [self.style.next() for yi in y]
         elif len(args)==2:
             a1, a2 = args
             if isinstance(a2, basestring):
-                y = a1
-                x = arange(len(y))
+                x, y = get_x_y_from_data(a1)
                 style = a2
             else:
                 x = a1
@@ -221,21 +231,34 @@ class PlotItemBuilder(object):
     def mcurve(self, *args, **kwargs):
         """
         Make curve based on MATLAB-like syntax
+        (may returns a list of curves if data contains more than one signal)
         
         Example: mcurve(x, y, 'r+')
         """
         x, y, style = self.__get_arg_triple_plot(args)
+        if isinstance(y, ndarray):
+            y = [y]
+        if not isinstance(style, list):
+            style = [style]
+        if len(y) > len(style):
+            style = [style[0]]*len(y)
         basename = _("Curve")
-        param = CurveParam(title=basename, icon='curve.png')
-        if "label" in kwargs:
-            param.label = kwargs.pop("label")
+        curves = []
+        for yi, stylei in zip(y, style):
+            param = CurveParam(title=basename, icon='curve.png')
+            if "label" in kwargs:
+                param.label = kwargs.pop("label")
+            else:
+                global CURVE_COUNT
+                CURVE_COUNT += 1
+                param.label = make_title(basename, CURVE_COUNT)
+            update_style_attr(stylei, param)
+            curves.append(self.pcurve(x, yi, param, **kwargs))
+        if len(curves) == 1:
+            return curves[0]
         else:
-            global CURVE_COUNT
-            CURVE_COUNT += 1
-            param.label = make_title(basename, CURVE_COUNT)
-        update_style_attr(style, param)
-        return self.pcurve(x, y, param, **kwargs)
-    
+            return curves
+                
     def pcurve(self, x, y, param, xaxis="bottom", yaxis="left"):
         """
         Make curve based on a CurveParam instance

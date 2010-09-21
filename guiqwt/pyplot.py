@@ -356,8 +356,11 @@ def plot(*args, **kwargs):
     show()
     """
     axe = gca()
-    curve = make.mcurve(*args, **kwargs)
-    axe.add_plot(curve)
+    curves = make.mcurve(*args, **kwargs)
+    if not isinstance(curves, list):
+        curves = [curves]
+    for curve in curves:
+        axe.add_plot(curve)
     _show_if_interactive()
 
 def plotyy(x1, y1, x2, y2):
