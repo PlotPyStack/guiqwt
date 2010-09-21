@@ -10,7 +10,7 @@ guiqwt histogram related objects
 """
 import numpy as np
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar, QWidget
+from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
 from PyQt4.Qwt5 import QwtPlotCurve
 
 from guidata.dataset.datatypes import DataSet
@@ -22,7 +22,7 @@ from guidata.qthelpers import add_actions, create_action
 # Local imports
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
-                               IVoiImageItemType, IPanel)
+                               IVoiImageItemType, IPanel, PanelWidget)
 from guiqwt.curve import CurveItem, CurvePlot
 from guiqwt.image import ImagePlot
 from guiqwt.styles import HistogramParam, CurveParam
@@ -358,9 +358,8 @@ class EliminateOutliersParam(DataSet):
                         default=2., min=0., max=100.-1e-6)
 
 
-class ContrastAdjustment(QWidget):
+class ContrastAdjustment(PanelWidget):
     """Contrast adjustment tool"""
-
     __implements__ = (IPanel,)
 
     def __init__(self, parent=None):
@@ -368,7 +367,8 @@ class ContrastAdjustment(QWidget):
         widget_title = _("Contrast adjustment tool")
         widget_icon = "contrast.png"
         
-        self.manager = None
+        self.local_manager = None # local manager for the histogram plot
+        self.manager = None # manager for the associated image plot
         
         # Storing min/max markers for each active image
         self.min_markers = {}
@@ -385,10 +385,10 @@ class ContrastAdjustment(QWidget):
         layout.setAlignment(Qt.AlignCenter)
         vlayout = QVBoxLayout()
         vlayout.addLayout(layout)
-        self.manager = PlotManager(self)
+        self.local_manager = PlotManager(self)
         self.histogram = LevelsHistogram(parent)
         vlayout.addWidget(self.histogram)
-        self.manager.add_plot(self.histogram, "default")
+        self.local_manager.add_plot(self.histogram, "default")
         hlayout = QHBoxLayout()
         self.setLayout(hlayout)
         hlayout.addLayout(vlayout)
@@ -397,7 +397,7 @@ class ContrastAdjustment(QWidget):
         toolbar.setOrientation(Qt.Vertical)
 #        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         hlayout.addWidget(toolbar)
-        self.histogram.standard_tools(self.manager)
+        self.histogram.standard_tools(self.local_manager)
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
@@ -467,4 +467,3 @@ class ContrastAdjustment(QWidget):
         self.histogram.set_max(z)
 
 assert_interfaces_valid(ContrastAdjustment)
-

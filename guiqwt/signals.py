@@ -56,3 +56,6 @@ SIG_VOI_CHANGED = SIGNAL("voi_changed")
 
 # Emitted by plot when LUT has been changed by the user
 SIG_LUT_CHANGED = SIGNAL("lut_changed(plot)")
+
+# Emitted for example by panels when their visibility has changed
+SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")

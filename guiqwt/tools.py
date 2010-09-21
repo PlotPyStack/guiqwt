@@ -48,6 +48,7 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType)
+from guiqwt.signals import SIG_VISIBILITY_CHANGED
 
 
 class DefaultToolbarID:
@@ -890,6 +891,8 @@ class PanelTool(ToggleTool):
     panel_name = None
     def __init__(self, manager):
         super(PanelTool, self).__init__(manager, self.panel_name)
+        self.connect(manager.get_panel(self.panel_id),
+                     SIG_VISIBILITY_CHANGED, self.action.setChecked)
 
     def activate_command(self, plot, checked):
         """Activate tool"""

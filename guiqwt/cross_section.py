@@ -9,8 +9,8 @@
 Cross section related objects
 """
 
-from PyQt4.QtGui import (QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout,
-                         QToolBar)
+from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
+                         QSpacerItem)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
@@ -21,7 +21,8 @@ from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import ICSImageItemType, IPanel, IBasePlotItem
+from guiqwt.interfaces import (ICSImageItemType, IPanel, PanelWidget,
+                               IBasePlotItem)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.image import ImagePlot
 from guiqwt.styles import CurveParam, style_generator, update_style_attr
@@ -266,7 +267,6 @@ class CrossSectionPlot(CurvePlot):
     def __init__(self, parent=None):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
                                                section="cross_section")
-        
         self.perimage_mode = True
         self.autoscale_mode = True
         self.apply_lut = False
@@ -488,10 +488,6 @@ class YCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.yLeft
     Z_AXIS = CurvePlot.xBottom
     Z_MAX_MAJOR = 3
-    def __init__(self, parent=None):
-        CrossSectionPlot.__init__(self, parent)
-        self.set_axis_direction("bottom", reverse=True)
-        
     def sizeHint(self):
         return QSize(self._width, self.height())
     
@@ -510,19 +506,23 @@ class YCrossSectionPlot(CrossSectionPlot):
             self.replot()
 
 
-class CrossSectionWidget(QWidget):
+class CrossSectionWidget(PanelWidget):
     """Cross section widget"""
     CrossSectionPlotKlass = None
     OTHER_PANEL_ID = None
-
+    
     __implements__ = (IPanel,)
 
     def __init__(self, parent=None):
         super(CrossSectionWidget, self).__init__(parent)
-        widget_title = _("Cross section tool")
-        widget_icon = "cross_section.png"
         
-        self.manager = PlotManager(self)
+        widget_title = _("Cross section tool")
+        widget_icon = "csection.png"
+        
+        self.local_manager = None # local manager for the histogram plot
+        self.manager = None # manager for the associated image plot
+        
+        self.local_manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
         
         self.peritem_ac = create_action(self, _("Per image cross-section"),
@@ -543,12 +543,17 @@ class CrossSectionWidget(QWidget):
         self.autoscale_ac.setChecked(True)
         self.applylut_ac.setChecked(False)
         
+        self.spacer1 = QSpacerItem(0, 0)
+        self.spacer2 = QSpacerItem(0, 0)
+        
         self.toolbar = toolbar = QToolBar(self)
         if self.CrossSectionPlotKlass is YCrossSectionPlot:
             toolbar.setOrientation(Qt.Horizontal)
             layout = QVBoxLayout()
+            layout.addSpacerItem(self.spacer1)
             layout.addWidget(toolbar)
             layout.addWidget(self.cs_plot)
+            layout.addSpacerItem(self.spacer2)
         else:
             toolbar.setOrientation(Qt.Vertical)
             layout = QHBoxLayout()
@@ -557,9 +562,9 @@ class CrossSectionWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         
-        self.manager.add_plot(self.cs_plot, "default")
+        self.local_manager.add_plot(self.cs_plot, "default")
         
-        self.cs_plot.standard_tools(self.manager)
+        self.cs_plot.standard_tools(self.local_manager)
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
@@ -590,7 +595,7 @@ class CrossSectionWidget(QWidget):
 
     def get_plot(self):
         return self.manager.get_active_plot()
-
+        
     def closeEvent(self, event):
         self.hide()
         event.ignore()
@@ -610,8 +615,16 @@ class XCrossSectionWidget(CrossSectionWidget):
         return "x_cross_section"
 
 class YCrossSectionWidget(CrossSectionWidget):
-    """Y-axis cross section widget"""
+    """
+    Y-axis cross section widget
+    parent (QWidget): parent widget
+    position (string): "left" or "right"
+    """
     CrossSectionPlotKlass = YCrossSectionPlot
     OTHER_PANEL_ID = "x_cross_section"
+    def __init__(self, parent=None, position="right"):
+        CrossSectionWidget.__init__(self, parent)
+        self.cs_plot.set_axis_direction("bottom", reverse=position == "left")
+        
     def panel_id(self):
         return "y_cross_section"

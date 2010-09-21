@@ -11,8 +11,8 @@ guiqwt curve objects
 
 import sys, numpy as np
 
-from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QWidget,
-                         QVBoxLayout, QToolBar, QMessageBox)
+from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
+                         QToolBar, QMessageBox)
 from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL
 from PyQt4.Qwt5 import QwtPlotCurve, QwtPlotGrid, QwtPlotItem
 
@@ -22,8 +22,9 @@ from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType, ISerializableType,
-                               ICurveItemType, ITrackableItemType, IPanel)
+from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
+                               ISerializableType, ICurveItemType,
+                               ITrackableItemType, IPanel, PanelWidget)
 from guiqwt.baseplot import EnhancedQwtPlot
 from guiqwt.styles import GridParam, CurveParam, SymbolParam
 from guiqwt.shapes import Marker
@@ -362,7 +363,6 @@ class ItemListWidget(QListWidget):
     PlotItemList
     List of items attached to plot
     """
-    __implements__ = (IPanel,)
     def __init__(self, parent):
         super(ItemListWidget, self).__init__(parent)
         
@@ -571,9 +571,10 @@ class ItemListWidget(QListWidget):
             for item in items:
                 self.parent().emit(SIG_ITEM_REMOVED, item)
         
-class PlotItemList(QWidget):
-    __implements__ = (IPanel,)
 
+class PlotItemList(PanelWidget):
+    __implements__ = (IPanel,)
+    
     def __init__(self, parent):
         super(PlotItemList, self).__init__(parent)
         widget_title = _("Item list")
