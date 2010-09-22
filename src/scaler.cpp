@@ -289,13 +289,15 @@ static bool check_dispatch_type(const char* name, PyArrayObject* p_src)
 {
     if (PyArray_TYPE(p_src) != NPY_DOUBLE &&
 	PyArray_TYPE(p_src) != NPY_FLOAT &&
-	PyArray_TYPE(p_src) != NPY_USHORT &&
-	PyArray_TYPE(p_src) != NPY_SHORT &&
-	PyArray_TYPE(p_src) != NPY_UBYTE &&
-	PyArray_TYPE(p_src) != NPY_BYTE
+	PyArray_TYPE(p_src) != NPY_UINT32 &&
+	PyArray_TYPE(p_src) != NPY_INT32 &&
+	PyArray_TYPE(p_src) != NPY_UINT16 &&
+	PyArray_TYPE(p_src) != NPY_INT16 &&
+	PyArray_TYPE(p_src) != NPY_UINT8 &&
+	PyArray_TYPE(p_src) != NPY_INT8
 	) {
 	PyErr_Format(PyExc_TypeError,"%s data type must be one of the following:"
-		     " double, float, uint16, int16, uint8, int8", name);
+		     " double, float, uint32, int32, uint16, int16, uint8, int8", name);
 	return false;
     }
     return true;
@@ -514,16 +516,22 @@ static PyObject* dispatch_source(Params& p)
     case NPY_FLOAT64:
 	ok = scale_src<Params,npy_float64>(p);
 	break;
-    case NPY_USHORT:
+    case NPY_UINT32:
+	ok = scale_src<Params,npy_uint32>(p);
+	break;
+    case NPY_INT32:
+	ok = scale_src<Params,npy_int32>(p);
+	break;
+    case NPY_UINT16:
 	ok = scale_src<Params,npy_uint16>(p);
 	break;
-    case NPY_SHORT:
+    case NPY_INT16:
 	ok = scale_src<Params,npy_int16>(p);
 	break;
-    case NPY_UBYTE:
+    case NPY_UINT8:
 	ok = scale_src<Params,npy_uint8>(p);
 	break;
-    case NPY_BYTE:
+    case NPY_INT8:
 	ok = scale_src<Params,npy_int8>(p);
 	break;
     default:

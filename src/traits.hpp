@@ -70,16 +70,22 @@ static void dispatch_array(int npy_type, A& algo) {
     case NPY_FLOAT64:
 	algo.template run<npy_float64>();
 	break;
-    case NPY_USHORT:
+    case NPY_UINT32:
+	algo.template run<npy_uint32>();
+	break;
+    case NPY_INT32:
+	algo.template run<npy_int32>();
+	break;
+    case NPY_UINT16:
 	algo.template run<npy_uint16>();
 	break;
-    case NPY_SHORT:
+    case NPY_INT16:
 	algo.template run<npy_int16>();
 	break;
-    case NPY_UBYTE:
+    case NPY_UINT8:
 	algo.template run<npy_uint8>();
 	break;
-    case NPY_BYTE:
+    case NPY_INT8:
 	algo.template run<npy_int8>();
 	break;
     }
