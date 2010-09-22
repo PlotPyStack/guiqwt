@@ -22,10 +22,10 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 # Local imports
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (ICSImageItemType, IPanel, PanelWidget,
-                               IBasePlotItem)
+                               IBasePlotItem, ICurveItemType)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.image import ImagePlot
-from guiqwt.styles import CurveParam, style_generator, update_style_attr
+from guiqwt.styles import CurveParam
 from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
@@ -60,7 +60,7 @@ class CrossSectionItem(CurveItem):
         raise NotImplementedError
         
     def update_item(self, obj):
-        if self.source is None:
+        if self.source is None or not self.plot().isVisible():
             return
         sectx, secty = self.get_cross_section(obj)
         if secty.size == 0 or np.all(np.isnan(secty)):
@@ -271,10 +271,7 @@ class CrossSectionPlot(CurvePlot):
         self.autoscale_mode = True
         self.apply_lut = False
                                                
-        self.style = style_generator(color_keys="bgrmkG")
-                                               
-        # a dict of dict : plot -> selected items -> CurveItem
-        self._tracked_items = {}
+        self.known_items = {}
         self._shapes = {}
         
         self.curveparam = CurveParam(_("Curve"), icon="curve.png")
@@ -335,57 +332,21 @@ class CrossSectionPlot(CurvePlot):
     def create_cross_section_item(self):
         raise NotImplementedError
 
-    def tracked_items_gen(self):
-        for plot, items in self._tracked_items.items():
-            for item in items.items():
-                yield item # tuple item,curve
-
-    def __del_known_items(self, known_items, items):
-        del_curves = []
-        for item in known_items.keys():
-            if item not in items:
-                curve = known_items.pop(item)
-                del_curves.append(curve)
-        self.del_items(del_curves)
-
     def items_changed(self, plot):
+        # Del all cross section items
+        self.del_items(self.get_items(item_type=ICurveItemType))
+        
         items = plot.get_items(item_type=ICSImageItemType)
-        known_items = self._tracked_items.setdefault(plot, {})
-
-        if items:
-            self.__del_known_items(known_items, items)
-            if len(items) == 1:
-                # Removing any cached item for other plots
-                for other_plot, _items in self._tracked_items.items():
-                    if other_plot is not plot:
-                        if not other_plot.get_items(item_type=ICSImageItemType):
-                            other_known_items = self._tracked_items[other_plot]
-                            self.__del_known_items(other_known_items, [])
-        else:
-            # if all items are deselected we keep the last known
-            # selection (for one plot only)
-            for other_plot, _items in self._tracked_items.items():
-                if other_plot.get_items(item_type=ICSImageItemType):
-                    self.__del_known_items(known_items, [])
-                    break
-                
-        for item in items:
-            if item not in known_items:
-                curve = self.create_cross_section_item()
-                curve.set_source_image(item)
-                style = self.style.next()
-                update_style_attr(style, curve.curveparam)
-                curve.curveparam.update_curve(curve)
-                self.add_item(curve, z=0)
-                known_items[item] = curve
-
-        nb_selected = len(list(self.tracked_items_gen()))
-        if not nb_selected:
+        if not items:
             self.replot()
             return
-#        self.curveparam.shade = 1.0/nb_selected
-#        for item, curve in self.tracked_items_gen():
-#            self.curveparam.update_curve(curve)
+            
+        self.curveparam.shade = min([.3, .8/len(items)])
+        for item in items:
+            curve = self.create_cross_section_item()
+            curve.set_source_image(item)
+            self.add_item(curve, z=0)
+            self.known_items[item] = curve
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
@@ -419,7 +380,7 @@ class CrossSectionPlot(CurvePlot):
             return
         if self.label.isVisible():
             self.label.hide()
-        for index, (_item, curve) in enumerate(self.tracked_items_gen()):
+        for index, (_item, curve) in enumerate(self.known_items.iteritems()):
             if not self.perimage_mode and index > 0:
                 curve.hide()
             else:
@@ -444,11 +405,23 @@ class CrossSectionPlot(CurvePlot):
                 
     def export(self):
         """Export cross-section plot in a text file"""
+        items = [item for item in self.get_items(item_type=ICurveItemType)
+                 if item.isVisible() and not item.is_empty()]
+        if not items:
+            QMessageBox.warning(self, _("Export"),
+                                _("There is no cross section plot to export."))
+            return
+        if len(items) > 1:
+            items = self.get_selected_items()
+        if not items:
+            QMessageBox.warning(self, _("Export"),
+                                _("Please select a cross section plot."))
+            return
+        x, y = items[0].get_data()
+        data = np.array([x, y]).T
         fname = QFileDialog.getSaveFileName(self, _("Export"),
                                             "", _("Text file")+" (*.txt)")
         if fname:
-            x, y = self.get_selected_items()[0].get_data()
-            data = np.array([x, y]).T
             try:
                 np.savetxt(unicode(fname), data, delimiter=',')
             except RuntimeError, error:
@@ -550,10 +523,7 @@ class CrossSectionWidget(PanelWidget):
         self.export_ac = create_action(self, _("Export"),
                                    icon=get_std_icon("DialogSaveButton", 16),
                                    triggered=self.cs_plot.export,
-                                   tip=_("Export selected cross section curve"))
-        self.export_ac.setEnabled(False)
-        self.connect(self.cs_plot, SIG_ITEM_SELECTION_CHANGED,
-                     self.item_selection_changed)
+                                   tip=_("Export cross section data"))
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
@@ -625,9 +595,6 @@ class CrossSectionWidget(PanelWidget):
     def register_shape(self, shape, final):
         plot = self.get_plot()
         self.cs_plot.register_shape(plot, shape, final)
-        
-    def item_selection_changed(self, plot):
-        self.export_ac.setEnabled(len(plot.get_selected_items()) == 1)
 
 assert_interfaces_valid(CrossSectionWidget)
 

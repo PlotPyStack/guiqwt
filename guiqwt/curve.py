@@ -245,7 +245,7 @@ class CurveItem(QwtPlotCurve):
     def hit_test(self, pos):
         """Calcul de la distance d'un point à une courbe
         renvoie (dist, handle, inside)"""
-        if self._x is None or self._y is None:
+        if self.is_empty():
             return sys.maxint, 0, False, None
         plot = self.plot()
         ax = self.xAxis()

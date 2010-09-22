@@ -797,14 +797,14 @@ class TrImageItem(ImageItem):
         x0, _y0, _ = v0[:, 0].A.ravel()
         v1 = self.itr*point(i1, 0)
         x1, _y1, _ = v1[:, 0].A.ravel()
-        return np.linspace(x0, x1, i1-i0+1)
+        return np.linspace(x0, x1, i1-i0)
     
     def get_y_values(self, j0, j1):
         v0 = self.itr*point(0, j0)
         _x0, y0, _ = v0[:, 0].A.ravel()
         v1 = self.itr*point(0, j1)
         _x1, y1, _ = v1[:, 0].A.ravel()
-        return np.linspace(y0, y1, j1-j0+1)
+        return np.linspace(y0, y1, j1-j0)
 
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""

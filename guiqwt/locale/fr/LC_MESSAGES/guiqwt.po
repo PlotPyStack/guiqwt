@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2010-09-21 17:43+Paris, Madrid\n"
+"POT-Creation-Date: 2010-09-22 12:18+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,7 +94,7 @@ msgid "Grid"
 msgstr "Grille"
 
 #: guiqwt\builder.py:245 guiqwt\builder.py:287 guiqwt\builder.py:305
-#: guiqwt\builder.py:344 guiqwt\cross_section.py:280 guiqwt\histogram.py:172
+#: guiqwt\builder.py:344 guiqwt\cross_section.py:277 guiqwt\histogram.py:172
 msgid "Curve"
 msgstr "Courbe"
 
@@ -141,36 +141,45 @@ msgstr "Pixels"
 msgid "Intensity"
 msgstr "Intensité"
 
-#: guiqwt\cross_section.py:288
+#: guiqwt\cross_section.py:285
 msgid "Enable a marker"
 msgstr "Activer un marqueur"
 
-#: guiqwt\cross_section.py:447 guiqwt\cross_section.py:455
-#: guiqwt\cross_section.py:550
+#: guiqwt\cross_section.py:409 guiqwt\cross_section.py:415
+#: guiqwt\cross_section.py:420 guiqwt\cross_section.py:426
+#: guiqwt\cross_section.py:521
 msgid "Export"
 msgstr "Exporter"
 
-#: guiqwt\cross_section.py:448
+#: guiqwt\cross_section.py:410
+msgid "There is no cross section plot to export."
+msgstr "Aucun profil n'est actuellement affiché."
+
+#: guiqwt\cross_section.py:416
+msgid "Please select a cross section plot."
+msgstr "Merci de sélectionner le profil à exporter."
+
+#: guiqwt\cross_section.py:421
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: guiqwt\cross_section.py:456
+#: guiqwt\cross_section.py:427
 msgid "Unable to export cross section data."
 msgstr "Impossible d'exporter les données du profil."
 
-#: guiqwt\cross_section.py:457
+#: guiqwt\cross_section.py:428
 msgid "Error message:"
 msgstr "Message d'erreur :"
 
-#: guiqwt\cross_section.py:534
+#: guiqwt\cross_section.py:505
 msgid "Cross section tool"
 msgstr "Profils d'images"
 
-#: guiqwt\cross_section.py:543
+#: guiqwt\cross_section.py:514
 msgid "Per image cross-section"
 msgstr "Un profil par image"
 
-#: guiqwt\cross_section.py:547
+#: guiqwt\cross_section.py:518
 msgid ""
 "Apply LUT\n"
 "(contrast settings)"
@@ -178,15 +187,15 @@ msgstr ""
 "Appliquer la LUT\n"
 "(réglages de contraste)"
 
-#: guiqwt\cross_section.py:553
-msgid "Export selected cross section curve"
-msgstr "Exporter les données du profil sélectionné"
+#: guiqwt\cross_section.py:524
+msgid "Export cross section data"
+msgstr "Exporter les données d'un profil"
 
-#: guiqwt\cross_section.py:557
+#: guiqwt\cross_section.py:525
 msgid "Auto-scale"
 msgstr "Échelle automatique"
 
-#: guiqwt\cross_section.py:560
+#: guiqwt\cross_section.py:528
 msgid "Refresh"
 msgstr "Rafraîchir"
 
@@ -1484,6 +1493,9 @@ msgstr "Dupliquer"
 #: guiqwt\tools.py:1273
 msgid "Select colormap for active image"
 msgstr "Sélectionne l'échelle de couleurs de l'image active"
+
+#~ msgid "Export selected cross section curve"
+#~ msgstr "Exporter les données du profil sélectionné"
 
 #~ msgid "Global cross-section"
 #~ msgstr "Profil global"

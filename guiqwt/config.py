@@ -512,7 +512,7 @@ DEFAULTS = {
               "label/font/bold" : False,
 
               "curve/line/style" : 'SolidLine',
-              "curve/line/color" : "black",
+              "curve/line/color" : "blue",
               "curve/line/width" : 1,
               "curve/symbol/marker" : "NoSymbol",
               "curve/symbol/size" : 0,
