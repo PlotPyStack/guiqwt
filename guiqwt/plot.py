@@ -11,7 +11,7 @@ Ready-to-use curve and image plotting dialog boxes
 import weakref
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QWidget)
+                         QWidget, QSizePolicy)
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
@@ -234,6 +234,7 @@ class CurvePlotWidget(QSplitter):
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
         super(CurvePlotWidget, self).__init__(Qt.Horizontal, parent)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.plot = CurvePlot(parent=self,
                               title=title, xlabel=xlabel, ylabel=ylabel,
@@ -351,8 +352,10 @@ class ImagePlotWidget(QSplitter):
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False,
-                 show_xsection=False, show_ysection=False, gridparam=None):
+                 show_xsection=False, show_ysection=False, gridparam=None):        
         super(ImagePlotWidget, self).__init__(Qt.Vertical, parent)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
         self.plot = ImagePlot(parent=self, title=title,
                               xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
