@@ -11,7 +11,7 @@ import os.path as osp
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, PlaceAxesTool,
-                          FreeFormTool, SnapshotTool)
+                          FreeFormTool)
 from guiqwt.builder import make
 
 import numpy as np
@@ -24,8 +24,7 @@ def create_window():
     win = ImagePlotDialog(edit=False, toolbar=True,
                           wintitle="Region of interest (ROI) test",
                           options=dict(gridparam=gridparam))
-    for toolklass in (RectangleTool, EllipseTool, FreeFormTool, PlaceAxesTool,
-                      SnapshotTool):
+    for toolklass in (RectangleTool, EllipseTool, FreeFormTool, PlaceAxesTool):
         win.register_tool(toolklass)
     return win
 

@@ -597,6 +597,12 @@ class AverageCrossSectionsTool(AnnotatedRectangleTool):
         for panel_id in ("x_cross_section", "y_cross_section"):
             panel = self.manager.get_panel(panel_id)
             panel.register_shape(shape, final=final)
+
+    def activate(self):
+        """Activate tool"""
+        super(AverageCrossSectionsTool, self).activate()
+        for panel_id in ("x_cross_section", "y_cross_section"):
+            self.manager.get_panel(panel_id).setVisible(True)
     
     def handle_final_shape(self, shape):
         super(AverageCrossSectionsTool, self).handle_final_shape(shape)

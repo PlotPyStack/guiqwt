@@ -10,7 +10,6 @@
 import os.path as osp, numpy as np
 
 from guiqwt.plot import ImagePlotDialog
-from guiqwt.tools import AverageCrossSectionsTool, SnapshotTool
 from guiqwt.builder import make
 
 SHOW = True # Show test in GUI-based test launcher
@@ -20,8 +19,6 @@ def create_window():
                           wintitle="Cross sections test",
                           options=dict(show_xsection=True, show_ysection=True))
     win.resize(600, 600)
-    win.register_tool(AverageCrossSectionsTool)
-    win.register_tool(SnapshotTool)
     return win
 
 def test():

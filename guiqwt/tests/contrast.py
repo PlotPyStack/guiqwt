@@ -11,7 +11,6 @@ import os.path as osp
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
-from guiqwt.tools import SnapshotTool
 
 SHOW = True # Show test in GUI-based test launcher
 
@@ -26,7 +25,6 @@ def test():
     
     win = ImagePlotDialog(edit=False, toolbar=True, wintitle="Contrast test",
                           options=dict(show_contrast=True))
-    win.register_tool(SnapshotTool)
     plot = win.get_plot()
     plot.add_item(image)
     win.resize(600, 600)

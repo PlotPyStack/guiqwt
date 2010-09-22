@@ -15,7 +15,6 @@ from guiqwt.image import assemble_imageitems
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
 from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
-from guiqwt.tools import SnapshotTool
 
 SHOW = True # Show test in GUI-based test launcher
 
@@ -68,7 +67,6 @@ def imshow(items, title=""):
                                major_style=(".", "gray", 1))
     win = ImagePlotDialog(edit=False, toolbar=True, wintitle=title,
                           options=dict(gridparam=gridparam))
-    win.register_tool(SnapshotTool)
     nc = int(np.sqrt(len(items))+1.0)
     maxy = 0
     y = 0

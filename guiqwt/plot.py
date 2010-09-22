@@ -29,7 +29,8 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
                           ItemListTool, AntiAliasingTool, PrintTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
                           AspectRatioTool, ContrastTool, DummySeparatorTool,
-                          XCrossSectionTool, YCrossSectionTool)
+                          XCrossSectionTool, YCrossSectionTool, SnapshotTool,
+                          AverageCrossSectionsTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
@@ -211,6 +212,8 @@ class PlotManager(object):
         self.add_tool(ContrastTool)
         self.add_tool(XCrossSectionTool)
         self.add_tool(YCrossSectionTool)
+        self.add_tool(AverageCrossSectionsTool)
+        self.add_tool(SnapshotTool)
 
 assert_interfaces_valid(PlotManager)
 
