@@ -303,6 +303,7 @@ class CrossSectionPlot(CurvePlot):
         self.plot_labels_changed(plot)
         for axis_id in plot.AXES:
             self.axis_dir_changed(plot, axis_id)
+        self.items_changed(plot)
         
     def register_shape(self, plot, shape, final):
         known_shapes = self._shapes.get(plot, [])
