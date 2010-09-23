@@ -850,7 +850,8 @@ class CurvePlot(EnhancedQwtPlot):
 
     def del_all_items(self, except_grid=True):
         """Del all items, eventually (default) except grid"""
-        items = [item for item in self.items if item is not self.grid]
+        items = [item for item in self.items
+                 if not except_grid or item is not self.grid]
         self.del_items(items)
     
     def set_active_item(self, item):
