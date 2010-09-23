@@ -9,6 +9,8 @@
 Cross section related objects
 """
 
+import weakref
+
 from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
                          QSpacerItem, QFileDialog, QMessageBox)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
@@ -30,7 +32,7 @@ from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_LUT_CHANGED, SIG_ITEM_SELECTION_CHANGED)
+                            SIG_LUT_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
@@ -53,14 +55,17 @@ class CrossSectionItem(CurveItem):
         (source: object with methods 'get_xsection' and 'get_ysection',
          e.g. objects derived from guiqwt.image.BaseImageItem)
         """
-        self.source = src
+        self.source = weakref.ref(src)
 
     def get_cross_section(self, obj):
         """Get cross section data from source image"""
         raise NotImplementedError
         
     def update_item(self, obj):
-        if self.source is None or not self.plot().isVisible():
+        plot = self.plot()
+        if not plot:
+            return
+        if self.source is None or not plot.isVisible():
             return
         sectx, secty = self.get_cross_section(obj)
         if secty.size == 0 or np.all(np.isnan(secty)):
@@ -334,6 +339,8 @@ class CrossSectionPlot(CurvePlot):
         raise NotImplementedError
 
     def items_changed(self, plot):
+        self.known_items = {}
+        
         # Del all cross section items
         self.del_items(self.get_items(item_type=ICurveItemType))
         
