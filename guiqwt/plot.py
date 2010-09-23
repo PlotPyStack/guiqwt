@@ -245,6 +245,7 @@ class CurvePlotWidget(QSplitter):
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
         super(CurvePlotWidget, self).__init__(Qt.Horizontal, parent)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.plot = CurvePlot(parent=self,
                               title=title, xlabel=xlabel, ylabel=ylabel,
@@ -367,6 +368,8 @@ class ImagePlotWidget(QSplitter):
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None):
         super(ImagePlotWidget, self).__init__(Qt.Vertical, parent)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
         self.plot = ImagePlot(parent=self, title=title,
                               xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,

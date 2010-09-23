@@ -618,6 +618,7 @@ class CurvePlot(EnhancedQwtPlot):
     ylabel: (left axis title, right axis title) or left axis title only
     gridparam: GridParam instance
     """
+    AUTOSCALE_TYPES = (CurveItem,)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  gridparam=None, section="plot"):
         super(CurvePlot, self).__init__(parent, section)
@@ -874,12 +875,12 @@ class CurvePlot(EnhancedQwtPlot):
             dataset.update_grid(self.grid)
             self.grid.gridparam = dataset
         super(CurvePlot, self).set_item_parameters(itemparams)
-
+    
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
         rect = None
         for item in self.get_items():
-            if isinstance(item, CurveItem) and not item.is_empty() \
+            if isinstance(item, self.AUTOSCALE_TYPES) and not item.is_empty() \
                and item.isVisible():
                 bounds = item.boundingRect()
                 if rect is None:
