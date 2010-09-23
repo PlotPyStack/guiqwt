@@ -48,6 +48,7 @@ class CrossSectionItem(CurveItem):
         self.perimage_mode = True
         self.autoscale_mode = True
         self.apply_lut = False
+        self.source = None
 
     def set_source_image(self, src):
         """
@@ -56,6 +57,10 @@ class CrossSectionItem(CurveItem):
          e.g. objects derived from guiqwt.image.BaseImageItem)
         """
         self.source = weakref.ref(src)
+        
+    def get_source_image(self):
+        if self.source is not None:
+            return self.source()
 
     def get_cross_section(self, obj):
         """Get cross section data from source image"""
@@ -65,7 +70,8 @@ class CrossSectionItem(CurveItem):
         plot = self.plot()
         if not plot:
             return
-        if self.source is None or not plot.isVisible():
+        source = self.get_source_image()
+        if source is None or not plot.isVisible():
             return
         sectx, secty = self.get_cross_section(obj)
         if secty.size == 0 or np.all(np.isnan(secty)):
@@ -212,25 +218,27 @@ class XCrossSectionItem(CrossSectionItem):
     _inverted = False
     def get_cross_section(self, obj):
         """Get x-cross section data from source image"""
+        source = self.get_source_image()
         if isinstance(obj, Marker):
             # obj is a Marker object
             if self.perimage_mode:
-                return self.source.get_xsection(obj.yValue(),
-                                                apply_lut=self.apply_lut)
+                return source.get_xsection(obj.yValue(),
+                                           apply_lut=self.apply_lut)
             else:
                 return get_plot_x_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return self.source.get_average_xsection(*obj.get_rect(),
-                                                    apply_lut=self.apply_lut)
+                return source.get_average_xsection(*obj.get_rect(),
+                                                   apply_lut=self.apply_lut)
             else:
                 return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
             
     def update_scale(self):
         plot = self.plot()
         axis_id = plot.xBottom
-        sdiv = self.source.plot().axisScaleDiv(axis_id)
+        source = self.get_source_image()
+        sdiv = source.plot().axisScaleDiv(axis_id)
         plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
         plot.replot()
 
@@ -239,25 +247,27 @@ class YCrossSectionItem(CrossSectionItem):
     _inverted = True
     def get_cross_section(self, obj):
         """Get y-cross section data from source image"""
+        source = self.get_source_image()
         if isinstance(obj, Marker):
             # obj is a Marker object
             if self.perimage_mode:
-                return self.source.get_ysection(obj.xValue(),
-                                                apply_lut=self.apply_lut)
+                return source.get_ysection(obj.xValue(),
+                                           apply_lut=self.apply_lut)
             else:
                 return get_plot_y_section(obj, apply_lut=self.apply_lut)
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return self.source.get_average_ysection(*obj.get_rect(),
-                                                    apply_lut=self.apply_lut)
+                return source.get_average_ysection(*obj.get_rect(),
+                                                   apply_lut=self.apply_lut)
             else:
                 return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
             
     def update_scale(self):
         plot = self.plot()
         axis_id = plot.yLeft
-        sdiv = self.source.plot().axisScaleDiv(axis_id)
+        source = self.get_source_image()
+        sdiv = source.plot().axisScaleDiv(axis_id)
         plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
         plot.replot()
 
