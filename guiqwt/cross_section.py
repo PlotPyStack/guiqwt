@@ -525,33 +525,10 @@ class CrossSectionWidget(PanelWidget):
         widget_title = _("Cross section tool")
         widget_icon = "csection.png"
         
-        self.local_manager = None # local manager for the histogram plot
         self.manager = None # manager for the associated image plot
         
         self.local_manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
-        
-        self.peritem_ac = create_action(self, _("Per image cross-section"),
-                                    icon=get_icon('csperimage.png'),
-                                    toggled=self.cs_plot.toggle_perimage_mode)
-        self.applylut_ac = create_action(self,
-                                    _("Apply LUT\n(contrast settings)"),
-                                    icon=get_icon('csapplylut.png'),
-                                    toggled=self.cs_plot.toggle_apply_lut)
-        self.export_ac = create_action(self, _("Export"),
-                                   icon=get_std_icon("DialogSaveButton", 16),
-                                   triggered=self.cs_plot.export,
-                                   tip=_("Export cross section data"))
-        self.autoscale_ac = create_action(self, _("Auto-scale"),
-                                   icon=get_icon('csautoscale.png'),
-                                   toggled=self.cs_plot.toggle_autoscale)
-        self.refresh_ac = create_action(self, _("Refresh"),
-                                   icon=get_icon('refresh.png'),
-                                   triggered=self.cs_plot.update_all_items)
-
-        self.peritem_ac.setChecked(True)
-        self.autoscale_ac.setChecked(True)
-        self.applylut_ac.setChecked(False)
         
         self.spacer1 = QSpacerItem(0, 0)
         self.spacer2 = QSpacerItem(0, 0)
@@ -578,6 +555,15 @@ class CrossSectionWidget(PanelWidget):
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
+    def set_options(self, peritem=None, applylut=None, autoscale=None):
+        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.panel_id()
+        if peritem is not None:
+            self.peritem_ac.setChecked(peritem)
+        if applylut is not None:
+            self.applylut_ac.setChecked(applylut)
+        if autoscale is not None:
+            self.autoscale_ac.setChecked(autoscale)
+        
     def panel_id(self):
         raise NotImplementedError
     
@@ -585,6 +571,7 @@ class CrossSectionWidget(PanelWidget):
         self.manager = manager
         for plot in manager.get_plots():
             self.cs_plot.connect_plot(plot)
+        self.setup_actions()
         other = manager.get_panel(self.OTHER_PANEL_ID)
         if other is None:
             add_actions(self.toolbar,
@@ -609,6 +596,29 @@ class CrossSectionWidget(PanelWidget):
     def closeEvent(self, event):
         self.hide()
         event.ignore()
+        
+    def setup_actions(self):
+        self.peritem_ac = create_action(self, _("Per image cross-section"),
+                                    icon=get_icon('csperimage.png'),
+                                    toggled=self.cs_plot.toggle_perimage_mode)
+        self.applylut_ac = create_action(self,
+                                    _("Apply LUT\n(contrast settings)"),
+                                    icon=get_icon('csapplylut.png'),
+                                    toggled=self.cs_plot.toggle_apply_lut)
+        self.export_ac = create_action(self, _("Export"),
+                                   icon=get_std_icon("DialogSaveButton", 16),
+                                   triggered=self.cs_plot.export,
+                                   tip=_("Export cross section data"))
+        self.autoscale_ac = create_action(self, _("Auto-scale"),
+                                   icon=get_icon('csautoscale.png'),
+                                   toggled=self.cs_plot.toggle_autoscale)
+        self.refresh_ac = create_action(self, _("Refresh"),
+                                   icon=get_icon('refresh.png'),
+                                   triggered=self.cs_plot.update_all_items)
+
+        self.peritem_ac.setChecked(True)
+        self.autoscale_ac.setChecked(True)
+        self.applylut_ac.setChecked(False)
         
     def register_shape(self, shape, final):
         plot = self.get_plot()
