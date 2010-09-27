@@ -21,7 +21,7 @@ from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        GetAttrProp, NotProp)
 from guidata.dataset.dataitems import (ChoiceItem, BoolItem, FloatItem, IntItem,
                                        ImageChoiceItem, ColorItem, StringItem,
-                                       ButtonItem, FloatArrayItem)
+                                       ButtonItem, FloatArrayItem, TextItem)
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
@@ -397,7 +397,7 @@ DataSetEditLayout.register(BrushStyleItem, BrushStyleItemWidget)
 # ===================================================
 # QwtText parameters
 # ===================================================
-class TextParam(DataSet):
+class TextStyleParam(DataSet):
     font = FontItem(_("Font"))
     textcolor = ColorItem(_("Text color"), default="blue")
     background_color = ColorItem(_("Background color"), default="white")
@@ -421,14 +421,14 @@ class TextParam(DataSet):
         font = self.font.build_font()
         obj.setFont(font)
 
-class TextItemWidget(DataSetWidget):
-    klass = TextParam
+class TextStyleItemWidget(DataSetWidget):
+    klass = TextStyleParam
 
-class TextItem(ObjectItem):
-    """Item holding a TextParam"""
-    klass = TextParam
+class TextStyleItem(ObjectItem):
+    """Item holding a TextStyleParam"""
+    klass = TextStyleParam
 
-DataSetEditLayout.register(TextItem, TextItemWidget)
+DataSetEditLayout.register(TextStyleItem, TextStyleItemWidget)
 
 
 # ===================================================
@@ -578,7 +578,7 @@ MARKER_LINE_STYLE = [ QwtPlotMarker.NoLine,
                       QwtPlotMarker.Cross ]
 class MarkerParam(DataSet):
     symbol = SymbolItem(_("Symbol"))
-    text = TextItem(_("Text"))
+    text = TextStyleItem(_("Text"))
     pen = LineStyleItem(_("Line"))
     linestyle = ChoiceItem(_("Line style"),
                        [(0, _("None")),
@@ -611,13 +611,19 @@ class MarkerParam(DataSet):
 # Label parameters
 # ===================================================
 
-class LabelParam(DataSet):
+class BaseLabelParam(DataSet):
     _multiselection = False
     _legend = False
     label = StringItem(_("Title"), default="") \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
             
     _styles = BeginTabGroup("Styles")
+    #-------------------------------------------------------------- Contents tab
+    ___cont = BeginGroup(_("Contents")).set_prop("display", icon="label.png",
+                                                 hide=GetAttrProp("_legend"))
+    contents = TextItem("").set_prop("display", hide=GetAttrProp("_legend"))
+    ___econt = EndGroup(_("Contents")).set_prop("display",
+                                                hide=GetAttrProp("_legend"))
     #---------------------------------------------------------------- Symbol tab
     symbol = SymbolItem(_("Symbol")).set_prop("display", icon="diamond.png",
                                               hide=GetAttrProp("_legend"))
@@ -729,13 +735,7 @@ class LabelParam(DataSet):
         color.setAlphaF(self.bgalpha)
         obj.bg_brush = QBrush(color)
 
-class LabelParam_MS(LabelParam):
-    _multiselection = True
-    
-ItemParameters.register_multiselection(LabelParam, LabelParam_MS)
-
-
-class LegendParam(LabelParam):
+class LegendParam(BaseLabelParam):
     _legend = True
     label = StringItem(_("Title"), default="").set_prop("display", hide=True)
     
@@ -748,6 +748,26 @@ class LegendParam_MS(LegendParam):
     _multiselection = True
     
 ItemParameters.register_multiselection(LegendParam, LegendParam_MS)
+
+class LabelParam(BaseLabelParam):
+    def __init__(self, title=None, comment=None, icon=''):
+        super(LabelParam, self).__init__(title, comment, icon)
+        self.plain_text = None
+        
+    def update_param(self, obj):
+        super(LabelParam, self).update_param(obj)
+        self.contents = self.plain_text = obj.get_plain_text()
+
+    def update_label(self, obj):
+        super(LabelParam, self).update_label(obj)
+        if self.contents != self.plain_text:
+            text = self.contents.replace('\n', '<br>')
+            obj.set_text(text)
+
+class LabelParam_MS(LabelParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(LabelParam, LabelParam_MS)
 
 
 # ===================================================

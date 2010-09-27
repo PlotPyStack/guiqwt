@@ -158,7 +158,7 @@ class AbstractLabelItem(QwtPlotItem):
     
     def move_local_point_to(self, handle, pos):
         """Move a handle as returned by hit_test to the new position pos"""
-        if handle!=-1:
+        if handle != -1:
             return
     
     def move_local_shape(self, old_pos, new_pos):
@@ -221,6 +221,9 @@ class LabelItem(AbstractLabelItem):
     def set_position(self, x, y):
         self.G = x, y
         self.labelparam.xg, self.labelparam.yg = x, y
+        
+    def get_plain_text(self):
+        return unicode(self.text.toPlainText())
         
     def set_text(self, text=None):
         if text is None:

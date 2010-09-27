@@ -36,10 +36,10 @@ from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
 
 #Local imports
-from guiqwt.config import _
+from guiqwt.config import _, CONF
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, QtDragHandler, ZoomRectHandler,
-                           RectangularSelectionHandler)
+                           RectangularSelectionHandler, ClickHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
                            EllipseShape, SegmentShape, PointShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
@@ -411,6 +411,58 @@ class FreeFormTool(MultiLineTool):
         super(FreeFormTool, self).mouse_press(filter, event)
         self.shape.closed = len(self.shape.points) > 2
 
+
+class LabelTool(InteractiveTool):
+    _title = _("Label")
+    SHAPE_STYLE_SECT = "plot"
+    SHAPE_STYLE_KEY = "label"
+    NAME = _("Label")
+    ICON = "label.png"
+    def __init__(self, manager, handle_label_cb=None, label_style=None):
+        self.handle_label_cb = handle_label_cb
+        InteractiveTool.__init__(self, manager)
+        if label_style is not None:
+            self.shape_style_sect = label_style[0]
+            self.shape_style_key = label_style[1]
+        else:
+            self.shape_style_sect = self.SHAPE_STYLE_SECT
+            self.shape_style_key = self.SHAPE_STYLE_KEY
+    
+    def icon(self):
+        """Return tool icon"""
+        return get_icon(self.ICON)
+    
+    def set_label_style(self, label):
+        label.labelparam.read_config(CONF, self.shape_style_sect,
+                                     self.shape_style_key)
+        label.labelparam.update_label(label)
+    
+    def setup_filter(self, baseplot):
+        filter = baseplot.filter
+        start_state = filter.new_state()
+        handler = ClickHandler(filter, Qt.LeftButton, start_state=start_state)
+        self.connect(handler, SIGNAL("click_event"), self.add_label_to_plot)
+        return setup_standard_tool_filter(filter, start_state)
+
+    def add_label_to_plot(self, filter, event):
+        plot = filter.plot
+        import guidata.dataset as ds
+        class TextParam(ds.datatypes.DataSet):
+            text = ds.dataitems.TextItem("", _("Label"))
+        textparam = TextParam(_("Label text"))
+        if textparam.edit(plot):
+            text = str(textparam.text.replace('\n', '<br>'))
+            from guiqwt.builder import make
+            label = make.label(text, (0, 0), (10, 10), "TL")
+            label.setTitle(self.NAME)
+            x = plot.invTransform(label.xAxis(), event.pos().x())
+            y = plot.invTransform(label.yAxis(), event.pos().y())
+            label.set_position(x, y)
+            plot.add_item_with_z_offset(label, SHAPE_Z_OFFSET)
+            if self.handle_label_cb is not None:
+                self.handle_label_cb(label)
+            plot.replot()
+        
 
 class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_SECT = "plot"
