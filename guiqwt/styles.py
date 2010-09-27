@@ -611,19 +611,21 @@ class MarkerParam(DataSet):
 # Label parameters
 # ===================================================
 
-class BaseLabelParam(DataSet):
+class LabelParam(DataSet):
     _multiselection = False
     _legend = False
+    _no_contents = True
     label = StringItem(_("Title"), default="") \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
             
     _styles = BeginTabGroup("Styles")
     #-------------------------------------------------------------- Contents tab
     ___cont = BeginGroup(_("Contents")).set_prop("display", icon="label.png",
-                                                 hide=GetAttrProp("_legend"))
-    contents = TextItem("").set_prop("display", hide=GetAttrProp("_legend"))
+                                             hide=GetAttrProp("_no_contents"))
+    contents = TextItem("").set_prop("display",
+                                     hide=GetAttrProp("_no_contents"))
     ___econt = EndGroup(_("Contents")).set_prop("display",
-                                                hide=GetAttrProp("_legend"))
+                                             hide=GetAttrProp("_no_contents"))
     #---------------------------------------------------------------- Symbol tab
     symbol = SymbolItem(_("Symbol")).set_prop("display", icon="diamond.png",
                                               hide=GetAttrProp("_legend"))
@@ -735,7 +737,12 @@ class BaseLabelParam(DataSet):
         color.setAlphaF(self.bgalpha)
         obj.bg_brush = QBrush(color)
 
-class LegendParam(BaseLabelParam):
+class LabelParam_MS(LabelParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(LabelParam, LabelParam_MS)
+
+class LegendParam(LabelParam):
     _legend = True
     label = StringItem(_("Title"), default="").set_prop("display", hide=True)
     
@@ -749,25 +756,27 @@ class LegendParam_MS(LegendParam):
     
 ItemParameters.register_multiselection(LegendParam, LegendParam_MS)
 
-class LabelParam(BaseLabelParam):
+class LabelParamWithContents(LabelParam):
+    _no_contents = False
     def __init__(self, title=None, comment=None, icon=''):
-        super(LabelParam, self).__init__(title, comment, icon)
         self.plain_text = None
+        super(LabelParamWithContents, self).__init__(title, comment, icon)
         
     def update_param(self, obj):
-        super(LabelParam, self).update_param(obj)
+        super(LabelParamWithContents, self).update_param(obj)
         self.contents = self.plain_text = obj.get_plain_text()
 
     def update_label(self, obj):
-        super(LabelParam, self).update_label(obj)
-        if self.contents != self.plain_text:
+        super(LabelParamWithContents, self).update_label(obj)
+        if self.plain_text is not None and self.contents != self.plain_text:
             text = self.contents.replace('\n', '<br>')
             obj.set_text(text)
 
-class LabelParam_MS(LabelParam):
+class LabelParamWithContents_MS(LabelParamWithContents):
     _multiselection = True
     
-ItemParameters.register_multiselection(LabelParam, LabelParam_MS)
+ItemParameters.register_multiselection(LabelParamWithContents,
+                                       LabelParamWithContents_MS)
 
 
 # ===================================================

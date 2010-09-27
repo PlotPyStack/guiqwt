@@ -28,7 +28,8 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
-                           LineStyleParam, AnnotationParam)
+                           LineStyleParam, AnnotationParam,
+                           LabelParamWithContents)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
                           RangeComputation2d, DataInfoLabel,
                           SelectedLegendBoxItem)
@@ -577,7 +578,7 @@ class PlotItemBuilder(object):
         make.label("Absolute position", "R", (0,0), "R")
         """
         basename = _("Label")
-        param = LabelParam(basename, icon='label.png')
+        param = LabelParamWithContents(basename, icon='label.png')
         param.read_config(CONF, "plot", "label")
         if title:
             param.label = title
