@@ -259,6 +259,14 @@ class CurvePlotWidget(QSplitter):
         self.manager = PlotManager(self)
         self.manager.add_plot(self.plot, id(self.plot))
         self.manager.add_panel(self.itemlist)
+        
+    def get_plot(self):
+        """Return CurvePlot/ImagePlot instance"""
+        return self.manager.get_plot()
+
+    def get_panel(self, id):
+        """Return panel associated to *id*"""
+        return self.manager.get_panel(id)
 
 
 class CurvePlotDialog(QDialog):
@@ -335,10 +343,11 @@ class CurvePlotDialog(QDialog):
         self.layout.addWidget(self.plotwidget, 0, 0)
         
     def get_plot(self):
-        """Return CurvePlotWidget instance"""
+        """Return CurvePlot/ImagePlot instance"""
         return self.manager.get_plot()
 
     def get_panel(self, id):
+        """Return panel associated to *id*"""
         return self.manager.get_panel(id)
 
 
@@ -449,6 +458,14 @@ class ImagePlotWidget(QSplitter):
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
+        
+    def get_plot(self):
+        """Return CurvePlot/ImagePlot instance"""
+        return self.manager.get_plot()
+
+    def get_panel(self, id):
+        """Return panel associated to *id*"""
+        return self.manager.get_panel(id)
 
 
 class ImagePlotDialog(CurvePlotDialog):
