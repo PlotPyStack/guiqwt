@@ -451,7 +451,7 @@ class LabelTool(InteractiveTool):
             text = ds.dataitems.TextItem("", _("Label"))
         textparam = TextParam(_("Label text"))
         if textparam.edit(plot):
-            text = str(textparam.text.replace('\n', '<br>'))
+            text = textparam.text.replace('\n', '<br>')
             from guiqwt.builder import make
             label = make.label(text, (0, 0), (10, 10), "TL")
             label.setTitle(self.NAME)
