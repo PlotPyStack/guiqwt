@@ -189,7 +189,9 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
-        self.add_tool(ItemListTool)
+        from guiqwt.curve import ITEMLIST_PANEL_ID
+        if self.get_panel(ITEMLIST_PANEL_ID):
+            self.add_tool(ItemListTool)
 
     def register_curve_tools(self):
         """Registering specific tools
@@ -208,10 +210,14 @@ class PlotManager(object):
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
-        self.add_tool(ContrastTool)
-        self.add_tool(XCrossSectionTool)
-        self.add_tool(YCrossSectionTool)
-        self.add_tool(AverageCrossSectionsTool)
+        from guiqwt.histogram import CONTRAST_PANEL_ID
+        if self.get_panel(CONTRAST_PANEL_ID):
+            self.add_tool(ContrastTool)
+        from guiqwt.cross_section import XCS_PANEL_ID, YCS_PANEL_ID
+        if self.get_panel(XCS_PANEL_ID) and self.get_panel(YCS_PANEL_ID):
+            self.add_tool(XCrossSectionTool)
+            self.add_tool(YCrossSectionTool)
+            self.add_tool(AverageCrossSectionsTool)
         self.add_tool(SnapshotTool)
 
 assert_interfaces_valid(PlotManager)
