@@ -33,6 +33,8 @@ from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_VOI_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ACTIVE_ITEM_CHANGED)
 from guiqwt.plot import PlotManager
 
+CONTRAST_PANEL_ID = "contrast"
+
 
 class HistDataSource(object):
     """
@@ -361,6 +363,7 @@ class EliminateOutliersParam(DataSet):
 class ContrastAdjustment(PanelWidget):
     """Contrast adjustment tool"""
     __implements__ = (IPanel,)
+    PANEL_ID = CONTRAST_PANEL_ID
 
     def __init__(self, parent=None):
         super(ContrastAdjustment, self).__init__(parent)
@@ -403,9 +406,6 @@ class ContrastAdjustment(PanelWidget):
         
         self.outliers_param = EliminateOutliersParam(widget_title)
         
-    def panel_id(self):
-        return "contrast"
-    
     def register_panel(self, manager):
         self.manager = manager
         default_toolbar = self.manager.get_default_toolbar()

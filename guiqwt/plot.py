@@ -75,10 +75,9 @@ class PlotManager(object):
         return self.default_plot
 
     def add_panel(self, panel):
-        id = panel.panel_id()
-        assert id not in self.panels
+        assert panel.PANEL_ID not in self.panels
         assert not self.tools, "tools must be added after panels"
-        self.panels[id] = panel
+        self.panels[panel.PANEL_ID] = panel
         panel.register_panel(self)
 
     def add_toolbar(self, toolbar, id):

@@ -31,6 +31,8 @@ from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
                             SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED)
 
+ITEMLIST_PANEL_ID = "itemlist"
+
 
 def seg_dist(P, P0, P1):
     """
@@ -574,6 +576,7 @@ class ItemListWidget(QListWidget):
 
 class PlotItemList(PanelWidget):
     __implements__ = (IPanel,)
+    PANEL_ID = ITEMLIST_PANEL_ID
     
     def __init__(self, parent):
         super(PlotItemList, self).__init__(parent)
@@ -597,9 +600,6 @@ class PlotItemList(PanelWidget):
         
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
-        
-    def panel_id(self):
-        return "itemlist"
 
     def register_panel(self, manager):
         self.manager = manager

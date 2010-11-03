@@ -37,6 +37,9 @@ from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
 
+XCS_PANEL_ID = "x_cross_section"
+YCS_PANEL_ID = "y_cross_section"
+
 
 class CrossSectionItem(CurveItem):
     """A Qwt item representing cross section data"""
@@ -556,16 +559,13 @@ class CrossSectionWidget(PanelWidget):
         self.setWindowTitle(widget_title)
         
     def set_options(self, peritem=None, applylut=None, autoscale=None):
-        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.panel_id()
+        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
         if peritem is not None:
             self.peritem_ac.setChecked(peritem)
         if applylut is not None:
             self.applylut_ac.setChecked(applylut)
         if autoscale is not None:
             self.autoscale_ac.setChecked(autoscale)
-        
-    def panel_id(self):
-        raise NotImplementedError
     
     def register_panel(self, manager):
         self.manager = manager
@@ -629,10 +629,9 @@ assert_interfaces_valid(CrossSectionWidget)
 
 class XCrossSectionWidget(CrossSectionWidget):
     """X-axis cross section widget"""
+    PANEL_ID = XCS_PANEL_ID
+    OTHER_PANEL_ID = YCS_PANEL_ID
     CrossSectionPlotKlass = XCrossSectionPlot
-    OTHER_PANEL_ID = "y_cross_section"
-    def panel_id(self):
-        return "x_cross_section"
 
 class YCrossSectionWidget(CrossSectionWidget):
     """
@@ -640,11 +639,9 @@ class YCrossSectionWidget(CrossSectionWidget):
     parent (QWidget): parent widget
     position (string): "left" or "right"
     """
+    PANEL_ID = YCS_PANEL_ID
+    OTHER_PANEL_ID = XCS_PANEL_ID
     CrossSectionPlotKlass = YCrossSectionPlot
-    OTHER_PANEL_ID = "x_cross_section"
     def __init__(self, parent=None, position="right"):
         CrossSectionWidget.__init__(self, parent)
         self.cs_plot.set_axis_direction("bottom", reverse=position == "left")
-        
-    def panel_id(self):
-        return "y_cross_section"
