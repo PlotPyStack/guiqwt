@@ -264,6 +264,22 @@ class CurvePlotWidget(QSplitter):
         self.manager = PlotManager(self)
         self.manager.add_plot(self.plot, id(self.plot))
         self.manager.add_panel(self.itemlist)
+    
+    def register_tool(self, Klass, *args, **kwargs):
+        return self.manager.add_tool(Klass, *args, **kwargs)
+
+    def register_tools(self):
+        """Derived classes can override this method
+        to provide a fully customized set of tools"""
+        self.manager.register_standard_tools()
+        self.manager.add_separator_tool()
+        self.manager.register_curve_tools()
+        self.manager.add_separator_tool()
+        self.manager.register_other_tools()
+        self.activate_default_tool()
+        
+    def activate_default_tool(self):
+        self.manager.get_default_tool().activate()
         
     def get_plot(self):
         """Return CurvePlot/ImagePlot instance"""
@@ -323,23 +339,15 @@ class CurvePlotDialog(QDialog):
         self.button_layout.addWidget(bbox)
     
     def register_tool(self, Klass, *args, **kwargs):
-        return self.manager.add_tool(Klass, *args, **kwargs)
+        return self.plotwidget.register_tool(Klass, *args, **kwargs)
 
     def register_tools(self):
         """Derived classes can override this method
-        to provide a fully customized set of tools
-        or they can override register_extra_tools to
-        provide additionnal tools only
-        """
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_curve_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
+        to provide a fully customized set of tools"""
+        self.plotwidget.register_tools()
         
     def activate_default_tool(self):
-        self.manager.get_default_tool().activate()
+        self.plotwidget.activate_default_tool()
 
     def create_plot(self, options):
         """CurvePlotWidget instantiation
@@ -463,6 +471,22 @@ class ImagePlotWidget(QSplitter):
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
+
+    def register_tool(self, Klass, *args, **kwargs):
+        return self.manager.add_tool(Klass, *args, **kwargs)
+
+    def register_tools(self):
+        """Derived classes can override this method
+        to provide a fully customized set of tools"""
+        self.manager.register_standard_tools()
+        self.manager.add_separator_tool()
+        self.manager.register_image_tools()
+        self.manager.add_separator_tool()
+        self.manager.register_other_tools()
+        self.activate_default_tool()
+        
+    def activate_default_tool(self):
+        self.manager.get_default_tool().activate()
         
     def get_plot(self):
         """Return CurvePlot/ImagePlot instance"""
@@ -479,19 +503,6 @@ class ImagePlotDialog(CurvePlotDialog):
         super(ImagePlotDialog, self).__init__(wintitle=wintitle, icon=icon,
                                               edit=edit, toolbar=toolbar,
                                               options=options, parent=parent)
-
-    def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools
-        or they can override register_extra_tools to
-        provide additionnal tools only
-        """
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
 
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
         self.plotwidget = ImagePlotWidget(self, **options)
