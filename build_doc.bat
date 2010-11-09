@@ -1,4 +1,5 @@
-rmdir /S /Q spyderlib\doc
-sphinx-build -b html doc_src build\doc
-sphinx-build -b htmlhelp doc_src build\doc_chm
+rmdir /S /Q build\doc
+rmdir /S /Q build\doc_chm
+sphinx-build -b html doc build\doc
+sphinx-build -b htmlhelp doc build\doc_chm
 pause

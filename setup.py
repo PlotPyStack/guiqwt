@@ -61,6 +61,40 @@ if os.name == 'nt':
 else:
     SCRIPTS = ['guiqwt-tests']
 
+
+try:
+    import sphinx
+except ImportError:
+    sphinx = None
+    
+from distutils.command.build import build as dftbuild
+
+class build(dftbuild):
+    def has_doc(self):
+        if sphinx is None:
+            return False
+        setup_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.isdir(os.path.join(setup_dir, 'doc'))
+    sub_commands = dftbuild.sub_commands + [('build_doc', has_doc)]
+
+cmdclass = {'build' : build}
+
+if sphinx:
+    from sphinx.setup_command import BuildDoc
+    import sys
+    class build_doc(BuildDoc):
+        def run(self):
+            # make sure the python path is pointing to the newly built
+            # code so that the documentation is built on this and not a
+            # previously installed version
+            build = self.get_finalized_command('build')
+            sys.path.insert(0, os.path.abspath(build.build_lib))
+            sphinx.setup_command.BuildDoc.run(self)
+            sys.path.pop(0)
+
+    cmdclass['build_doc'] = build_doc
+
+
 setup(name=LIBNAME, version=version,
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=PACKAGES, package_data=PACKAGE_DATA,
@@ -88,4 +122,4 @@ setup(name=LIBNAME, version=version,
         'Operating System :: Unix',
         'Programming Language :: Python :: 2.6',
         ],
-      )
+      cmdclass=cmdclass)
