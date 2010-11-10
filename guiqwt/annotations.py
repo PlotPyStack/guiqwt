@@ -219,7 +219,7 @@ class AnnotatedRectangle(AnnotatedShape):
 
 class AnnotatedPoint(AnnotatedRectangle):
     SHAPE_CLASS = PointShape
-    LABEL_ANCHOR = "C"
+    LABEL_ANCHOR = "TL"
     def __init__(self, x=0, y=0, annotationparam=None):
         AnnotatedShape.__init__(self, annotationparam)
         self.set_pos(x, y)
@@ -239,8 +239,7 @@ class AnnotatedPoint(AnnotatedRectangle):
 
     def set_label_position(self):
         x, y = self.shape.points[0]
-        y_offset = self.label.text.size().height()/2+4
-        self.label.set_position(x, y+y_offset)
+        self.label.set_position(x, y)
     
     def get_infos(self):
         f = self.annotationparam.format
