@@ -291,7 +291,7 @@ class LegendBoxItem(AbstractLabelItem):
         return text_items
 
     def include_item(self, item):
-        return True
+        return item.isVisible()
     
     def get_legend_size(self, items):
         width = 0
@@ -375,7 +375,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
         return (self.__class__, (self.labelparam, []))
 
     def include_item(self, item):
-        return item in self.itemlist
+        return LegendBoxItem.include_item(self) and item in self.itemlist
         
     def add_item(self, item):
         self.itemlist.append(item)
