@@ -6,7 +6,7 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains PlotItem and subclass of CurvePlot
+This module contains plot items and subclass of CurvePlot
 to allow displaying and manipulating 2D images
 """
 

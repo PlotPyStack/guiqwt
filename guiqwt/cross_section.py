@@ -23,8 +23,9 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import (ICSImageItemType, IPanel, PanelWidget,
-                               IBasePlotItem, ICurveItemType)
+from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
+                               ICurveItemType)
+from guiqwt.baseobjects import PanelWidget
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.image import ImagePlot
 from guiqwt.styles import CurveParam

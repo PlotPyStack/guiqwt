@@ -24,7 +24,8 @@ from guidata.qthelpers import create_action, add_actions
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
-                               ITrackableItemType, IPanel, PanelWidget)
+                               ITrackableItemType, IPanel)
+from guiqwt.baseobjects import PanelWidget
 from guiqwt.baseplot import EnhancedQwtPlot
 from guiqwt.styles import GridParam, CurveParam, SymbolParam
 from guiqwt.shapes import Marker
@@ -184,7 +185,7 @@ class CurveItem(QwtPlotCurve):
         self._x = None
         self._y = None
         self.update_params()
-
+        
     def types(self):
         return (ICurveItemType, ITrackableItemType, ISerializableType)
 
@@ -988,10 +989,3 @@ class CurvePlot(EnhancedQwtPlot):
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.yLeft)
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.xBottom)
         
-    def set_item_visible(self, item, state):
-        """Show/hide *item* and notify the item browser"""
-        item.setVisible(state)
-        if item is self.active_item and not state:
-            self.set_active_item(None) # Notify the item list (see baseplot)
-        self.emit(SIG_ITEMS_CHANGED, self)
-        self.replot()

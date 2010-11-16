@@ -265,6 +265,33 @@ class EnhancedQwtPlot(QwtPlot):
         if active_item is not self.get_active_item():
             self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
 
+    def set_item_visible(self, item, state, notify=True, replot=True):
+        """Show/hide *item* and emit a SIG_ITEMS_CHANGED signal"""
+        item.setVisible(state)
+        if item is self.active_item and not state:
+            self.set_active_item(None) # Notify the item list (see baseplot)
+        if notify:
+            self.emit(SIG_ITEMS_CHANGED, self)
+        if replot:
+            self.replot()
+
+    def __set_items_visible(self, state, items=None, item_type=None):
+        """Show/hide items (if *items* is None, show/hide all items)"""
+        if items is None:
+            items = self.get_items(item_type=item_type)
+        for item in items:
+            self.set_item_visible(item, state, notify=False, replot=False)
+        self.emit(SIG_ITEMS_CHANGED, self)
+        self.replot()
+        
+    def show_items(self, items=None, item_type=None):
+        """Show items (if *items* is None, show all items)"""
+        self.__set_items_visible(True, items, item_type=item_type)
+        
+    def hide_items(self, items=None, item_type=None):
+        """Hide items (if *items* is None, hide all items)"""
+        self.__set_items_visible(False, items, item_type=item_type)
+
     def save_items(self, iofile, selected=False):
         if selected:
             items = self.get_selected_items()

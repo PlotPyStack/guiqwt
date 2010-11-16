@@ -22,7 +22,8 @@ from guidata.qthelpers import add_actions, create_action
 # Local imports
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
-                               IVoiImageItemType, IPanel, PanelWidget)
+                               IVoiImageItemType, IPanel)
+from guiqwt.baseobjects import PanelWidget
 from guiqwt.curve import CurveItem, CurvePlot
 from guiqwt.image import ImagePlot
 from guiqwt.styles import HistogramParam, CurveParam

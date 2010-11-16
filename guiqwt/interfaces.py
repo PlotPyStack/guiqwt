@@ -238,26 +238,12 @@ class IPlotManager(object):
         pass
 
 
-from guiqwt.signals import SIG_VISIBILITY_CHANGED
-from PyQt4.QtGui import QWidget
-
-class PanelWidget(QWidget):
-    PANEL_ID = None # string
-    
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
-        assert self.PANEL_ID is not None
-    
-    def showEvent(self, event):
-        QWidget.showEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, True)
-        
-    def hideEvent(self, event):
-        QWidget.hideEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, False)
-
 class IPanel(object):
     """Interface for panels controlled by PlotManager"""
-    __inherits__ = PanelWidget
+    @staticmethod
+    def __inherits__():
+        from guiqwt.baseobjects import PanelWidget
+        return PanelWidget
+    
     def register_panel(self, manager):
         pass
