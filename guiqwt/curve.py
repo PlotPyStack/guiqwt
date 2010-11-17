@@ -172,7 +172,7 @@ assert_interfaces_valid(GridItem)
 class CurveItem(QwtPlotCurve):
     __implements__ = (IBasePlotItem,)
     
-    _readonly = True
+    _readonly = False
     
     def __init__(self, curveparam=None):
         super(CurveItem, self).__init__()

@@ -101,7 +101,7 @@ class IBasePlotItem(object):
     to be handled by *EnhancedQwtPlot* widgets
     """
     selected = False # True if this item is selected
-    _readonly = True
+    _readonly = False
     _can_select = True # Indicate this item can be selected
     _can_move = True
     _can_resize = True

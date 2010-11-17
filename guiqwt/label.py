@@ -42,7 +42,7 @@ class AbstractLabelItem(QwtPlotItem):
     G can also be an anchor string as in ANCHORS in which case
     the label will keep a fixed position wrt the canvas rect
     """
-    _readonly = True
+    _readonly = False
     
     def __init__(self, labelparam):
         super(AbstractLabelItem, self).__init__()

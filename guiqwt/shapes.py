@@ -31,7 +31,7 @@ class AbstractShape(QwtPlotItem):
     """
     __implements__ = (IBasePlotItem,)
 
-    _readonly = True
+    _readonly = False
     _can_select = True
     _can_resize = True
     _can_rotate = False #TODO: implement shape rotation?

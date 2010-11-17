@@ -375,7 +375,7 @@ class EnhancedQwtPlot(QwtPlot):
 
     def set_items_readonly(self, state):
         """Set all items readonly state to *state*
-        Default item's readonly state: True (items can't be deleted)"""
+        Default item's readonly state: False (items may be deleted)"""
         for item in self.get_items():
             item.set_readonly(state)
         self.emit(SIG_ITEMS_CHANGED, self)

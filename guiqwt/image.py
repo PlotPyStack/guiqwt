@@ -59,7 +59,7 @@ class BaseImageItem(QwtPlotItem):
     _can_resize = False
     _can_move = False
     _can_rotate = False
-    _readonly = True
+    _readonly = False
     
     def __init__(self, param):
         super(BaseImageItem, self).__init__()
