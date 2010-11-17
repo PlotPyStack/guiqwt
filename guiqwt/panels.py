@@ -6,7 +6,7 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Base classes for guiqwt module
+Panels for Plot Manager (see guiqwt.plot.PlotManager class)
 """
 
 from PyQt4.QtGui import QWidget
@@ -15,6 +15,26 @@ from PyQt4.QtGui import QWidget
 from guiqwt.signals import SIG_VISIBILITY_CHANGED
 
 
+#===============================================================================
+# Panel IDs
+#===============================================================================
+
+# Item list panel
+ITEMLIST_PANEL_ID = "itemlist"
+
+# Contrast adjustment panel
+CONTRAST_PANEL_ID = "contrast"
+
+# X-cross section panel
+XCS_PANEL_ID = "x_cross_section"
+
+# Y-cross section panel
+YCS_PANEL_ID = "y_cross_section"
+
+
+#===============================================================================
+# Base Panel Widget class
+#===============================================================================
 class PanelWidget(QWidget):
     PANEL_ID = None # string
     

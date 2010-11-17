@@ -242,7 +242,7 @@ class IPanel(object):
     """Interface for panels controlled by PlotManager"""
     @staticmethod
     def __inherits__():
-        from guiqwt.baseobjects import PanelWidget
+        from guiqwt.panels import PanelWidget
         return PanelWidget
     
     def register_panel(self, manager):

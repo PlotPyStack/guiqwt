@@ -23,7 +23,7 @@ from guidata.qthelpers import add_actions, create_action
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
                                IVoiImageItemType, IPanel)
-from guiqwt.baseobjects import PanelWidget
+from guiqwt.panels import PanelWidget, CONTRAST_PANEL_ID
 from guiqwt.curve import CurveItem, CurvePlot
 from guiqwt.image import ImagePlot
 from guiqwt.styles import HistogramParam, CurveParam
@@ -33,8 +33,6 @@ from guiqwt.tools import (SelectTool, BasePlotMenuTool, SelectPointTool,
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_VOI_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ACTIVE_ITEM_CHANGED)
 from guiqwt.plot import PlotManager
-
-CONTRAST_PANEL_ID = "contrast"
 
 
 class HistDataSource(object):
@@ -466,5 +464,9 @@ class ContrastAdjustment(PanelWidget):
         point = self.max_select_tool.get_coordinates()
         z = item.get_data(*point)
         self.histogram.set_max(z)
+        
+    def set_range(self, _min, _max):
+        """Set contrast panel's histogram range"""
+        self.histogram.set_range(_min, _max)
 
 assert_interfaces_valid(ContrastAdjustment)

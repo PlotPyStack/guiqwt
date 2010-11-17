@@ -25,7 +25,7 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
                                ICurveItemType)
-from guiqwt.baseobjects import PanelWidget
+from guiqwt.panels import PanelWidget, XCS_PANEL_ID, YCS_PANEL_ID
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.image import ImagePlot
 from guiqwt.styles import CurveParam
@@ -37,9 +37,6 @@ from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.shapes import Marker
-
-XCS_PANEL_ID = "x_cross_section"
-YCS_PANEL_ID = "y_cross_section"
 
 
 class CrossSectionItem(CurveItem):

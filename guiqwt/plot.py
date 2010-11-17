@@ -34,6 +34,8 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
+from guiqwt.panels import (ITEMLIST_PANEL_ID, CONTRAST_PANEL_ID,
+                           XCS_PANEL_ID, YCS_PANEL_ID)
 
 
 class PlotManager(object):
@@ -189,7 +191,6 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
-        from guiqwt.curve import ITEMLIST_PANEL_ID
         if self.get_panel(ITEMLIST_PANEL_ID):
             self.add_tool(ItemListTool)
 
@@ -210,10 +211,8 @@ class PlotManager(object):
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
-        from guiqwt.histogram import CONTRAST_PANEL_ID
         if self.get_panel(CONTRAST_PANEL_ID):
             self.add_tool(ContrastTool)
-        from guiqwt.cross_section import XCS_PANEL_ID, YCS_PANEL_ID
         if self.get_panel(XCS_PANEL_ID) and self.get_panel(YCS_PANEL_ID):
             self.add_tool(XCrossSectionTool)
             self.add_tool(YCrossSectionTool)

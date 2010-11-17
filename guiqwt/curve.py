@@ -25,14 +25,12 @@ from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
                                ITrackableItemType, IPanel)
-from guiqwt.baseobjects import PanelWidget
+from guiqwt.panels import PanelWidget, ITEMLIST_PANEL_ID
 from guiqwt.baseplot import EnhancedQwtPlot
 from guiqwt.styles import GridParam, CurveParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
                             SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED)
-
-ITEMLIST_PANEL_ID = "itemlist"
 
 
 def seg_dist(P, P0, P1):
