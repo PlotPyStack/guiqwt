@@ -2,6 +2,7 @@
 \.settings$
 \.ropeproject$
 \.orig$
+\.chm$
 \.pyd$
 \.gui$
 ^build/
