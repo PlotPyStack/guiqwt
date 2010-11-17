@@ -701,12 +701,12 @@ class HRangeTool(InteractiveTool):
         start_state = filter.new_state()
         # Bouton gauche :
         self.handler = QtDragHandler(filter, Qt.LeftButton, start_state=start_state )
-        self.connect( self.handler, SIGNAL("move(QEvent*)"), self.move )
-        self.connect( self.handler, SIGNAL("stop_notmoving(QEvent*)"), self.end_move )
-        self.connect( self.handler, SIGNAL("stop_moving(QEvent*)"), self.end_move )
+        self.connect(self.handler, SIGNAL("move"), self.move)
+        self.connect(self.handler, SIGNAL("stop_notmoving"), self.end_move)
+        self.connect(self.handler, SIGNAL("stop_moving"), self.end_move)
         return setup_standard_tool_filter(filter, start_state)
 
-    def move(self, event):
+    def move(self, filter, event):
         from guiqwt.shapes import XRangeSelection
         plot = filter.plot
         if not self.shape:
@@ -718,7 +718,7 @@ class HRangeTool(InteractiveTool):
         self.shape.move_local_point_to(1, event.pos())
         plot.replot()
 
-    def end_move(self, event):
+    def end_move(self, filter, event):
         if self.shape is not None:
             assert self.shape.plot() == filter.plot
             filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)

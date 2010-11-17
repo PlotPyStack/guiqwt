@@ -10,6 +10,7 @@
 from PyQt4.QtGui import QFont
 
 from guiqwt.plot import CurvePlotDialog
+from guiqwt.tools import HRangeTool
 from guiqwt.builder import make
 
 SHOW = True # Show test in GUI-based test launcher
@@ -19,6 +20,7 @@ def plot(*items):
                           wintitle="CurvePlotDialog test",
                           options=dict(title="Title", xlabel="xlabel",
                                        ylabel="ylabel"))
+    win.register_tool(HRangeTool)
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)
