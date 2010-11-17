@@ -25,6 +25,8 @@ from guidata.utils import update_dataset
 from guiqwt.config import _
 from guiqwt.plot import ImagePlotWidget
 from guiqwt.builder import make
+from guiqwt.signals import SIG_LUT_CHANGED
+from guiqwt.panels import CONTRAST_PANEL_ID
 from guiqwt.io import imagefile_to_array
 
 SHOW = True # Show test in GUI-based test launcher
@@ -81,9 +83,11 @@ class CentralWidget(QSplitter):
                      self.properties_changed)
         
         self.plotwidget = ImagePlotWidget(self)
+        self.connect(self.plotwidget.plot, SIG_LUT_CHANGED,
+                     self.lut_range_changed)
         self.item = None # image item
         
-        manager = self.plotwidget.manager
+        self.manager = manager = self.plotwidget.manager
         
         manager.add_toolbar(toolbar, "default")
         
@@ -120,16 +124,18 @@ class CentralWidget(QSplitter):
         update_dataset(self.properties.dataset, image)
         self.properties.get()
         
-    def lut_range_changed(self, _min, _max):
+    def lut_range_changed(self):
         row = self.imagelist.currentRow()
-        self.lut_ranges[row] = _min, _max
+        self.lut_ranges[row] = self.item.get_lut_range()
         
     def show_data(self, data, lut_range=None):
         plot = self.plotwidget.plot
         if self.item is not None:
-            self.item.set_data(data, lut_range)
-            self.connect(plot, SIGNAL('lut_range_changed(double,double)'),
-                         self.lut_range_changed)
+            self.item.set_data(data)
+            if lut_range is None:
+                lut_range = self.item.get_lut_range()
+            contrast_panel = self.manager.get_panel(CONTRAST_PANEL_ID)
+            contrast_panel.set_range(*lut_range)
         else:
             self.item = make.image(data)
             plot.add_item(self.item, z=0)
