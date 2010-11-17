@@ -59,3 +59,18 @@ SIG_LUT_CHANGED = SIGNAL("lut_changed(PyQt_PyObject)")
 
 # Emitted for example by panels when their visibility has changed
 SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")
+
+# Emitted by an interactive tool to notify that the tool has just been 
+# "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
+SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
+
+#===============================================================================
+# Event filter related signals (private)
+#===============================================================================
+
+SIG_CLICK_EVENT = SIGNAL("click_event")
+SIG_START_TRACKING = SIGNAL("start_tracking")
+SIG_STOP_NOT_MOVING = SIGNAL("stop_notmoving")
+SIG_STOP_MOVING = SIGNAL("stop_moving")
+SIG_MOVE = SIGNAL("move")
+SIG_END_RECT = SIGNAL("end_rect")

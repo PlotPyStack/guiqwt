@@ -48,7 +48,10 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType)
-from guiqwt.signals import SIG_VISIBILITY_CHANGED
+from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
+                            SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
+                            SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
+                            SIG_VALIDATE_TOOL)
 
 
 class DefaultToolbarID:
@@ -174,7 +177,7 @@ class InteractiveTool(GuiTool):
         self.action.setChecked(False)
 
     def validate(self, filter, event):
-        self.emit(SIGNAL("validate_tool"), filter)
+        self.emit(SIG_VALIDATE_TOOL, filter)
 
 
 class SelectTool(InteractiveTool):
@@ -236,10 +239,10 @@ class SelectPointTool(InteractiveTool):
         start_state = filter.new_state()
         # Bouton gauche :
         handler = QtDragHandler(filter, Qt.LeftButton, start_state=start_state)
-        self.connect(handler, SIGNAL("start_tracking"), self.start)
-        self.connect(handler, SIGNAL("move"), self.move)
-        self.connect(handler, SIGNAL("stop_notmoving"), self.stop)
-        self.connect(handler, SIGNAL("stop_moving"), self.stop)
+        self.connect(handler, SIG_START_TRACKING, self.start)
+        self.connect(handler, SIG_MOVE, self.move)
+        self.connect(handler, SIG_STOP_NOT_MOVING, self.stop)
+        self.connect(handler, SIG_STOP_MOVING, self.stop)
         return setup_standard_tool_filter(filter, start_state)
 
     def start(self, filter, event):
@@ -328,13 +331,10 @@ class MultiLineTool(InteractiveTool):
         filter.add_event(start_state,
                          KeyEventMatch( (Qt.Key_Backspace,Qt.Key_Escape,) ),
                          self.cancel_point, start_state)
-        self.connect(handler, SIGNAL("start_tracking"),
-                     self.mouse_press)
-        self.connect(handler, SIGNAL("move"), self.move)
-        self.connect(handler, SIGNAL("stop_notmoving"),
-                     self.mouse_release)
-        self.connect(handler, SIGNAL("stop_moving"),
-                     self.mouse_release)
+        self.connect(handler, SIG_START_TRACKING, self.mouse_press)
+        self.connect(handler, SIG_MOVE, self.move)
+        self.connect(handler, SIG_STOP_NOT_MOVING, self.mouse_release)
+        self.connect(handler, SIG_STOP_MOVING, self.mouse_release)
         return setup_standard_tool_filter(filter, start_state)
 
     def validate(self, filter, event):
@@ -441,7 +441,7 @@ class LabelTool(InteractiveTool):
         filter = baseplot.filter
         start_state = filter.new_state()
         handler = ClickHandler(filter, Qt.LeftButton, start_state=start_state)
-        self.connect(handler, SIGNAL("click_event"), self.add_label_to_plot)
+        self.connect(handler, SIG_CLICK_EVENT, self.add_label_to_plot)
         return setup_standard_tool_filter(filter, start_state)
 
     def add_label_to_plot(self, filter, event):
@@ -515,7 +515,7 @@ class RectangularActionTool(InteractiveTool):
                                               start_state=start_state)
         shape, h0, h1 = self.get_shape()
         handler.set_shape(shape, h0, h1, self.setup_shape)
-        self.connect(handler, SIGNAL("end_rect"), self.end_rect)
+        self.connect(handler, SIG_END_RECT, self.end_rect)
         return setup_standard_tool_filter(filter, start_state)
 
     def end_rect(self, filter, p0, p1):
@@ -701,9 +701,9 @@ class HRangeTool(InteractiveTool):
         start_state = filter.new_state()
         # Bouton gauche :
         self.handler = QtDragHandler(filter, Qt.LeftButton, start_state=start_state )
-        self.connect(self.handler, SIGNAL("move"), self.move)
-        self.connect(self.handler, SIGNAL("stop_notmoving"), self.end_move)
-        self.connect(self.handler, SIGNAL("stop_moving"), self.end_move)
+        self.connect(self.handler, SIG_MOVE, self.move)
+        self.connect(self.handler, SIG_STOP_NOT_MOVING, self.end_move)
+        self.connect(self.handler, SIG_STOP_MOVING, self.end_move)
         return setup_standard_tool_filter(filter, start_state)
 
     def move(self, filter, event):
