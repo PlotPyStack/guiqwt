@@ -830,7 +830,7 @@ class DisplayCoordsTool(CommandTool):
         super(DisplayCoordsTool, self).__init__(manager, _("Markers"),
                                                 icon=get_icon("on_curve.png"),
                                                 toolbar_id=None)
-        self.menu = QMenu(manager.get_main())
+        self.menu = QMenu()
         self.canvas_act = manager.create_action(_("Free"),
                                           toggled=self.activate_canvas_pointer)
         self.curve_act = manager.create_action(_("Bound to active item"),
@@ -884,7 +884,7 @@ class AspectRatioTool(CommandTool):
         super(AspectRatioTool, self).__init__(manager, _("Aspect ratio"),
                                               toolbar_id=None)
         self.ar_param = AspectRatioParam(_("Aspect ratio"))
-        self.menu = QMenu(manager.get_main())
+        self.menu = QMenu()
         self.lock_action = manager.create_action(_("Lock"),
                                          toggled=self.lock_aspect_ratio)
         self.ratio1_action = manager.create_action(_("1:1"),
@@ -1208,7 +1208,7 @@ class AxisScaleTool(CommandTool):
         super(AxisScaleTool, self).__init__(manager, _("Scale"),
                                             icon=get_icon("log_log.png"),
                                             toolbar_id=None)
-        self.menu = QMenu(manager.get_main())
+        self.menu = QMenu()
         group = QActionGroup(manager.get_main())
         lin_lin = manager.create_action("Lin Lin", icon=get_icon("lin_lin.png"),
                                         toggled=self.set_scale_lin_lin)
@@ -1330,7 +1330,7 @@ class ColormapTool(CommandTool):
         super(ColormapTool, self).__init__(manager, _("Colormap"),
                                            tip=_("Select colormap for active "
                                                  "image"))
-        self.menu = QMenu(manager.get_main())
+        self.menu = QMenu()
         for cmap_name in get_colormap_list():
             cmap = get_cmap(cmap_name)
             icon = build_icon_from_cmap(cmap)
