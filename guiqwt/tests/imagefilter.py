@@ -37,7 +37,8 @@ def test():
     guidata.qapplication()
     # --
     from guiqwt.tests.imagexy import compute_image
-    imshow(*compute_image(), filter_area=(-3., -1., 0., 2.), yreverse=False)
+    x, y, data = compute_image()
+    imshow(x, y, data, filter_area=(-3., -1., 0., 2.), yreverse=False)
     # --
     import os.path as osp, numpy as np
     from guiqwt.io import imagefile_to_array

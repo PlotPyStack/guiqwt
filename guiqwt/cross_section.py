@@ -230,7 +230,8 @@ class XCrossSectionItem(CrossSectionItem):
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return source.get_average_xsection(*obj.get_rect(),
+                x0, y0, x1, y1 = obj.get_rect()
+                return source.get_average_xsection(x0, y0, x1, y1,
                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
@@ -259,7 +260,8 @@ class YCrossSectionItem(CrossSectionItem):
         else:
             # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                return source.get_average_ysection(*obj.get_rect(),
+                x0, y0, x1, y1 = obj.get_rect()
+                return source.get_average_ysection(x0, y0, x1, y1,
                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
