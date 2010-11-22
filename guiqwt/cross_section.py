@@ -362,7 +362,8 @@ class CrossSectionPlot(CurvePlot):
             self.replot()
             return
             
-        self.curveparam.shade = min([.3, .8/len(items)])
+# Commented because of a PyQwt display bug with 90° rotated shaded curve
+#        self.curveparam.shade = min([.3, .8/len(items)])
         for item in items:
             curve = self.create_cross_section_item()
             curve.set_source_image(item)
@@ -599,12 +600,21 @@ class CrossSectionWidget(PanelWidget):
         
     def setup_actions(self):
         self.peritem_ac = create_action(self, _("Per image cross-section"),
-                                    icon=get_icon('csperimage.png'),
-                                    toggled=self.cs_plot.toggle_perimage_mode)
+                        icon=get_icon('csperimage.png'),
+                        toggled=self.cs_plot.toggle_perimage_mode,
+                        tip=_("Enable the per-image cross-section mode, "
+                              "which works directly on image rows/columns.\n"
+                              "That is the fastest method to compute "
+                              "cross-section curves but it ignores "
+                              "image transformations (e.g. rotation)"))
         self.applylut_ac = create_action(self,
-                                    _("Apply LUT\n(contrast settings)"),
-                                    icon=get_icon('csapplylut.png'),
-                                    toggled=self.cs_plot.toggle_apply_lut)
+                        _("Apply LUT\n(contrast settings)"),
+                        icon=get_icon('csapplylut.png'),
+                        toggled=self.cs_plot.toggle_apply_lut,
+                        tip=_("Apply LUT (Look-Up Table) contrast settings.\n"
+                              "This is the easiest way to compare images "
+                              "which have slightly different level ranges.\n\n"
+                              "Note: LUT is coded over 1024 levels (0...1023)"))
         self.export_ac = create_action(self, _("Export"),
                                    icon=get_std_icon("DialogSaveButton", 16),
                                    triggered=self.cs_plot.export,
