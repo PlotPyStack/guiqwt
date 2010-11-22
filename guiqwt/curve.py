@@ -888,8 +888,15 @@ class CurvePlot(EnhancedQwtPlot):
                 else:
                     rect = rect.united(bounds)
         if rect is not None:
-            self.set_plot_limits(rect.left(), rect.right(),
-                                 rect.top(), rect.bottom())
+            x0, x1 = rect.left(), rect.right()
+            y0, y1 = rect.top(), rect.bottom()
+            if x0 == x1: # same behavior as MATLAB
+                x0 -= 1
+                x1 += 1
+            if y0 == y1: # same behavior as MATLAB
+                y0 -= 1
+                y1 += 1
+            self.set_plot_limits(x0, x1, y0, y1)
             if replot:
                 self.replot()
             
