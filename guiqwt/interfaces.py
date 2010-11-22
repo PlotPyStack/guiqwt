@@ -43,7 +43,7 @@ class IImageItemType(IItemType):
 
 class IVoiImageItemType(IItemType):
     """An image with with set_lut_range, get_lut_range"""
-    def set_lut_range(self, range):
+    def set_lut_range(self, lut_range):
         pass
 
     def get_lut_range(self):

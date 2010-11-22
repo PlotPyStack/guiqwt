@@ -209,16 +209,15 @@ class BaseImageItem(QwtPlotItem):
             self.interpolate = (interp_mode, aa)
 
     def get_interpolation(self):
-        """
-        Get interpolation mode
-        """
+        """Get interpolation mode"""
         return self.interpolate
 
-    def set_lut_range(self, range):
-        """Spécifie la valeurs des pixels pour la transformation
-        palette min et palette max
+    def set_lut_range(self, lut_range):
         """
-        self.min, self.max = range
+        Set LUT transform range
+        *lut_range* is a tuple: (min, max)        
+        """
+        self.min, self.max = lut_range
         _a, _b, bg, cmap = self.lut
         if self.max == self.min:
             self.lut = (LUT_MAX, self.min, bg, cmap)
@@ -228,6 +227,7 @@ class BaseImageItem(QwtPlotItem):
                         bg, cmap)
         
     def get_lut_range(self):
+        """Return the LUT transform range tuple: (min, max)"""
         return self.min, self.max
 
     def get_lut_range_full(self):
@@ -244,10 +244,12 @@ class BaseImageItem(QwtPlotItem):
         return info.min, info.max
 
     def update_border(self):
+        """Update image border rectangle to fit image shape"""
         bounds = self.boundingRect().getCoords()
         self.border_rect.set_rect(*bounds)
 
     def draw_border(self, painter, xMap, yMap, canvasRect):
+        """Draw image border rectangle"""
         self.border_rect.draw(painter, xMap, yMap, canvasRect)
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
@@ -1102,11 +1104,11 @@ class ImageFilterItem(BaseImageItem):
         else:
             return super(ImageFilterItem, self).get_lut_range()
 
-    def set_lut_range(self, range):
+    def set_lut_range(self, lut_range):
         if self.use_source_cmap:
-            self.image.set_lut_range(range)
+            self.image.set_lut_range(lut_range)
         else:
-            super(ImageFilterItem, self).set_lut_range(range)
+            super(ImageFilterItem, self).set_lut_range(lut_range)
     
     #---- IBaseImageItem API ---------------------------------------------------
     def types(self):
