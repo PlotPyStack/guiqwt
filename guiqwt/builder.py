@@ -15,7 +15,7 @@ from PyQt4.Qwt5 import QwtPlot
 
 # Local imports
 from guiqwt.config import _, CONF, make_title
-from guiqwt.curve import CurveItem, GridItem
+from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem
 from guiqwt.errorbar import ErrorBarCurveItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,

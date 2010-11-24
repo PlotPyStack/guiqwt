@@ -12,9 +12,9 @@ guiqwt curve objects
 import sys, numpy as np
 
 from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                         QToolBar, QMessageBox)
-from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL
-from PyQt4.Qwt5 import QwtPlotCurve, QwtPlotGrid, QwtPlotItem
+                         QToolBar, QMessageBox, QBrush)
+from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF, QLine
+from PyQt4.Qwt5 import QwtPlotCurve, QwtPlotGrid, QwtPlotItem, QwtScaleMap
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
@@ -27,7 +27,7 @@ from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ITrackableItemType, IPanel)
 from guiqwt.panels import PanelWidget, ITEMLIST_PANEL_ID
 from guiqwt.baseplot import EnhancedQwtPlot
-from guiqwt.styles import GridParam, CurveParam, SymbolParam
+from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
                             SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED)
@@ -356,6 +356,189 @@ class CurveItem(QwtPlotCurve):
 assert_interfaces_valid(CurveItem)
 
 
+def _transform(map,v):
+    return QwtScaleMap.transform(map,v)
+vmap = np.vectorize(_transform)
+
+class ErrorBarCurveItem(CurveItem):
+    """
+    Construct an error-bar curve `plot item` 
+    with the parameters *errorbarparam*
+    (see :py:class:`guiqwt.styles.ErrorBarParam`)
+    """
+    def __init__(self, curveparam=None, errorbarparam=None):
+        if errorbarparam is None:
+            self.errorbarparam = ErrorBarParam()
+        else:
+            self.errorbarparam = errorbarparam
+        super(ErrorBarCurveItem, self).__init__(curveparam)
+        self._dx = None
+        self._dy = None
+        
+    def unselect(self):
+        """Unselect item"""
+        super(ErrorBarCurveItem, self).unselect()
+        self.errorbarparam.update_curve(self)
+
+    def get_data(self):
+        """
+        Return error-bar curve data: x, y, dx, dy
+            * x: NumPy array
+            * y: NumPy array
+            * dx: float or NumPy array (non-constant error bars)
+            * dy: float or NumPy array (non-constant error bars)
+        """
+        return self._x, self._y, self._dx, self._dy
+
+    def set_data(self, x, y, dx, dy):
+        """
+        Set error-bar curve data:
+            * x: NumPy array
+            * y: NumPy array
+            * dx: float or NumPy array (non-constant error bars)
+            * dy: float or NumPy array (non-constant error bars)
+        """
+        CurveItem.set_data(self, x, y)
+        if dx is not None:
+            dx = np.array(dx, copy=False)
+            if dx.size == 0:
+                dx = None
+        if dy is not None:
+            dy = np.array(dy, copy=False)
+            if dy.size == 0:
+                dy = None
+        self._dx = dx
+        self._dy = dy
+
+    def get_minmax_arrays(self):
+        x = self._x
+        y = self._y
+        dx = self._dx
+        dy = self._dy
+        if dx is None:
+            xmin = x
+            xmax = x
+        else:
+            xmin = x - dx
+            xmax = x + dx
+        if dy is None:
+            ymin = y
+            ymax = y
+        else:
+            ymin = y - dy
+            ymax = y + dy
+        return xmin, xmax, ymin, ymax
+        
+    def get_closest_coordinates(self, x, y):
+        # Surcharge d'une méthode de base de CurveItem
+        plot = self.plot()
+        ax = self.xAxis()
+        ay = self.yAxis()
+        xc = plot.transform(ax, x)
+        yc = plot.transform(ay, y)
+        _distance, i, _inside, _other = self.hit_test(QPoint(xc, yc))
+        x0, y0 = self.plot().canvas2plotitem(self, xc, yc)
+        x = self.x(i)
+        y = self.y(i)
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        if abs(y0-y) > abs(y0-ymin[i]):
+            y = ymin[i]
+        elif abs(y0-y) > abs(y0-ymax[i]):
+            y = ymax[i]
+        if abs(x0-x) > abs(x0-xmin[i]):
+            x = xmin[i]
+        elif abs(x0-x) > abs(x0-xmax[i]):
+            x = xmax[i]
+        return x, y
+
+    def boundingRect(self):
+        """Return the bounding rectangle of the data, error bars included"""
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        return QRectF( xmin.min(), ymin.min(),
+                       xmax.max()-xmin.min(), ymax.max()-ymin.min() )
+        
+    def draw(self, painter, xMap, yMap, canvasRect):
+        x = self._x
+        y = self._y
+        tx = vmap(xMap, x)
+        ty = vmap(yMap, y)
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        RN = xrange(len(tx))
+        if self.errorOnTop:
+            QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
+        
+        painter.save()
+        painter.setPen(self.errorPen)
+        cap = self.errorCap/2.
+
+        if self._dx is not None and self.errorbarparam.mode == 0:
+            txmin = vmap(xMap, xmin)
+            txmax = vmap(xMap, xmax)
+            # Classic error bars
+            lines = []
+            for i in RN:
+                yi = ty[i]
+                lines.append(QLine(txmin[i], yi, txmax[i], yi))
+            painter.drawLines(lines)
+            if cap > 0:
+                lines = []
+                for i in RN:
+                    yi = ty[i]
+                    lines.append(QLine(txmin[i], yi-cap, txmin[i], yi+cap))
+                    lines.append(QLine(txmax[i], yi-cap, txmax[i], yi+cap))
+            painter.drawLines(lines)
+            
+        if self._dy is not None:
+            tymin = vmap(yMap, ymin)
+            tymax = vmap(yMap, ymax)
+            if self.errorbarparam.mode == 0:
+                # Classic error bars
+                lines = []
+                for i in RN:
+                    xi = tx[i]
+                    lines.append(QLine(xi, tymin[i], xi, tymax[i]))
+                painter.drawLines(lines)
+                if cap > 0:
+                    # Cap
+                    lines = []
+                    for i in RN:
+                        xi = tx[i]
+                        lines.append(QLine(xi-cap, tymin[i], xi+cap, tymin[i]))
+                        lines.append(QLine(xi-cap, tymax[i], xi+cap, tymax[i]))
+                painter.drawLines(lines)
+            else:
+                # Error area
+                points = []
+                rpoints = []
+                for i in RN:
+                    xi = tx[i]
+                    points.append(QPoint(xi, tymin[i]))
+                    rpoints.append(QPoint(xi, tymax[i]))
+                points+=reversed(rpoints)
+                painter.setBrush(QBrush(self.errorBrush))
+                painter.drawPolygon(*points)
+
+        painter.restore()
+
+        if not self.errorOnTop:
+            QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
+        
+    def update_params(self):
+        self.errorbarparam.update_curve(self)
+        super(ErrorBarCurveItem, self).update_params()
+
+    def get_item_parameters(self, itemparams):
+        super(ErrorBarCurveItem, self).get_item_parameters(itemparams)
+        itemparams.add("ErrorBarParam", self, self.errorbarparam)
+    
+    def set_item_parameters(self, itemparams):
+        update_dataset(self.errorbarparam, itemparams.get("ErrorBarParam"),
+                       visible_only=True)
+        super(ErrorBarCurveItem, self).set_item_parameters(itemparams)
+
+assert_interfaces_valid( ErrorBarCurveItem )
+
+
 #===============================================================================
 # Plot Widget
 #===============================================================================
@@ -458,7 +641,6 @@ class ItemListWidget(QListWidget):
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
                                    XRangeSelection)
-        from guiqwt.errorbar import ErrorBarCurveItem
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
