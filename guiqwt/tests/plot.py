@@ -21,7 +21,7 @@ def plot(*items):
                           wintitle="CurvePlotDialog test",
                           options=dict(title="Title", xlabel="xlabel",
                                        ylabel="ylabel"))
-    win.register_tool(HRangeTool)
+    win.add_tool(HRangeTool)
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)

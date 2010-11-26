@@ -138,10 +138,9 @@ class MainWindow(QMainWindow):
         self.plotwidget = CurvePlotWidget(self)
         
         # Plot manager setup
-        manager = self.plotwidget.manager
         toolbar = self.addToolBar("Image")
-        manager.add_toolbar(toolbar, "default")
-        manager.register_image_tools()
+        self.plotwidget.add_toolbar(toolbar, "default")
+        self.plotwidget.register_image_tools()
 
         # Vertical splitter: main window's central central widget
         vsplitter = QSplitter(Qt.Vertical, self)

@@ -38,7 +38,7 @@ class FilterTestWidget(QWidget):
     def setup_widget(self, title):
         #---Create the plot widget:
         plotwidget = CurvePlotWidget(self)
-        plotwidget.register_tools()
+        plotwidget.register_curve_tools()
         self.curve_item = make.curve([], [], color='b')
         plotwidget.plot.add_item(self.curve_item)
         plotwidget.plot.set_antialiasing(True)

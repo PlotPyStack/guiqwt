@@ -28,9 +28,8 @@ def get_point( *args ):
     """
     win = CurvePlotDialog(_("Select one point then press OK to accept"),
                           edit=True)
-    default = win.register_tool(SelectPointTool, title="Test",
-                                on_active_item=True, mode="create",
-                                end_callback=test_function)
+    default = win.add_tool(SelectPointTool, title="Test", on_active_item=True,
+                           mode="create", end_callback=test_function)
     default.activate()
     plot = win.get_plot()
     for cx, cy in args:

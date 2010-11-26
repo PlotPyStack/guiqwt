@@ -76,7 +76,7 @@ def mandel():
     win = ImagePlotDialog(edit=True, toolbar=True, wintitle="Mandelbrot",
                           options=dict(yreverse=False))
     mandel = MandelItem(-1.5, .5, -1., 1.)
-    win.register_tool(FullScale, mandel)
+    win.add_tool(FullScale, mandel)
     plot = win.get_plot()
     plot.set_aspect_ratio(lock=False)
     plot.add_item(mandel)

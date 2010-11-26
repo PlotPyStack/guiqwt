@@ -203,7 +203,7 @@ class FitDialog(CurvePlotDialog):
 
     def create_plot(self, options):
         super(FitDialog, self).create_plot(options)
-        for plot in self.plotwidget.manager.get_plots():
+        for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
         
         params_frame = QFrame(self)

@@ -190,6 +190,9 @@ class PlotManager(object):
     def get_default_tool(self):
         return self.default_tool
 
+    def activate_default_tool(self):
+        self.get_default_tool().activate()
+
     def get_active_tool(self):
         return self.active_tool
 
@@ -379,18 +382,11 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setStretchFactor(1, 1)
         qsplit.setSizes([1, 2])
 
-class CurvePlotWidget(QSplitter):
-    """
-    CurvePlotWidget
-    
-    parent: parent widget
-    title: plot title
-    xlabel: (bottom axis title, top axis title) or bottom axis title only
-    ylabel: (left axis title, right axis title) or left axis title only
-    """
+class BaseCurvePlotWidget(QSplitter):
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
+        
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.plot = CurvePlot(parent=self,
@@ -401,35 +397,43 @@ class CurvePlotWidget(QSplitter):
         self.itemlist.setVisible(show_itemlist)
         self.addWidget(self.itemlist)
         configure_plot_splitter(self)
+
+class CurvePlotWidget(BaseCurvePlotWidget, PlotManager):
+    """
+    Construct a CurvePlotWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title
+        * xlabel: (bottom axis title, top axis title) or bottom axis title only
+        * ylabel: (left axis title, right axis title) or left axis title only
+    """
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None):
+        BaseCurvePlotWidget.__init__(self, parent, title, xlabel, ylabel,
+                                     section, show_itemlist, gridparam)
+        PlotManager.__init__(self, main=self)
         
-        self.manager = PlotManager(self)
-        self.manager.add_plot(self.plot, id(self.plot))
-        self.manager.add_panel(self.itemlist)
-    
-    def register_tool(self, Klass, *args, **kwargs):
-        return self.manager.add_tool(Klass, *args, **kwargs)
-
-    def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools"""
-        self.manager.register_curve_tools()
+        # Configuring plot manager
+        self.add_plot(self.plot, id(self.plot))
+        self.add_panel(self.itemlist)
         
-    def activate_default_tool(self):
-        self.manager.get_default_tool().activate()
-        
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
-
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
-
-
-class CurvePlotDialog(QDialog):
+class CurvePlotDialog(QDialog, PlotManager):
+    """
+    Construct a CurvePlotDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
                  edit=False, toolbar=False, options=None, parent=None):
-        super(CurvePlotDialog, self).__init__(parent)
+        QDialog.__init__(self, parent)
+        PlotManager.__init__(self, main=self)
+
         self.edit = edit
         self.setWindowTitle(wintitle)
         if isinstance(icon, basestring):
@@ -444,14 +448,11 @@ class CurvePlotDialog(QDialog):
         if options is None:
             options = {}
             
-        self.plotwidget = None
         self.create_plot(options)
-        self.manager = self.plotwidget.manager
         
         self.vlayout = QVBoxLayout(self)
         
         self.toolbar = QToolBar(_("Tools"))
-        self.manager.add_toolbar(self.toolbar, "default")
         if not toolbar:
             self.toolbar.hide()
         self.vlayout.addWidget(self.toolbar)
@@ -464,6 +465,8 @@ class CurvePlotDialog(QDialog):
             self.install_button_layout()
             self.vlayout.addLayout(self.button_layout)
         
+        # Configuring plot manager
+        self.add_toolbar(self.toolbar, "default")
         self.register_tools()
         
     def install_button_layout(self):
@@ -473,59 +476,35 @@ class CurvePlotDialog(QDialog):
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
         self.button_layout.addWidget(bbox)
-    
-    def register_tool(self, Klass, *args, **kwargs):
-        return self.plotwidget.register_tool(Klass, *args, **kwargs)
 
     def register_tools(self):
         """Derived classes can override this method
         to provide a fully customized set of tools"""
-        self.plotwidget.register_tools()
-        
-    def activate_default_tool(self):
-        self.plotwidget.activate_default_tool()
+        self.register_curve_tools()
 
     def create_plot(self, options):
-        """CurvePlotWidget instantiation
+        """BaseCurvePlotWidget instantiation
         May be overriden to customize plot layout"""
-        self.plotwidget = CurvePlotWidget(self, **options)
-        self.layout.addWidget(self.plotwidget, 0, 0)
+        plotwidget = BaseCurvePlotWidget(self, **options)
+        self.layout.addWidget(plotwidget, 0, 0)
         
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
-
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
+        # Configuring plot manager
+        self.add_plot(plotwidget.plot, id(plotwidget.plot))
+        self.add_panel(plotwidget.itemlist)
 
 
 #===============================================================================
 # Image Plot Widget/Dialog with integrated Levels Histogram and other widgets
 #===============================================================================
-class ImagePlotWidget(QSplitter):
-    """
-    ImagePlotWidget
-    
-    parent: parent widget
-    title: plot title (string)
-    xlabel, ylabel, zlabel: resp. bottom, left and right axis titles (strings)
-    yreverse: reversing Y-axis (bool)
-    aspect_ratio: height to width ratio (float)
-    lock_aspect_ratio: locking aspect ratio (bool)
-    show_contrast: showing contrast adjustment tool (bool)
-    show_xsection: showing x-axis cross section plot (bool)
-    show_ysection: showing y-axis cross section plot (bool)
-    xsection_pos: x-axis cross section plot position (string: "top", "bottom")
-    ysection_pos: y-axis cross section plot position (string: "left", "right")
-    """
+class BaseImagePlotWidget(QSplitter):
     def __init__(self, parent=None, title="",
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None):
-        super(ImagePlotWidget, self).__init__(Qt.Vertical, parent)
+        QSplitter.__init__(self, Qt.Vertical, parent)
+        
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
@@ -585,13 +564,6 @@ class ImagePlotWidget(QSplitter):
         configure_plot_splitter(self)
         configure_plot_splitter(self.sub_splitter)
         
-        self.manager = PlotManager(self)
-        self.manager.add_plot(self.plot, id(self.plot))
-        self.manager.add_panel(self.itemlist)
-        self.manager.add_panel(self.xcsw)
-        self.manager.add_panel(self.ycsw)
-        self.manager.add_panel(self.contrast)
-        
     def adjust_ycsw_height(self, height=None):
         if height is None:
             height = self.xcsw.height()-self.ycsw.toolbar.height()
@@ -608,33 +580,69 @@ class ImagePlotWidget(QSplitter):
         else:
             self.adjust_ycsw_height(0)
 
-    def register_tool(self, Klass, *args, **kwargs):
-        return self.manager.add_tool(Klass, *args, **kwargs)
-
-    def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools"""
-        self.manager.register_image_tools()
+class ImagePlotWidget(BaseImagePlotWidget, PlotManager):
+    """
+    Construct a ImagePlotWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title (string)
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+          (strings)
+        * yreverse: reversing Y-axis (bool)
+        * aspect_ratio: height to width ratio (float)
+        * lock_aspect_ratio: locking aspect ratio (bool)
+        * show_contrast: showing contrast adjustment tool (bool)
+        * show_xsection: showing x-axis cross section plot (bool)
+        * show_ysection: showing y-axis cross section plot (bool)
+        * xsection_pos: x-axis cross section plot position 
+          (string: "top", "bottom")
+        * ysection_pos: y-axis cross section plot position 
+          (string: "left", "right")
+    """
+    def __init__(self, parent=None, title="",
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
+                 show_contrast=False, show_itemlist=False, show_xsection=False,
+                 show_ysection=False, xsection_pos="top", ysection_pos="right",
+                 gridparam=None):
+        BaseImagePlotWidget.__init__(self, parent, title, xlabel, ylabel,
+                 zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
+                 show_contrast, show_itemlist, show_xsection, show_ysection,
+                 xsection_pos, ysection_pos, gridparam)
+        PlotManager.__init__(self, main=self)
         
-    def activate_default_tool(self):
-        self.manager.get_default_tool().activate()
-        
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
-
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
-
+        # Configuring plot manager
+        self.add_plot(self.plot, id(self.plot))
+        self.add_panel(self.itemlist)
+        self.add_panel(self.xcsw)
+        self.add_panel(self.ycsw)
+        self.add_panel(self.contrast)
 
 class ImagePlotDialog(CurvePlotDialog):
+    """
+    Construct a ImagePlotDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
     def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
                  edit=False, toolbar=False, options=None, parent=None):
-        super(ImagePlotDialog, self).__init__(wintitle=wintitle, icon=icon,
-                                              edit=edit, toolbar=toolbar,
-                                              options=options, parent=parent)
+        CurvePlotDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
+                                 toolbar=toolbar, options=options,
+                                 parent=parent)
 
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
-        self.plotwidget = ImagePlotWidget(self, **options)
-        self.layout.addWidget(self.plotwidget, row, column, rowspan, columnspan)
+        plotwidget = BaseImagePlotWidget(self, **options)
+        self.layout.addWidget(plotwidget, row, column, rowspan, columnspan)
+        
+        # Configuring plot manager
+        self.add_plot(plotwidget.plot, id(plotwidget.plot))
+        self.add_panel(plotwidget.itemlist)
+        self.add_panel(plotwidget.xcsw)
+        self.add_panel(plotwidget.ycsw)
+        self.add_panel(plotwidget.contrast)

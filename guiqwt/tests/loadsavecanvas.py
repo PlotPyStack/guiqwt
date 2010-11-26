@@ -48,9 +48,9 @@ def test():
     win = ImagePlotDialog(edit=False, toolbar=True, wintitle="Load/save test",
                           options=dict(title="Title", xlabel="xlabel",
                                        ylabel="ylabel"))
-    win.manager.add_separator_tool()
-    win.register_tool(LoadItemsTool)
-    win.register_tool(SaveItemsTool)
+    win.add_separator_tool()
+    win.add_tool(LoadItemsTool)
+    win.add_tool(SaveItemsTool)
     plot = win.get_plot()
 
     if os.access(FNAME, os.R_OK):

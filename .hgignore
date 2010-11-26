@@ -11,10 +11,10 @@
 ^tests/dist
 Thumbs.db$
 MANIFEST$
-^tests/contrast.png$
 loadsavecanvas.gui$
 \.pot$
 ~$
 syntax: glob
 tests/test*.tif
 tests/test*.png
+tests/contrast.png

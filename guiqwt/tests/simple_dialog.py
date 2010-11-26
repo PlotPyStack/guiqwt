@@ -54,9 +54,9 @@ class ExampleDialog(ImagePlotDialog):
         self.resize(600, 600)
         
     def register_tools(self):
-        opentool = self.register_tool(OpenImageTool)
+        opentool = self.add_tool(OpenImageTool)
         self.connect(opentool, SIGNAL("openfile(QString*)"), self.open_image)
-        self.manager.register_image_tools()
+        self.register_image_tools()
         self.activate_default_tool()
 
     def create_plot(self, options):

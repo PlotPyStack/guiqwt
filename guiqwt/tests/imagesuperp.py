@@ -26,7 +26,7 @@ def create_window():
                           wintitle="Region of interest (ROI) test",
                           options=dict(gridparam=gridparam))
     for toolklass in (RectangleTool, EllipseTool, FreeFormTool, PlaceAxesTool):
-        win.register_tool(toolklass)
+        win.add_tool(toolklass)
     return win
 
 def test():

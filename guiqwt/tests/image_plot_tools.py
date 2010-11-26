@@ -27,7 +27,7 @@ def create_window():
                       HRangeTool, AnnotatedRectangleTool, AnnotatedCircleTool,
                       AnnotatedEllipseTool, AnnotatedSegmentTool,
                       AnnotatedPointTool):
-        win.register_tool(toolklass)
+        win.add_tool(toolklass)
     return win
 
 def test():
