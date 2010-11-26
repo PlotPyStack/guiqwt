@@ -18,7 +18,6 @@ import numpy as np
 from guiqwt.pyplot import *
 
 def main():
-    ion()
     x = np.linspace(-5, 5, 1000)
     figure(1)
     subplot(2, 1, 1)
