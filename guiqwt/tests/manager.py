@@ -43,13 +43,7 @@ class CentralWidget(QWidget):
             self.manager.add_panel(panel)
         
     def register_tools(self):
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.manager.add_separator_tool()
-        self.manager.get_default_tool().activate()        
+        self.manager.register_image_tools()        
         
 
 class Window(QMainWindow):

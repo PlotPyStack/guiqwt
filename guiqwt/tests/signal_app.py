@@ -141,12 +141,7 @@ class MainWindow(QMainWindow):
         manager = self.plotwidget.manager
         toolbar = self.addToolBar("Image")
         manager.add_toolbar(toolbar, "default")
-        manager.register_standard_tools()
-        manager.add_separator_tool()
-        manager.register_curve_tools()
-        manager.add_separator_tool()
-        manager.register_other_tools()
-        manager.get_default_tool().activate()
+        manager.register_image_tools()
 
         # Vertical splitter: main window's central central widget
         vsplitter = QSplitter(Qt.Vertical, self)

@@ -93,10 +93,7 @@ class TestWindow(QMainWindow):
         #---Add toolbar and register manager tools
         toolbar = self.addToolBar("tools")
         self.manager.add_toolbar(toolbar, id(toolbar))
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
         self.manager.register_curve_tools()
-        self.manager.get_default_tool().activate()        
         #---
         
 

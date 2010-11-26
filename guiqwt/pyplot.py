@@ -179,13 +179,10 @@ class Window(QMainWindow):
                 self.manager.add_panel(panel)
             
     def register_tools(self, images=False):
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_curve_tools()
         if images:
             self.manager.register_image_tools()
-            self.manager.add_separator_tool()
-        self.manager.register_other_tools()
+        else:
+            self.manager.register_curve_tools()
     
     def display(self):
         self.show()

@@ -275,20 +275,43 @@ class PlotManager(object):
         if self.get_panel(ID_ITEMLIST):
             self.add_tool(ItemListTool)
 
-    def register_curve_tools(self):
-        """Registering specific tools
-        --> middle of the context-menu"""
+    def register_only_curve_tools(self):
+        """
+        Register only curve-related tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        """
         self.add_tool(AntiAliasingTool)
         self.add_tool(AxisScaleTool)
         
     def register_other_tools(self):
-        """Registering other common tools
-        --> bottom of the context-menu"""
+        """
+        Register other common tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        """
         self.add_tool(SaveAsTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
 
-    def register_image_tools(self):
+    def register_only_image_tools(self):
+        """
+        Register only image-related tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
+        """
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
@@ -299,6 +322,44 @@ class PlotManager(object):
             self.add_tool(YCrossSectionTool)
             self.add_tool(AverageCrossSectionsTool)
         self.add_tool(SnapshotTool)
+        
+    def register_curve_tools(self):
+        """
+        Register standard, curve-related and other tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        """
+        self.register_standard_tools()
+        self.add_separator_tool()
+        self.register_only_curve_tools()
+        self.add_separator_tool()
+        self.register_other_tools()
+        self.get_default_tool().activate()
+    
+    def register_image_tools(self):
+        """
+        Register standard, image-related and other tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        """
+        self.register_standard_tools()
+        self.add_separator_tool()
+        self.register_only_image_tools()
+        self.add_separator_tool()
+        self.register_other_tools()
+        self.get_default_tool().activate()
 
 assert_interfaces_valid(PlotManager)
 
@@ -351,12 +412,7 @@ class CurvePlotWidget(QSplitter):
     def register_tools(self):
         """Derived classes can override this method
         to provide a fully customized set of tools"""
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
         self.manager.register_curve_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
         
     def activate_default_tool(self):
         self.manager.get_default_tool().activate()
@@ -558,12 +614,7 @@ class ImagePlotWidget(QSplitter):
     def register_tools(self):
         """Derived classes can override this method
         to provide a fully customized set of tools"""
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
         self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
         
     def activate_default_tool(self):
         self.manager.get_default_tool().activate()

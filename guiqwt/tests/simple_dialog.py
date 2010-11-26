@@ -56,11 +56,7 @@ class ExampleDialog(ImagePlotDialog):
     def register_tools(self):
         opentool = self.register_tool(OpenImageTool)
         self.connect(opentool, SIGNAL("openfile(QString*)"), self.open_image)
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
         self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
         self.activate_default_tool()
 
     def create_plot(self, options):
