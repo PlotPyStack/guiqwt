@@ -108,7 +108,6 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
-from guiqwt.panels import ID_ITEMLIST, ID_CONTRAST, ID_XCS, ID_YCS
 
 
 class PlotManager(object):
@@ -237,6 +236,45 @@ class PlotManager(object):
         Panel IDs are listed in module guiqwt.panels
         """
         return self.panels.get(panel_id, None)
+        
+    def get_itemlist_panel(self):
+        """
+        Convenience function to get the `item list panel`
+        
+        Return None if the item list panel has not been added to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_ITEMLIST)
+        
+    def get_contrast_panel(self):
+        """
+        Convenience function to get the `contrast adjustment panel`
+        
+        Return None if the contrast adjustment panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_CONTRAST)
+        
+    def get_xcs_panel(self):
+        """
+        Convenience function to get the `X-axis cross section panel`
+        
+        Return None if the X-axis cross section panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_XCS)
+        
+    def get_ycs_panel(self):
+        """
+        Convenience function to get the `Y-axis cross section panel`
+        
+        Return None if the Y-axis cross section panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_YCS)
 
     def get_toolbar(self, tbname):
         """
@@ -275,7 +313,7 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
-        if self.get_panel(ID_ITEMLIST):
+        if self.get_itemlist_panel():
             self.add_tool(ItemListTool)
 
     def register_only_curve_tools(self):
@@ -318,9 +356,9 @@ class PlotManager(object):
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
-        if self.get_panel(ID_CONTRAST):
+        if self.get_contrast_panel():
             self.add_tool(ContrastTool)
-        if self.get_panel(ID_XCS) and self.get_panel(ID_YCS):
+        if self.get_xcs_panel() and self.get_ycs_panel():
             self.add_tool(XCrossSectionTool)
             self.add_tool(YCrossSectionTool)
             self.add_tool(AverageCrossSectionsTool)

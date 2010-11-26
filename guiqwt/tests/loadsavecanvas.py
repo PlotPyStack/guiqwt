@@ -18,7 +18,6 @@ from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
 from guiqwt.shapes import Axes
 from guiqwt.tools import LoadItemsTool, SaveItemsTool
-from guiqwt import panels
 
 FNAME = "loadsavecanvas.gui"
 
@@ -60,7 +59,7 @@ def test():
         for item in build_items():
             plot.add_item(item)
     plot.set_axis_font("left", QFont("Courier"))
-    win.get_panel(panels.ID_ITEMLIST).show()
+    win.get_itemlist_panel().show()
     plot.set_items_readonly(False)
     win.show()
     win.exec_()

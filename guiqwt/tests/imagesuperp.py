@@ -15,7 +15,6 @@ from guiqwt.plot import ImagePlotDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, PlaceAxesTool,
                           FreeFormTool)
 from guiqwt.builder import make
-from guiqwt import panels
 
 import numpy as np
 
@@ -47,7 +46,7 @@ def test():
     plot.add_item(image2, z=1)
     plot.set_items_readonly(False)
     image2.set_readonly(True)
-    win.get_panel(panels.ID_ITEMLIST).show()
+    win.get_itemlist_panel().show()
     win.show()
     win.exec_()
 

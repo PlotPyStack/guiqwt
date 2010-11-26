@@ -123,7 +123,7 @@ class CentralWidget(QSplitter):
             self.item.set_data(data)
             if lut_range is None:
                 lut_range = self.item.get_lut_range()
-            contrast_panel = self.plotwidget.get_panel(ID_CONTRAST)
+            contrast_panel = self.plotwidget.get_contrast_panel()
             contrast_panel.set_range(*lut_range)
         else:
             self.item = make.image(data)
