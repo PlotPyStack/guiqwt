@@ -11,7 +11,7 @@
 ^tests/dist
 Thumbs.db$
 MANIFEST$
-contrast.png$
+^tests/contrast.png$
 loadsavecanvas.gui$
 \.pot$
 ~$
