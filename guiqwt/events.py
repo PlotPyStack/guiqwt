@@ -10,10 +10,10 @@
 # R0903: complains about too few public methods which is the purpose here
 
 """
-Gestion des événements par EventFilter
+guiqwt.events
+-------------
 
-un EventState est un gestionnaire d'événement faisant parti
-d'une machine d'état.
+The `event` module handles event management (states, event filter, ...).
 """
 
 from PyQt4.QtCore import QEvent, Qt, QObject, QPoint

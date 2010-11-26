@@ -7,13 +7,13 @@
 
 """2-D Histogram test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from numpy import random, array, dot, concatenate
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
 from guiqwt.config import _
-
-SHOW = True # Show test in GUI-based test launcher
 
 def hist2d(X, Y):
     win = ImagePlotDialog(edit=True, toolbar=True,

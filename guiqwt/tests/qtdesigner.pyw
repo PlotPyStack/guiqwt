@@ -13,13 +13,13 @@ These plugins provide CurvePlotWidget, ImagePlotWidget and ImageHistPlotWidget
 objects embedding in GUI layouts directly from QtDesigner.
 """
 
+SHOW = True # Show test in GUI-based test launcher
+
 import sys, os.path as osp
 
 from PyQt4.QtGui import QApplication
 from guiqwt.qtdesigner import loadui
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 FormClass = loadui( osp.splitext(__file__)[0]+'.ui' )
 

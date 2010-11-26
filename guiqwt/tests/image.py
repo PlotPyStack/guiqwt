@@ -7,12 +7,12 @@
 
 """ImagePlotDialog test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import numpy as np
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def imshow( data ):
     win = ImagePlotDialog(edit=False, toolbar=True,

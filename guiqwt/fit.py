@@ -6,7 +6,36 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Curve fitting tools
+guiqwt.fit
+----------
+
+The `fit` module provides an interactive curve fitting tool allowing:
+    * to fit data manually (by moving sliders)
+    * or automatically (with standard optimization algorithms 
+      provided by :py:mod:`scipy`).
+
+Example
+~~~~~~~
+
+.. literalinclude:: ../guiqwt/tests/fit.py
+   :start-after: SHOW
+   
+.. image:: images/screenshots/fit.png
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: guifit
+
+.. autoclass:: FitDialog
+   :members:
+   :inherited-members:
+.. autoclass:: FitParam
+   :members:
+   :inherited-members:
+.. autoclass:: AutoFitParam
+   :members:
+   :inherited-members:
 """
 
 from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QFrame,

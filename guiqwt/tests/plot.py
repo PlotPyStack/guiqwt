@@ -7,13 +7,14 @@
 
 """CurvePlotDialog test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import QFont
 
 from guiqwt.plot import CurvePlotDialog
 from guiqwt.tools import HRangeTool
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
+from guiqwt import panels
 
 def plot(*items):
     win = CurvePlotDialog(edit=False, toolbar=True,
@@ -25,7 +26,7 @@ def plot(*items):
     for item in items:
         plot.add_item(item)
     plot.set_axis_font("left", QFont("Courier"))
-    win.get_panel("itemlist").show()
+    win.get_panel(panels.ID_ITEMLIST).show()
     plot.set_items_readonly(False)
     win.show()
     win.exec_()

@@ -7,6 +7,8 @@
 
 """Styles unit tests"""
 
+SHOW = False # Do not show test in GUI-based test launcher
+
 import unittest
 
 from PyQt4.QtCore import Qt, QSize
@@ -15,8 +17,6 @@ from PyQt4.Qwt5 import QwtSymbol
 
 from guidata.config import UserConfig, _
 from guiqwt.styles import SymbolParam, LineStyleParam
-
-SHOW = False # Do not show test in GUI-based test launcher
 
 CONF = UserConfig({})
 CONF.set_application('guidata', version='0.0.0', load=False )

@@ -10,6 +10,8 @@ Sifia (SIgnal FIltering Application)
 Simple signal processing application based on guiqwt and guidata
 """
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog)
 from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt, SIGNAL
@@ -28,8 +30,6 @@ from guidata.utils import update_dataset
 from guiqwt.config import _
 from guiqwt.plot import CurvePlotWidget
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 APP_NAME = _("Sifia")
 APP_DESC = _("""SIgnal FIltering Application<br>

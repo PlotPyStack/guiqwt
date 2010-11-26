@@ -6,8 +6,11 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains some debugging functions (mostly dumping attributes
-of Qt Objects)
+guiqwt.debug
+------------
+
+The `debug` module contains some debugging functions (mostly dumping attributes
+of Qt Objects).
 """
 
 from StringIO import StringIO

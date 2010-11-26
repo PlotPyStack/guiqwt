@@ -6,8 +6,117 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains plot items and subclass of CurvePlot
-to allow displaying and manipulating 2D images
+guiqwt.image
+------------
+
+The `image` module provides image-related objects and functions:
+    
+    * :py:class:`guiqwt.image.ImagePlot`: a 2D curve and image plotting widget, 
+      derived from :py:class:`guiqwt.curve.CurvePlot`
+    * :py:class:`guiqwt.image.ImageItem`: simple images
+    * :py:class:`guiqwt.image.TrImageItem`: images supporting arbitrary 
+      affine transform
+    * :py:class:`guiqwt.image.XYImageItem`: images with non-linear X/Y axes
+    * :py:class:`guiqwt.image.Histogram2DItem`: 2D histogram
+    * :py:class:`guiqwt.image.ImageFilterItem`: rectangular filtering area 
+      that may be resized and moved onto the processed image
+    * :py:func:`guiqwt.image.assemble_imageitems`
+    * :py:func:`guiqwt.image.get_plot_source_rect`
+    * :py:func:`guiqwt.image.get_image_from_plot`
+
+``ImageItem``, ``TrImageItem``, ``XYImageItem``, ``Histogram2DItem`` and 
+``ImageFilterItem`` objects are plot items (derived from QwtPlotItem) that 
+may be displayed on a :py:class:`guiqwt.image.ImagePlot` plotting widget.
+
+.. seealso::
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+
+Examples
+~~~~~~~~
+
+Create a basic image plotting widget:
+    * before creating any widget, a `QApplication` must be instantiated (that 
+      is a `Qt` internal requirement):
+          
+>>> import guidata
+>>> app = guidata.qapplication()
+
+    * that is mostly equivalent to the following (the only difference is that 
+      the `guidata` helper function also installs the `Qt` translation 
+      corresponding to the system locale):
+          
+>>> from PyQt4.QtGui import QApplication
+>>> app = QApplication([])
+
+    * now that a `QApplication` object exists, we may create the plotting 
+      widget:
+          
+>>> from guiqwt.image import ImagePlot
+>>> plot = ImagePlot(title="Example")
+
+Generate random data for testing purpose:
+
+>>> import numpy as np
+>>> data = np.random.rand(100, 100)
+
+Create a simple image item:
+    * from the associated plot item class (e.g. `XYImageItem` to create 
+      an image with non-linear X/Y axes): the item properties are then 
+      assigned by creating the appropriate style parameters object
+      (e.g. :py:class:`guiqwt.styles.ImageParam)
+      
+>>> from guiqwt.curve import ImageItem
+>>> from guiqwt.styles import ImageParam
+>>> param = ImageParam()
+>>> param.label = 'My image'
+>>> image = ImageItem(param)
+>>> image.set_data(data)
+      
+    * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
+      
+>>> from guiqwt.builder import make
+>>> image = make.image(data, title='My image')
+
+Attach the image to the plotting widget:
+    
+>>> plot.add_item(image)
+
+Display the plotting widget:
+    
+>>> plot.show()
+>>> app.exec_()
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: ImagePlot
+   :members:
+   :inherited-members:
+.. autoclass:: ImageItem
+   :members:
+   :inherited-members:
+.. autoclass:: TrImageItem
+   :members:
+   :inherited-members:
+.. autoclass:: XYImageItem
+   :members:
+   :inherited-members:
+.. autoclass:: ImageFilterItem
+   :members:
+   :inherited-members:
+.. autoclass:: Histogram2DItem
+   :members:
+   :inherited-members:
+
+.. autofunction:: assemble_imageitems
+.. autofunction:: get_plot_source_rect
+.. autofunction:: get_image_from_plot
 """
 
 import sys
@@ -309,14 +418,17 @@ class BaseImageItem(QwtPlotItem):
         return self._readonly
     
     def select(self):
+        """Select item"""
         self.selected = True
         self.border_rect.select()
         
     def unselect(self):
+        """Unselect item"""
         self.selected = False
         self.border_rect.unselect()
     
     def is_empty(self):
+        """Return True if item data is empty"""
         return self.data is None or self.data.size == 0
         
     def set_selectable(self, state):
@@ -462,11 +574,10 @@ assert_interfaces_valid(BaseImageItem)
 #===============================================================================
 class ImageItem(BaseImageItem):
     """
-    Image
-    
-    Parameters:
-    data: 2-D array
-    param (optional): image parameters (ImageParam instance)
+    Construct a simple image item
+        * data: 2D NumPy array
+        * param (optional): image parameters
+          (:py:class:`guiqwt.styles.ImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType)
@@ -515,9 +626,8 @@ class ImageItem(BaseImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
-        
-        data: 2-D array
-        lut_range: LUT range -- tuple (levelmin, levelmax)
+            * data: 2D NumPy array
+            * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
         if lut_range is not None:
             _min, _max = lut_range
@@ -563,14 +673,11 @@ assert_interfaces_valid(ImageItem)
 #===============================================================================
 class QuadGridItem(ImageItem):
     """
-    QuadGrid
-    
-    Parameters:
-    X, Y, Z: A structured grid of quadrilaterals
-       each quad is defined by (X[i], Y[i]), (X[i], Y[i+1]),
-       (X[i+1], Y[i+1]), (X[i+1], Y[i])
-
-    param (optional): image parameters (ImageParam instance)
+    Construct a QuadGrid image
+        * X, Y, Z: A structured grid of quadrilaterals
+          each quad is defined by (X[i], Y[i]), (X[i], Y[i+1]),
+          (X[i+1], Y[i+1]), (X[i+1], Y[i])
+        * param (optional): image parameters (ImageParam instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType)
@@ -604,9 +711,8 @@ class QuadGridItem(ImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
-        
-        data: 2-D array
-        lut_range: LUT range -- tuple (levelmin, levelmax)
+            * data: 2D NumPy array
+            * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
         if lut_range is not None:
             _min, _max = lut_range
@@ -654,14 +760,10 @@ def point(x,y):
 
 class TrImageItem(ImageItem):
     """
-    Transformable Image
-    (= ImageItem + custom linear transform)
-    
-    Parameters:
-    x: 1-D array
-    y: 1-D array
-    data: 2-D array
-    param (optional): image parameters (ImageParam instance)
+    Construct a transformable image item
+        * data: 2D NumPy array
+        * param (optional): image parameters
+          (:py:class:`guiqwt.styles.TrImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)
     _can_select = True
@@ -911,14 +1013,12 @@ def to_bins(x):
 
 class XYImageItem(ImageItem):
     """
-    XY Image
-    (= ImageItem + custom X,Y linear scales)
-    
-    Parameters:
-    x: 1-D array
-    y: 1-D array
-    data: 2-D array
-    param (optional): image parameters (ImageParam instance)
+    Construct an image item with non-linear X/Y axes
+        * x: 1D NumPy array
+        * y: 1D NumPy array
+        * data: 2D NumPy array
+        * param (optional): image parameters
+          (:py:class:`guiqwt.styles.ImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)
     def __init__(self, x, y, data, param=None):
@@ -1014,12 +1114,11 @@ assert_interfaces_valid(XYImageItem)
 #===============================================================================
 class ImageFilterItem(BaseImageItem):
     """
-    Rectangular area image filter
-    
-    Parameters:
-    xyimage: XYImageItem instance
-    filter: function (x, y, data) --> data
-    param: ImageFilterParam instance
+    Construct a rectangular area image filter item
+        * image: :py:class:`guiqwt.image.ImageItem` instance
+        * filter: function (x, y, data) --> data
+        * param: image filter parameters
+          (:py:class:`guiqwt.styles.ImageFilterParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)
     _can_select = True
@@ -1041,9 +1140,17 @@ class ImageFilterItem(BaseImageItem):
         
     #---- Public API -----------------------------------------------------------
     def set_image(self, image):
+        """
+        Set the image item on which the filter will be applied
+            * image: :py:class:`guiqwt.image.ImageItem` instance
+        """
         self.image = image
     
     def set_filter(self, filter):
+        """
+        Set the filter function
+            * filter: function (x, y, data) --> data
+        """
         self.filter = filter
 
     #---- QwtPlotItem API ------------------------------------------------------
@@ -1122,6 +1229,23 @@ class ImageFilterItem(BaseImageItem):
 
 
 class XYImageFilterItem(ImageFilterItem):
+    """
+    Construct a rectangular area image filter item
+        * image: :py:class:`guiqwt.image.XYImageItem` instance
+        * filter: function (x, y, data) --> data
+        * param: image filter parameters
+          (:py:class:`guiqwt.styles.ImageFilterParam` instance)
+    """
+    def __init__(self, image, filter, param):
+        ImageFilterItem.__init__(self, image, filter, param)
+        
+    def set_image(self, image):
+        """
+        Set the image item on which the filter will be applied
+            * image: :py:class:`guiqwt.image.XYImageItem` instance
+        """
+        ImageFilterItem.set_image(self, image)
+    
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         bounds = self.boundingRect()
         
@@ -1155,11 +1279,11 @@ assert_interfaces_valid(ImageFilterItem)
 #===============================================================================
 class Histogram2DItem(BaseImageItem):
     """
-    2D histogram plot
-    
-    X: data (1-D array)
-    Y: data (1-D array)
-    param: style parameters (Histogram2DParam instance)
+    Construct a 2D histogram item
+        * X: data (1-D array)
+        * Y: data (1-D array)
+        * param (optional): style parameters
+          (:py:class:`guiqwt.styles.Histogram2DParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)    
     def __init__(self, X, Y, param=None):
@@ -1185,6 +1309,7 @@ class Histogram2DItem(BaseImageItem):
 
     #---- Public API -----------------------------------------------------------
     def set_bins(self, NX, NY):
+        """Set histogram bins"""
         self.nx_bins = NX
         self.ny_bins = NY
         # We use a fortran array to avoid a double copy of self.data
@@ -1193,6 +1318,7 @@ class Histogram2DItem(BaseImageItem):
         self.data = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
         
     def set_data(self, X, Y):
+        """Set histogram data"""
         self._x = X
         self._y = Y
         self.bounds = QRectF(QPointF(X.min(), Y.min()),
@@ -1245,14 +1371,15 @@ assert_interfaces_valid(Histogram2DItem)
 #===============================================================================
 class ImagePlot(CurvePlot):
     """
-    ImagePlot
-    
-    parent: parent widget
-    title: plot title (string)
-    xlabel, ylabel, zlabel: resp. bottom, left and right axis titles (strings)
-    yreverse: reversing y-axis direction of increasing values (bool)
-    aspect_ratio: height to width ratio (float)
-    lock_aspect_ratio: locking aspect ratio (bool)
+    Construct a 2D curve and image plotting widget 
+    (this class inherits :py:class:`guiqwt.curve.CurvePlot`)
+        * parent: parent widget
+        * title: plot title (string)
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+          (strings)
+        * yreverse: reversing y-axis direction of increasing values (bool)
+        * aspect_ratio: height to width ratio (float)
+        * lock_aspect_ratio: locking aspect ratio (bool)
     """
     AUTOSCALE_TYPES = (CurveItem, BaseImageItem)
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)

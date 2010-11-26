@@ -7,12 +7,12 @@
 
 """Contrast tool test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def test():
     """Test"""

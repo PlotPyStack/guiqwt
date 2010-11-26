@@ -7,16 +7,17 @@
 
 """Image superposition test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, PlaceAxesTool,
                           FreeFormTool)
 from guiqwt.builder import make
+from guiqwt import panels
 
 import numpy as np
-
-SHOW = True # Show test in GUI-based test launcher
 
 def create_window():
     gridparam = make.gridparam(background="black", minor_enabled=(False, False),
@@ -46,7 +47,7 @@ def test():
     plot.add_item(image2, z=1)
     plot.set_items_readonly(False)
     image2.set_readonly(True)
-    win.get_panel("itemlist").show()
+    win.get_panel(panels.ID_ITEMLIST).show()
     win.show()
     win.exec_()
 

@@ -6,10 +6,40 @@
 # (see guiqwt/__init__.py for details)
 
 """
-EnhancedQwtPlot
+guiqwt.baseplot
 ---------------
-An enhanced QwtPlot class that provides methods
-for handling plotitems and axes better
+
+The `baseplot` module provides the `guiqwt` plotting widget base class: 
+:py:class:`guiqwt.baseplot.EnhancedQwtPlot`. This is an enhanced version of 
+`PyQwt`'s QwtPlot plotting widget which supports the following features:
+    * add to plot, del from plot, hide/show and save/restore `plot items` easily
+    * item selection and multiple selection
+    * active item
+    * plot parameters editing
+
+.. warning::
+    :py:class:`guiqwt.baseplot.EnhancedQwtPlot` is rather an internal class 
+    than a ready-to-use plotting widget. The end user should prefer using 
+    :py:class:`guiqwt.plot.CurvePlot` or :py:class:`guiqwt.plot.ImagePlot`.
+
+.. seealso::
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: EnhancedQwtPlot
+   :members:
+   :inherited-members:
 """
 
 import sys
@@ -92,6 +122,7 @@ class EnhancedQwtPlot(QwtPlot):
                 selitem.move_with_selection(x1-x0, y1-y0)
 
     def set_manager(self, manager):
+        """Set the associated :py:class:`guiqwt.plot.PlotManager` instance"""
         self.manager = manager
 
     def sizeHint(self):
@@ -99,9 +130,11 @@ class EnhancedQwtPlot(QwtPlot):
         return QSize(400, 300)
         
     def get_title(self):
+        """Get plot title"""
         return unicode(self.title().text())
 
     def set_title(self, title):
+        """Set plot title"""
         text = QwtText(title)
         text.setFont(self.font_title)
         self.setTitle(text)
@@ -159,6 +192,7 @@ class EnhancedQwtPlot(QwtPlot):
         self.emit(SIG_PLOT_LABELS_CHANGED, self)
 
     def update_all_axes_styles(self):
+        """Update all axes styles"""
         for axis_id in self.AXES.itervalues():
             self.update_axis_style(axis_id)
 
@@ -200,7 +234,6 @@ class EnhancedQwtPlot(QwtPlot):
             return [item for item in self.items
                     if item.selected and item_type in item.types()]
             
-        
     def get_max_z(self):
         """
         Return maximum z-order for all items registered in plot
@@ -293,6 +326,13 @@ class EnhancedQwtPlot(QwtPlot):
         self.__set_items_visible(False, items, item_type=item_type)
 
     def save_items(self, iofile, selected=False):
+        """
+        Save (serializable) items to file using the :py:mod:`pickle` protocol
+            * iofile: file object or filename
+            * selected=False: if True, will save only selected items
+            
+        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.restore_items`
+        """
         if selected:
             items = self.get_selected_items()
         else:
@@ -302,6 +342,12 @@ class EnhancedQwtPlot(QwtPlot):
         pickle.dump(items, iofile)
 
     def restore_items(self, iofile):
+        """
+        Restore items from file using the :py:mod:`pickle` protocol
+            * iofile: file object or filename
+            
+        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.save_items`
+        """
         import pickle
         items = pickle.load(iofile)
         for item in items:
@@ -381,16 +427,19 @@ class EnhancedQwtPlot(QwtPlot):
         self.emit(SIG_ITEMS_CHANGED, self)
 
     def select_item(self, item):
+        """Select item"""
         item.select()
         for itype in item.types():
             self.last_selected[itype] = item
         self.emit(SIG_ITEM_SELECTION_CHANGED, self)
 
     def unselect_item(self, item):
+        """Unselect item"""
         item.unselect()
         self.emit(SIG_ITEM_SELECTION_CHANGED, self)
 
     def get_last_active_item(self, item_type):
+        """Return last active item corresponding to passed `item_type`"""
         assert issubclass(item_type, IItemType)
         return self.last_selected.get(item_type)
 
@@ -415,6 +464,7 @@ class EnhancedQwtPlot(QwtPlot):
         self.emit(SIG_ITEM_SELECTION_CHANGED, self)
 
     def select_some_items(self, items):
+        """Select items"""
         active = self.active_item
         block = self.blockSignals(True)
         self.unselect_all()
@@ -445,6 +495,7 @@ class EnhancedQwtPlot(QwtPlot):
         self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
 
     def get_active_axes(self):
+        """Return active axes"""
         item = self.active_item
         if item is not None:
             self._active_xaxis = item.xAxis()

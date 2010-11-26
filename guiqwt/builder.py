@@ -6,7 +6,52 @@
 # (see guiqwt/__init__.py for details)
 
 """
-A builder singleton class used to simplify the creation of plot items
+guiqwt.builder
+--------------
+
+The `builder` module provides a builder singleton class 
+used to simplify the creation of plot items.
+
+Example
+~~~~~~~
+
+Before creating any widget, a `QApplication` must be instantiated 
+(that is a `Qt` internal requirement):
+          
+>>> import guidata
+>>> app = guidata.qapplication()
+
+that is mostly equivalent to the following (the only difference is that 
+the `guidata` helper function also installs the `Qt` translation 
+corresponding to the system locale):
+          
+>>> from PyQt4.QtGui import QApplication
+>>> app = QApplication([])
+
+now that a `QApplication` object exists, we may create the plotting widget:
+
+>>> from guiqwt.plot import ImagePlotWidget
+>>> widget = ImagePlotWidget()
+
+create curves, images, histograms, etc. and attach them to the plot:
+
+>>> from guiqwt.builder import make
+>>> curve = make.mcure(x, y, 'r+')
+>>> image = make.image(data)
+>>> hist = make.histogram(data, 100)
+>>> for item in (curve, image, hist):
+...     widget.plot.add_item()
+
+and then show the widget to screen:
+
+>>> widget.show()
+>>> app.exec_()
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: PlotItemBuilder
+   :members:
 """
 
 from numpy import arange, array, zeros, meshgrid, ndarray
@@ -17,7 +62,6 @@ from PyQt4.Qwt5 import QwtPlot
 from guiqwt.config import _, CONF, make_title
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem
-from guiqwt.errorbar import ErrorBarCurveItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
                           Histogram2DItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,

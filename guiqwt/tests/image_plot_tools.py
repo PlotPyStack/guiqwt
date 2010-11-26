@@ -7,6 +7,8 @@
 
 """All image and plot tools test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
 from guiqwt.plot import ImagePlotDialog
@@ -16,8 +18,6 @@ from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           AnnotatedSegmentTool, AnnotatedCircleTool,
                           AnnotatedPointTool, LabelTool)
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def create_window():
     win = ImagePlotDialog(edit=False, toolbar=True,

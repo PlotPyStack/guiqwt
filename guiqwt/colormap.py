@@ -6,7 +6,10 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains definition of common colormaps and tools
+guiqwt.colormap
+---------------
+
+The `colormap` module contains definition of common colormaps and tools
 to manipulate and create them
 """
 

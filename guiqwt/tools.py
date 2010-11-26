@@ -6,8 +6,206 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Collection of tools (buttons, menus, mouse event handler, ...)
-for EnhancedQwtPlot and its child classes
+guiqwt.tools
+------------
+
+The `tools` module provides a collection of `plot tools` :
+    * :py:class:`guiqwt.tools.RectZoomTool`
+    * :py:class:`guiqwt.tools.SelectTool`
+    * :py:class:`guiqwt.tools.SelectPointTool`
+    * :py:class:`guiqwt.tools.MultiLineTool`
+    * :py:class:`guiqwt.tools.FreeFormTool`
+    * :py:class:`guiqwt.tools.LabelTool`
+    * :py:class:`guiqwt.tools.RectangleTool`
+    * :py:class:`guiqwt.tools.PointTool`
+    * :py:class:`guiqwt.tools.SegmentTool`
+    * :py:class:`guiqwt.tools.CircleTool`
+    * :py:class:`guiqwt.tools.EllipseTool`
+    * :py:class:`guiqwt.tools.PlaceAxesTool`
+    * :py:class:`guiqwt.tools.AnnotatedRectangleTool`
+    * :py:class:`guiqwt.tools.AnnotatedCircleTool`
+    * :py:class:`guiqwt.tools.AnnotatedEllipseTool`
+    * :py:class:`guiqwt.tools.AnnotatedPointTool`
+    * :py:class:`guiqwt.tools.AnnotatedSegmentTool`
+    * :py:class:`guiqwt.tools.HRangeTool`
+    * :py:class:`guiqwt.tools.DummySeparatorTool`
+    * :py:class:`guiqwt.tools.AntiAliasingTool`
+    * :py:class:`guiqwt.tools.DisplayCoordsTool`
+    * :py:class:`guiqwt.tools.ReverseYAxisTool`
+    * :py:class:`guiqwt.tools.AspectRatioTool`
+    * :py:class:`guiqwt.tools.PanelTool`
+    * :py:class:`guiqwt.tools.ContrastTool`
+    * :py:class:`guiqwt.tools.ColormapTool`
+    * :py:class:`guiqwt.tools.XCrossSectionTool`
+    * :py:class:`guiqwt.tools.YCrossSectionTool`
+    * :py:class:`guiqwt.tools.AverageCrossSectionsTool`
+    * :py:class:`guiqwt.tools.ItemListTool`
+    * :py:class:`guiqwt.tools.SaveAsTool`
+    * :py:class:`guiqwt.tools.OpenFileTool`
+    * :py:class:`guiqwt.tools.OpenImageTool`
+    * :py:class:`guiqwt.tools.SnapshotTool`
+    * :py:class:`guiqwt.tools.PrintTool`
+    * :py:class:`guiqwt.tools.SaveItemsTool`
+    * :py:class:`guiqwt.tools.LoadItemsTool`
+    * :py:class:`guiqwt.tools.AxisScaleTool`
+    * :py:class:`guiqwt.tools.HelpTool`
+
+A `plot tool` is an object providing various features to a plotting widget 
+(:py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`): 
+buttons, menus, selection tools, image I/O tools, etc.
+To make it work, a tool has to be registered to the plotting widget's manager, 
+i.e. an instance of the :py:class:`guiqwt.plot.PlotManager` class (see 
+the :py:mod:`guiqwt.plot` module for more details on the procedure).
+
+The `CurvePlot` and `ImagePlot` widgets do not provide any `PlotManager`: the 
+manager has to be created separately. On the contrary, the ready-to-use widgets 
+:py:class:`guiqwt.plot.CurvePlotWidget` and :py:class:`guiqwt.plot.ImagePlotWidget`
+are higher-level plotting widgets with integrated manager, tools and panels.
+
+.. seealso::
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+
+Example
+~~~~~~~
+
+The following example add all the existing tools to an `ImagePlotWidget` object 
+for testing purpose:
+
+.. literalinclude:: ../guiqwt/tests/image_plot_tools.py
+   :start-after: SHOW
+   
+.. image:: images/screenshots/image_plot_tools.png
+
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: RectZoomTool
+   :members:
+   :inherited-members:
+.. autoclass:: SelectTool
+   :members:
+   :inherited-members:
+.. autoclass:: SelectPointTool
+   :members:
+   :inherited-members:
+.. autoclass:: MultiLineTool
+   :members:
+   :inherited-members:
+.. autoclass:: FreeFormTool
+   :members:
+   :inherited-members:
+.. autoclass:: LabelTool
+   :members:
+   :inherited-members:
+.. autoclass:: RectangleTool
+   :members:
+   :inherited-members:
+.. autoclass:: PointTool
+   :members:
+   :inherited-members:
+.. autoclass:: SegmentTool
+   :members:
+   :inherited-members:
+.. autoclass:: CircleTool
+   :members:
+   :inherited-members:
+.. autoclass:: EllipseTool
+   :members:
+   :inherited-members:
+.. autoclass:: PlaceAxesTool
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedRectangleTool
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedCircleTool
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedEllipseTool
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedPointTool
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedSegmentTool
+   :members:
+   :inherited-members:
+.. autoclass:: HRangeTool
+   :members:
+   :inherited-members:
+.. autoclass:: DummySeparatorTool
+   :members:
+   :inherited-members:
+.. autoclass:: AntiAliasingTool
+   :members:
+   :inherited-members:
+.. autoclass:: DisplayCoordsTool
+   :members:
+   :inherited-members:
+.. autoclass:: ReverseYAxisTool
+   :members:
+   :inherited-members:
+.. autoclass:: AspectRatioTool
+   :members:
+   :inherited-members:
+.. autoclass:: PanelTool
+   :members:
+   :inherited-members:
+.. autoclass:: ContrastTool
+   :members:
+   :inherited-members:
+.. autoclass:: ColormapTool
+   :members:
+   :inherited-members:
+.. autoclass:: XCrossSectionTool
+   :members:
+   :inherited-members:
+.. autoclass:: YCrossSectionTool
+   :members:
+   :inherited-members:
+.. autoclass:: AverageCrossSectionsTool
+   :members:
+   :inherited-members:
+.. autoclass:: ItemListTool
+   :members:
+   :inherited-members:
+.. autoclass:: SaveAsTool
+   :members:
+   :inherited-members:
+.. autoclass:: OpenFileTool
+   :members:
+   :inherited-members:
+.. autoclass:: OpenImageTool
+   :members:
+   :inherited-members:
+.. autoclass:: SnapshotTool
+   :members:
+   :inherited-members:
+.. autoclass:: PrintTool
+   :members:
+   :inherited-members:
+.. autoclass:: SaveItemsTool
+   :members:
+   :inherited-members:
+.. autoclass:: LoadItemsTool
+   :members:
+   :inherited-members:
+.. autoclass:: AxisScaleTool
+   :members:
+   :inherited-members:
+.. autoclass:: HelpTool
+   :members:
+   :inherited-members:
 """
 
 #TODO: z(long-terme) à partir d'une sélection rectangulaire sur une image
@@ -52,6 +250,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL)
+from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
 
 
 class DefaultToolbarID:
@@ -646,14 +845,14 @@ class AverageCrossSectionsTool(AnnotatedRectangleTool):
         param.update_annotation(shape)
         
     def register_shape(self, shape, final=False):
-        for panel_id in ("x_cross_section", "y_cross_section"):
+        for panel_id in (ID_XCS, ID_YCS):
             panel = self.manager.get_panel(panel_id)
             panel.register_shape(shape, final=final)
 
     def activate(self):
         """Activate tool"""
         super(AverageCrossSectionsTool, self).activate()
-        for panel_id in ("x_cross_section", "y_cross_section"):
+        for panel_id in (ID_XCS, ID_YCS):
             self.manager.get_panel(panel_id).setVisible(True)
     
     def handle_final_shape(self, shape):
@@ -963,7 +1162,7 @@ class PanelTool(ToggleTool):
 
 class ContrastTool(PanelTool):
     panel_name = _("Contrast adjustment")
-    panel_id = "contrast"
+    panel_id = ID_CONTRAST
     
     def update_status(self, plot):
         super(ContrastTool, self).update_status(plot)
@@ -976,15 +1175,15 @@ class ContrastTool(PanelTool):
 
 class XCrossSectionTool(PanelTool):
     panel_name = _("X-axis cross section")
-    panel_id = "x_cross_section"
+    panel_id = ID_XCS
 
 class YCrossSectionTool(PanelTool):
     panel_name = _("Y-axis cross section")
-    panel_id = "y_cross_section"
+    panel_id = ID_YCS
 
 class ItemListTool(PanelTool):
     panel_name = _("Item list")
-    panel_id = "itemlist"
+    panel_id = ID_ITEMLIST
         
 
 def get_save_filename(plot, title, defaultname, types):

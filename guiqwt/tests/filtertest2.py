@@ -8,6 +8,8 @@
 """Simple filter testing application based on PyQt and guiqwt
 filtertest1.py + plot manager"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                          QMainWindow)
 from PyQt4.QtCore import SIGNAL
@@ -18,9 +20,6 @@ from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guidata.configtools import get_icon
 #---
-
-SHOW = True # Show test in GUI-based test launcher
-
 
 class FilterTestWidget(QWidget):
     """

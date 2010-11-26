@@ -7,11 +7,11 @@
 
 """Curve fitting tools"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import numpy as np
 
 from guiqwt.fit import FitParam, guifit
-
-SHOW = True # Show test in GUI-based test launcher
 
 def test():
     x = np.linspace(-10, 10, 1000)

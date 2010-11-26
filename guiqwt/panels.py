@@ -6,7 +6,34 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Panels for Plot Manager (see guiqwt.plot.PlotManager class)
+guiqwt.panels
+-------------
+
+The `panels` module provides :py:class:`guiqwt.curve.PanelWidget` (the `panel` 
+widget class from which all panels must derived) and identifiers for each kind 
+of panel:
+    * :py:data:`guiqwt.panels.ID_ITEMLIST`: ID of the `item list` panel
+    * :py:data:`guiqwt.panels.ID_CONTRAST`: ID of the `contrast 
+      adjustment` panel
+    * :py:data:`guiqwt.panels.ID_XCS`: ID of the `X-axis cross section` 
+      panel
+    * :py:data:`guiqwt.panels.ID_YCS`: ID of the `Y-axis cross section` 
+      panel
+
+.. seealso::
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.tools`
+        Module providing the `plot tools`
 """
 
 from PyQt4.QtGui import QWidget
@@ -20,16 +47,16 @@ from guiqwt.signals import SIG_VISIBILITY_CHANGED
 #===============================================================================
 
 # Item list panel
-ITEMLIST_PANEL_ID = "itemlist"
+ID_ITEMLIST = "itemlist"
 
 # Contrast adjustment panel
-CONTRAST_PANEL_ID = "contrast"
+ID_CONTRAST = "contrast"
 
 # X-cross section panel
-XCS_PANEL_ID = "x_cross_section"
+ID_XCS = "x_cross_section"
 
 # Y-cross section panel
-YCS_PANEL_ID = "y_cross_section"
+ID_YCS = "y_cross_section"
 
 
 #===============================================================================

@@ -6,7 +6,40 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt histogram related objects
+guiqwt.histogram
+----------------
+
+The `histogram` module provides histogram related objects:
+    * :py:class:`guiqwt.histogram.HistogramItem`: an histogram plot item
+    * :py:class:`guiqwt.histogram.ContrastAdjustment`: the `contrast 
+      adjustment panel`
+    * :py:class:`guiqwt.histogram.LevelsHistogram`: a curve plotting widget 
+      used by the `contrast adjustment panel` to compute, manipulate and 
+      display the image levels histogram
+
+``HistogramItem`` objects are plot items (derived from QwtPlotItem) that may 
+be displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+or :py:class:`guiqwt.image.ImagePlot`.
+
+Example
+~~~~~~~
+
+Simple histogram plotting example:
+
+.. literalinclude:: ../guiqwt/tests/histogram.py
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: HistogramItem
+   :members:
+   :inherited-members:
+.. autoclass:: ContrastAdjustment
+   :members:
+   :inherited-members:
+.. autoclass:: LevelsHistogram
+   :members:
+   :inherited-members:
 """
 import numpy as np
 from PyQt4.QtCore import Qt
@@ -23,7 +56,7 @@ from guidata.qthelpers import add_actions, create_action
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
                                IVoiImageItemType, IPanel)
-from guiqwt.panels import PanelWidget, CONTRAST_PANEL_ID
+from guiqwt.panels import PanelWidget, ID_CONTRAST
 from guiqwt.curve import CurveItem, CurvePlot
 from guiqwt.image import ImagePlot
 from guiqwt.styles import HistogramParam, CurveParam
@@ -362,7 +395,7 @@ class EliminateOutliersParam(DataSet):
 class ContrastAdjustment(PanelWidget):
     """Contrast adjustment tool"""
     __implements__ = (IPanel,)
-    PANEL_ID = CONTRAST_PANEL_ID
+    PANEL_ID = ID_CONTRAST
 
     def __init__(self, parent=None):
         super(ContrastAdjustment, self).__init__(parent)
@@ -406,6 +439,7 @@ class ContrastAdjustment(PanelWidget):
         self.outliers_param = EliminateOutliersParam(widget_title)
         
     def register_panel(self, manager):
+        """Register panel to plot manager"""
         self.manager = manager
         default_toolbar = self.manager.get_default_toolbar()
         self.manager.add_toolbar(self.toolbar, "contrast")

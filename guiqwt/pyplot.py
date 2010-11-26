@@ -6,7 +6,96 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Interactive plotting interface with MATLAB-like syntax
+guiqwt.pyplot
+-------------
+
+The `pyplot` module provides an interactive plotting interface similar to 
+`Matplotlib`'s, i.e. with MATLAB-like syntax.
+
+The :py:mod:`guiqwt.pyplot` module was designed to be as close as possible 
+to the :py:mod:`matplotlib.pyplot` module, so that one could easily switch 
+between these two modules by simply changing the import statement. Basically,
+if `guiqwt` does support the plotting commands called in your script, replacing 
+``import matplotlib.pyplot`` by ``import guiqwt.pyplot`` should suffice, as 
+shown in the following example:
+    
+    * Simple example using `matplotlib`::
+    
+        import matplotlib.pyplot as plt
+        import numpy as np
+        x = np.linspace(-10, 10)
+        plt.plot(x, x**2, 'r+')
+        plt.show()
+
+    * Switching from `matplotlib` to `guiqwt` is trivial::
+    
+        import guiqwt.pyplot as plt # only this line has changed!
+        import numpy as np
+        x = np.linspace(-10, 10)
+        plt.plot(x, x**2, 'r+')
+        plt.show()
+
+Examples
+~~~~~~~~
+
+>>> import numpy as np
+>>> from guiqwt.pyplot import * # ugly but acceptable in an interactive session
+>>> ion() # switching to interactive mode
+>>> x = np.linspace(-5, 5, 1000)
+>>> figure(1)
+>>> subplot(2, 1, 1)
+>>> plot(x, np.sin(x), "r+")
+>>> plot(x, np.cos(x), "g-")
+>>> errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
+>>> xlabel("Axe x")
+>>> ylabel("Axe y")
+>>> subplot(2, 1, 2)
+>>> img = np.fromfunction(lambda x, y: np.sin((x/200.)*(y/200.)**2), (1000, 1000))
+>>> xlabel("pixels")
+>>> ylabel("pixels")
+>>> zlabel("intensity")
+>>> gray()
+>>> imshow(img)
+>>> figure("plotyy")
+>>> plotyy(x, np.sin(x), x, np.cos(x))
+>>> ylabel("sinus", "cosinus")
+>>> show()
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: interactive
+.. autofunction:: ion
+.. autofunction:: ioff
+
+.. autofunction:: figure
+.. autofunction:: gcf
+.. autofunction:: gca
+.. autofunction:: show
+.. autofunction:: subplot
+.. autofunction:: close
+
+.. autofunction:: title
+.. autofunction:: xlabel
+.. autofunction:: ylabel
+.. autofunction:: zlabel
+
+.. autofunction:: yreverse
+.. autofunction:: grid
+.. autofunction:: legend
+.. autofunction:: colormap
+
+.. autofunction:: savefig
+
+.. autofunction:: plot
+.. autofunction:: plotyy
+.. autofunction:: semilogx
+.. autofunction:: semilogy
+.. autofunction:: loglog
+.. autofunction:: errorbar
+.. autofunction:: hist
+.. autofunction:: imshow
+.. autofunction:: pcolor
 """
 
 import sys

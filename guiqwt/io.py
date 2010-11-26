@@ -6,7 +6,22 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt input/output helpers
+guiqwt.io
+---------
+
+The `io` module provides input/output helper functions:
+    * :py:func:`guiqwt.io.imagefile_to_array`: load an image (.png, .tiff, 
+      .dicom, etc.) and return its data as a NumPy array
+    * :py:func:`guiqwt.io.array_to_imagefile`: save an array to an image file
+    * :py:func:`guiqwt.io.array_to_dicomfile`: save an array to a DICOM image 
+      file according to a passed DICOM structure (base file)
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: imagefile_to_array
+.. autofunction:: array_to_imagefile
+.. autofunction:: array_to_dicomfile
 """
 
 import sys, os.path as osp, numpy as np, os, time

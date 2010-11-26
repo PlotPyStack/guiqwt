@@ -6,8 +6,42 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains several subclasses of QwtPlotItem
-intended for displaying labels and legends
+guiqwt.label
+------------
+
+The `label` module provides plot items related to labels and legends:
+    * :py:class:`guiqwt.shapes.LabelItem`
+    * :py:class:`guiqwt.shapes.LegendBoxItem`
+    * :py:class:`guiqwt.shapes.SelectedLegendBoxItem`
+    * :py:class:`guiqwt.shapes.RangeComputation`
+    * :py:class:`guiqwt.shapes.RangeComputation2d`
+    * :py:class:`guiqwt.shapes.DataInfoLabel`
+
+A label or a legend is a plot item (derived from QwtPlotItem) that may be 
+displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+or :py:class:`guiqwt.image.ImagePlot`.
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: LabelItem
+   :members:
+   :inherited-members:
+.. autoclass:: LegendBoxItem
+   :members:
+   :inherited-members:
+.. autoclass:: SelectedLegendBoxItem
+   :members:
+   :inherited-members:
+.. autoclass:: RangeComputation
+   :members:
+   :inherited-members:
+.. autoclass:: RangeComputation2d
+   :members:
+   :inherited-members:
+.. autoclass:: DataInfoLabel
+   :members:
+   :inherited-members:
 """
 
 from PyQt4.QtGui import QPen, QColor, QTextDocument
@@ -113,6 +147,7 @@ class AbstractLabelItem(QwtPlotItem):
             plot.invalidate()
 
     def select(self):
+        """Select item"""
         if self.selected:
             # Already selected
             return
@@ -122,6 +157,7 @@ class AbstractLabelItem(QwtPlotItem):
         self.invalidate_plot()
 
     def unselect(self):
+        """Unselect item"""
         self.selected = False
         self.labelparam.update_label(self)
         self.invalidate_plot()

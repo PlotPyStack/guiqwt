@@ -11,12 +11,13 @@ SelectPointTool test
 This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
+SHOW = True # Show test in GUI-based test launcher
+
 from guiqwt.plot import CurvePlotDialog
 from guiqwt.tools import SelectPointTool
 from guiqwt.builder import make
 from guiqwt.config import _
 
-SHOW = True # Show test in GUI-based test launcher
 
 def test_function(tool):
     print "Current coordinates:", tool.get_coordinates()

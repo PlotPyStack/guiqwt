@@ -6,7 +6,33 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Cross section related objects
+guiqwt.cross_section
+--------------------
+
+The `cross_section` module provides cross section related objects:
+    * :py:class:`guiqwt.cross_section.XCrossSectionWidget`: the X-axis 
+      `cross-section panel`
+    * :py:class:`guiqwt.cross_section.YCrossSectionWidget`: the Y-axis 
+      `cross-section panel`
+    * and other related objects which are exclusively used by the cross-section 
+      panels
+
+Example
+~~~~~~~
+
+Simple cross-section demo:
+
+.. literalinclude:: ../guiqwt/tests/cross_section.py
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: XCrossSectionWidget
+   :members:
+   :inherited-members:
+.. autoclass:: YCrossSectionWidget
+   :members:
+   :inherited-members:
 """
 
 import weakref
@@ -25,7 +51,7 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
                                ICurveItemType)
-from guiqwt.panels import PanelWidget, XCS_PANEL_ID, YCS_PANEL_ID
+from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.image import ImagePlot
 from guiqwt.styles import CurveParam
@@ -569,6 +595,7 @@ class CrossSectionWidget(PanelWidget):
             self.autoscale_ac.setChecked(autoscale)
     
     def register_panel(self, manager):
+        """Register panel to plot manager"""
         self.manager = manager
         for plot in manager.get_plots():
             self.cs_plot.connect_plot(plot)
@@ -639,8 +666,8 @@ assert_interfaces_valid(CrossSectionWidget)
 
 class XCrossSectionWidget(CrossSectionWidget):
     """X-axis cross section widget"""
-    PANEL_ID = XCS_PANEL_ID
-    OTHER_PANEL_ID = YCS_PANEL_ID
+    PANEL_ID = ID_XCS
+    OTHER_PANEL_ID = ID_YCS
     CrossSectionPlotKlass = XCrossSectionPlot
 
 class YCrossSectionWidget(CrossSectionWidget):
@@ -649,8 +676,8 @@ class YCrossSectionWidget(CrossSectionWidget):
     parent (QWidget): parent widget
     position (string): "left" or "right"
     """
-    PANEL_ID = YCS_PANEL_ID
-    OTHER_PANEL_ID = XCS_PANEL_ID
+    PANEL_ID = ID_YCS
+    OTHER_PANEL_ID = ID_XCS
     CrossSectionPlotKlass = YCrossSectionPlot
     def __init__(self, parent=None, position="right"):
         CrossSectionWidget.__init__(self, parent)

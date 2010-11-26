@@ -7,6 +7,8 @@
 
 """Simple application based on guiqwt and guidata"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog)
 from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt, SIGNAL
@@ -26,14 +28,11 @@ from guiqwt.config import _
 from guiqwt.plot import ImagePlotWidget
 from guiqwt.builder import make
 from guiqwt.signals import SIG_LUT_CHANGED
-from guiqwt.panels import CONTRAST_PANEL_ID
+from guiqwt.panels import ID_CONTRAST
 from guiqwt.io import imagefile_to_array
-
-SHOW = True # Show test in GUI-based test launcher
 
 APP_NAME = _("Application example")
 VERSION = '1.0.0'
-
 
 class ImageParam(DataSet):
     _hide_data = False
@@ -54,7 +53,6 @@ class ImageParamNew(ImageParam):
     type = ChoiceItem(_("Type"),
                       (("rand", _("random")), ("zeros", _("zeros"))))
 
-
 class ImageListWithProperties(QSplitter):
     def __init__(self, parent):
         QSplitter.__init__(self, parent)
@@ -63,7 +61,6 @@ class ImageListWithProperties(QSplitter):
         self.properties = DataSetEditGroupBox(_("Properties"), ImageParam)
         self.properties.setEnabled(False)
         self.addWidget(self.properties)
-
 
 class CentralWidget(QSplitter):
     def __init__(self, parent, toolbar):
@@ -134,7 +131,7 @@ class CentralWidget(QSplitter):
             self.item.set_data(data)
             if lut_range is None:
                 lut_range = self.item.get_lut_range()
-            contrast_panel = self.manager.get_panel(CONTRAST_PANEL_ID)
+            contrast_panel = self.manager.get_panel(ID_CONTRAST)
             contrast_panel.set_range(*lut_range)
         else:
             self.item = make.image(data)
@@ -163,7 +160,6 @@ class CentralWidget(QSplitter):
         image.data = imagefile_to_array(filename)
         image.height, image.width = image.data.shape
         self.add_image(image)
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -246,7 +242,6 @@ class MainWindow(QMainWindow):
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)
-        
         
 if __name__ == '__main__':
     from guidata import qapplication

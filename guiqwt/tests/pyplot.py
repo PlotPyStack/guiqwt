@@ -11,14 +11,14 @@ pyplot test
 Interactive plotting interface with MATLAB-like syntax
 """
 
+SHOW = True # Show test in GUI-based test launcher
+
 import numpy as np
 
 from guiqwt.pyplot import *
 
-SHOW = True # Show test in GUI-based test launcher
-
-
 def main():
+    ion()
     x = np.linspace(-5, 5, 1000)
     figure(1)
     subplot(2, 1, 1)

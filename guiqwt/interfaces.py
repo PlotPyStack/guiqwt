@@ -6,7 +6,10 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Object interface classes for guiqwt module
+guiqwt.interfaces
+-----------------
+
+The `interfaces` module provides object interface classes for `guiqwt`.
 """
 
 class IItemType(object):
@@ -246,4 +249,5 @@ class IPanel(object):
         return PanelWidget
     
     def register_panel(self, manager):
+        """Register panel to plot manager"""
         pass

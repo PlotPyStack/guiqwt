@@ -26,4 +26,9 @@ From the source package:
 Help and support
 ----------------
 
-See the guiqwt SourceForge website (discussion group and bug tracker)
+External resources:
+    * Bug reports and feature requests: `SourceForge`_
+    * Help, support and discussions around the project: `Google Group`_
+
+.. _SourceForge: http://sourceforge.net/projects/guiqwt/
+.. _Google Group: http://groups.google.fr/group/guidata_guiqwt

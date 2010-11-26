@@ -7,12 +7,12 @@
 
 """Image filter demo"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from scipy.ndimage import gaussian_filter
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def imshow(x, y, data, filter_area, yreverse=True):
     win = ImagePlotDialog(edit=False, toolbar=True,

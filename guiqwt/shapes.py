@@ -5,6 +5,71 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+"""
+guiqwt.shapes
+-------------
+
+The `shapes` module provides geometrical shapes:
+    * :py:class:`guiqwt.shapes.PolygonShape`
+    * :py:class:`guiqwt.shapes.RectangleShape`
+    * :py:class:`guiqwt.shapes.PointShape`
+    * :py:class:`guiqwt.shapes.SegmentShape`
+    * :py:class:`guiqwt.shapes.EllipseShape`
+    * :py:class:`guiqwt.shapes.Axes`
+    * :py:class:`guiqwt.shapes.XRangeSelection`
+
+A shape is a plot item (derived from QwtPlotItem) that may be displayed 
+on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+or :py:class:`guiqwt.image.ImagePlot`.
+
+.. seealso:: module :py:mod:`guiqwt.annotations`
+
+Examples
+~~~~~~~~
+
+A shape may be created:
+    * from the associated plot item class (e.g. `RectangleShape` to create a 
+      rectangle): the item properties are then assigned by creating the 
+      appropriate style parameters object
+      (:py:class:`guiqwt.styles.ShapeParam`)
+      
+>>> from guiqwt.shapes import RectangleShape
+>>> from guiqwt.styles import ShapeParam
+>>> param = ShapeParam()
+>>> param.title = 'My rectangle'
+>>> rect_item = RectangleShape(0., 2., 4., 0., param)
+      
+    * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
+      
+>>> from guiqwt.builder import make
+>>> rect_item = make.rectangle(0., 2., 4., 0., title='My rectangle')
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: PolygonShape
+   :members:
+   :inherited-members:
+.. autoclass:: RectangleShape
+   :members:
+   :inherited-members:
+.. autoclass:: PointShape
+   :members:
+   :inherited-members:
+.. autoclass:: SegmentShape
+   :members:
+   :inherited-members:
+.. autoclass:: EllipseShape
+   :members:
+   :inherited-members:
+.. autoclass:: Axes
+   :members:
+   :inherited-members:
+.. autoclass:: XRangeSelection
+   :members:
+   :inherited-members:
+"""
+
 import sys, numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
@@ -108,10 +173,12 @@ class AbstractShape(QwtPlotItem):
             plot.invalidate()
 
     def select(self):
+        """Select item"""
         self.selected = True
         self.invalidate_plot()
     
     def unselect(self):
+        """Unselect item"""
         self.selected = False
         self.invalidate_plot()
         
@@ -456,9 +523,11 @@ class PointShape(PolygonShape):
         self.set_pos(x, y)
         
     def set_pos(self, x, y):
+        """Set the point coordinates to (x, y)"""
         self.set_points([(x, y)])
         
     def get_pos(self):
+        """Return the point coordinates"""
         return tuple(self.points[0])
     
     def move_point_to(self, handle, pos):
@@ -478,6 +547,10 @@ class SegmentShape(PolygonShape):
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
+        """
+        Set the start point of this segment to (x1, y1) 
+        and the end point of this line to (x2, y2)
+        """
         self.set_points([(x1, y1), (0, 0), (x2, y2)])
 
     def get_rect(self):
@@ -510,6 +583,10 @@ class RectangleShape(PolygonShape):
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
+        """
+        Set the coordinates of the rectangle's top-left corner to (x1, y1), 
+        and of its bottom-right corner to (x2, y2).
+        """
         self.set_points([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
 
     def get_rect(self):
@@ -549,6 +626,10 @@ class EllipseShape(RectangleShape):
         self.is_ellipse = True
 
     def set_rect(self, x1, y1, x2, y2):
+        """
+        Set the start point of the ellipse's X-axis diameter to (x1, y1) 
+        and its end point to (x2, y2)
+        """
         self.set_xdiameter(x1, y1, x2, y2)
 
     def compute_elements(self, xMap, yMap):

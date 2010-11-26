@@ -6,7 +6,96 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Graphical objects and tools style parameters (DataSet classes)
+guiqwt.styles
+-------------
+
+The `styles` module provides set of parameters (DataSet classes) to 
+configure `plot items` and `plot tools`.
+
+.. seealso::
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.tools`
+        Module providing the `plot tools`
+        
+Reference
+~~~~~~~~~
+
+.. autoclass:: CurveParam
+   :members:
+   :inherited-members:
+.. autoclass:: ErrorBarParam
+   :members:
+   :inherited-members:
+.. autoclass:: GridParam
+   :members:
+   :inherited-members:
+.. autoclass:: ImageParam
+   :members:
+   :inherited-members:
+.. autoclass:: TrImageParam
+   :members:
+   :inherited-members:
+.. autoclass:: ImageFilterParam
+   :members:
+   :inherited-members:
+.. autoclass:: HistogramParam
+   :members:
+   :inherited-members:
+.. autoclass:: Histogram2DParam
+   :members:
+   :inherited-members:
+.. autoclass:: AxesParam
+   :members:
+   :inherited-members:
+.. autoclass:: ImageAxesParam
+   :members:
+   :inherited-members:
+.. autoclass:: LabelParam
+   :members:
+   :inherited-members:
+.. autoclass:: LegendParam
+   :members:
+   :inherited-members:
+.. autoclass:: ShapeParam
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotationParam
+   :members:
+   :inherited-members:
+.. autoclass:: AxesShapeParam
+   :members:
+   :inherited-members:
+.. autoclass:: RangeShapeParam
+   :members:
+   :inherited-members:
+.. autoclass:: MarkerParam
+   :members:
+   :inherited-members:
+.. autoclass:: FontParam
+   :members:
+   :inherited-members:
+.. autoclass:: SymbolParam
+   :members:
+   :inherited-members:
+.. autoclass:: LineStyleParam
+   :members:
+   :inherited-members:
+.. autoclass:: BrushStyleParam
+   :members:
+   :inherited-members:
+.. autoclass:: TextStyleParam
+   :members:
+   :inherited-members:
 """
 
 import numpy as np

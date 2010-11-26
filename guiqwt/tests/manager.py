@@ -7,6 +7,8 @@
 
 """PlotManager test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
 from PyQt4.QtGui import QMainWindow, QWidget, QGridLayout
@@ -16,8 +18,6 @@ from guiqwt.curve import PlotItemList
 from guiqwt.histogram import ContrastAdjustment
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 class CentralWidget(QWidget):
     def __init__(self, parent):

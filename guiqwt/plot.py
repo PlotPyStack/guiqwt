@@ -6,7 +6,81 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Ready-to-use curve and image plotting dialog boxes
+guiqwt.plot
+-----------
+
+The `plot` module provides the following features:
+    * :py:class:`guiqwt.plot.PlotManager`: the `plot manager` is an object to 
+      link `plots`, `panels` and `tools` together for designing highly 
+      versatile graphical user interfaces
+    * :py:class:`guiqwt.plot.CurvePlotWidget`: a ready-to-use widget for curve 
+      displaying with an integrated and preconfigured `plot manager` providing 
+      the `item list panel` and curve-related `tools`
+    * :py:class:`guiqwt.plot.CurvePlotDialog`: a ready-to-use dialog box for 
+      curve displaying with an integrated and preconfigured `plot manager` 
+      providing the `item list panel` and curve-related `tools`
+    * :py:class:`guiqwt.plot.ImagePlotWidget`: a ready-to-use widget for curve 
+      and image displaying with an integrated and preconfigured `plot manager` 
+      providing the `item list panel`, the `contrast adjustment` panel, the 
+      `cross section panels` (along X and Y axes) and image-related `tools` 
+      (e.g. colormap selection tool)
+    * :py:class:`guiqwt.plot.ImagePlotDialog`: a ready-to-use dialog box for 
+      curve and image displaying with an integrated and preconfigured 
+      `plot manager` providing the `item list panel`, the `contrast adjustment` 
+      panel, the `cross section panels` (along X and Y axes) and image-related 
+      `tools` (e.g. colormap selection tool)
+
+.. seealso::
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.tools`
+        Module providing the `plot tools`
+        
+    Module :py:mod:`guiqwt.panels`
+        Module providing the `plot panels` IDs
+        
+    Module :py:mod:`guiqwt.signals`
+        Module providing all the end-user Qt SIGNAL objects defined in `guiqwt`
+        
+    Module :py:mod:`guiqwt.baseplot`
+        Module providing the `guiqwt` plotting widget base class
+
+Examples
+~~~~~~~~
+
+Simple example *without* the `plot manager`:
+
+.. literalinclude:: ../guiqwt/tests/filtertest1.py
+   :start-after: SHOW
+
+Simple example *with* the `plot manager`:
+even if this simple example does not justify the use of the `plot manager` 
+(this is an unnecessary complication here), it shows how to use it. In more 
+complex applications, using the `plot manager` allows to design highly versatile
+graphical user interfaces.
+
+.. literalinclude:: ../guiqwt/tests/filtertest2.py
+   :start-after: SHOW
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: PlotManager
+   :members:
+   :inherited-members:
+.. autoclass:: CurvePlotWidget
+   :members:
+.. autoclass:: CurvePlotDialog
+   :members:
+.. autoclass:: ImagePlotWidget
+   :members:
+.. autoclass:: ImagePlotDialog
+   :members:
 """
 
 import weakref
@@ -34,8 +108,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
-from guiqwt.panels import (ITEMLIST_PANEL_ID, CONTRAST_PANEL_ID,
-                           XCS_PANEL_ID, YCS_PANEL_ID)
+from guiqwt.panels import ID_ITEMLIST, ID_CONTRAST, ID_XCS, ID_YCS
 
 
 class PlotManager(object):
@@ -152,12 +225,20 @@ class PlotManager(object):
             return group()
 
     def get_main(self):
+        """Return the main (parent) widget"""
         return self.main
 
     def get_panel(self, panel_id):
+        """
+        Return panel from its ID
+        Panel IDs are listed in module guiqwt.panels
+        """
         return self.panels.get(panel_id, None)
 
     def get_toolbar(self, tbname):
+        """
+        Return toolbar from its ID
+        """
         return self.toolbars.get(tbname, None)
 
     def get_context_menu(self, plot):
@@ -191,7 +272,7 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
-        if self.get_panel(ITEMLIST_PANEL_ID):
+        if self.get_panel(ID_ITEMLIST):
             self.add_tool(ItemListTool)
 
     def register_curve_tools(self):
@@ -211,9 +292,9 @@ class PlotManager(object):
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
-        if self.get_panel(CONTRAST_PANEL_ID):
+        if self.get_panel(ID_CONTRAST):
             self.add_tool(ContrastTool)
-        if self.get_panel(XCS_PANEL_ID) and self.get_panel(YCS_PANEL_ID):
+        if self.get_panel(ID_XCS) and self.get_panel(ID_YCS):
             self.add_tool(XCrossSectionTool)
             self.add_tool(YCrossSectionTool)
             self.add_tool(AverageCrossSectionsTool)
@@ -248,7 +329,7 @@ class CurvePlotWidget(QSplitter):
     """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
-        super(CurvePlotWidget, self).__init__(Qt.Horizontal, parent)
+        QSplitter.__init__(self, Qt.Horizontal, parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.plot = CurvePlot(parent=self,

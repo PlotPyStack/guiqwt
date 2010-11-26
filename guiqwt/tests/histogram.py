@@ -7,10 +7,10 @@
 
 """Histogram test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from guiqwt.plot import CurvePlotDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def test():
     """Test"""

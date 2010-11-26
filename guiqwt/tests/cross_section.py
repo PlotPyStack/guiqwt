@@ -7,12 +7,12 @@
 
 """Renders a cross section chosen by a cross marker"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp, numpy as np
 
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def create_window():
     win = ImagePlotDialog(edit=False, toolbar=True,

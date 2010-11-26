@@ -5,6 +5,63 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+"""
+guiqwt.annotations
+------------------
+
+The `annotations` module provides annotated shapes:
+    * :py:class:`guiqwt.annotations.AnnotatedRectangle`
+    * :py:class:`guiqwt.annotations.AnnotatedPoint`
+    * :py:class:`guiqwt.annotations.AnnotatedSegment`
+    * :py:class:`guiqwt.annotations.AnnotatedEllipse`
+    * :py:class:`guiqwt.annotations.AnnotatedCircle`
+
+An annotated shape is a plot item (derived from QwtPlotItem) that may be 
+displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+or :py:class:`guiqwt.image.ImagePlot`.
+
+.. seealso:: module :py:mod:`guiqwt.shapes`
+
+Examples
+~~~~~~~~
+
+An annotated shape may be created:
+    * from the associated plot item class (e.g. `AnnotatedCircle` to 
+      create an annotated circle): the item properties are then assigned 
+      by creating the appropriate style parameters object
+      (:py:class:`guiqwt.styles.AnnotationParam`)
+      
+>>> from guiqwt.annotations import AnnotatedCircle
+>>> from guiqwt.styles import AnnotationParam
+>>> param = AnnotationParam()
+>>> param.title = 'My circle'
+>>> circle_item = AnnotatedCircle(0., 2., 4., 0., param)
+      
+    * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
+      
+>>> from guiqwt.builder import make
+>>> circle_item = make.annotated_circle(0., 2., 4., 0., title='My circle')
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: AnnotatedRectangle
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedPoint
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedSegment
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedEllipse
+   :members:
+   :inherited-members:
+.. autoclass:: AnnotatedCircle
+   :members:
+   :inherited-members:
+"""
+
 import numpy as np
 from math import fabs
 
@@ -21,6 +78,10 @@ from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 
 
 class AnnotatedShape(AbstractShape):
+    """
+    Construct an annotated shape with properties set with
+    *annotationparam* (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     SHAPE_CLASS = None
     LABEL_ANCHOR = None
     def __init__(self, annotationparam=None):
@@ -61,35 +122,49 @@ class AnnotatedShape(AbstractShape):
         
     #----Public API-------------------------------------------------------------
     def set_rect(self, x1, y1, x2, y2):
+        """
+        Set the coordinates of the shape's top-left corner to (x1, y1), 
+        and of its bottom-right corner to (x2, y2).
+        """
         self.shape.set_rect(x1, y1, x2, y2)
         self.set_label_position()
 
     def get_rect(self):
+        """
+        Return the coordinates of the shape's top-left and bottom-right corners
+        """
         return self.shape.get_rect()
     
     def get_shape(self):
+        """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0, 1, 1)
         shape.set_style("plot", "shape/drag")
         return shape
         
     def get_label(self):
+        """Return the label object associated to this annotated shape object"""
         label_param = LabelParam(_("Label"), icon='label.png')
         label_param.read_config(CONF, "plot", "shape/label")
         label_param.anchor = self.LABEL_ANCHOR
         return DataInfoLabel(label_param, [self])
         
     def is_label_visible(self):
+        """Return True if associated label is visible"""
         return self.label.isVisible()
         
     def set_label_visible(self, state):
+        """Set the annotated shape's label visibility"""
         self.label.setVisible(state)
         
     def update_label(self):
+        """Update the annotated shape's label contents"""
         self.label.update_text()
 
     def get_text(self):
-        """Return text associated to current shape
-        (see guiqwt.label.ObjectInfo)"""
+        """
+        Return text associated to current shape
+        (see :py:class:`guiqwt.label.ObjectInfo`)
+        """
         text = ""
         title = self.title().text()
         if title:
@@ -143,10 +218,12 @@ class AnnotatedShape(AbstractShape):
             self.plot().emit(SIG_ANNOTATION_CHANGED, self)
 
     def select(self):
+        """Select item"""
         super(AnnotatedShape, self).select()
         self.shape.select()
     
     def unselect(self):
+        """Unselect item"""
         super(AnnotatedShape, self).unselect()
         self.shape.unselect()
 
@@ -178,6 +255,11 @@ def compute_angle(x1, y1, x2, y2, reverse=False):
     return np.arctan(-sign*(y2-y1)/(x2-x1))*180/np.pi
 
 class AnnotatedRectangle(AnnotatedShape):
+    """
+    Construct an annotated rectangle between coordinates (x1, y1) and 
+    (x2, y2) with properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     SHAPE_CLASS = RectangleShape
     LABEL_ANCHOR = "TL"
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
@@ -185,6 +267,7 @@ class AnnotatedRectangle(AnnotatedShape):
         self.set_rect(x1, y1, x2, y2)
         
     def set_label_position(self):
+        """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.min(axis=0)
         self.label.set_position(x_label, y_label)
     
@@ -218,6 +301,11 @@ class AnnotatedRectangle(AnnotatedShape):
 
 
 class AnnotatedPoint(AnnotatedRectangle):
+    """
+    Construct an annotated point at coordinates (x, y) 
+    with properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     SHAPE_CLASS = PointShape
     LABEL_ANCHOR = "TL"
     def __init__(self, x=0, y=0, annotationparam=None):
@@ -226,22 +314,27 @@ class AnnotatedPoint(AnnotatedRectangle):
         
     #----Public API-------------------------------------------------------------
     def set_pos(self, x, y):
+        """Set the point coordinates to (x, y)"""
         self.shape.set_pos(x, y)
         self.set_label_position()
 
     def get_pos(self):
+        """Return the point coordinates"""
         return self.shape.get_pos()
     
     def get_shape(self):
+        """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0)
         shape.set_style("plot", "shape/drag")
         return shape
 
     def set_label_position(self):
+        """Set label position, for instance based on shape position"""
         x, y = self.shape.points[0]
         self.label.set_position(x, y)
     
     def get_infos(self):
+        """Return dictionary with measured data on shape"""
         f = self.annotationparam.format
         xt, yt = self.apply_transform_matrix(*self.shape.points[0])
         return {'position': ( "", f+u" ; "+f, (xt, yt) )}
@@ -253,14 +346,24 @@ class AnnotatedPoint(AnnotatedRectangle):
 
 
 class AnnotatedSegment(AnnotatedRectangle):
+    """
+    Construct an annotated segment between coordinates (x1, y1) and 
+    (x2, y2) with properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     SHAPE_CLASS = SegmentShape
     LABEL_ANCHOR = "C"
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
+        AnnotatedRectangle.__init__(self, x1, y1, x2, y2, annotationparam)
+    
     def set_label_position(self):
+        """Set label position, for instance based on shape position"""
         x0, y0 = self.shape.points[0]
         x2, y2 = self.shape.points[2]
         self.label.set_position(*compute_center(x0, y0, x2, y2))
 
     def get_infos(self):
+        """Return dictionary with measured data on shape"""
         f = self.annotationparam.format
         distance = compute_distance(*self.get_transformed_coords(0, 2))
         return {'distance':   ( _("Distance:"), f, distance )}
@@ -272,6 +375,12 @@ class AnnotatedSegment(AnnotatedRectangle):
 
 
 class AnnotatedEllipse(AnnotatedRectangle):
+    """
+    Construct an annotated ellipse with X-axis diameter between 
+    coordinates (x1, y1) and (x2, y2) 
+    and properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     SHAPE_CLASS = EllipseShape
     LABEL_ANCHOR = "C"
     def __init__(self, x1=0, y1=0, x2=0, y2=0, ratio=1., annotationparam=None):
@@ -279,15 +388,18 @@ class AnnotatedEllipse(AnnotatedRectangle):
         AnnotatedRectangle.__init__(self, x1, y1, x2, y2, annotationparam)
         
     def get_shape(self):
+        """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0, 1, 1, ratio=self.ratio)
         shape.set_style("plot", "shape/drag")
         return shape
         
     def set_label_position(self):
+        """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.mean(axis=0)
         self.label.set_position(x_label, y_label)
         
     def get_infos(self):
+        """Return dictionary with measured data on shape"""
         f = self.annotationparam.format
         xcoords = self.get_transformed_coords(0, 1)
         ycoords = self.get_transformed_coords(2, 3)
@@ -314,10 +426,16 @@ class AnnotatedEllipse(AnnotatedRectangle):
 
 
 class AnnotatedCircle(AnnotatedEllipse):
+    """
+    Construct an annotated circle with diameter between coordinates 
+    (x1, y1) and (x2, y2) and properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedEllipse.__init__(self, x1, y1, x2, y2, 1., annotationparam)
     
     def get_infos(self):
+        """Return dictionary with measured data on shape"""
         f = self.annotationparam.format
         coords = self.get_transformed_coords(0, 1)
         xc, yc = compute_center(*coords)

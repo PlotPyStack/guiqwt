@@ -7,16 +7,17 @@
 
 """Tests around image transforms: rotation, translation, ..."""
 
-import numpy as np
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtCore import QRectF
 from PyQt4.QtGui import QImage
+
+import numpy as np
 
 from guiqwt.image import assemble_imageitems
 from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
 from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
-
-SHOW = True # Show test in GUI-based test launcher
 
 DEFAULT_CHARS = "".join([chr(c) for c in range(32,256)])
 
@@ -132,7 +133,6 @@ def build_image(items):
     dest = assemble_imageitems(items, r.getRect(), w/4, h/4, align=4, sampling=(1,msk))
     save_image("test2.png", dest)
 
-
 def test():
     """Test"""
     N = 3000
@@ -149,7 +149,6 @@ def test():
         items.append(make.trimage(img, colormap="jet"))
     imshow(items, title=u"Transform test (%dx%d images)" % (N, N))
     return items
-
 
 if __name__ == "__main__":
     # -- Create QApplication

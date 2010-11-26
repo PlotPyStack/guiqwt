@@ -7,6 +7,8 @@
 
 """Simple dialog box based on guiqwt and guidata"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtCore import SIGNAL
 
 import scipy.ndimage
@@ -21,9 +23,6 @@ from guiqwt.plot import ImagePlotDialog
 from guiqwt.builder import make
 from guiqwt.tools import OpenImageTool
 from guiqwt.io import imagefile_to_array
-
-SHOW = True # Show test in GUI-based test launcher
-
 
 class ImageParam(DataSet):
     title = StringItem(_("Title"))
@@ -42,7 +41,6 @@ class FilterParam(DataSet):
                        ))
     size = IntItem(_("Size or sigma"), min=1, default=5)
     
-
 class ExampleDialog(ImagePlotDialog):
     def __init__(self, wintitle=_("Example dialog box"),
                  icon="guidata.png", options=dict(show_contrast=True),
@@ -104,7 +102,6 @@ class ExampleDialog(ImagePlotDialog):
         filterfunc = getattr(scipy.ndimage, param.name)
         data = filterfunc(self.data, param.size)
         self.show_data(data)
-
 
 if __name__ == "__main__":
     from guidata import qapplication

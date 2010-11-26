@@ -6,8 +6,10 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Handle *guiqwt* module configuration
-(options, images and icons)
+guiqwt.config
+-------------
+
+The `config` module handles `guiqwt` configuration (options, images and icons).
 """
 
 import os.path as osp
