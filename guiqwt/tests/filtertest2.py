@@ -86,7 +86,7 @@ class TestWindow(QMainWindow):
         widget.setup_widget(title)
         self.centralWidget().layout().addWidget(widget)
         #---Register plot to manager
-        self.manager.add_plot(widget.plot, id(widget.plot))
+        self.manager.add_plot(widget.plot)
         #---
         
     def setup_window(self):

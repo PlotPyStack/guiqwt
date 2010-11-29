@@ -423,7 +423,7 @@ class ContrastAdjustment(PanelWidget):
         self.local_manager = PlotManager(self)
         self.histogram = LevelsHistogram(parent)
         vlayout.addWidget(self.histogram)
-        self.local_manager.add_plot(self.histogram, "default")
+        self.local_manager.add_plot(self.histogram)
         hlayout = QHBoxLayout()
         self.setLayout(hlayout)
         hlayout.addLayout(vlayout)

@@ -224,14 +224,14 @@ class IPlotManager(object):
     """A 'controller' that organizes relations between
     plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
     """
-    def add_plot(self, plot, id="default"):
+    def add_plot(self, plot, plot_id="default"):
         assert id not in self.plots
         assert isinstance(plot, EnhancedQwtPlot)
 
     def add_panel(self, panel):
         assert id not in self.panels
 
-    def add_toolbar(self, toolbar, id="default"):
+    def add_toolbar(self, toolbar, toolbar_id="default"):
         assert id not in self.toolbars
 
     def get_active_plot(self):

@@ -110,10 +110,15 @@ from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
 
 
+class DefaultPlotID(object):
+    pass
+
 class PlotManager(object):
     """
-    A 'controller' that organizes relations between
-    plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
+    Construct a PlotManager object, a 'controller' that organizes relations 
+    between plots (i.e. :py:class:`guiqwt.curve.CurvePlot` or 
+    :py:class:`guiqwt.image.ImagePlot` objects), panels, 
+    tools (see :py:mod:`guiqwt.tools`) and toolbars
     """
     __implements__ = (IPlotManager,)
 
@@ -129,12 +134,27 @@ class PlotManager(object):
         self.default_toolbar = None
         self.groups = {} # Action groups for grouping QActions
 
-    def add_plot(self, plot, id):
-        assert id not in self.plots
+    def add_plot(self, plot, plot_id=DefaultPlotID):
+        """
+        Register a plot to the plot manager:
+            * plot: :py:class:`guiqwt.curve.CurvePlot` or 
+              :py:class:`guiqwt.image.ImagePlot` object
+            * plot_id (default id is the plot object's id: ``id(plot)``): 
+              unique ID identifying the plot (any Python object), 
+              this ID will be asked by the manager to access this plot later.
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
+        if plot_id is DefaultPlotID:
+            plot_id = id(plot)
+        assert plot_id not in self.plots
         assert isinstance(plot, EnhancedQwtPlot)
         assert not self.tools, "tools must be added after plots"
         assert not self.panels, "panels must be added after plots"
-        self.plots[id] = plot
+        self.plots[plot_id] = plot
         if len(self.plots) == 1:
             self.default_plot = plot
         plot.set_manager(self)
@@ -143,30 +163,71 @@ class PlotManager(object):
         plot.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.update_tools_status)
         
     def set_default_plot(self, plot):
+        """
+        Set default plot
+        
+        The default plot is the plot on which tools and panels will act.
+        """
         self.default_plot = plot
         
     def get_default_plot(self):
+        """
+        Return default plot
+        
+        The default plot is the plot on which tools and panels will act.
+        """
         return self.default_plot
 
     def add_panel(self, panel):
+        """
+        Register a panel to the plot manager
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
         assert panel.PANEL_ID not in self.panels
         assert not self.tools, "tools must be added after panels"
         self.panels[panel.PANEL_ID] = panel
         panel.register_panel(self)
 
-    def add_toolbar(self, toolbar, id):
-        assert id not in self.toolbars
-        self.toolbars[id] = toolbar
+    def add_toolbar(self, toolbar, toolbar_id="default"):
+        """
+        Add toolbar to the plot manager
+            toolbar: a QToolBar object
+            toolbar_id: toolbar's id (default id is string "default")
+        """
+        assert toolbar_id not in self.toolbars
+        self.toolbars[toolbar_id] = toolbar
         if self.default_toolbar is None:
             self.default_toolbar = toolbar
             
     def set_default_toolbar(self, toolbar):
+        """
+        Set default toolbar
+        """
         self.default_toolbar = toolbar
         
     def get_default_toolbar(self):
+        """
+        Return default toolbar
+        """
         return self.default_toolbar
 
     def add_tool(self, ToolKlass, *args, **kwargs):
+        """
+        Register a tool to the manager
+            * ToolKlass: tool's class (`guiqwt` builtin tools are defined in 
+              module :py:mod:`guiqwt.tools`)
+            * *args: arguments sent to the tool's class
+            * **kwargs: keyword arguments sent to the tool's class
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
         tool = ToolKlass(self, *args, **kwargs)
         self.tools.append(tool)
         for plot in self.plots.values():
@@ -176,6 +237,10 @@ class PlotManager(object):
         return tool
         
     def add_separator_tool(self, toolbar_id=None):
+        """
+        Register a separator tool to the plot manager: the separator tool is 
+        just a tool which insert a separator in the plot context menu
+        """
         if toolbar_id is None:
             for _id, toolbar in self.toolbars.iteritems():
                 if toolbar is self.get_default_toolbar():
@@ -184,31 +249,56 @@ class PlotManager(object):
         self.add_tool(DummySeparatorTool, toolbar_id)
         
     def set_default_tool(self, tool):
+        """
+        Set default tool
+        """
         self.default_tool = tool
 
     def get_default_tool(self):
+        """
+        Get default tool
+        """
         return self.default_tool
 
     def activate_default_tool(self):
+        """
+        Activate default tool
+        """
         self.get_default_tool().activate()
 
     def get_active_tool(self):
+        """
+        Return active tool
+        """
         return self.active_tool
 
     def set_active_tool(self, tool=None):
-        """Activate tool or default tool"""
+        """
+        Set active tool (if tool argument is None, the active tool will be 
+        the default tool)
+        """
         self.active_tool = tool
 
-    def get_plot(self, id=None):
-        if id is None:
+    def get_plot(self, plot_id=DefaultPlotID):
+        """
+        Return plot associated to `plot_id` (if method is called without 
+        specifying the `plot_id` parameter, return the default plot)
+        """
+        if plot_id is DefaultPlotID:
             return self.default_plot
-        return self.plots[id]
+        return self.plots[plot_id]
 
     def get_plots(self):
+        """
+        Return all registered plots
+        """
         return self.plots.values()
 
     def get_active_plot(self):
-        """The active plot is the plot whose canvas has the focus
+        """
+        Return the active plot
+        
+        The active plot is the plot whose canvas has the focus
         otherwise it's the "default" plot
         """
         for plot in self.plots.values():
@@ -227,7 +317,13 @@ class PlotManager(object):
             return group()
 
     def get_main(self):
-        """Return the main (parent) widget"""
+        """
+        Return the main (parent) widget
+        
+        Note that for py:class:`guiqwt.plot.CurvePlotWidget` or 
+        :py:class:`guiqwt.plot.ImagePlotWidget` objects, this method will 
+        return the widget itself because the plot manager is integrated to it.
+        """
         return self.main
 
     def get_panel(self, panel_id):
@@ -276,14 +372,17 @@ class PlotManager(object):
         from guiqwt import panels
         return self.get_panel(panels.ID_YCS)
 
-    def get_toolbar(self, tbname):
+    def get_toolbar(self, toolbar_id="default"):
         """
         Return toolbar from its ID
+            toolbar_id: toolbar's id (default id is string "default")
         """
-        return self.toolbars.get(tbname, None)
+        return self.toolbars.get(toolbar_id, None)
 
     def get_context_menu(self, plot):
-        """Return widget context menu -- built using active tools"""
+        """
+        Return widget context menu -- built using active tools
+        """
         menu = QMenu(plot)
         self.update_tools_status(plot)
         for tool in self.tools:
@@ -291,7 +390,9 @@ class PlotManager(object):
         return menu
         
     def update_tools_status(self, plot):
-        """Update tools for current plot"""
+        """
+        Update tools for current plot
+        """
         for tool in self.tools:
             tool.update_status(plot)
 
@@ -304,8 +405,10 @@ class PlotManager(object):
     # The following methods provide some sets of tools that
     # are often registered together
     def register_standard_tools(self):
-        """Registering basic tools for standard plot dialog
-        --> top of the context-menu"""
+        """
+        Registering basic tools for standard plot dialog
+        --> top of the context-menu
+        """
         t = self.add_tool(SelectTool)
         self.set_default_tool(t)
         self.add_tool(RectZoomTool)
@@ -421,6 +524,15 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setSizes([1, 2])
 
 class BaseCurvePlotWidget(QSplitter):
+    """
+    Construct a BaseCurvePlotWidget object, which includes:
+        * A plot (:py:class:`guiqwt.curve.CurvePlot`)
+        * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
+        
+    This object does nothing in itself because plot and panels are not 
+    connected to each other.
+    See children class :py:class:`guiqwt.plot.CurvePlotWidget`
+    """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
@@ -452,7 +564,7 @@ class CurvePlotWidget(BaseCurvePlotWidget, PlotManager):
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
-        self.add_plot(self.plot, id(self.plot))
+        self.add_plot(self.plot)
         self.add_panel(self.itemlist)
         
 class CurvePlotDialog(QDialog, PlotManager):
@@ -481,7 +593,7 @@ class CurvePlotDialog(QDialog, PlotManager):
         self.resize(640, 480)
         self.setWindowFlags(Qt.Window)
         
-        self.layout = QGridLayout()
+        self.plot_layout = QGridLayout()
         
         if options is None:
             options = {}
@@ -496,7 +608,7 @@ class CurvePlotDialog(QDialog, PlotManager):
         self.vlayout.addWidget(self.toolbar)
         
         self.setLayout(self.vlayout)
-        self.vlayout.addLayout(self.layout)
+        self.vlayout.addLayout(self.plot_layout)
         
         if self.edit:
             self.button_layout = QHBoxLayout()
@@ -508,8 +620,12 @@ class CurvePlotDialog(QDialog, PlotManager):
         self.register_tools()
         
     def install_button_layout(self):
-        """Install standard buttons (OK, Cancel) for dialog box
-        May be overriden to customize button box"""
+        """
+        Install standard buttons (OK, Cancel) in dialog button box layout 
+        (:py:attr:`guiqwt.plot.CurvePlotDialog.button_layout`)
+        
+        This method may be overriden to customize the button box
+        """
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
@@ -521,13 +637,20 @@ class CurvePlotDialog(QDialog, PlotManager):
         self.register_curve_tools()
 
     def create_plot(self, options):
-        """BaseCurvePlotWidget instantiation
-        May be overriden to customize plot layout"""
+        """
+        Create the plotting widget (which is an instance of class 
+        :py:class:`guiqwt.plot.BaseCurvePlotWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`) and 
+        then add the `item list` panel
+
+        May be overriden to customize the plot layout 
+        (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`)
+        """
         plotwidget = BaseCurvePlotWidget(self, **options)
-        self.layout.addWidget(plotwidget, 0, 0)
+        self.plot_layout.addWidget(plotwidget, 0, 0)
         
         # Configuring plot manager
-        self.add_plot(plotwidget.plot, id(plotwidget.plot))
+        self.add_plot(plotwidget.plot)
         self.add_panel(plotwidget.itemlist)
 
 
@@ -650,7 +773,7 @@ class ImagePlotWidget(BaseImagePlotWidget, PlotManager):
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
-        self.add_plot(self.plot, id(self.plot))
+        self.add_plot(self.plot)
         self.add_panel(self.itemlist)
         self.add_panel(self.xcsw)
         self.add_panel(self.ycsw)
@@ -675,11 +798,21 @@ class ImagePlotDialog(CurvePlotDialog):
                                  parent=parent)
 
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
+        """
+        Create the plotting widget (which is an instance of class 
+        :py:class:`guiqwt.plot.BaseImagePlotWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`) and 
+        then add the `item list`, `contrast adjustment` and X/Y axes 
+        cross section panels.
+
+        May be overriden to customize the plot layout 
+        (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`)
+        """
         plotwidget = BaseImagePlotWidget(self, **options)
-        self.layout.addWidget(plotwidget, row, column, rowspan, columnspan)
+        self.plot_layout.addWidget(plotwidget, row, column, rowspan, columnspan)
         
         # Configuring plot manager
-        self.add_plot(plotwidget.plot, id(plotwidget.plot))
+        self.add_plot(plotwidget.plot)
         self.add_panel(plotwidget.itemlist)
         self.add_panel(plotwidget.xcsw)
         self.add_panel(plotwidget.ycsw)

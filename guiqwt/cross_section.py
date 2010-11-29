@@ -579,7 +579,7 @@ class CrossSectionWidget(PanelWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         
-        self.local_manager.add_plot(self.cs_plot, "default")
+        self.local_manager.add_plot(self.cs_plot)
         
         self.cs_plot.standard_tools(self.local_manager)
         self.setWindowIcon(get_icon(widget_icon))

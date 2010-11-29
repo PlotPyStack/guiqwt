@@ -38,7 +38,7 @@ class CentralWidget(QWidget):
         
         self.manager = PlotManager(self)
         for plot in (self.plot1, self.plot2):
-            self.manager.add_plot(plot, id(plot))
+            self.manager.add_plot(plot)
         for panel in (self.itemlist, self.contrast):
             self.manager.add_panel(panel)
         

@@ -134,7 +134,7 @@ class Window(QMainWindow):
         
         self.manager = PlotManager(self)
         self.toolbar = QToolBar(_("Tools"), self)
-        self.manager.add_toolbar(self.toolbar, id(self.toolbar))
+        self.manager.add_toolbar(self.toolbar, "default")
         self.toolbar.setMovable(True)
         self.toolbar.setFloatable(True)
         self.addToolBar(Qt.TopToolBarArea, self.toolbar)
@@ -164,7 +164,7 @@ class Window(QMainWindow):
         
     def add_plot(self, i, j, plot):
         self.layout.addWidget(plot, i, j)
-        self.manager.add_plot(plot, id(plot))
+        self.manager.add_plot(plot)
         self.plots.append(plot)
 
     def replot(self):
