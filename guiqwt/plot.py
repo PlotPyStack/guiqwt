@@ -419,7 +419,7 @@ class PlotManager(object):
         if self.get_itemlist_panel():
             self.add_tool(ItemListTool)
 
-    def register_only_curve_tools(self):
+    def register_curve_tools(self):
         """
         Register only curve-related tools
         
@@ -427,26 +427,12 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.add_tool`
         :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
         self.add_tool(AntiAliasingTool)
         self.add_tool(AxisScaleTool)
-        
-    def register_other_tools(self):
-        """
-        Register other common tools
-        
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
-        """
-        self.add_tool(SaveAsTool)
-        self.add_tool(PrintTool)
-        self.add_tool(HelpTool)
 
-    def register_only_image_tools(self):
+    def register_image_tools(self):
         """
         Register only image-related tools
         
@@ -454,7 +440,7 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.add_tool`
         :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
         """
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
@@ -467,7 +453,21 @@ class PlotManager(object):
             self.add_tool(AverageCrossSectionsTool)
         self.add_tool(SnapshotTool)
         
-    def register_curve_tools(self):
+    def register_other_tools(self):
+        """
+        Register other common tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        """
+        self.add_tool(SaveAsTool)
+        self.add_tool(PrintTool)
+        self.add_tool(HelpTool)
+        
+    def register_all_curve_tools(self):
         """
         Register standard, curve-related and other tools
         
@@ -475,18 +475,18 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.add_tool`
         :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_all_image_tools`
         """
         self.register_standard_tools()
         self.add_separator_tool()
-        self.register_only_curve_tools()
+        self.register_curve_tools()
         self.add_separator_tool()
         self.register_other_tools()
         self.get_default_tool().activate()
     
-    def register_image_tools(self):
+    def register_all_image_tools(self):
         """
         Register standard, image-related and other tools
         
@@ -494,13 +494,13 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.add_tool`
         :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_only_image_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_all_curve_tools`
         """
         self.register_standard_tools()
         self.add_separator_tool()
-        self.register_only_image_tools()
+        self.register_image_tools()
         self.add_separator_tool()
         self.register_other_tools()
         self.get_default_tool().activate()
@@ -632,9 +632,15 @@ class CurvePlotDialog(QDialog, PlotManager):
         self.button_layout.addWidget(bbox)
 
     def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools"""
-        self.register_curve_tools()
+        """
+        Register the plotting dialog box tools: the base implementation 
+        provides standard, curve-related and other tools - i.e. calling 
+        this method is exactly the same as calling 
+        :py:meth:`guiqwt.plot.CurvePlotDialog.register_all_curve_tools`
+        
+        This method may be overriden to provide a fully customized set of tools
+        """
+        self.register_all_curve_tools()
 
     def create_plot(self, options):
         """
@@ -811,6 +817,17 @@ class ImagePlotDialog(CurvePlotDialog):
         CurvePlotDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
                                  toolbar=toolbar, options=options,
                                  parent=parent)
+
+    def register_tools(self):
+        """
+        Register the plotting dialog box tools: the base implementation 
+        provides standard, image-related and other tools - i.e. calling 
+        this method is exactly the same as calling 
+        :py:meth:`guiqwt.plot.CurvePlotDialog.register_all_image_tools`
+        
+        This method may be overriden to provide a fully customized set of tools
+        """
+        self.register_all_image_tools()
 
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
         """

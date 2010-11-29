@@ -180,9 +180,9 @@ class Window(QMainWindow):
             
     def register_tools(self, images=False):
         if images:
-            self.manager.register_image_tools()
+            self.manager.register_all_image_tools()
         else:
-            self.manager.register_curve_tools()
+            self.manager.register_all_curve_tools()
     
     def display(self):
         self.show()

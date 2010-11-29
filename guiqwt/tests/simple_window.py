@@ -85,7 +85,7 @@ class CentralWidget(QSplitter):
         self.item = None # image item
         
         self.plotwidget.add_toolbar(toolbar, "default")
-        self.plotwidget.register_image_tools()
+        self.plotwidget.register_all_image_tools()
         
         self.addWidget(self.plotwidget)
 

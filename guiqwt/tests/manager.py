@@ -43,7 +43,7 @@ class CentralWidget(QWidget):
             self.manager.add_panel(panel)
         
     def register_tools(self):
-        self.manager.register_image_tools()        
+        self.manager.register_all_image_tools()        
         
 
 class Window(QMainWindow):
