@@ -43,6 +43,10 @@ class SignalParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"), transpose=True, minmax="rows",
                           ).set_prop("display", hide=GetAttrProp("_hide_data"))
+    xmin = FloatItem("Xmin", default=-10.).set_prop("display",
+                                                hide=GetAttrProp("_hide_size"))
+    xmax = FloatItem("Xmax", default=10.).set_prop("display",
+                                                hide=GetAttrProp("_hide_size"))
     size = IntItem(_("Size"), help=_("Signal size (total number of points)"),
                    min=1, default=500).set_prop("display",
                                                 hide=GetAttrProp("_hide_size"))
@@ -234,23 +238,21 @@ class MainWindow(QMainWindow):
         self.number += 1
         signal = SignalParam()
         signal.title = signalnew.title
-        size = signalnew.size
+        xarr = np.linspace(signalnew.xmin, signalnew.xmax, signalnew.size)
         if signalnew.type == 'zeros':
-            signal.data = np.vstack( (np.arange(size), np.zeros(size)) )
+            signal.data = np.vstack((xarr, np.zeros(signalnew.size)))
         elif signalnew.type == 'rand':
-            signal.data = np.vstack( (np.arange(size), np.random.rand(size)) )
+            signal.data = np.vstack((xarr, np.random.rand(signalnew.size)-.5))
         elif signalnew.type == 'gauss':
             class GaussParam(DataSet):
-                xmin = FloatItem("Xmin", default=-10.)
-                xmax = FloatItem("Xmax", default=10.)
+                a = FloatItem("Norm", default=1.)
                 x0 = FloatItem("X0", default=0.0)
                 sigma = FloatItem(u"σ", default=5.)
             param = GaussParam(_("New gaussian function"))
             if not param.edit(self):
                 return
-            xgauss = np.linspace(param.xmin, param.xmax, size)
-            ygauss = np.exp(-.5*((xgauss-param.x0)/param.sigma)**2)
-            signal.data = (xgauss, ygauss)
+            ygauss = param.a*np.exp(-.5*((xarr-param.x0)/param.sigma)**2)
+            signal.data = np.vstack((xarr, ygauss))
         self.add_signal(signal)
     
     def open_signal(self):
@@ -294,7 +296,7 @@ class MainWindow(QMainWindow):
                 if signal.data is None:
                     signal.data = np.array(sig.data, copy=True)
                 else:
-                    signal.data += sig.data
+                    signal.data[1] += sig.data[1]
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -309,7 +311,8 @@ class MainWindow(QMainWindow):
         signal.title = "-".join(["s%03d" % row for row in rows])
         signal.size = self.signals[rows[0]].size
         try:
-            signal.data = self.signals[rows[1]].data-self.signals[rows[0]].data
+            sig0, sig1 = self.signals[rows[0]], self.signals[rows[1]]
+            signal.data[1] = sig1.data[1]-sig0.data[1]
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -326,8 +329,9 @@ class MainWindow(QMainWindow):
             signal = SignalParam()
             signal.title = "%s(s%03d)" % (name, row)
             signal.size = orig.size
+            signal.data = orig.data.copy()
             try:
-                signal.data = func(orig.data)
+                signal.data[1] = func(orig.data[1])
             except Exception, msg:
                 import traceback
                 traceback.print_exc()

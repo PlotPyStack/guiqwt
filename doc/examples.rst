@@ -119,3 +119,11 @@ Simple application
    :start-after: SHOW
 
 .. image:: images/screenshots/simple_window.png
+
+More complex signal processing application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: ../guiqwt/tests/signal_app.py
+   :start-after: SHOW
+
+.. image:: images/screenshots/signal_app.png
