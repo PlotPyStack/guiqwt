@@ -65,9 +65,9 @@ class ExampleDialog(ImagePlotDialog):
         self.filter_gbox.setEnabled(False)
         self.connect(self.filter_gbox, SIGNAL("apply_button_clicked()"),
                      self.apply_filter)
-        self.layout.addWidget(self.filter_gbox, 0, 0)
+        self.plot_layout.addWidget(self.filter_gbox, 0, 0)
         self.param_gbox = DataSetShowGroupBox(_("Image parameters"), ImageParam)
-        self.layout.addWidget(self.param_gbox, 0, 1)
+        self.plot_layout.addWidget(self.param_gbox, 0, 1)
         
         options = dict(title=_("Image title"), zlabel=_("z-axis scale label"))
         ImagePlotDialog.create_plot(self, options, 1, 0, 1, 0)

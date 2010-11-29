@@ -219,7 +219,7 @@ class FitDialog(CurvePlotDialog):
             params_layout.addWidget(checkbox, i, 1)
             params_layout.addWidget(slider, i, 2)
             params_layout.addWidget(label, i, 3)
-        self.layout.addWidget(params_frame, 1, 0)
+        self.plot_layout.addWidget(params_frame, 1, 0)
         
     # Public API ---------------------------------------------------------------        
     def refresh(self):
