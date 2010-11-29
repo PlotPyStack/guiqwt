@@ -112,7 +112,7 @@ from guiqwt.plot import PlotManager
 from guiqwt.image import ImagePlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.histogram import ContrastAdjustment
-from guiqwt.cross_section import XCrossSectionWidget, YCrossSectionWidget
+from guiqwt.cross_section import XCrossSection, YCrossSection
 from guiqwt.builder import make
 
 
@@ -129,8 +129,8 @@ class Window(QMainWindow):
         self.plots = []
         self.itemlist = PlotItemList(None)
         self.contrast = ContrastAdjustment(None)
-        self.xcsw = XCrossSectionWidget(None)
-        self.ycsw = YCrossSectionWidget(None)
+        self.xcsw = XCrossSection(None)
+        self.ycsw = YCrossSection(None)
         
         self.manager = PlotManager(self)
         self.toolbar = QToolBar(_("Tools"), self)

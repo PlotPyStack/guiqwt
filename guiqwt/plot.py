@@ -658,6 +658,21 @@ class CurvePlotDialog(QDialog, PlotManager):
 # Image Plot Widget/Dialog with integrated Levels Histogram and other widgets
 #===============================================================================
 class BaseImagePlotWidget(QSplitter):
+    """
+    Construct a BaseImagePlotWidget object, which includes:
+        * A plot (:py:class:`guiqwt.curve.CurvePlot`)
+        * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
+        * A `contrast adjustment` panel 
+          (:py:class:`guiqwt.histogram.ContrastAdjustment`)
+        * An `X-axis cross section` panel
+          (:py:class:`guiqwt.histogram.XCrossSection`)
+        * An `Y-axis cross section` panel
+          (:py:class:`guiqwt.histogram.YCrossSection`)
+        
+    This object does nothing in itself because plot and panels are not 
+    connected to each other.
+    See children class :py:class:`guiqwt.plot.ImagePlotWidget`
+    """
     def __init__(self, parent=None, title="",
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
@@ -675,12 +690,12 @@ class BaseImagePlotWidget(QSplitter):
                               lock_aspect_ratio=lock_aspect_ratio,
                               gridparam=gridparam)
 
-        from guiqwt.cross_section import YCrossSectionWidget
-        self.ycsw = YCrossSectionWidget(self, position=ysection_pos)
+        from guiqwt.cross_section import YCrossSection
+        self.ycsw = YCrossSection(self, position=ysection_pos)
         self.ycsw.setVisible(show_ysection)
         
-        from guiqwt.cross_section import XCrossSectionWidget
-        self.xcsw = XCrossSectionWidget(self)
+        from guiqwt.cross_section import XCrossSection
+        self.xcsw = XCrossSection(self)
         self.xcsw.setVisible(show_xsection)
         
         self.connect(self.xcsw, SIG_VISIBILITY_CHANGED, self.xcsw_is_visible)

@@ -10,9 +10,9 @@ guiqwt.cross_section
 --------------------
 
 The `cross_section` module provides cross section related objects:
-    * :py:class:`guiqwt.cross_section.XCrossSectionWidget`: the X-axis 
+    * :py:class:`guiqwt.cross_section.XCrossSection`: the X-axis 
       `cross-section panel`
-    * :py:class:`guiqwt.cross_section.YCrossSectionWidget`: the Y-axis 
+    * :py:class:`guiqwt.cross_section.YCrossSection`: the Y-axis 
       `cross-section panel`
     * and other related objects which are exclusively used by the cross-section 
       panels
@@ -27,10 +27,10 @@ Simple cross-section demo:
 Reference
 ~~~~~~~~~
 
-.. autoclass:: XCrossSectionWidget
+.. autoclass:: XCrossSection
    :members:
    :inherited-members:
-.. autoclass:: YCrossSectionWidget
+.. autoclass:: YCrossSection
    :members:
    :inherited-members:
 """
@@ -664,13 +664,13 @@ class CrossSectionWidget(PanelWidget):
 assert_interfaces_valid(CrossSectionWidget)
 
 
-class XCrossSectionWidget(CrossSectionWidget):
+class XCrossSection(CrossSectionWidget):
     """X-axis cross section widget"""
     PANEL_ID = ID_XCS
     OTHER_PANEL_ID = ID_YCS
     CrossSectionPlotKlass = XCrossSectionPlot
 
-class YCrossSectionWidget(CrossSectionWidget):
+class YCrossSection(CrossSectionWidget):
     """
     Y-axis cross section widget
     parent (QWidget): parent widget
