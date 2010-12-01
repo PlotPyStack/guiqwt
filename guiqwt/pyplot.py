@@ -448,6 +448,7 @@ def plot(*args, **kwargs):
     for curve in curves:
         axe.add_plot(curve)
     _show_if_interactive()
+    return curves
 
 def plotyy(x1, y1, x2, y2):
     """
@@ -468,6 +469,7 @@ def plotyy(x1, y1, x2, y2):
     axe.add_plot(curve1)
     axe.add_plot(curve2)
     _show_if_interactive()
+    return [curve1, curve2]
 
 def hist(data, bins=None, logscale=None, title=None, color=None):
     """
@@ -485,6 +487,7 @@ def hist(data, bins=None, logscale=None, title=None, color=None):
                            title=title, color=color, yaxis='left')
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def semilogx(*args, **kwargs):
     """
@@ -502,6 +505,7 @@ def semilogx(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
     
 def semilogy(*args, **kwargs):
     """
@@ -519,6 +523,7 @@ def semilogy(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
     
 def loglog(*args, **kwargs):
     """
@@ -537,6 +542,7 @@ def loglog(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def errorbar(*args, **kwargs):
     """
@@ -553,6 +559,7 @@ def errorbar(*args, **kwargs):
     curve = make.merror(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def imshow(data):
     """
@@ -573,6 +580,7 @@ def imshow(data):
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()
+    return [img]
 
 def pcolor(*args):
     """
@@ -595,6 +603,7 @@ def pcolor(*args):
     axe.add_image(img)
     axe.yreverse = len(args) == 1
     _show_if_interactive()
+    return [img]
 
 def interactive(state):
     """Toggle interactive mode"""
