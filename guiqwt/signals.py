@@ -82,7 +82,7 @@ SIG_ITEM_SELECTION_CHANGED = SIGNAL('item_selection_changed(PyQt_PyObject)')
 SIG_PLOT_LABELS_CHANGED = SIGNAL('plot_labels_changed(PyQt_PyObject)')
 
 # Emitted (by plot) when any plot axis direction has changed
-SIG_AXIS_DIRECTION_CHANGED = SIGNAL('axis_direction_changed(plot,PyQt_PyObject)')
+SIG_AXIS_DIRECTION_CHANGED = SIGNAL('axis_direction_changed(PyQt_PyObject,PyQt_PyObject)')
 
 # Emitted by "contrast" panel's histogram when the lut range of 
 # some items changed (for now, this signal is for guiqwt.histogram module's
