@@ -89,7 +89,10 @@ if sphinx:
             # previously installed version
             build = self.get_finalized_command('build')
             sys.path.insert(0, os.path.abspath(build.build_lib))
-            sphinx.setup_command.BuildDoc.run(self)
+            try:
+                sphinx.setup_command.BuildDoc.run(self)
+            except UnicodeDecodeError:
+                print >>sys.stderr, "ERROR: unable to build documentation because Sphinx do not handle source path with non-ASCII characters. Please try to move the source package to another location (path with *only* ASCII characters)."            
             sys.path.pop(0)
 
     cmdclass['build_doc'] = build_doc
