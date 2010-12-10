@@ -27,7 +27,7 @@ try:
     import sphinx.ext.viewcode
     extensions.append('sphinx.ext.viewcode')
 except ImportError:
-    print >>sys.stderr, "Warning: the Sphinx viewcode extension was not found"
+    print >>sys.stderr, "WARNING: the Sphinx viewcode extension was not found"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
