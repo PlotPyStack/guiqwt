@@ -57,6 +57,7 @@ Simple example *without* the `plot manager`:
 
 .. literalinclude:: ../guiqwt/tests/filtertest1.py
    :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 Simple example *with* the `plot manager`:
 even if this simple example does not justify the use of the `plot manager` 
@@ -66,6 +67,7 @@ graphical user interfaces.
 
 .. literalinclude:: ../guiqwt/tests/filtertest2.py
    :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 Reference
 ~~~~~~~~~

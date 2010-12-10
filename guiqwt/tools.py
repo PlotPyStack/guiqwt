@@ -82,7 +82,8 @@ for testing purpose:
 
 .. literalinclude:: ../guiqwt/tests/image_plot_tools.py
    :start-after: SHOW
-   
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
 .. image:: images/screenshots/image_plot_tools.png
 
 
@@ -248,6 +249,7 @@ from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
+
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST

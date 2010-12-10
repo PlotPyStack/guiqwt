@@ -19,7 +19,8 @@ Example
 
 .. literalinclude:: ../guiqwt/tests/fit.py
    :start-after: SHOW
-   
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
 .. image:: images/screenshots/fit.png
 
 Reference
@@ -216,6 +217,7 @@ class FitDialog(CurvePlotDialog):
             self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
             self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
             params_layout.addWidget(button, i, 0)
+
             params_layout.addWidget(checkbox, i, 1)
             params_layout.addWidget(slider, i, 2)
             params_layout.addWidget(label, i, 3)
