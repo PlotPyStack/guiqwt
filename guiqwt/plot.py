@@ -50,6 +50,23 @@ The `plot` module provides the following features:
     Module :py:mod:`guiqwt.baseplot`
         Module providing the `guiqwt` plotting widget base class
 
+
+Class diagrams
+~~~~~~~~~~~~~~
+
+Curve-related widgets with integrated plot manager:
+
+.. image:: images/curve_widgets.png
+
+Image-related widgets with integrated plot manager:
+
+.. image:: images/image_widgets.png
+
+Building your own plot manager:
+
+.. image:: images/my_plot_manager.png
+
+
 Examples
 ~~~~~~~~
 

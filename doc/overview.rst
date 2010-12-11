@@ -113,6 +113,14 @@ There are two kinds of plotting widgets defined in `guiqwt`:
       :py:class:`guiqwt.plot.CurvePlotDialog` and 
       :py:class:`guiqwt.plot.ImagePlotDialog`
 
+Curve-related widgets with integrated plot manager:
+
+.. image:: images/curve_widgets.png
+
+Image-related widgets with integrated plot manager:
+
+.. image:: images/image_widgets.png
+
 .. seealso::
     
     Module :py:mod:`guiqwt.curve`
