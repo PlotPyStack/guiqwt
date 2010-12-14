@@ -1,3 +1,0 @@
-#!/usr/bin/env python
-from guiqwt import tests
-tests.run()
