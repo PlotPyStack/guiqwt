@@ -172,7 +172,7 @@ class PlotItemBuilder(object):
 
     def __set_param(self, param, title, color, linestyle, linewidth,
                     marker, markersize, markerfacecolor, markeredgecolor,
-                    shade, fitted, curvestyle):
+                    shade, fitted, curvestyle, curvetype):
         """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
         if title:
             param.label = title
@@ -203,7 +203,9 @@ class PlotItemBuilder(object):
         if fitted is not None:
             param.fitted = fitted
         if curvestyle is not None:
-            param.style = curvestyle
+            param.curvestyle = curvestyle
+        if curvetype is not None:
+            param.curvetype = curvetype
             
     def __get_arg_triple_plot(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
@@ -324,7 +326,8 @@ class PlotItemBuilder(object):
     def curve(self, x, y, title=u"",
               color=None, linestyle=None, linewidth=None,
               marker=None, markersize=None, markerfacecolor=None,
-              markeredgecolor=None, shade=None, fitted=None, curvestyle=None,
+              markeredgecolor=None, shade=None, fitted=None,
+              curvestyle=None, curvetype=None,
               xaxis="bottom", yaxis="left"):
         """
         Make a curve `plot item` from x, y, data
@@ -349,6 +352,9 @@ class PlotItemBuilder(object):
             * curvestyle: attribute name from the 
               :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
+            * curvetype: attribute name from the 
+              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveType` enum
+              (i.e. "Yfx" or "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
         Examples:
@@ -364,7 +370,7 @@ class PlotItemBuilder(object):
             title = make_title(basename, CURVE_COUNT)
         self.__set_param(param, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle)
+                         shade, fitted, curvestyle, curvetype)
         return self.pcurve(x, y, param, xaxis, yaxis)
 
     def merror(self, *args, **kwargs):
@@ -414,7 +420,7 @@ class PlotItemBuilder(object):
     def error(self, x, y, dx, dy, title=u"",
               color=None, linestyle=None, linewidth=None, marker=None,
               markersize=None, markerfacecolor=None, markeredgecolor=None,
-              shade=None, fitted=None, curvestyle=None,
+              shade=None, fitted=None, curvestyle=None, curvetype=None,
               xaxis="bottom", yaxis="left"):
         """
         Make an errorbar curve `plot item` 
@@ -441,6 +447,9 @@ class PlotItemBuilder(object):
             * curvestyle: attribute name from the 
               :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
+            * curvetype: attribute name from the 
+              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveType` enum
+              (i.e. "Yfx" or "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
         Examples::
@@ -458,7 +467,7 @@ class PlotItemBuilder(object):
             curveparam.label = make_title(basename, CURVE_COUNT)
         self.__set_param(curveparam, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle)
+                         shade, fitted, curvestyle, curvetype)
         errorbarparam.color = curveparam.line.color
         return self.perror(x, y, dx, dy, curveparam, errorbarparam,
                            xaxis, yaxis)
