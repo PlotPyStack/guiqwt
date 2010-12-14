@@ -1014,8 +1014,8 @@ def to_bins(x):
 class XYImageItem(ImageItem):
     """
     Construct an image item with non-linear X/Y axes
-        * x: 1D NumPy array
-        * y: 1D NumPy array
+        * x: 1D NumPy array, must be increasing
+        * y: 1D NumPy array, must be increasing
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.ImageParam` instance)
@@ -1023,6 +1023,8 @@ class XYImageItem(ImageItem):
     __implements__ = (IBasePlotItem, IBaseImageItem)
     def __init__(self, x, y, data, param=None):
         super(XYImageItem, self).__init__(data, param)
+        self.x = None
+        self.y = None
         if x is not None and y is not None:
             self.set_xy(x, y)
 
@@ -1055,14 +1057,24 @@ class XYImageItem(ImageItem):
         ni, nj = self.data.shape
         x = np.array(x, float)
         y = np.array(y, float)
+        if not np.all(np.diff(x) > 0):
+            raise ValueError("x must be an increasing 1D array")
+        if not np.all(np.diff(y) > 0):
+            raise ValueError("y must be an increasing 1D array")
         if x.shape[0] == nj:
             self.x = to_bins(x)
         elif x.shape[0] == nj+1:
             self.x = x
+        else:
+            raise IndexError("x must be a 1D array of length %d or %d" \
+                             % (nj, nj+1))
         if y.shape[0] == ni:
             self.y = to_bins(y)
         elif x.shape[0] == ni+1:
             self.y = y
+        else:
+            raise IndexError("y must be a 1D array of length %d or %d" \
+                             % (ni, ni+1))
         self.bounds = QRectF(QPointF(self.x[0], self.y[0]),
                              QPointF(self.x[-1], self.y[-1]))
         self.update_border()
