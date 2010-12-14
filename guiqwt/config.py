@@ -423,6 +423,7 @@ DEFAULTS = {
               "curve/symbol/alpha" : 1.,
               "curve/shade" : .85,
               "curve/fitted" : False,
+              "curve/curvestyle" : "Steps",
               "curve/label" : "",
 
               "range/line/style" : 'SolidLine',

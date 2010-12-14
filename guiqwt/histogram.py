@@ -106,13 +106,15 @@ class HistogramItem(CurveItem):
         self.logscale = None
         self.remove_first_bin = None
         self.old_logscale = None
+        if curveparam is None:
+            curveparam = CurveParam(_("Curve"), icon='curve.png')
+            curveparam.curvestyle = "Steps"
         if histparam is None:
             self.histparam = HistogramParam(title=_("Histogram"),
                                             icon='histogram.png')
         else:
             self.histparam = histparam
         CurveItem.__init__(self, curveparam)
-        self.setStyle(QwtPlotCurve.Steps)
         self.setCurveAttribute(QwtPlotCurve.Inverted)
             
     def set_hist_source(self, src):

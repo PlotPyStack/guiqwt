@@ -274,7 +274,7 @@ class CurveItem(QwtPlotCurve):
     def __init__(self, curveparam=None):
         super(CurveItem, self).__init__()
         if curveparam is None:
-            self.curveparam = CurveParam()
+            self.curveparam = CurveParam(_("Curve"), icon='curve.png')
         else:
             self.curveparam = curveparam
         self.selected = False
@@ -476,7 +476,8 @@ class ErrorBarCurveItem(CurveItem):
     """
     def __init__(self, curveparam=None, errorbarparam=None):
         if errorbarparam is None:
-            self.errorbarparam = ErrorBarParam()
+            self.errorbarparam = ErrorBarParam(_("Error bars"),
+                                               icon='errorbar.png')
         else:
             self.errorbarparam = errorbarparam
         super(ErrorBarCurveItem, self).__init__(curveparam)

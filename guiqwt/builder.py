@@ -493,7 +493,7 @@ class PlotItemBuilder(object):
         """
         basename = _("Histogram")
         histparam = HistogramParam(title=basename, icon='histogram.png')
-        curveparam = CurveParam()
+        curveparam = CurveParam(_("Curve"), icon='curve.png')
         curveparam.read_config(CONF, "histogram", "curve")
         if not title:
             global HISTOGRAM_COUNT
