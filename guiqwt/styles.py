@@ -260,12 +260,12 @@ def build_reverse_map(lst, obj):
         dict[val] = idx
     return dict
 
-LINESTYLE_CHOICES = [("SolidLine", _("solid"), "solid.png"),
-                     ("DashLine", _("dashed"), "dash.png"),
-                     ("DotLine", _("dotted"), "dot.png"),
-                     ("DashDotLine", _("dash-dot"), "dashdot.png"),
-                     ("DashDotDotLine", _("dash-dot-dot"), "dashdotdot.png"),
-                     ("NoPen", _("no line"), "none.png"),
+LINESTYLE_CHOICES = [("SolidLine", _("Solid line"), "solid.png"),
+                     ("DashLine", _("Dashed line"), "dash.png"),
+                     ("DotLine", _("Dotted line"), "dot.png"),
+                     ("DashDotLine", _("Dash-dot line"), "dashdot.png"),
+                     ("DashDotDotLine", _("Dash-dot-dot line"), "dashdotdot.png"),
+                     ("NoPen", _("No line"), "none.png"),
                      ]
 MARKER_CHOICES = [("Cross", _("Cross"), "cross.png"),
                   ("Ellipse", _("Ellipse"), "ellipse.png"),
@@ -280,6 +280,12 @@ MARKER_CHOICES = [("Cross", _("Cross"), "cross.png"),
                   ("Star2", _("Hexagon"), "hexagon.png"),
                   ("NoSymbol", _("No symbol"), "none.png"),
                   ]
+CURVESTYLE_CHOICES = [("Lines", _("Lines"), "lines.png"),
+                      ("Sticks", _("Sticks"), "sticks.png"),
+                      ("Steps", _("Steps"), "steps.png"),
+                      ("Dots", _("Dots"), "dots.png"),
+                      ("NoCurve", _("No curve"), "none.png")
+                      ]
 
 BRUSHSTYLE_CHOICES = [
     ("NoBrush", _("No brush pattern"), "nobrush.png"),
@@ -309,6 +315,8 @@ MARKER_NAME = build_reverse_map(MARKER_CHOICES, QwtSymbol)
 #    _val = getattr(QwtSymbol, _name)
 #    if isinstance(_val, QwtSymbol.Style):
 #        MARKER_NAME[_val] = _name
+
+CURVESTYLE_NAME = build_reverse_map(CURVESTYLE_CHOICES, QwtPlotCurve)
 
 LINESTYLE_NAME = build_reverse_map(LINESTYLE_CHOICES, Qt)
 #for _name in dir(Qt):
@@ -879,10 +887,13 @@ class CurveParam(DataSet):
     symbol = SymbolItem(_("Symbol"))
     shade = FloatItem(_("Shadow"), default = 0, min=0, max=1)
     fitted = BoolItem(_("Fit curve to data"), _("Fitting"), default=False)
+    style = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
+                            default="Lines")
 
     def update_param(self, curve):
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
+        self.style = CURVESTYLE_NAME[curve.style()]
     
     def update_curve(self, curve):
         if not self._multiselection:
@@ -901,6 +912,8 @@ class CurveParam(DataSet):
         self.symbol.update_symbol( curve )
         # CurveAttribute
         curve.setCurveAttribute(QwtPlotCurve.Fitted, self.fitted)
+        # Curve style
+        curve.setStyle(getattr(QwtPlotCurve, self.style))
 
 class CurveParam_MS(CurveParam):
     _multiselection = True

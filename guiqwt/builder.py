@@ -172,7 +172,7 @@ class PlotItemBuilder(object):
 
     def __set_param(self, param, title, color, linestyle, linewidth,
                     marker, markersize, markerfacecolor, markeredgecolor,
-                    shade, fitted):
+                    shade, fitted, curvestyle):
         """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
         if title:
             param.label = title
@@ -202,6 +202,8 @@ class PlotItemBuilder(object):
             param.shade = shade
         if fitted is not None:
             param.fitted = fitted
+        if curvestyle is not None:
+            param.style = curvestyle
             
     def __get_arg_triple_plot(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
@@ -322,11 +324,32 @@ class PlotItemBuilder(object):
     def curve(self, x, y, title=u"",
               color=None, linestyle=None, linewidth=None,
               marker=None, markersize=None, markerfacecolor=None,
-              markeredgecolor=None, shade=None, fitted=None,
+              markeredgecolor=None, shade=None, fitted=None, curvestyle=None,
               xaxis="bottom", yaxis="left"):
         """
         Make a curve `plot item` from x, y, data
         (:py:class:`guiqwt.curve.CurveItem` object)
+            * x: 1D NumPy array
+            * y: 1D NumPy array
+            * color: curve color name
+            * linestyle: curve line style (MATLAB-like string or attribute name 
+              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
+              (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine", 
+              "DashDotDotLine" or "NoPen")
+            * linewidth: line width (pixels)
+            * marker: marker shape (MATLAB-like string or attribute name from 
+              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
+              "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle", 
+              "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
+            * markersize: marker size (pixels)
+            * markerfacecolor: marker face color name
+            * markeredgecolor: marker edge color name
+            * shade: 0 <= float <= 1 (curve shade)
+            * fitted: boolean (fit curve to data)
+            * curvestyle: attribute name from the 
+              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
+              (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
+            * xaxis, yaxis: X/Y axes bound to curve
         
         Examples:
         curve(x, y, marker='Ellipse', markerfacecolor='#ffffff')
@@ -341,7 +364,7 @@ class PlotItemBuilder(object):
             title = make_title(basename, CURVE_COUNT)
         self.__set_param(param, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted)
+                         shade, fitted, curvestyle)
         return self.pcurve(x, y, param, xaxis, yaxis)
 
     def merror(self, *args, **kwargs):
@@ -372,6 +395,13 @@ class PlotItemBuilder(object):
         Make an errorbar curve `plot item` 
         based on a `guiqwt.styles.ErrorBarParam` instance
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
+            * x: 1D NumPy array
+            * y: 1D NumPy array
+            * dx: None, or scalar, or 1D NumPy array
+            * dy: None, or scalar, or 1D NumPy array
+            * curveparam: `guiqwt.styles.CurveParam` object
+            * errorbarparam: `guiqwt.styles.ErrorBarParam` object
+            * xaxis, yaxis: X/Y axes bound to curve
         
         Usage: perror(x, y, dx, dy, curveparam, errorbarparam)
         """
@@ -384,10 +414,34 @@ class PlotItemBuilder(object):
     def error(self, x, y, dx, dy, title=u"",
               color=None, linestyle=None, linewidth=None, marker=None,
               markersize=None, markerfacecolor=None, markeredgecolor=None,
-              shade=None, fitted=None, xaxis="bottom", yaxis="left"):
+              shade=None, fitted=None, curvestyle=None,
+              xaxis="bottom", yaxis="left"):
         """
         Make an errorbar curve `plot item` 
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
+            * x: 1D NumPy array
+            * y: 1D NumPy array
+            * dx: None, or scalar, or 1D NumPy array
+            * dy: None, or scalar, or 1D NumPy array
+            * color: curve color name
+            * linestyle: curve line style (MATLAB-like string or attribute name 
+              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
+              (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine", 
+              "DashDotDotLine" or "NoPen")
+            * linewidth: line width (pixels)
+            * marker: marker shape (MATLAB-like string or attribute name from 
+              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
+              "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle", 
+              "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
+            * markersize: marker size (pixels)
+            * markerfacecolor: marker face color name
+            * markeredgecolor: marker edge color name
+            * shade: 0 <= float <= 1 (curve shade)
+            * fitted: boolean (fit curve to data)
+            * curvestyle: attribute name from the 
+              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
+              (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
+            * xaxis, yaxis: X/Y axes bound to curve
         
         Examples::
             error(x, y, None, dy, marker='Ellipse', markerfacecolor='#ffffff')
@@ -404,7 +458,7 @@ class PlotItemBuilder(object):
             curveparam.label = make_title(basename, CURVE_COUNT)
         self.__set_param(curveparam, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted)
+                         shade, fitted, curvestyle)
         errorbarparam.color = curveparam.line.color
         return self.perror(x, y, dx, dy, curveparam, errorbarparam,
                            xaxis, yaxis)
@@ -414,7 +468,7 @@ class PlotItemBuilder(object):
         """
         Make 1D Histogram `plot item` 
         (:py:class:`guiqwt.histogram.HistogramItem` object)
-            * data (1-D array)
+            * data (1D NumPy array)
             * bins: number of bins (int)
             * logscale: Y-axis scale (bool)
         """
@@ -500,7 +554,7 @@ class PlotItemBuilder(object):
                  background_color=None, alpha_mask=None, alpha=None,
                  colormap=None, xaxis="bottom", yaxis="left", zaxis="right"):
         """
-        Make a pseudocolor `plot item` of a 2-D array
+        Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
         param = ImageParam(title=_("Image"), icon='image.png')
@@ -511,7 +565,7 @@ class PlotItemBuilder(object):
 
     def pcolor(self, *args, **kwargs):
         """
-        Make a pseudocolor `plot item` of a 2-D array 
+        Make a pseudocolor `plot item` of a 2D array 
         based on MATLAB-like syntax
         (:py:class:`guiqwt.image.QuadGridItem` object)
         
@@ -597,15 +651,15 @@ class PlotItemBuilder(object):
         """
         Make a 2D Histogram `plot item` 
         (:py:class:`guiqwt.image.Histogram2DItem` object)
-            * X: data (1-D array)
-            * Y: data (1-D array)
+            * X: data (1D array)
+            * Y: data (1D array)
             * NX: Number of bins along x-axis (int)
             * NY: Number of bins along y-axis (int)
             * logscale: Z-axis scale (bool)
             * title: item title (string)
             * transparent: enable transparency (bool)
         """
-        basename = _("2-D Histogram")
+        basename = _("2D Histogram")
         param = Histogram2DParam(title=basename, icon='histogram2d.png')
         if NX is not None:
             param.nx_bins = NX
