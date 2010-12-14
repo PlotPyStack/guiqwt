@@ -72,7 +72,7 @@ from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
                            SegmentShape, PointShape)
-from guiqwt.label import DataInfoLabel
+from guiqwt.labels import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 
@@ -163,7 +163,7 @@ class AnnotatedShape(AbstractShape):
     def get_text(self):
         """
         Return text associated to current shape
-        (see :py:class:`guiqwt.label.ObjectInfo`)
+        (see :py:class:`guiqwt.labels.ObjectInfo`)
         """
         text = ""
         title = self.title().text()
