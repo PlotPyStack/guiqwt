@@ -7,10 +7,10 @@
 
 """Very simple dialog box"""
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 
-class VerySimpleDialog(ImagePlotDialog):
+class VerySimpleDialog(ImageDialog):
     def set_data(self, data):
         plot = self.get_plot()
         item = make.trimage(data)

@@ -14,7 +14,7 @@ from PyQt4.QtGui import QFont
 import os, os.path as osp
 from numpy import linspace, sin
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.shapes import Axes
 from guiqwt.tools import LoadItemsTool, SaveItemsTool
@@ -44,9 +44,9 @@ def build_items():
 def test():
     import guidata
     guidata.qapplication()
-    win = ImagePlotDialog(edit=False, toolbar=True, wintitle="Load/save test",
-                          options=dict(title="Title", xlabel="xlabel",
-                                       ylabel="ylabel"))
+    win = ImageDialog(edit=False, toolbar=True, wintitle="Load/save test",
+                      options=dict(title="Title", xlabel="xlabel",
+                                   ylabel="ylabel"))
     win.add_separator_tool()
     win.add_tool(LoadItemsTool)
     win.add_tool(SaveItemsTool)

@@ -9,8 +9,8 @@
 """
 Testing guiqwt QtDesigner plugins
 
-These plugins provide CurvePlotWidget, ImagePlotWidget and ImageHistPlotWidget 
-objects embedding in GUI layouts directly from QtDesigner.
+These plugins provide CurveWidget and ImageWidget objects 
+embedding in GUI layouts directly from QtDesigner.
 """
 
 SHOW = True # Show test in GUI-based test launcher
@@ -26,7 +26,7 @@ FormClass = loadui( osp.splitext(__file__)[0]+'.ui' )
 class TestWindow(FormClass):
     def __init__(self, image_data):
         super(TestWindow, self).__init__()
-        plot = self.imageplotwidget.plot
+        plot = self.imagewidget.plot
         plot.add_item(make.image(image_data))
         self.setWindowTitle("QtDesigner plugins example")
 

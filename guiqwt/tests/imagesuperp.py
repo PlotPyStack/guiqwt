@@ -11,7 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, PlaceAxesTool,
                           FreeFormTool)
 from guiqwt.builder import make
@@ -21,9 +21,9 @@ import numpy as np
 def create_window():
     gridparam = make.gridparam(background="black", minor_enabled=(False, False),
                                major_style=(".", "gray", 1))
-    win = ImagePlotDialog(edit=False, toolbar=True,
-                          wintitle="Region of interest (ROI) test",
-                          options=dict(gridparam=gridparam))
+    win = ImageDialog(edit=False, toolbar=True,
+                      wintitle="Region of interest (ROI) test",
+                      options=dict(gridparam=gridparam))
     for toolklass in (RectangleTool, EllipseTool, FreeFormTool, PlaceAxesTool):
         win.add_tool(toolklass)
     return win

@@ -19,7 +19,7 @@ from guidata.dataset.qtwidgets import DataSetShowGroupBox, DataSetEditGroupBox
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.tools import OpenImageTool
 from guiqwt.io import imagefile_to_array
@@ -41,7 +41,7 @@ class FilterParam(DataSet):
                        ))
     size = IntItem(_("Size or sigma"), min=1, default=5)
     
-class ExampleDialog(ImagePlotDialog):
+class ExampleDialog(ImageDialog):
     def __init__(self, wintitle=_("Example dialog box"),
                  icon="guidata.png", options=dict(show_contrast=True),
                  edit=False):
@@ -70,7 +70,7 @@ class ExampleDialog(ImagePlotDialog):
         self.plot_layout.addWidget(self.param_gbox, 0, 1)
         
         options = dict(title=_("Image title"), zlabel=_("z-axis scale label"))
-        ImagePlotDialog.create_plot(self, options, 1, 0, 1, 0)
+        ImageDialog.create_plot(self, options, 1, 0, 1, 0)
         
     def open_image(self, filename):
         """Opening image *filename*"""

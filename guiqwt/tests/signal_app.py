@@ -28,7 +28,7 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
-from guiqwt.plot import CurvePlotWidget
+from guiqwt.plot import CurveWidget
 from guiqwt.builder import make
 
 APP_NAME = _("Sifia")
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
         
-        self.plotwidget = CurvePlotWidget(self)
+        self.plotwidget = CurveWidget(self)
         
         # Plot manager setup
         toolbar = self.addToolBar("Image")

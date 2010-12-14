@@ -5,18 +5,17 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
-"""ImagePlotDialog test"""
+"""ImageDialog test"""
 
 SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 
 def imshow( data ):
-    win = ImagePlotDialog(edit=False, toolbar=True,
-                          wintitle="ImagePlotDialog test")
+    win = ImageDialog(edit=False, toolbar=True, wintitle="ImageDialog test")
     item = make.image(data)
     plot = win.get_plot()
     plot.add_item(item)

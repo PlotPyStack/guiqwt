@@ -11,13 +11,13 @@ SHOW = True # Show test in GUI-based test launcher
 
 from numpy import random, array, dot, concatenate
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.config import _
 
 def hist2d(X, Y):
-    win = ImagePlotDialog(edit=True, toolbar=True,
-                          wintitle="2-D Histogram X0=(0,1), X1=(-1,-1)")
+    win = ImageDialog(edit=True, toolbar=True,
+                      wintitle="2-D Histogram X0=(0,1), X1=(-1,-1)")
     hist2d = make.histogram2D(X, Y, 200, 200)
     curve = make.curve(X[::50], Y[::50],
                        linestyle='', marker='+', title=_("Markers"))

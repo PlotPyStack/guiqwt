@@ -11,13 +11,12 @@ SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp, numpy as np
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 
 def create_window():
-    win = ImagePlotDialog(edit=False, toolbar=True,
-                          wintitle="Cross sections test",
-                          options=dict(show_xsection=True, show_ysection=True))
+    win = ImageDialog(edit=False, toolbar=True, wintitle="Cross sections test",
+                      options=dict(show_xsection=True, show_ysection=True))
     win.resize(600, 600)
     return win
 

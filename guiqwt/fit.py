@@ -55,7 +55,7 @@ from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
 # Local imports
 from guiqwt.config import _
 from guiqwt.builder import make
-from guiqwt.plot import CurvePlotDialog
+from guiqwt.plot import CurveDialog
 from guiqwt.signals import SIG_RANGE_CHANGED
 
 class AutoFitParam(DataSet):
@@ -165,7 +165,7 @@ class FitParam(DataSet):
         self.set_text()
 
 
-class FitDialog(CurvePlotDialog):
+class FitDialog(CurveDialog):
     def __init__(self, x, y, fitfunc, fitparams, title=None):
         if title is None:
             title = _('Curve fitting')
@@ -185,7 +185,7 @@ class FitDialog(CurvePlotDialog):
         self.show_xrange = False
         self.refresh()
         
-    # CurvePlotDialog API ------------------------------------------------------
+    # CurveDialog API ----------------------------------------------------------
     def install_button_layout(self):
         auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
         self.connect(auto_button, SIGNAL("clicked()"), self.autofit)

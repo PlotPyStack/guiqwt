@@ -13,7 +13,7 @@ from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QPushButton
 from PyQt4.QtCore import SIGNAL
 
 #---Import plot widget base class
-from guiqwt.plot import CurvePlotWidget
+from guiqwt.plot import CurveWidget
 from guiqwt.builder import make
 from guidata.configtools import get_icon
 #---
@@ -37,7 +37,7 @@ class FilterTestWidget(QWidget):
         
     def setup_widget(self, title):
         #---Create the plot widget:
-        plotwidget = CurvePlotWidget(self)
+        plotwidget = CurveWidget(self)
         plotwidget.register_all_curve_tools()
         self.curve_item = make.curve([], [], color='b')
         plotwidget.plot.add_item(self.curve_item)

@@ -30,8 +30,8 @@ corresponding to the system locale):
 
 now that a `QApplication` object exists, we may create the plotting widget:
 
->>> from guiqwt.plot import ImagePlotWidget
->>> widget = ImagePlotWidget()
+>>> from guiqwt.plot import ImageWidget
+>>> widget = ImageWidget()
 
 create curves, images, histograms, etc. and attach them to the plot:
 

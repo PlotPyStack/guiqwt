@@ -56,7 +56,7 @@ def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
     
     Example:
     create_qtdesigner_plugin(group = "guiqwt", module_name = "guiqwt.image",
-                             class_name = "ImagePlotWidget", icon = "image.png",
+                             class_name = "ImageWidget", icon = "image.png",
                              tooltip = "", whatsthis = ""):
     """
     Widget = getattr(__import__(module_name, fromlist=[class_name]), class_name)

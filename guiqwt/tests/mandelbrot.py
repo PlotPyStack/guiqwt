@@ -14,7 +14,7 @@ import numpy as np
 from PyQt4.QtCore import QRectF, QPointF
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.image import ImageItem
 from guiqwt.tools import ToggleTool
 
@@ -73,8 +73,8 @@ class MandelItem(ImageItem):
                                            (x1, y1, x2, y2), xMap, yMap)
 
 def mandel():
-    win = ImagePlotDialog(edit=True, toolbar=True, wintitle="Mandelbrot",
-                          options=dict(yreverse=False))
+    win = ImageDialog(edit=True, toolbar=True, wintitle="Mandelbrot",
+                      options=dict(yreverse=False))
     mandel = MandelItem(-1.5, .5, -1., 1.)
     win.add_tool(FullScale, mandel)
     plot = win.get_plot()

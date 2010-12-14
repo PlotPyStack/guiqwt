@@ -59,7 +59,7 @@ the :py:mod:`guiqwt.plot` module for more details on the procedure).
 
 The `CurvePlot` and `ImagePlot` widgets do not provide any `PlotManager`: the 
 manager has to be created separately. On the contrary, the ready-to-use widgets 
-:py:class:`guiqwt.plot.CurvePlotWidget` and :py:class:`guiqwt.plot.ImagePlotWidget`
+:py:class:`guiqwt.plot.CurveWidget` and :py:class:`guiqwt.plot.ImageWidget`
 are higher-level plotting widgets with integrated manager, tools and panels.
 
 .. seealso::
@@ -77,7 +77,7 @@ are higher-level plotting widgets with integrated manager, tools and panels.
 Example
 ~~~~~~~
 
-The following example add all the existing tools to an `ImagePlotWidget` object 
+The following example add all the existing tools to an `ImageWidget` object 
 for testing purpose:
 
 .. literalinclude:: ../guiqwt/tests/image_plot_tools.py

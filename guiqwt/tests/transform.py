@@ -15,7 +15,7 @@ from PyQt4.QtGui import QImage
 import numpy as np
 
 from guiqwt.image import assemble_imageitems
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
 
@@ -66,8 +66,8 @@ def txtwrite(data, x, y, sz, txt, range=None):
 def imshow(items, title=""):
     gridparam = make.gridparam(background="black", minor_enabled=(False, False),
                                major_style=(".", "gray", 1))
-    win = ImagePlotDialog(edit=False, toolbar=True, wintitle=title,
-                          options=dict(gridparam=gridparam))
+    win = ImageDialog(edit=False, toolbar=True, wintitle=title,
+                      options=dict(gridparam=gridparam))
     nc = int(np.sqrt(len(items))+1.0)
     maxy = 0
     y = 0

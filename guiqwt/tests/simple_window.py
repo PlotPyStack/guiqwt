@@ -25,10 +25,9 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotWidget
+from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
 from guiqwt.signals import SIG_LUT_CHANGED
-from guiqwt.panels import ID_CONTRAST
 from guiqwt.io import imagefile_to_array
 
 APP_NAME = _("Application example")
@@ -79,7 +78,7 @@ class CentralWidget(QSplitter):
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
         
-        self.plotwidget = ImagePlotWidget(self)
+        self.plotwidget = ImageWidget(self)
         self.connect(self.plotwidget.plot, SIG_LUT_CHANGED,
                      self.lut_range_changed)
         self.item = None # image item

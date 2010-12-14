@@ -13,18 +13,18 @@ The `plot` module provides the following features:
     * :py:class:`guiqwt.plot.PlotManager`: the `plot manager` is an object to 
       link `plots`, `panels` and `tools` together for designing highly 
       versatile graphical user interfaces
-    * :py:class:`guiqwt.plot.CurvePlotWidget`: a ready-to-use widget for curve 
+    * :py:class:`guiqwt.plot.CurveWidget`: a ready-to-use widget for curve 
       displaying with an integrated and preconfigured `plot manager` providing 
       the `item list panel` and curve-related `tools`
-    * :py:class:`guiqwt.plot.CurvePlotDialog`: a ready-to-use dialog box for 
+    * :py:class:`guiqwt.plot.CurveDialog`: a ready-to-use dialog box for 
       curve displaying with an integrated and preconfigured `plot manager` 
       providing the `item list panel` and curve-related `tools`
-    * :py:class:`guiqwt.plot.ImagePlotWidget`: a ready-to-use widget for curve 
+    * :py:class:`guiqwt.plot.ImageWidget`: a ready-to-use widget for curve 
       and image displaying with an integrated and preconfigured `plot manager` 
       providing the `item list panel`, the `contrast adjustment` panel, the 
       `cross section panels` (along X and Y axes) and image-related `tools` 
       (e.g. colormap selection tool)
-    * :py:class:`guiqwt.plot.ImagePlotDialog`: a ready-to-use dialog box for 
+    * :py:class:`guiqwt.plot.ImageDialog`: a ready-to-use dialog box for 
       curve and image displaying with an integrated and preconfigured 
       `plot manager` providing the `item list panel`, the `contrast adjustment` 
       panel, the `cross section panels` (along X and Y axes) and image-related 
@@ -92,17 +92,18 @@ Reference
 .. autoclass:: PlotManager
    :members:
    :inherited-members:
-.. autoclass:: CurvePlotWidget
+.. autoclass:: CurveWidget
    :members:
-.. autoclass:: CurvePlotDialog
+.. autoclass:: CurveDialog
    :members:
-.. autoclass:: ImagePlotWidget
+.. autoclass:: ImageWidget
    :members:
-.. autoclass:: ImagePlotDialog
+.. autoclass:: ImageDialog
    :members:
 """
 
-import weakref
+import weakref, warnings
+
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
                          QSizePolicy, QApplication)
@@ -339,8 +340,8 @@ class PlotManager(object):
         """
         Return the main (parent) widget
         
-        Note that for py:class:`guiqwt.plot.CurvePlotWidget` or 
-        :py:class:`guiqwt.plot.ImagePlotWidget` objects, this method will 
+        Note that for py:class:`guiqwt.plot.CurveWidget` or 
+        :py:class:`guiqwt.plot.ImageWidget` objects, this method will 
         return the widget itself because the plot manager is integrated to it.
         """
         return self.main
@@ -542,15 +543,15 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setStretchFactor(1, 1)
         qsplit.setSizes([1, 2])
 
-class BaseCurvePlotWidget(QSplitter):
+class BaseCurveWidget(QSplitter):
     """
-    Construct a BaseCurvePlotWidget object, which includes:
+    Construct a BaseCurveWidget object, which includes:
         * A plot (:py:class:`guiqwt.curve.CurvePlot`)
         * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
         
     This object does nothing in itself because plot and panels are not 
     connected to each other.
-    See children class :py:class:`guiqwt.plot.CurvePlotWidget`
+    See children class :py:class:`guiqwt.plot.CurveWidget`
     """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
@@ -567,9 +568,9 @@ class BaseCurvePlotWidget(QSplitter):
         self.addWidget(self.itemlist)
         configure_plot_splitter(self)
 
-class CurvePlotWidget(BaseCurvePlotWidget, PlotManager):
+class CurveWidget(BaseCurveWidget, PlotManager):
     """
-    Construct a CurvePlotWidget object: plotting widget with integrated 
+    Construct a CurveWidget object: plotting widget with integrated 
     plot manager
         * parent: parent widget
         * title: plot title
@@ -578,7 +579,7 @@ class CurvePlotWidget(BaseCurvePlotWidget, PlotManager):
     """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
-        BaseCurvePlotWidget.__init__(self, parent, title, xlabel, ylabel,
+        BaseCurveWidget.__init__(self, parent, title, xlabel, ylabel,
                                      section, show_itemlist, gridparam)
         PlotManager.__init__(self, main=self)
         
@@ -586,9 +587,9 @@ class CurvePlotWidget(BaseCurvePlotWidget, PlotManager):
         self.add_plot(self.plot)
         self.add_panel(self.itemlist)
         
-class CurvePlotDialog(QDialog, PlotManager):
+class CurveDialog(QDialog, PlotManager):
     """
-    Construct a CurvePlotDialog object: plotting dialog box with integrated 
+    Construct a CurveDialog object: plotting dialog box with integrated 
     plot manager
         * wintitle: window title
         * icon: window icon
@@ -641,7 +642,7 @@ class CurvePlotDialog(QDialog, PlotManager):
     def install_button_layout(self):
         """
         Install standard buttons (OK, Cancel) in dialog button box layout 
-        (:py:attr:`guiqwt.plot.CurvePlotDialog.button_layout`)
+        (:py:attr:`guiqwt.plot.CurveDialog.button_layout`)
         
         This method may be overriden to customize the button box
         """
@@ -655,7 +656,7 @@ class CurvePlotDialog(QDialog, PlotManager):
         Register the plotting dialog box tools: the base implementation 
         provides standard, curve-related and other tools - i.e. calling 
         this method is exactly the same as calling 
-        :py:meth:`guiqwt.plot.CurvePlotDialog.register_all_curve_tools`
+        :py:meth:`guiqwt.plot.CurveDialog.register_all_curve_tools`
         
         This method may be overriden to provide a fully customized set of tools
         """
@@ -664,14 +665,14 @@ class CurvePlotDialog(QDialog, PlotManager):
     def create_plot(self, options):
         """
         Create the plotting widget (which is an instance of class 
-        :py:class:`guiqwt.plot.BaseCurvePlotWidget`), add it to the dialog box 
-        main layout (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`) and 
+        :py:class:`guiqwt.plot.BaseCurveWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`) and 
         then add the `item list` panel
 
         May be overriden to customize the plot layout 
-        (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`)
+        (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        plotwidget = BaseCurvePlotWidget(self, **options)
+        plotwidget = BaseCurveWidget(self, **options)
         self.plot_layout.addWidget(plotwidget, 0, 0)
         
         # Configuring plot manager
@@ -682,9 +683,9 @@ class CurvePlotDialog(QDialog, PlotManager):
 #===============================================================================
 # Image Plot Widget/Dialog with integrated Levels Histogram and other widgets
 #===============================================================================
-class BaseImagePlotWidget(QSplitter):
+class BaseImageWidget(QSplitter):
     """
-    Construct a BaseImagePlotWidget object, which includes:
+    Construct a BaseImageWidget object, which includes:
         * A plot (:py:class:`guiqwt.curve.CurvePlot`)
         * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
         * A `contrast adjustment` panel 
@@ -696,7 +697,7 @@ class BaseImagePlotWidget(QSplitter):
         
     This object does nothing in itself because plot and panels are not 
     connected to each other.
-    See children class :py:class:`guiqwt.plot.ImagePlotWidget`
+    See children class :py:class:`guiqwt.plot.ImageWidget`
     """
     def __init__(self, parent=None, title="",
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
@@ -781,9 +782,9 @@ class BaseImagePlotWidget(QSplitter):
         else:
             self.adjust_ycsw_height(0)
 
-class ImagePlotWidget(BaseImagePlotWidget, PlotManager):
+class ImageWidget(BaseImageWidget, PlotManager):
     """
-    Construct a ImagePlotWidget object: plotting widget with integrated 
+    Construct a ImageWidget object: plotting widget with integrated 
     plot manager
         * parent: parent widget
         * title: plot title (string)
@@ -806,7 +807,7 @@ class ImagePlotWidget(BaseImagePlotWidget, PlotManager):
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None):
-        BaseImagePlotWidget.__init__(self, parent, title, xlabel, ylabel,
+        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel,
                  zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
                  show_contrast, show_itemlist, show_xsection, show_ysection,
                  xsection_pos, ysection_pos, gridparam)
@@ -819,9 +820,9 @@ class ImagePlotWidget(BaseImagePlotWidget, PlotManager):
         self.add_panel(self.ycsw)
         self.add_panel(self.contrast)
 
-class ImagePlotDialog(CurvePlotDialog):
+class ImageDialog(CurveDialog):
     """
-    Construct a ImagePlotDialog object: plotting dialog box with integrated 
+    Construct a ImageDialog object: plotting dialog box with integrated 
     plot manager
         * wintitle: window title
         * icon: window icon
@@ -833,7 +834,7 @@ class ImagePlotDialog(CurvePlotDialog):
     """
     def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
                  edit=False, toolbar=False, options=None, parent=None):
-        CurvePlotDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
+        CurveDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
                                  toolbar=toolbar, options=options,
                                  parent=parent)
 
@@ -842,7 +843,7 @@ class ImagePlotDialog(CurvePlotDialog):
         Register the plotting dialog box tools: the base implementation 
         provides standard, image-related and other tools - i.e. calling 
         this method is exactly the same as calling 
-        :py:meth:`guiqwt.plot.CurvePlotDialog.register_all_image_tools`
+        :py:meth:`guiqwt.plot.CurveDialog.register_all_image_tools`
         
         This method may be overriden to provide a fully customized set of tools
         """
@@ -851,15 +852,15 @@ class ImagePlotDialog(CurvePlotDialog):
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
         """
         Create the plotting widget (which is an instance of class 
-        :py:class:`guiqwt.plot.BaseImagePlotWidget`), add it to the dialog box 
-        main layout (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`) and 
+        :py:class:`guiqwt.plot.BaseImageWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`) and 
         then add the `item list`, `contrast adjustment` and X/Y axes 
         cross section panels.
 
         May be overriden to customize the plot layout 
-        (:py:attr:`guiqwt.plot.CurvePlotDialog.plot_layout`)
+        (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        plotwidget = BaseImagePlotWidget(self, **options)
+        plotwidget = BaseImageWidget(self, **options)
         self.plot_layout.addWidget(plotwidget, row, column, rowspan, columnspan)
         
         # Configuring plot manager
@@ -868,3 +869,95 @@ class ImagePlotDialog(CurvePlotDialog):
         self.add_panel(plotwidget.xcsw)
         self.add_panel(plotwidget.ycsw)
         self.add_panel(plotwidget.contrast)
+
+
+#===============================================================================
+# The following classes will be removed in future versions
+#===============================================================================
+class CurvePlotWidget(CurveWidget):
+    """
+    Construct a CurveWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title
+        * xlabel: (bottom axis title, top axis title) or bottom axis title only
+        * ylabel: (left axis title, right axis title) or left axis title only
+    """
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None):
+        CurveWidget.__init__(self, parent, title, xlabel, ylabel, section,
+                             show_itemlist, gridparam)
+        warnings.warn("For clarity's sake, the 'CurvePlotWidget' class has "
+                      "been renamed to 'CurveWidget' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class CurvePlotDialog(CurveDialog):
+    """
+    Construct a CurveDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 edit=False, toolbar=False, options=None, parent=None):
+        CurveDialog.__init__(self, wintitle, icon, edit, toolbar, options,
+                             parent)
+        warnings.warn("For clarity's sake, the 'CurvePlotDialog' class has "
+                      "been renamed to 'CurveDialog' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class ImagePlotWidget(ImageWidget):
+    """
+    Construct a ImageWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title (string)
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+          (strings)
+        * yreverse: reversing Y-axis (bool)
+        * aspect_ratio: height to width ratio (float)
+        * lock_aspect_ratio: locking aspect ratio (bool)
+        * show_contrast: showing contrast adjustment tool (bool)
+        * show_xsection: showing x-axis cross section plot (bool)
+        * show_ysection: showing y-axis cross section plot (bool)
+        * xsection_pos: x-axis cross section plot position 
+          (striImageDialogng: "top", "bottom")
+        * ysection_pos: y-axis cross section plot position 
+          (string: "left", "right")
+    """
+    def __init__(self, parent=None, title="",
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
+                 show_contrast=False, show_itemlist=False, show_xsection=False,
+                 show_ysection=False, xsection_pos="top", ysection_pos="right",
+                 gridparam=None):
+        ImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
+                             yreverse, colormap, aspect_ratio,
+                             lock_aspect_ratio, show_contrast, show_itemlist,
+                             show_xsection, show_ysection, xsection_pos,
+                             ysection_pos, gridparam)
+        warnings.warn("For clarity's sake, the 'ImagePlotWidget' class has "
+                      "been renamed to 'ImageWidget' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class ImagePlotDialog(ImageDialog):
+    """
+    Construct a ImageDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
+    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
+                 edit=False, toolbar=False, options=None, parent=None):
+        ImageDialog.__init__(self, wintitle, icon, edit, toolbar, options,
+                             parent)
+        warnings.warn("For clarity's sake, the 'ImagePlotDialog' class has "
+                      "been renamed to 'ImageDialog' (this will raise an "
+                      "exception in future versions)", FutureWarning)

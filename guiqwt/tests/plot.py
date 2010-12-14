@@ -5,21 +5,20 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
-"""CurvePlotDialog test"""
+"""CurveDialog test"""
 
 SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import QFont
 
-from guiqwt.plot import CurvePlotDialog
+from guiqwt.plot import CurveDialog
 from guiqwt.tools import HRangeTool
 from guiqwt.builder import make
 
 def plot(*items):
-    win = CurvePlotDialog(edit=False, toolbar=True,
-                          wintitle="CurvePlotDialog test",
-                          options=dict(title="Title", xlabel="xlabel",
-                                       ylabel="ylabel"))
+    win = CurveDialog(edit=False, toolbar=True, wintitle="CurveDialog test",
+                      options=dict(title="Title", xlabel="xlabel",
+                                   ylabel="ylabel"))
     win.add_tool(HRangeTool)
     plot = win.get_plot()
     for item in items:

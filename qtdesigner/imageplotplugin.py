@@ -13,5 +13,5 @@ A guiqwt image widget plugin for Qt Designer
 """
 
 from guiqwt.qtdesigner import create_qtdesigner_plugin
-Plugin = create_qtdesigner_plugin("guiqwt", "guiqwt.plot", "ImagePlotWidget",
+Plugin = create_qtdesigner_plugin("guiqwt", "guiqwt.plot", "ImageWidget",
                                   icon="image.png")
