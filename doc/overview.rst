@@ -108,10 +108,10 @@ There are two kinds of plotting widgets defined in `guiqwt`:
       :py:class:`guiqwt.image.ImagePlot`
 
     * high-level plotting widgets (ready-to-use widgets with integrated tools 
-      and panels): :py:class:`guiqwt.plot.CurvePlotWidget` and 
-      :py:class:`guiqwt.plot.ImagePlotWidget`, and corresponding dialog boxes 
-      :py:class:`guiqwt.plot.CurvePlotDialog` and 
-      :py:class:`guiqwt.plot.ImagePlotDialog`
+      and panels): :py:class:`guiqwt.plot.CurveWidget` and 
+      :py:class:`guiqwt.plot.ImageWidget`, and corresponding dialog boxes 
+      :py:class:`guiqwt.plot.CurveDialog` and 
+      :py:class:`guiqwt.plot.ImageDialog`
 
 Curve-related widgets with integrated plot manager:
 

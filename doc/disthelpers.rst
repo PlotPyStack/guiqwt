@@ -19,10 +19,10 @@ This example is included in `guiqwt` source package (see the
 Simple example script named ``simpledialog.pyw`` which is based on `guiqwt` 
 (and implicitely on `guidata`)::
 
-    from guiqwt.plot import ImagePlotDialog
+    from guiqwt.plot import ImageDialog
     from guiqwt.builder import make
     
-    class VerySimpleDialog(ImagePlotDialog):
+    class VerySimpleDialog(ImageDialog):
         def set_data(self, data):
             plot = self.get_plot()
             item = make.trimage(data)
