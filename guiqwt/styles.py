@@ -889,18 +889,20 @@ class CurveParam(DataSet):
                                           hide=GetAttrProp("_multiselection"))
     line = LineStyleItem(_("Line"))
     symbol = SymbolItem(_("Symbol"))
-    shade = FloatItem(_("Shadow"), default = 0, min=0, max=1)
+    shade = FloatItem(_("Shadow"), default=0, min=0, max=1)
     fitted = BoolItem(_("Fit curve to data"), _("Fitting"), default=False)
     curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
                                  default="Lines")
     curvetype = ImageChoiceItem(_("Curve type"), CURVETYPE_CHOICES,
                                 default="Yfx")
+    baseline = FloatItem(_("Baseline"), default=0.)
 
     def update_param(self, curve):
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]
         self.curvetype = CURVETYPE_NAME[curve.curveType()]
+        self.baseline = curve.baseline()
     
     def update_curve(self, curve):
         if not self._multiselection:
@@ -919,9 +921,10 @@ class CurveParam(DataSet):
         self.symbol.update_symbol( curve )
         # CurveAttribute
         curve.setCurveAttribute(QwtPlotCurve.Fitted, self.fitted)
-        # Curve style and type
+        # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
         curve.setCurveType(getattr(QwtPlotCurve, self.curvetype))
+        curve.setBaseline(self.baseline)
 
 class CurveParam_MS(CurveParam):
     _multiselection = True
