@@ -328,6 +328,7 @@ class CrossSectionPlot(CurvePlot):
     CS_AXIS = None
     Z_AXIS = None
     Z_MAX_MAJOR = 5
+    CURVETYPE = None
     def __init__(self, parent=None):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
                                                section="cross_section")
@@ -340,6 +341,7 @@ class CrossSectionPlot(CurvePlot):
         
         self.curveparam = CurveParam(_("Curve"), icon="curve.png")
         self.curveparam.read_config(CONF, "cross_section", "curve")
+        self.curveparam.curvetype = self.CURVETYPE
         
         if self._height is not None:
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -408,8 +410,7 @@ class CrossSectionPlot(CurvePlot):
             self.replot()
             return
             
-# Commented because of a PyQwt display bug with 90° rotated shaded curve
-#        self.curveparam.shade = min([.3, .8/len(items)])
+        self.curveparam.shade = min([.3, .8/len(items)])
         for item in items:
             curve = self.create_cross_section_item()
             curve.set_source_image(item)
@@ -530,6 +531,7 @@ class XCrossSectionPlot(CrossSectionPlot):
     _height = 130
     CS_AXIS = CurvePlot.xBottom
     Z_AXIS = CurvePlot.yLeft
+    CURVETYPE = "Yfx"
     def sizeHint(self):
         return QSize(self.width(), self._height)
         
@@ -554,6 +556,7 @@ class YCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.yLeft
     Z_AXIS = CurvePlot.xBottom
     Z_MAX_MAJOR = 3
+    CURVETYPE = "Xfy"
     def sizeHint(self):
         return QSize(self._width, self.height())
     
