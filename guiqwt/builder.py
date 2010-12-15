@@ -74,9 +74,9 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
                            LineStyleParam, AnnotationParam,
                            LabelParamWithContents)
-from guiqwt.labels import (LabelItem, LegendBoxItem, RangeComputation,
-                           RangeComputation2d, DataInfoLabel,
-                           SelectedLegendBoxItem)
+from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
+                          RangeComputation2d, DataInfoLabel,
+                          SelectedLegendBoxItem)
 from guiqwt.io import imagefile_to_array
 import os.path as osp
 
@@ -699,7 +699,7 @@ class PlotItemBuilder(object):
     def label(self, text, g, c, anchor, title=""):
         """
         Make a label `plot item` 
-        (:py:class:`guiqwt.labels.LabelItem` object)
+        (:py:class:`guiqwt.label.LabelItem` object)
             * text: label text (string)
             * g: position in plot coordinates (tuple) 
               or relative position (string)
@@ -735,8 +735,8 @@ class PlotItemBuilder(object):
     def legend(self, anchor='TR', c=None, restrict_items=None):
         """
         Make a legend `plot item` 
-        (:py:class:`guiqwt.labels.LegendBoxItem` or 
-        :py:class:`guiqwt.labels.SelectedLegendBoxItem` object)
+        (:py:class:`guiqwt.label.LegendBoxItem` or 
+        :py:class:`guiqwt.label.SelectedLegendBoxItem` object)
             * anchor: legend position in relative position (string)
             * c (optional): position in canvas coordinates (tuple)
             * restrict_items (optional):
@@ -869,7 +869,7 @@ class PlotItemBuilder(object):
     def info_label(self, anchor, comps, title=""):
         """
         Make an info label `plot item` 
-        (:py:class:`guiqwt.labels.DataInfoLabel` object)
+        (:py:class:`guiqwt.label.DataInfoLabel` object)
         """
         basename = _("Computation")
         param = LabelParam(basename, icon='label.png')
@@ -890,7 +890,7 @@ class PlotItemBuilder(object):
     def computation(self, range, anchor, label, curve, function):
         """
         Make a computation label `plot item` 
-        (:py:class:`guiqwt.labels.DataInfoLabel` object)
+        (:py:class:`guiqwt.label.DataInfoLabel` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         return self.computations(range, anchor, [ (curve, label, function) ])
@@ -898,7 +898,7 @@ class PlotItemBuilder(object):
     def computations(self, range, anchor, specs):
         """
         Make computation labels  `plot item` 
-        (:py:class:`guiqwt.labels.DataInfoLabel` object)
+        (:py:class:`guiqwt.label.DataInfoLabel` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         comps = []
@@ -910,7 +910,7 @@ class PlotItemBuilder(object):
     def computation2d(self, rect, anchor, label, image, function):
         """
         Make a 2D computation label `plot item` 
-        (:py:class:`guiqwt.labels.RangeComputation2d` object)
+        (:py:class:`guiqwt.label.RangeComputation2d` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         return self.computations2d(rect, anchor, [ (image, label, function) ])
@@ -918,7 +918,7 @@ class PlotItemBuilder(object):
     def computations2d(self, rect, anchor, specs):
         """
         Make 2D computation labels `plot item` 
-        (:py:class:`guiqwt.labels.RangeComputation2d` object)
+        (:py:class:`guiqwt.label.RangeComputation2d` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         comps = []

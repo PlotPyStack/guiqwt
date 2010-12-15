@@ -6,8 +6,8 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt.labels
--------------
+guiqwt.label
+------------
 
 The `labels` module provides plot items related to labels and legends:
     * :py:class:`guiqwt.shapes.LabelItem`

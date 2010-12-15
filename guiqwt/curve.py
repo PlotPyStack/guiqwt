@@ -743,7 +743,7 @@ class ItemListWidget(QListWidget):
                 action.setEnabled(self.__is_selection_contiguous())            
         
     def __get_item_icon(self, item):
-        from guiqwt.labels import LegendBoxItem, LabelItem
+        from guiqwt.label import LegendBoxItem, LabelItem
         from guiqwt.annotations import (AnnotatedShape, AnnotatedRectangle,
                                         AnnotatedCircle, AnnotatedEllipse,
                                         AnnotatedPoint, AnnotatedSegment)

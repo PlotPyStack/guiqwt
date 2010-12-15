@@ -42,7 +42,7 @@ The `guiqwt` library also provides the following features:
           images with non-linear x/y scales, images with specified pixel size 
           (e.g. loaded from DICOM files), 2D histograms, pseudo-color images 
           (`pcolor`)
-        - :py:mod:`guiqwt.labels`: labels, curve plot legends
+        - :py:mod:`guiqwt.label`: labels, curve plot legends
         - :py:mod:`guiqwt.shapes`: polygon, polylines, rectangle, circle, 
           ellipse and segment
         - :py:mod:`guiqwt.annotations`: annotated shapes (shapes with labels 

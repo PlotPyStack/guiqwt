@@ -27,7 +27,7 @@ GUIQwt reference
 
 .. automodule:: guiqwt.shapes
 
-.. automodule:: guiqwt.labels
+.. automodule:: guiqwt.label
 
 .. automodule:: guiqwt.tools
 
