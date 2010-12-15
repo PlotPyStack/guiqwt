@@ -498,20 +498,6 @@ class SelectPointTool(InteractiveTool):
 
     def get_coordinates(self):
         return self.last_pos
-        
-class CrossSectionTool(SelectPointTool):
-    TITLE = _("Cross sections")
-    ICON = "csection.png"
-    MARKER_STYLE_KEY = "marker/cross_section"
-
-    def activate(self):
-        """Activate tool"""
-        SelectPointTool.activate(self)
-        for panel_id in (ID_XCS, ID_YCS):
-            panel = self.manager.get_panel(panel_id)
-            panel.setVisible(True)
-            if self.marker is not None:
-                panel.update_plot(self.marker)
 
 
 SHAPE_Z_OFFSET = 1000
@@ -850,11 +836,14 @@ class AnnotatedSegmentTool(SegmentTool):
     def create_shape(self):
         return AnnotatedSegment(0, 0, 1, 1), 0, 2
 
-
-class AverageCrossSectionTool(AnnotatedRectangleTool):
-    TITLE = _("Average cross sections")
-    ICON = "csection_avg.png"
+        
+class CrossSectionTool(AnnotatedPointTool):
+    TITLE = _("Cross sections")
+    ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
+    def create_shape(self):
+        return AnnotatedPoint(0, 0), 0, 0
+        
     def setup_shape(self, shape):
         self.setup_shape_appearance(shape)
         self.register_shape(shape, final=False)
@@ -866,13 +855,16 @@ class AverageCrossSectionTool(AnnotatedRectangleTool):
         param.update_annotation(shape)
         
     def register_shape(self, shape, final=False):
+        plot = shape.plot()
+        if plot is not None:
+            plot.set_active_item(shape)
         for panel_id in (ID_XCS, ID_YCS):
             panel = self.manager.get_panel(panel_id)
             panel.register_shape(shape, final=final)
 
     def activate(self):
         """Activate tool"""
-        super(AverageCrossSectionTool, self).activate()
+        super(CrossSectionTool, self).activate()
         for panel_id in (ID_XCS, ID_YCS):
             panel = self.manager.get_panel(panel_id)
             panel.setVisible(True)
@@ -881,9 +873,16 @@ class AverageCrossSectionTool(AnnotatedRectangleTool):
                 panel.update_plot(shape)
     
     def handle_final_shape(self, shape):
-        super(AverageCrossSectionTool, self).handle_final_shape(shape)
+        super(CrossSectionTool, self).handle_final_shape(shape)
         self.setup_shape_appearance(shape)
         self.register_shape(shape, final=True)
+
+class AverageCrossSectionTool(CrossSectionTool):
+    TITLE = _("Average cross sections")
+    ICON = "csection_avg.png"
+    SHAPE_STYLE_KEY = "shape/average_cross_section"
+    def create_shape(self):
+        return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
 
 class RectZoomTool(InteractiveTool):

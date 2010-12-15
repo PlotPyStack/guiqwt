@@ -62,7 +62,6 @@ from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_LUT_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
-from guiqwt.shapes import Marker
 
 
 class CrossSectionItem(CurveItem):
@@ -137,15 +136,35 @@ def get_image_data(plot, p0, p1, apply_lut=False):
     return get_image_from_plot(plot, p0, p1, src_w, src_h, apply_lut=apply_lut)
 
 
+def get_rectangular_area(obj):
+    """
+    Return rectangular area covered by object
+    
+    Return None if object does not support this feature 
+    (like markers, points, ...)
+    """
+    try:
+        return obj.get_rect()
+    except AttributeError:
+        return
+
+def get_object_coordinates(obj):
+    """Return Marker or PointShape/AnnotatedPoint object coordinates"""
+    try:
+        return obj.get_pos()
+    except AttributeError:
+        return obj.xValue(), obj.yValue()
+
 def get_plot_x_section(obj, apply_lut=False):
     """
     Return plot cross section along x-axis,
-    at the y value defined by 'obj', a Marker object
+    at the y value defined by 'obj', a Marker/AnnotatedPoint object
     """
+    _x0, y0 = get_object_coordinates(obj)
     plot = obj.plot()
     xmap = plot.canvasMap(plot.AXES["bottom"])
     xc0, xc1 = xmap.p1(), xmap.p2()
-    _xc0, yc0 = obj.axes_to_canvas(0, obj.yValue())
+    _xc0, yc0 = obj.axes_to_canvas(0, y0)
     if plot.get_axis_direction("left"):
         yc1 = yc0+1
     else:
@@ -164,14 +183,15 @@ def get_plot_x_section(obj, apply_lut=False):
 def get_plot_y_section(obj, apply_lut=False):
     """
     Return plot cross section along y-axis,
-    at the x value defined by 'obj', a Marker object
+    at the x value defined by 'obj', a Marker/AnnotatedPoint object
     """
+    x0, _y0 = get_object_coordinates(obj)
     plot = obj.plot()
     ymap = plot.canvasMap(plot.AXES["left"])
     yc0, yc1 = ymap.p1(), ymap.p2()
     if plot.get_axis_direction("left"):
         yc1, yc0 = yc0, yc1
-    xc0, _yc0 = obj.axes_to_canvas(obj.xValue(), 0)
+    xc0, _yc0 = obj.axes_to_canvas(x0, 0)
     xc1 = xc0+1
     try:
         data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
@@ -246,17 +266,17 @@ class XCrossSectionItem(CrossSectionItem):
     def get_cross_section(self, obj):
         """Get x-cross section data from source image"""
         source = self.get_source_image()
-        if isinstance(obj, Marker):
-            # obj is a Marker object
+        rect = get_rectangular_area(obj)
+        if rect is None:
+            # Object is a marker or an annotated point
+            _x0, y0 = get_object_coordinates(obj)
             if self.perimage_mode:
-                return source.get_xsection(obj.yValue(),
-                                           apply_lut=self.apply_lut)
+                return source.get_xsection(y0, apply_lut=self.apply_lut)
             else:
                 return get_plot_x_section(obj, apply_lut=self.apply_lut)
         else:
-            # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                x0, y0, x1, y1 = obj.get_rect()
+                x0, y0, x1, y1 = rect
                 return source.get_average_xsection(x0, y0, x1, y1,
                                                    apply_lut=self.apply_lut)
             else:
@@ -276,17 +296,17 @@ class YCrossSectionItem(CrossSectionItem):
     def get_cross_section(self, obj):
         """Get y-cross section data from source image"""
         source = self.get_source_image()
-        if isinstance(obj, Marker):
-            # obj is a Marker object
+        rect = get_rectangular_area(obj)
+        if rect is None:
+            # Object is a marker or an annotated point
+            x0, _y0 = get_object_coordinates(obj)
             if self.perimage_mode:
-                return source.get_ysection(obj.xValue(),
-                                           apply_lut=self.apply_lut)
+                return source.get_ysection(x0, apply_lut=self.apply_lut)
             else:
                 return get_plot_y_section(obj, apply_lut=self.apply_lut)
         else:
-            # obj is an AnnotatedRectangle object
             if self.perimage_mode:
-                x0, y0, x1, y1 = obj.get_rect()
+                x0, y0, x1, y1 = rect
                 return source.get_average_ysection(x0, y0, x1, y1,
                                                    apply_lut=self.apply_lut)
             else:
