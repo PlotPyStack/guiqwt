@@ -21,9 +21,14 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
     Dependencies
     
         Requirements
-	    guidata v1.x (x>=2)
-            Qwt5 5.x (x>=2) (PyQt4 additional module)
-            scipy v0.x (x>=7) (signal and image processing library)
+            Python 2.x (x>=5)
+            PyQt4 4.x (x>=3 ; recommended x>=4)
+            QScintilla2 2.x (x>=1) (PyQt4 extension) for the test launcher
+            PyQwt 5.x (x>=2)
+            guidata 1.2.5 or later
+            NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
+            SciPy 0.x (x>=7)
+            PIL 1.1.x (x>=6)
             
 	Optional modules
 	    pydicom v0.9.x (x>=3)
