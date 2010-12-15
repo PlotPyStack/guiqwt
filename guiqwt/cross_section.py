@@ -690,6 +690,22 @@ class CrossSectionWidget(PanelWidget):
     def register_shape(self, shape, final):
         plot = self.get_plot()
         self.cs_plot.register_shape(plot, shape, final)
+        
+    def update_plot(self, obj):
+        """
+        Update cross section plot associated to object *obj*
+        
+        *obj* may be a marker or a rectangular shape
+        (see :py:class:`guiqwt.tools.CrossSectionTool` 
+        and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
+        """
+        self.cs_plot.update_plot(obj)
+        
+    def update_all_items(self, plot=None):
+        """
+        Update all cross section curves
+        """
+        self.cs_plot.update_all_items(plot=plot)
 
 assert_interfaces_valid(CrossSectionWidget)
 

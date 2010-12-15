@@ -124,6 +124,7 @@ class CentralWidget(QSplitter):
                 lut_range = self.item.get_lut_range()
             contrast_panel = self.imagewidget.get_contrast_panel()
             contrast_panel.set_range(*lut_range)
+            self.imagewidget.update_cross_sections()
         else:
             self.item = make.image(data)
             plot.add_item(self.item, z=0)

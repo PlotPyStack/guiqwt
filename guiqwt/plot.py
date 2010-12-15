@@ -391,6 +391,21 @@ class PlotManager(object):
         """
         from guiqwt import panels
         return self.get_panel(panels.ID_YCS)
+        
+    def update_cross_sections(self):
+        """
+        Convenience function to update the `cross section panels` at once
+        
+        This is strictly equivalent to the following::
+            
+            # Here, *widget* is for example a CurveWidget instance
+            # (the same apply for CurvePlot, ImageWidget, ImagePlot or any 
+            #  class deriving from PlotManager)
+            widget.get_xcs_panel().update_all_items()
+            widget.get_ycs_panel().update_all_items()
+        """
+        for panel in (self.get_xcs_panel(), self.get_ycs_panel()):
+            panel.update_all_items()
 
     def get_toolbar(self, toolbar_id="default"):
         """
