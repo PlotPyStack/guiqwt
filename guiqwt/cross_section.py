@@ -423,6 +423,13 @@ class CrossSectionPlot(CurvePlot):
             self.update_plot(shape)
         
     def update_plot(self, obj):
+        """
+        Update cross section plot associated to object *obj*
+        
+        *obj* may be a marker or a rectangular shape
+        (see :py:class:`guiqwt.tools.CrossSectionTool` 
+        and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
+        """
         if obj.plot() is None:
             self.unregister_shape(obj)
             return
@@ -441,6 +448,9 @@ class CrossSectionPlot(CurvePlot):
             self.do_autoscale(replot=True)
 
     def update_all_items(self, plot=None):
+        """
+        Update all cross section curves
+        """
         def _update(plot):
             for shape in self._shapes[plot]:
                 if shape.plot() is not None:

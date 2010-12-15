@@ -51,6 +51,7 @@ from PyQt4.Qwt5 import QwtPlotItem
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.config import CONF
 from guiqwt.curve import CurveItem
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType
 from guiqwt.signals import SIG_ITEM_MOVED
@@ -87,6 +88,10 @@ class AbstractLabelItem(QwtPlotItem):
         self.border_pen = None
         self.bg_brush = None
         self.labelparam = labelparam
+        self.labelparam.update_label(self)
+
+    def set_style(self, section, option):
+        self.labelparam.read_config(CONF, section, option)
         self.labelparam.update_label(self)
 
     def get_state(self):

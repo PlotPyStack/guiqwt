@@ -38,7 +38,8 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.ColormapTool`
     * :py:class:`guiqwt.tools.XCrossSectionTool`
     * :py:class:`guiqwt.tools.YCrossSectionTool`
-    * :py:class:`guiqwt.tools.AverageCrossSectionsTool`
+    * :py:class:`guiqwt.tools.CrossSectionTool`
+    * :py:class:`guiqwt.tools.AverageCrossSectionTool`
     * :py:class:`guiqwt.tools.ItemListTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
     * :py:class:`guiqwt.tools.OpenFileTool`
@@ -174,7 +175,10 @@ Reference
 .. autoclass:: YCrossSectionTool
    :members:
    :inherited-members:
-.. autoclass:: AverageCrossSectionsTool
+.. autoclass:: CrossSectionTool
+   :members:
+   :inherited-members:
+.. autoclass:: AverageCrossSectionTool
    :members:
    :inherited-members:
 .. autoclass:: ItemListTool
@@ -221,7 +225,7 @@ try:
 except ImportError:
     pass
 
-import sys, numpy as np
+import sys, numpy as np, weakref
 
 from PyQt4.QtCore import Qt, QObject, SIGNAL
 from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
@@ -235,7 +239,7 @@ from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
 
 #Local imports
-from guiqwt.config import _, CONF
+from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, QtDragHandler, ZoomRectHandler,
                            RectangularSelectionHandler, ClickHandler)
@@ -306,9 +310,10 @@ class GuiTool(QObject):
 
 
 class InteractiveTool(GuiTool):
-    _title = None
-    _tip = None
-    _cursor = Qt.CrossCursor
+    TITLE = None
+    ICON = None
+    TIP = None
+    CURSOR = Qt.CrossCursor
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(InteractiveTool, self).__init__(manager)
@@ -333,17 +338,20 @@ class InteractiveTool(GuiTool):
             toolbar.addAction(self.action)
 
     def name(self):
-        return self._title
+        """Return tool title"""
+        return self.TITLE
 
     def icon(self):
-        return None
+        """Return tool icon (QIcon instance)"""
+        return get_icon(self.ICON)
 
     def cursor(self):
         """Return tool mouse cursor"""
-        return self._cursor
+        return self.CURSOR
 
     def tip(self):
-        return self._tip
+        """Return tool tip"""
+        return self.TIP
         
     def register_plot(self, baseplot):
         # TODO: with the introduction of PlotManager it should
@@ -385,12 +393,10 @@ class SelectTool(InteractiveTool):
     """
     Graphical Object Selection Tool
     """
-    _title = _("Selection")
-    _cursor = Qt.ArrowCursor
+    TITLE = _("Selection")
+    ICON = "selection.png"
+    CURSOR = Qt.ArrowCursor
 
-    def icon(self):
-        return get_icon("selection.png")
-    
     def setup_filter(self, baseplot):
         filter = baseplot.filter
         # Initialisation du filtre
@@ -414,15 +420,18 @@ class SelectTool(InteractiveTool):
 
 
 class SelectPointTool(InteractiveTool):
-    _cursor = Qt.PointingHandCursor
+    TITLE = _("Point selection")
+    ICON = "point_selection.png"
+    MARKER_STYLE_SECT = "plot"
+    MARKER_STYLE_KEY = "marker/curve"
+    CURSOR = Qt.PointingHandCursor
+    
     def __init__(self, manager, mode="reuse", on_active_item=False,
                  title=None, tip=None, end_callback=None,
-                 toolbar_id=DefaultToolbarID):
-        if title is None:
-            self._title = _("Point selection")
-        else:
-            self._title = title
-        self._tip = tip
+                 toolbar_id=DefaultToolbarID, marker_style=None):
+        if title is not None:
+            self.TITLE = title
+        self.TIP = tip
         super(SelectPointTool, self).__init__(manager, toolbar_id)
         assert mode in ("reuse", "create")
         self.mode = mode
@@ -430,9 +439,15 @@ class SelectPointTool(InteractiveTool):
         self.marker = None
         self.last_pos = None
         self.on_active_item = on_active_item
-
-    def icon(self):
-        return get_icon("point_selection.png")
+        if marker_style is not None:
+            self.marker_style_sect = marker_style[0]
+            self.marker_style_key = marker_style[1]
+        else:
+            self.marker_style_sect = self.MARKER_STYLE_SECT
+            self.marker_style_key = self.MARKER_STYLE_KEY
+    
+    def set_marker_style(self, marker):
+        marker.set_style(self.marker_style_sect, self.marker_style_key)
     
     def setup_filter(self, baseplot):
         filter = baseplot.filter
@@ -449,8 +464,8 @@ class SelectPointTool(InteractiveTool):
     def start(self, filter, event):
         if self.marker is None:
             title = ""
-            if self._title:
-                title = "<b>%s</b><br>" % self._title
+            if self.TITLE:
+                title = "<b>%s</b><br>" % self.TITLE
             if self.on_active_item:
                 constraint_cb = filter.plot.on_active_curve
                 label_cb = lambda marker, x, y: title + \
@@ -461,7 +476,7 @@ class SelectPointTool(InteractiveTool):
                            "%sx = %f<br>y = %f" % (title, x, y)
             self.marker = Marker(label_cb=label_cb,
                                  constraint_cb=constraint_cb)
-            self.marker.set_style("plot", "marker/curve")
+            self.set_marker_style(self.marker)
         self.marker.attach(filter.plot)
         self.marker.setZ(filter.plot.get_max_z()+1)
         self.marker.setVisible(True)
@@ -483,13 +498,28 @@ class SelectPointTool(InteractiveTool):
 
     def get_coordinates(self):
         return self.last_pos
+        
+class CrossSectionTool(SelectPointTool):
+    TITLE = _("Cross sections")
+    ICON = "csection.png"
+    MARKER_STYLE_KEY = "marker/cross_section"
+
+    def activate(self):
+        """Activate tool"""
+        SelectPointTool.activate(self)
+        for panel_id in (ID_XCS, ID_YCS):
+            panel = self.manager.get_panel(panel_id)
+            panel.setVisible(True)
+            if self.marker is not None:
+                panel.update_plot(self.marker)
 
 
 SHAPE_Z_OFFSET = 1000
 
 class MultiLineTool(InteractiveTool):
-    _title = _("Polyline")
-    _cursor = Qt.ArrowCursor
+    TITLE = _("Polyline")
+    ICON = "polyline.png"
+    CURSOR = Qt.ArrowCursor
 
     def __init__(self, manager, handle_final_shape_cb=None, shape_style=None):
         super(MultiLineTool, self).__init__(manager)
@@ -503,9 +533,6 @@ class MultiLineTool(InteractiveTool):
         else:
             self.shape_style_sect = "plot"
             self.shape_style_key = "shape/drag"
-
-    def icon(self):
-        return get_icon("polyline.png")
 
     def reset(self):
         self.shape = None
@@ -596,11 +623,8 @@ class MultiLineTool(InteractiveTool):
 
 
 class FreeFormTool(MultiLineTool):
-    _title = _("Free form")
-    
-    def icon(self):
-        """Return tool icon"""
-        return get_icon("freeform.png")
+    TITLE = _("Free form")
+    ICON = "freeform.png"
 
     def cancel_point(self, filter, event):
         """Reimplement base class method"""
@@ -614,29 +638,23 @@ class FreeFormTool(MultiLineTool):
 
 
 class LabelTool(InteractiveTool):
-    _title = _("Label")
-    SHAPE_STYLE_SECT = "plot"
-    SHAPE_STYLE_KEY = "label"
-    NAME = _("Label")
+    TITLE = _("Label")
     ICON = "label.png"
+    LABEL_STYLE_SECT = "plot"
+    LABEL_STYLE_KEY = "label"
+    
     def __init__(self, manager, handle_label_cb=None, label_style=None):
         self.handle_label_cb = handle_label_cb
         InteractiveTool.__init__(self, manager)
         if label_style is not None:
-            self.shape_style_sect = label_style[0]
-            self.shape_style_key = label_style[1]
+            self.label_style_sect = label_style[0]
+            self.label_style_key = label_style[1]
         else:
-            self.shape_style_sect = self.SHAPE_STYLE_SECT
-            self.shape_style_key = self.SHAPE_STYLE_KEY
-    
-    def icon(self):
-        """Return tool icon"""
-        return get_icon(self.ICON)
+            self.label_style_sect = self.LABEL_STYLE_SECT
+            self.label_style_key = self.LABEL_STYLE_KEY
     
     def set_label_style(self, label):
-        label.labelparam.read_config(CONF, self.shape_style_sect,
-                                     self.shape_style_key)
-        label.labelparam.update_label(label)
+        label.set_style(self.label_style_sect, self.label_style_key)
     
     def setup_filter(self, baseplot):
         filter = baseplot.filter
@@ -655,7 +673,8 @@ class LabelTool(InteractiveTool):
             text = textparam.text.replace('\n', '<br>')
             from guiqwt.builder import make
             label = make.label(text, (0, 0), (10, 10), "TL")
-            label.setTitle(self.NAME)
+            self.set_label_style(label)
+            label.setTitle(self.TITLE)
             x = plot.invTransform(label.xAxis(), event.pos().x())
             y = plot.invTransform(label.yAxis(), event.pos().y())
             label.set_position(x, y)
@@ -668,10 +687,8 @@ class LabelTool(InteractiveTool):
 class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_SECT = "plot"
     SHAPE_STYLE_KEY = "shape/drag"
-    def __init__(self, manager, name, icon, func, shape_style=None):
+    def __init__(self, manager, func, shape_style=None):
         self.action_func = func
-        self._title = name
-        self.action_icon = icon
         InteractiveTool.__init__(self, manager)
         if shape_style is not None:
             self.shape_style_sect = shape_style[0]
@@ -679,10 +696,11 @@ class RectangularActionTool(InteractiveTool):
         else:
             self.shape_style_sect = self.SHAPE_STYLE_SECT
             self.shape_style_key = self.SHAPE_STYLE_KEY
-    
-    def icon(self):
-        """Return tool icon"""
-        return get_icon(self.action_icon)
+        self.last_final_shape = None
+        
+    def get_last_final_shape(self):
+        if self.last_final_shape is not None:
+            return self.last_final_shape()
     
     def set_shape_style(self, shape):
         shape.set_style(self.shape_style_sect, self.shape_style_key)
@@ -707,6 +725,7 @@ class RectangularActionTool(InteractiveTool):
         plot.add_item_with_z_offset(shape, SHAPE_Z_OFFSET)
         shape.move_local_point_to(h0, p0)
         shape.move_local_point_to(h1, p1)
+        self.last_final_shape = weakref.ref(shape)
         return shape
 
     def setup_filter(self, baseplot):
@@ -725,11 +744,11 @@ class RectangularActionTool(InteractiveTool):
 
 
 class RectangularShapeTool(RectangularActionTool):
-    NAME = None
+    TITLE = None
     ICON = None
     def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
                  shape_style=None):
-        RectangularActionTool.__init__(self, manager, self.NAME, self.ICON,
+        RectangularActionTool.__init__(self, manager,
                                        self.add_shape_to_plot, shape_style)
         self.setup_shape_cb = setup_shape_cb
         self.handle_final_shape_cb = handle_final_shape_cb
@@ -746,7 +765,7 @@ class RectangularShapeTool(RectangularActionTool):
         
     def setup_shape(self, shape):
         """To be reimplemented"""
-        shape.setTitle(self.NAME)
+        shape.setTitle(self.TITLE)
         if self.setup_shape_cb is not None:
             self.setup_shape_cb(shape)
         
@@ -756,11 +775,11 @@ class RectangularShapeTool(RectangularActionTool):
             self.handle_final_shape_cb(shape)
 
 class RectangleTool(RectangularShapeTool):
-    NAME = _("Rectangle")
+    TITLE = _("Rectangle")
     ICON = "rectangle.png"
 
 class PointTool(RectangularShapeTool):
-    NAME = _("Point")
+    TITLE = _("Point")
     ICON = "point_shape.png"
     SHAPE_STYLE_KEY = "shape/point"
     def create_shape(self):
@@ -769,7 +788,7 @@ class PointTool(RectangularShapeTool):
         return shape, 0, 0
 
 class SegmentTool(RectangularShapeTool):
-    NAME = _("Segment")
+    TITLE = _("Segment")
     ICON = "segment.png"
     SHAPE_STYLE_KEY = "shape/segment"
     def create_shape(self):
@@ -778,7 +797,7 @@ class SegmentTool(RectangularShapeTool):
         return shape, 0, 2
 
 class CircleTool(RectangularShapeTool):
-    NAME = _("Circle")
+    TITLE = _("Circle")
     ICON = "circle.png"
     def create_shape(self):
         shape = EllipseShape(0, 0, 1, 1)
@@ -786,7 +805,7 @@ class CircleTool(RectangularShapeTool):
         return shape, 0, 1
 
 class EllipseTool(RectangularShapeTool):
-    NAME = _("Ellipse")
+    TITLE = _("Ellipse")
     ICON = "ellipse_shape.png"
     def create_shape(self):
         shape = EllipseShape(0, 0, 1, 1)
@@ -798,7 +817,7 @@ class EllipseTool(RectangularShapeTool):
         super(EllipseTool, self).handle_final_shape(shape)
 
 class PlaceAxesTool(RectangularShapeTool):
-    NAME = _("Axes")
+    TITLE = _("Axes")
     ICON = "gtaxes.png"
     SHAPE_STYLE_KEY = "shape/axes"
     def create_shape(self):
@@ -832,9 +851,9 @@ class AnnotatedSegmentTool(SegmentTool):
         return AnnotatedSegment(0, 0, 1, 1), 0, 2
 
 
-class AverageCrossSectionsTool(AnnotatedRectangleTool):
-    NAME = _("Average cross sections")
-    ICON = "csection.png"
+class AverageCrossSectionTool(AnnotatedRectangleTool):
+    TITLE = _("Average cross sections")
+    ICON = "csection_avg.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
     def setup_shape(self, shape):
         self.setup_shape_appearance(shape)
@@ -853,22 +872,23 @@ class AverageCrossSectionsTool(AnnotatedRectangleTool):
 
     def activate(self):
         """Activate tool"""
-        super(AverageCrossSectionsTool, self).activate()
+        super(AverageCrossSectionTool, self).activate()
         for panel_id in (ID_XCS, ID_YCS):
-            self.manager.get_panel(panel_id).setVisible(True)
+            panel = self.manager.get_panel(panel_id)
+            panel.setVisible(True)
+            shape = self.get_last_final_shape()
+            if shape is not None:
+                panel.update_plot(shape)
     
     def handle_final_shape(self, shape):
-        super(AverageCrossSectionsTool, self).handle_final_shape(shape)
+        super(AverageCrossSectionTool, self).handle_final_shape(shape)
         self.setup_shape_appearance(shape)
         self.register_shape(shape, final=True)
 
 
 class RectZoomTool(InteractiveTool):
-    _title = _("Rectangle zoom")
-    
-    def icon(self):
-        """Return tool icon"""
-        return get_icon("magnifier.png")
+    TITLE = _("Rectangle zoom")
+    ICON = "magnifier.png"
     
     def setup_filter(self, baseplot):
         filter = baseplot.filter
@@ -886,15 +906,12 @@ class RectZoomTool(InteractiveTool):
 
 
 class HRangeTool(InteractiveTool):
-    _title = _("Horizontal selection")
+    TITLE = _("Horizontal selection")
+    ICON = "xrange.png"
 
     def __init__(self, manager):
         super(HRangeTool, self).__init__(manager)
         self.shape = None
-    
-    def icon(self):
-        """Return tool icon"""
-        return get_icon("xrange.png")
     
     def setup_filter(self, baseplot):
         filter = baseplot.filter
@@ -1297,9 +1314,10 @@ def save_snapshot(plot, p0, p1):
         raise RuntimeError(_("Unknown file extension"))
 
 class SnapshotTool(RectangularActionTool):
+    TITLE = _("Rectangle snapshot")
+    ICON = "snapshot.png"
     def __init__(self, manager):
-        RectangularActionTool.__init__(self, manager, _("Rectangle snapshot"),
-                                       "snapshot.png",  save_snapshot)
+        RectangularActionTool.__init__(self, manager, save_snapshot)
 
 
 class PrintFilter(QwtPlotPrintFilter):

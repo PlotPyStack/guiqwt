@@ -124,7 +124,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
                           AspectRatioTool, ContrastTool, DummySeparatorTool,
                           XCrossSectionTool, YCrossSectionTool, SnapshotTool,
-                          AverageCrossSectionsTool)
+                          CrossSectionTool, AverageCrossSectionTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED)
@@ -470,7 +470,8 @@ class PlotManager(object):
         if self.get_xcs_panel() and self.get_ycs_panel():
             self.add_tool(XCrossSectionTool)
             self.add_tool(YCrossSectionTool)
-            self.add_tool(AverageCrossSectionsTool)
+            self.add_tool(CrossSectionTool)
+            self.add_tool(AverageCrossSectionTool)
         self.add_tool(SnapshotTool)
         
     def register_other_tools(self):
