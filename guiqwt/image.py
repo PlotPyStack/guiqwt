@@ -550,6 +550,10 @@ class BaseImageItem(QwtPlotItem):
             ix1, ix0 = ix0, ix1
         if iy0 > iy1:
             iy1, iy0 = iy0, iy1
+        if ix0 == ix1:
+            ix1 = ix0+1
+        if iy0 == iy1:
+            iy1 = iy0+1
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=0)
         return (self.get_x_values(ix0, ix1),
                 self.__process_cross_section(ydata, apply_lut))
@@ -562,6 +566,10 @@ class BaseImageItem(QwtPlotItem):
             ix1, ix0 = ix0, ix1
         if iy0 > iy1:
             iy1, iy0 = iy0, iy1
+        if ix0 == ix1:
+            ix1 = ix0+1
+        if iy0 == iy1:
+            iy1 = iy0+1
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=1)
         return (self.get_y_values(iy0, iy1),
                 self.__process_cross_section(ydata, apply_lut))
