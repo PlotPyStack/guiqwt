@@ -37,17 +37,17 @@ class FilterTestWidget(QWidget):
         
     def setup_widget(self, title):
         #---Create the plot widget:
-        plotwidget = CurveWidget(self)
-        plotwidget.register_all_curve_tools()
+        curvewidget = CurveWidget(self)
+        curvewidget.register_all_curve_tools()
         self.curve_item = make.curve([], [], color='b')
-        plotwidget.plot.add_item(self.curve_item)
-        plotwidget.plot.set_antialiasing(True)
+        curvewidget.plot.add_item(self.curve_item)
+        curvewidget.plot.set_antialiasing(True)
         #---
         
         button = QPushButton(u"Test filter: %s" % title)
         self.connect(button, SIGNAL('clicked()'), self.process_data)
         vlayout = QVBoxLayout()
-        vlayout.addWidget(plotwidget)
+        vlayout.addWidget(curvewidget)
         vlayout.addWidget(button)
         self.setLayout(vlayout)
         

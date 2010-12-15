@@ -672,12 +672,12 @@ class CurveDialog(QDialog, PlotManager):
         May be overriden to customize the plot layout 
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        plotwidget = BaseCurveWidget(self, **options)
-        self.plot_layout.addWidget(plotwidget, 0, 0)
+        widget = BaseCurveWidget(self, **options)
+        self.plot_layout.addWidget(widget, 0, 0)
         
         # Configuring plot manager
-        self.add_plot(plotwidget.plot)
-        self.add_panel(plotwidget.itemlist)
+        self.add_plot(widget.plot)
+        self.add_panel(widget.itemlist)
 
 
 #===============================================================================
@@ -860,15 +860,15 @@ class ImageDialog(CurveDialog):
         May be overriden to customize the plot layout 
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        plotwidget = BaseImageWidget(self, **options)
-        self.plot_layout.addWidget(plotwidget, row, column, rowspan, columnspan)
+        widget = BaseImageWidget(self, **options)
+        self.plot_layout.addWidget(widget, row, column, rowspan, columnspan)
         
         # Configuring plot manager
-        self.add_plot(plotwidget.plot)
-        self.add_panel(plotwidget.itemlist)
-        self.add_panel(plotwidget.xcsw)
-        self.add_panel(plotwidget.ycsw)
-        self.add_panel(plotwidget.contrast)
+        self.add_plot(widget.plot)
+        self.add_panel(widget.itemlist)
+        self.add_panel(widget.xcsw)
+        self.add_panel(widget.ycsw)
+        self.add_panel(widget.contrast)
 
 
 #===============================================================================

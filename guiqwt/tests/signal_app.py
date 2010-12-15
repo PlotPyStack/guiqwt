@@ -139,19 +139,19 @@ class MainWindow(QMainWindow):
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
         
-        self.plotwidget = CurveWidget(self)
+        self.curvewidget = CurveWidget(self)
         
         # Plot manager setup
         toolbar = self.addToolBar("Image")
-        self.plotwidget.add_toolbar(toolbar, "default")
-        self.plotwidget.register_all_image_tools()
+        self.curvewidget.add_toolbar(toolbar, "default")
+        self.curvewidget.register_all_image_tools()
 
         # Vertical splitter: main window's central central widget
         vsplitter = QSplitter(Qt.Vertical, self)
         vsplitter.setContentsMargins(10, 10, 10, 10)
         self.setCentralWidget(vsplitter)
         vsplitter.addWidget(hsplitter)
-        vsplitter.addWidget(self.plotwidget)
+        vsplitter.addWidget(self.curvewidget)
         vsplitter.setStretchFactor(0, 0)
         vsplitter.setStretchFactor(1, 1)
         vsplitter.setHandleWidth(10)
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
         
         self.selection_changed() # Update selection dependent actions
         
-        self.plotwidget.plot.add_item(make.legend("TR"))
+        self.curvewidget.plot.add_item(make.legend("TR"))
         
     #------GUI refresh/setup
     def refresh_list(self):
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
                 self.signallist.selectionModel().selectedRows()]
         
     def refresh_plot(self):
-        plot = self.plotwidget.plot
+        plot = self.curvewidget.plot
         for item in self.items:
             if item is not None:
                 item.hide()

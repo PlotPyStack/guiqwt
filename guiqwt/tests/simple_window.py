@@ -78,15 +78,15 @@ class CentralWidget(QSplitter):
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
         
-        self.plotwidget = ImageWidget(self)
-        self.connect(self.plotwidget.plot, SIG_LUT_CHANGED,
+        self.imagewidget = ImageWidget(self)
+        self.connect(self.imagewidget.plot, SIG_LUT_CHANGED,
                      self.lut_range_changed)
         self.item = None # image item
         
-        self.plotwidget.add_toolbar(toolbar, "default")
-        self.plotwidget.register_all_image_tools()
+        self.imagewidget.add_toolbar(toolbar, "default")
+        self.imagewidget.register_all_image_tools()
         
-        self.addWidget(self.plotwidget)
+        self.addWidget(self.imagewidget)
 
         self.images = [] # List of ImageParam instances
         self.lut_ranges = [] # List of LUT ranges
@@ -117,12 +117,12 @@ class CentralWidget(QSplitter):
         self.lut_ranges[row] = self.item.get_lut_range()
         
     def show_data(self, data, lut_range=None):
-        plot = self.plotwidget.plot
+        plot = self.imagewidget.plot
         if self.item is not None:
             self.item.set_data(data)
             if lut_range is None:
                 lut_range = self.item.get_lut_range()
-            contrast_panel = self.plotwidget.get_contrast_panel()
+            contrast_panel = self.imagewidget.get_contrast_panel()
             contrast_panel.set_range(*lut_range)
         else:
             self.item = make.image(data)
@@ -142,7 +142,7 @@ class CentralWidget(QSplitter):
         self.lut_ranges.append(None)
         self.refresh_list()
         self.imagelist.setCurrentRow(len(self.images)-1)
-        plot = self.plotwidget.plot
+        plot = self.imagewidget.plot
         plot.do_autoscale()
     
     def add_image_from_file(self, filename):
