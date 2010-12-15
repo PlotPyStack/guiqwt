@@ -401,11 +401,11 @@ class PlotManager(object):
             # Here, *widget* is for example a CurveWidget instance
             # (the same apply for CurvePlot, ImageWidget, ImagePlot or any 
             #  class deriving from PlotManager)
-            widget.get_xcs_panel().update_all_items()
-            widget.get_ycs_panel().update_all_items()
+            widget.get_xcs_panel().update_plot()
+            widget.get_ycs_panel().update_plot()
         """
         for panel in (self.get_xcs_panel(), self.get_ycs_panel()):
-            panel.update_all_items()
+            panel.update_plot()
 
     def get_toolbar(self, toolbar_id="default"):
         """

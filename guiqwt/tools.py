@@ -857,6 +857,7 @@ class CrossSectionTool(AnnotatedPointTool):
     def register_shape(self, shape, final=False):
         plot = shape.plot()
         if plot is not None:
+            plot.unselect_all()
             plot.set_active_item(shape)
         for panel_id in (ID_XCS, ID_YCS):
             panel = self.manager.get_panel(panel_id)

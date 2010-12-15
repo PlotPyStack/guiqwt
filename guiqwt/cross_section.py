@@ -335,7 +335,8 @@ class CrossSectionPlot(CurvePlot):
         self.perimage_mode = True
         self.autoscale_mode = True
         self.apply_lut = False
-                                               
+        
+        self.last_obj = None
         self.known_items = {}
         self._shapes = {}
         
@@ -442,15 +443,27 @@ class CrossSectionPlot(CurvePlot):
     def shape_changed(self, shape):
         if self.is_shape_known(shape):
             self.update_plot(shape)
+            
+    def get_last_obj(self):
+        if self.last_obj is not None:
+            return self.last_obj()
         
-    def update_plot(self, obj):
+    def update_plot(self, obj=None):
         """
-        Update cross section plot associated to object *obj*
+        Update cross section curve(s) associated to object *obj*
         
         *obj* may be a marker or a rectangular shape
         (see :py:class:`guiqwt.tools.CrossSectionTool` 
         and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
+        
+        If obj is None, update the cross sections of the last active object
         """
+        if obj is None:
+            obj = self.get_last_obj()
+            if obj is None:
+                return
+        else:
+            self.last_obj = weakref.ref(obj)
         if obj.plot() is None:
             self.unregister_shape(obj)
             return
@@ -467,20 +480,6 @@ class CrossSectionPlot(CurvePlot):
                 curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
-
-    def update_all_items(self, plot=None):
-        """
-        Update all cross section curves
-        """
-        def _update(plot):
-            for shape in self._shapes[plot]:
-                if shape.plot() is not None:
-                    self.update_plot(shape)
-        if plot in self._shapes:
-            _update(plot)
-        else:
-            for plot in self._shapes:
-                _update(plot)
                 
     def export(self):
         """Export cross-section plot in a text file"""
@@ -511,19 +510,19 @@ class CrossSectionPlot(CurvePlot):
         
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
-        self.update_all_items()
+        self.update_plot()
                     
     def toggle_autoscale(self, state):
         self.autoscale_mode = state
-        self.update_all_items()
+        self.update_plot()
         
     def toggle_apply_lut(self, state):
         self.apply_lut = state
-        self.update_all_items()
+        self.update_plot()
         
     def lut_changed(self, plot):
         if self.apply_lut:
-            self.update_all_items(plot)
+            self.update_plot()
 
 
 class XCrossSectionPlot(CrossSectionPlot):
@@ -649,7 +648,7 @@ class CrossSectionWidget(PanelWidget):
             self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
                          self.cs_plot.toggle_autoscale)
             self.connect(other.refresh_ac, SIGNAL("triggered()"),
-                         self.cs_plot.update_all_items)
+                         self.cs_plot.update_plot)
 
     def get_plot(self):
         return self.manager.get_active_plot()
@@ -684,7 +683,7 @@ class CrossSectionWidget(PanelWidget):
                                    toggled=self.cs_plot.toggle_autoscale)
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
-                                   triggered=self.cs_plot.update_all_items)
+                                   triggered=self.cs_plot.update_plot)
 
         self.peritem_ac.setChecked(True)
         self.autoscale_ac.setChecked(True)
@@ -703,12 +702,6 @@ class CrossSectionWidget(PanelWidget):
         and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
         """
         self.cs_plot.update_plot(obj)
-        
-    def update_all_items(self, plot=None):
-        """
-        Update all cross section curves
-        """
-        self.cs_plot.update_all_items(plot=plot)
 
 assert_interfaces_valid(CrossSectionWidget)
 
