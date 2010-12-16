@@ -99,6 +99,8 @@ if sphinx:
 
 
 setup(name=LIBNAME, version=version,
+      download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
+                                                  LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=PACKAGES, package_data=PACKAGE_DATA,
       requires=["PyQt4 (>4.3)", "NumPy", "guidata"],
