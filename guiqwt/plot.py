@@ -372,6 +372,19 @@ class PlotManager(object):
         from guiqwt import panels
         return self.get_panel(panels.ID_CONTRAST)
         
+    def set_contrast_range(self, zmin, zmax):
+        """
+        Convenience function to set the `contrast adjustment panel` range
+        
+        This is strictly equivalent to the following::
+            
+            # Here, *widget* is for example a CurveWidget instance
+            # (the same apply for CurvePlot, ImageWidget, ImagePlot or any 
+            #  class deriving from PlotManager)
+            widget.get_contrast_panel().set_range(zmin, zmax)
+        """
+        self.get_contrast_panel().set_range(zmin, zmax)
+        
     def get_xcs_panel(self):
         """
         Convenience function to get the `X-axis cross section panel`

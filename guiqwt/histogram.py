@@ -504,5 +504,7 @@ class ContrastAdjustment(PanelWidget):
     def set_range(self, _min, _max):
         """Set contrast panel's histogram range"""
         self.histogram.set_range(_min, _max)
+        # Update the levels histogram in case active item data has changed:
+        self.histogram.selection_changed(self.get_plot())
 
 assert_interfaces_valid(ContrastAdjustment)
