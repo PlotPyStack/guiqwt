@@ -526,7 +526,7 @@ class BaseImageItem(QwtPlotItem):
     def __process_cross_section(self, ydata, apply_lut):
         if apply_lut:
             a, b, bg, cmap = self.lut
-            return ydata*a+b
+            return (ydata*a+b).clip(0, LUT_MAX)
         else:
             return ydata
 
