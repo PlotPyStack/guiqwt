@@ -404,8 +404,8 @@ class PlotManager(object):
             widget.get_xcs_panel().update_plot()
             widget.get_ycs_panel().update_plot()
         """
-        for panel in (self.get_xcs_panel(), self.get_ycs_panel()):
-            panel.update_plot()
+        self.get_xcs_panel().update_plot()
+        self.get_ycs_panel().update_plot()
 
     def get_toolbar(self, toolbar_id="default"):
         """
