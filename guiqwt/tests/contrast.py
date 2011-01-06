@@ -29,7 +29,12 @@ def test():
     plot.add_item(image)
     win.resize(600, 600)
     win.show()
-    plot.save_widget('contrast.png')
+    try:
+        plot.save_widget('contrast.png')
+    except IOError:
+        # Skipping this part of the test 
+        # because user has no write permission on current directory
+        pass
     win.exec_()
 
 if __name__ == "__main__":

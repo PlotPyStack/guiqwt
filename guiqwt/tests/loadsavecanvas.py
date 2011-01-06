@@ -9,6 +9,9 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
+# WARNING:
+# This script requires read/write permissions on current directory
+
 from PyQt4.QtGui import QFont
 
 import os, os.path as osp
