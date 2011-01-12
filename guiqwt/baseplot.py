@@ -98,6 +98,7 @@ class EnhancedQwtPlot(QwtPlot):
         super(EnhancedQwtPlot, self).__init__(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
+        self.plot_id = None # id assigned by it's manager
         self.filter = StatefulEventFilter(self)
         self.items = []
         self.active_item = None
@@ -121,9 +122,10 @@ class EnhancedQwtPlot(QwtPlot):
             if selitem is not item and selitem.can_move():
                 selitem.move_with_selection(x1-x0, y1-y0)
 
-    def set_manager(self, manager):
+    def set_manager(self, manager, plot_id):
         """Set the associated :py:class:`guiqwt.plot.PlotManager` instance"""
         self.manager = manager
+        self.plot_id = plot_id
 
     def sizeHint(self):
         """Preferred size"""
@@ -673,6 +675,26 @@ class EnhancedQwtPlot(QwtPlot):
             lb = axis.lowerBound()
             hb = axis.upperBound()
             self.setAxisScale(axis_id, lb, hb)
+
+
+    def _set_axis_range(self, axis, low, high, stepsize, nmajor, nminor):
+        self.setAxisScale(axis, low, high, stepsize)
+        if nmajor is not None:
+            self.setAxisMaxMajor(axis, nmajor)
+        if nminor is not None:
+            self.setAxisMaxMinor(axis, nminor)
+
+    def set_range_top(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
+        self._set_axis_range(self.AXES['top'], low, high, stepsize, nmajor, nminor)
+
+    def set_range_left(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
+        self._set_axis_range(self.AXES['left'], low, high, stepsize, nmajor, nminor)
+
+    def set_range_right(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
+        self._set_axis_range(self.AXES['right'], low, high, stepsize, nmajor, nminor)
+
+    def set_range_bottom(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
+        self._set_axis_range(self.AXES['bottom'], low, high, stepsize, nmajor, nminor)
 
     def invalidate(self):
         """Invalidate paint cache and schedule redraw

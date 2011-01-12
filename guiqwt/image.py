@@ -182,6 +182,7 @@ class BaseImageItem(QwtPlotItem):
         self.imageparam = param
         self.selected = False
         self.colormap_axis = None
+        self.data = None
         self.min = 0.0
         self.max = 1.0
         self.cmap_table = None
@@ -201,8 +202,7 @@ class BaseImageItem(QwtPlotItem):
         self.lut = (1.0, 0.0, None, np.zeros((LUT_SIZE, ), np.uint32))
 
         self.set_lut_range([0., 255.])
-        self.set_background_color(self.imageparam.background)
-        self.set_color_map(self.imageparam.colormap)
+        self.imageparam.update_image(self)
         self.setItemAttribute(QwtPlotItem.AutoScale)
         self.setItemAttribute(QwtPlotItem.Legend, True)
         self._filename = None # The file this image comes from
@@ -704,7 +704,7 @@ class QuadGridItem(ImageItem):
         self.histogram_cache = None
         self.set_data(Z)
         self.imageparam.update_image(self)
-    
+
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType)
@@ -715,7 +715,7 @@ class QuadGridItem(ImageItem):
         ymin = self.Y.min()
         ymax = self.Y.max()
         self.bounds = QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
-        
+
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
@@ -726,7 +726,7 @@ class QuadGridItem(ImageItem):
             _min, _max = lut_range
         else:
             _min, _max = data.min(), data.max()
-            
+
         self.data = data
         self.histogram_cache = None
         self.update_bounds()
@@ -795,6 +795,8 @@ class TrImageItem(ImageItem):
     def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0,
                       hflip=False, vflip=False):
         self.imageparam.set_transform(x0, y0, angle, dx, dy, hflip, vflip)
+        if self.data is None:
+            return
         ni, nj = self.data.shape
         rot = rotate(angle)
         tr1 = translate(nj/2.+0.5, ni/2.+0.5)
@@ -1128,6 +1130,106 @@ class XYImageItem(ImageItem):
 
 assert_interfaces_valid(XYImageItem)
 
+#===============================================================================
+# RGB Image with alpha channel
+#===============================================================================
+class RGBImageItem(ImageItem):
+    """
+    RGBImageItem : RGB image defined by a numpy array of uint8 (NxMx[34])
+    accept RGB or RGBA image
+    0 Red
+    1 Green
+    2 Blue
+    3 Alpha
+    """
+    __implements__ = (IBasePlotItem, IBaseImageItem)
+    def __init__(self, data=None, scale=None, param=None):
+        self.orig_data = None
+        self.scale = scale
+        super(RGBImageItem, self).__init__(data, param)
+        self.lut = None
+
+    def recompute_alpha_channel(self):
+        data = self.orig_data
+        if self.orig_data is None:
+            return
+        H, W, NC = data.shape
+        R = data[...,0].astype(np.uint32)
+        G = data[...,1].astype(np.uint32)
+        B = data[...,2].astype(np.uint32)
+        use_alpha = self.imageparam.alpha_mask
+        alpha = self.imageparam.alpha
+        if NC>3 and use_alpha:
+            A = data[...,3].astype(np.uint32)
+        else:
+            A  = np.zeros((H,W),np.uint32)
+            A[:,:]=int(255*alpha)
+        self.data[:,:] = (A<<24)+(R<<16)+(G<<8)+B
+      
+    def set_data(self, data):
+        H, W, NC = data.shape
+        self.orig_data = data
+        self.data = np.empty((H, W), np.uint32)
+        self.recompute_alpha_channel()
+        self.srcRect = QRectF(QPointF(0,0), QPointF(W,H))
+        self.update_bounds()
+        self.update_border()
+        self.lut = None
+
+    def set_scale(self, scale):
+        self.scale = scale
+        self.update_bounds()
+
+    def update_bounds(self):
+        if self.orig_data is None:
+            return
+        H, W, NC = self.orig_data.shape
+        if self.scale is None:
+            x0 = 0
+            x1 = W
+            y0 = 0
+            y1 = H
+        else:
+            x0,y0,x1,y1 = self.scale
+        self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
+
+    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        sxl,syt,sxr,syb = srcRect
+        xl, yb, xr, yt = self.boundingRect().getCoords()
+        W = self.srcRect.width()
+        H = self.srcRect.height()
+        x0 = W*(sxl-xl)/(xr-xl)
+        x1 = W*(sxr-xl)/(xr-xl)
+        y0 = H*(syt-yt)/(yb-yt)
+        y1 = H*(syb-yt)/(yb-yt)
+        src2 = (x0,y0,x1,y1)
+        dest = _scale_rect(self.data, src2,
+                           self._offscreen, dstRect,
+                           self.lut, self.interpolate)
+        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(srcrect, self._image, srcrect)
+
+    # Override lut/bg handling
+    def set_background_color(self, qcolor):
+        self.lut = None
+
+    def set_color_map(self, name_or_table):
+        self.lut = None
+
+    def set_lut_range(self, range):
+        pass
+
+    #---- IBasePlotItem API ----------------------------------------------------
+    def types(self):
+        return (IImageItemType, ITrackableItemType, ISerializableType)
+
+    #---- IBaseImageItem API ---------------------------------------------------
+    def can_setfullscale(self):
+        return True
+    def can_sethistogram(self):
+        return False
+
+assert_interfaces_valid(RGBImageItem)
 
 #===============================================================================
 # Image filter
@@ -1512,6 +1614,8 @@ class ImagePlot(CurvePlot):
         self.emit(SIG_LUT_CHANGED, self)
 
     def update_colormap_axis(self, item):
+        if IColormapImageItemType not in item.types():
+            return
         zaxis = self.colormap_axis
         axiswidget = self.axisWidget(zaxis)
         self.setAxisScale(zaxis, item.min, item.max)
@@ -1529,7 +1633,7 @@ class ImagePlot(CurvePlot):
             self.apply_aspect_ratio()
         self.replot()
 
-    #---- EnhancedQwtPlot API --------------------------------------------       
+    #---- EnhancedQwtPlot API --------------------------------------------------
     def add_item(self, item, z=None, autoscale=True):
         """
         Add a *plot item* instance to this *plot widget*
@@ -1559,3 +1663,4 @@ class ImagePlot(CurvePlot):
             return ImageAxesParam
         else:
             return super(ImagePlot, self).get_axesparam_class(item)
+

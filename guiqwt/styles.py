@@ -975,6 +975,47 @@ def _create_choices():
         choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
     return choices
 
+class RGBImageParam(DataSet):
+    _multiselection = False
+    label = StringItem(_("Image title"), default=_("Image")) \
+            .set_prop("display", hide=GetAttrProp("_multiselection"))
+    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
+                          default=False)
+    alpha = FloatItem(_("Global alpha"), default=1.0,
+                      help=_("Global alpha value"))
+    interpolation = ChoiceItem(_("Interpolation"),
+                               [(0, _("None (nearest pixel)")),
+                                (1, _("Linear interpolation")),
+                                (2, _("2x2 antialiasing filter")),
+                                (3, _("3x3 antialiasing filter")),
+                                (5, _("5x5 antialiasing filter"))],
+                               default=0, help=_("Image interpolation type"))
+
+    def update_param(self, image):
+        self.label = unicode(image.title().text())
+        interpolation = image.get_interpolation()
+        mode = interpolation[0]
+        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR
+        if mode == INTERP_NEAREST:
+            self.interpolation = 0
+        elif mode == INTERP_LINEAR:
+            self.interpolation = 1
+        else:
+            size = interpolation[1].shape[0]
+            self.interpolation = size
+
+    def update_image(self, image):
+        image.setTitle(self.label)
+        size = self.interpolation
+        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
+        if size == 0:
+            mode = INTERP_NEAREST
+        elif size == 1:
+            mode = INTERP_LINEAR
+        else:
+            mode = INTERP_AA
+        image.set_interpolation(mode, size)
+        image.recompute_alpha_channel()
 
 class ImageParam(DataSet):
     _multiselection = False

@@ -119,7 +119,8 @@ from guiqwt.baseplot import EnhancedQwtPlot
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED)
+                            SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED,
+                            SIG_PLOT_AXIS_CHANGED)
 
 
 def seg_dist(P, P0, P1):
@@ -1034,6 +1035,9 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, lbound-pos0, hbound-pos1)
         self.setAutoReplot(auto)
         self.replot()
+        # the signal MUST be emitted after replot, otherwise
+        # we receiver won't see the new bounds (don't know why?)
+        self.emit(SIG_PLOT_AXIS_CHANGED, self)
 
     def do_zoom_view(self, dx, dy, lock_aspect_ratio=False):
         """
@@ -1065,6 +1069,9 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, l_new, l_new + F*rng)
         self.setAutoReplot(auto)
         self.replot()
+        # the signal MUST be emitted after replot, otherwise
+        # we receiver won't see the new bounds (don't know why?)
+        self.emit(SIG_PLOT_AXIS_CHANGED, self)
         
     def do_zoom_rect_view(self, start, end):
         x1, y1 = start.x(), start.y()

@@ -30,6 +30,11 @@ void swap(T& a, T&b)
     b = x;
 }
 
+typedef union {
+    npy_uint32 v;
+    npy_uint8  c[4];
+} rgba_t;
+
 typedef XYTransform<Array1D<double> > XYScale;
 
 template <class Transform>
@@ -119,6 +124,21 @@ protected:
     bool has_bg;
 };
 
+template<class T, class D>
+class NoScale
+{
+public:
+    typedef T source_type;
+    typedef D dest_type;
+    NoScale(dest_type _bg, bool apply_bg):bg(_bg), has_bg(apply_bg) {}
+
+    dest_type eval(source_type x) const { return x; }
+    void set_bg(dest_type& dest) const { if (has_bg) dest = bg; }
+protected:
+    dest_type bg;
+    bool has_bg;
+};
+
 template<class T, class TR>
 struct NearestInterpolation {
     T operator()(const Array2D<T>& src, const TR& tr, const typename TR::point& p) {
@@ -152,6 +172,56 @@ struct LinearInterpolation {
 	return (T)(v*(1-b)+b*v2);
     }
 };
+
+template<class TR>
+struct LinearInterpolation<npy_uint32,TR> {
+    npy_uint32 operator()(const Array2D<npy_uint32>& src, const TR& tr, const typename TR::point& p) {
+	int k;
+	int nx = p.ix();
+	int ny = p.iy();
+	rgba_t p1, p2, p3, p4, r;
+	p1.v = src.value(nx, ny);
+	float v[4], v2[4];
+	double a=0;
+	if (nx<src.nj-1) {
+	    p2.v = src.value(nx+1,ny);
+	    a = p.x()-nx;
+	    for(k=0;k<4;++k) {
+		v[k] = (1-a)*p1.c[k]+a*p2.c[k];
+	    }
+	} else {
+	    for(k=0;k<4;++k) {
+		v[k] = p1.c[k];
+	    }
+	}
+	if (ny>=src.ni-1) {
+	    for(k=0;k<4;++k) {
+		r.c[k] = (npy_uint8)(v[k]);
+	    }
+	    return r.v;
+	}
+	p3.v = src.value(nx,ny+1);
+	double b = p.y()-ny;
+	if (nx<src.nj-1) {
+	    p4.v = src.value(nx+1,ny+1);
+	    for(k=0;k<4;++k) {
+		v2[k] = (1-a)*p3.c[k]+a*p4.c[k];
+	    }
+	} else {
+	    for(k=0;k<4;++k) {
+		v2[k] = p3.c[k];
+	    }
+	}
+	for(k=0;k<4;++k) {
+	    float px = v[k]*(1-b)+b*v2[k];
+	    if (px<0.0) px = 0.0;
+	    if (px>255.0) px = 255.0;
+	    r.c[k] = (npy_uint8)px;
+	}
+	return r.v;
+    }
+};
+
 #if 0
 template<class T, class TR>
 struct QuadInterpolation {
@@ -205,6 +275,13 @@ struct LinearInterpolation<T,XYScale> {
 	    v2 = (1-a)*v2+a*src.value(nx+1,ny+1);
 	}
 	return (T)(v*(1-b)+b*v2);
+    }
+};
+
+template<>
+struct LinearInterpolation<npy_uint32,XYScale> {
+    npy_uint32 operator()(const Array2D<npy_uint32>& src, const XYScale& tr, const XYScale::point& p) {
+	return 0;
     }
 };
 
@@ -439,7 +516,7 @@ static bool scale_src_dst(Params& p, PixelScale& pixel_scale)
    on the destination type, which determines the LUT transformation
 */
 template <class Params, class ST>
-static bool scale_src(Params& p)
+static bool scale_src_bw(Params& p)
 {
     typedef LutScale<ST,npy_uint32> color_scale;
     typedef LinearScale<ST,npy_float32> bw32_scale;
@@ -448,6 +525,7 @@ static bool scale_src(Params& p)
     PyObject* p_bg;
     PyArrayObject *p_cmap=0;
     bool apply_bg=true;
+
     if (!PyArg_ParseTuple(p.p_lut, "ddO|O", &a, &b, &p_bg, &p_cmap)) {
 	PyErr_SetString(PyExc_ValueError, "Can't interpret pixel transformation tuple");
 	return false;
@@ -493,6 +571,14 @@ static bool scale_src(Params& p)
     }
 }
 
+template <class Params, class ST>
+static bool scale_src_rgb(Params& p)
+{
+    // Special case p_lut = None
+    NoScale<ST,npy_uint32> scale(0, false);
+    return scale_src_dst<Params,NoScale<ST,npy_uint32> >(p, scale);
+}
+
 template <class Params>
 static PyObject* dispatch_source(Params& p)
 {
@@ -511,28 +597,29 @@ static PyObject* dispatch_source(Params& p)
 
     switch(PyArray_TYPE(p.p_src)) {
     case NPY_FLOAT32:
-	ok = scale_src<Params,npy_float32>(p);
+	ok = scale_src_bw<Params,npy_float32>(p);
 	break;
     case NPY_FLOAT64:
-	ok = scale_src<Params,npy_float64>(p);
-	break;
-    case NPY_UINT32:
-	ok = scale_src<Params,npy_uint32>(p);
+	ok = scale_src_bw<Params,npy_float64>(p);
 	break;
     case NPY_INT32:
-	ok = scale_src<Params,npy_int32>(p);
+	ok = scale_src_bw<Params,npy_int32>(p);
+	break;
+    case NPY_UINT32: // RGBA
+	ok = scale_src_rgb<Params,npy_uint32>(p);
 	break;
     case NPY_UINT16:
-	ok = scale_src<Params,npy_uint16>(p);
+	ok = scale_src_bw<Params,npy_uint16>(p);
+
 	break;
     case NPY_INT16:
-	ok = scale_src<Params,npy_int16>(p);
+	ok = scale_src_bw<Params,npy_int16>(p);
 	break;
     case NPY_UINT8:
-	ok = scale_src<Params,npy_uint8>(p);
+	ok = scale_src_bw<Params,npy_uint8>(p);
 	break;
     case NPY_INT8:
-	ok = scale_src<Params,npy_int8>(p);
+	ok = scale_src_bw<Params,npy_int8>(p);
 	break;
     default:
 	PyErr_SetString(PyExc_TypeError,"Unknown source data type");
@@ -694,8 +781,8 @@ struct QuadHelper {
 	):X(X_), Y(Y_), Z(Z_), D(D_), scale(scale_),
 	  x1(x1_), x2(x2_), y1(y1_), y2(y2_)
 	{
-	    dx = (x2-x1)/D.nj;
-	    dy = (y2-y1)/D.ni;
+	    m_dx = (x2-x1)/D.nj;
+	    m_dy = (y2-y1)/D.ni;
 	}
 
     void draw(int i, int j,
@@ -703,16 +790,30 @@ struct QuadHelper {
 	int k, l;
 	double x, y, u, v;
 	double v0, v1, v2, v3, v4;
+	double ax = X.value(j+0,i+0), ay=Y.value(j+0,i+0);
+	double bx = X.value(j+0,i+1)-ax, by=Y.value(j+0,i+1)-ay;
+	double cx = X.value(j+1,i+1)-ax, cy=Y.value(j+1,i+1)-ay;
+	double dx = X.value(j+1,i+0)-ax, dy=Y.value(j+1,i+0)-ay;
+	double ex = cx-dx-bx, ey=cy-dy-by;
+	double n = 1./sqrt(cx*cx+cy*cy);
+	if (n>1e2) n = 1.0;
+	// Normalize vectors with ||AC||
+	ax *= n; ay *= n;
+	bx *= n; by *= n;
+	cx *= n; cy *= n;
+	dx *= n; dy *= n;
+	ex *= n; ey *= n;
+
 	v1 = Z.value(j,i);
 	v2 = Z.value(j+1,i);
 	v3 = Z.value(j+1,i+1);
 	v4 = Z.value(j,i+1);
-	
+
 	for(l=i1;l<i2;l+=1) {
 	    for(k=j1;k<j2;k+=1) {
-		x = x1+k*dx;
-		y = y1+l*dy;
-		params(x,y,i,j,u,v);
+		x = x1+k*m_dx;
+		y = y1+l*m_dy;
+		params(x*n,y*n, ax,ay, bx,by, cx,cy, dx,dy, ex,ey, u,v);
 		if (u>=0 && u<=1 && v>=0 && v<=1) {
 		    v0 = v1*(1-v)*(1-u) +
 			 v2*  v  *(1-u) +
@@ -723,48 +824,66 @@ struct QuadHelper {
 	    }
 	}
     }
-    void params(double x, double y, int i, int j, double& u, double&v) {
-     
+    void params(double x, double y,
+		double ax, double ay,
+		double bx, double by,
+		double cx, double cy,
+		double dx, double dy,
+		double ex, double ey,
+		double& u, double&v) {
 	/* solves AM=u.AB+v.AD+uv.AE with A,B,C,D quad, AE=DC+BA
 	   M = (x,y)
 	   with u^2.(AB^AE) +u.(AB^AD+AE^AM)+AD^AM=0
 	   v = (AM-u.AB)/(AD+u.AE)
 	*/
-	double ax = X.value(j+0,i+0), ay=Y.value(j+0,i+0);
-	double mx = x-ax, my = y-ay;
-	double bx = X.value(j+0,i+1)-ax, by=Y.value(j+0,i+1)-ay;
-	double cx = X.value(j+1,i+1)-ax, cy=Y.value(j+1,i+1)-ay;
-	double dx = X.value(j+1,i+0)-ax, dy=Y.value(j+1,i+0)-ay;
-	double ex = cx-dx-bx, ey=cy-dy-by;
-	double a, b, c, delta;
-	a = bx*ey-ex*by;
-	b = bx*dy-dx*by + ex*my-mx*ey;
-	c = dx*my-mx*dy;
 
-	if (fabs(a)>1e-8) {
-	    delta = b*b-4*a*c;
-	    u = (-b+sqrt(delta))/(2*a);
-//	    if (u<0) // useless ?
-//		u = (-b-sqrt(delta))/(2*a);
+	double mx = x-ax, my = y-ay;
+	double a1, a2, b, c, delta;
+
+	a1 = bx*ey-ex*by;
+	a2 = dx*ey-ex*dy;
+	if (a1>a2) {
+	    b = bx*dy-dx*by + ex*my-mx*ey;
+	    c = dx*my-mx*dy;
+	    if (fabs(a1)>1e-8) {
+		delta = b*b-4*a1*c;
+		u = (-b+sqrt(delta))/(2*a1);
+	    } else {
+		u = -c/b;
+	    }
+	    double den = (dx+u*ex);
+	    if (den!=0.0) {
+		v = (mx - u*bx)/den;
+	    } else {
+		den = (dy+u*ey);
+		v = (my - u*by)/den;
+	    }
 	} else {
-	    u = -c/b;
-	}
-	double den = (dx+u*ex);
-	if (den!=0.0) {
-	    v = (mx - u*bx)/den;
-	} else {
-	    den = (dy+u*ey);
-	    v = (my - u*by)/den;
+	    b = dx*by-bx*dy + ex*my-mx*ey;
+	    c = bx*my-mx*by;
+	    if (fabs(a2)>1e-8) {
+		delta = b*b-4*a2*c;
+		v = (-b+sqrt(delta))/(2*a2);
+	    } else {
+		v = -c/b;
+	    }
+	    double den = (bx+v*ex);
+	    if (den!=0.0) {
+		u = (mx - v*dx)/den;
+	    } else {
+		den = (by+v*ey);
+		u = (my - v*dy)/den;
+	    }
 	}
 #if 0
 	if (isnan(u)) {
-	    printf("AM=(%f,%f)\n", mx, my);
-	    printf("AB=(%f,%f)\n", bx, by);
-	    printf("AC=(%f,%f)\n", cx, cy);
-	    printf("AD=(%f,%f)\n", dx, dy);
-	    printf("AE=(%f,%f)\n", ex, ey);
-	    printf("a=%f, b=%f, c=%f\n", a, b, c);
-	    printf("u=%f v=%f\n", u, v);
+	    printf("AM=(%g,%g)\n", mx, my);
+	    printf("AB=(%g,%g)\n", bx, by);
+	    printf("AC=(%g,%g)\n", cx, cy);
+	    printf("AD=(%g,%g)\n", dx, dy);
+	    printf("AE=(%g,%g)\n", ex, ey);
+	    printf("a1=%g, a2=%g, b=%g, c=%g\n", a1, a2, b, c);
+	    printf("u=%g v=%g\n", u, v);
 	}
 #endif
     }
@@ -773,7 +892,7 @@ struct QuadHelper {
     const Array2D<T>& Z;
     Array2D<npy_uint32>& D;
     LutScale<T,npy_uint32>& scale;
-    double x1, x2, y1, y2, dx, dy;
+    double x1, x2, y1, y2, m_dx, m_dy;
 };
 
 /**

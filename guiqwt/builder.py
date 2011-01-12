@@ -63,14 +63,14 @@ from guiqwt.config import _, CONF, make_title
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
-                          Histogram2DItem)
+                          Histogram2DItem, RGBImageItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
                            SegmentShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
                                 AnnotatedSegment)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
-                           TrImageParam, HistogramParam, Histogram2DParam,
+                           TrImageParam, HistogramParam, Histogram2DParam, RGBImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
                            LineStyleParam, AnnotationParam,
                            LabelParamWithContents)
@@ -567,6 +567,21 @@ class PlotItemBuilder(object):
                                alpha_mask, alpha, colormap)
         image = ImageItem(data, param)
         image.set_filename(filename)
+        return image
+
+    def rgb_image(self, data=None, scale=None, filename=None, title=None,
+              alpha_mask=False, alpha=1.0,
+              xaxis="bottom", yaxis="left", zaxis="right"):
+        """
+        Make image from data
+        """
+        param = RGBImageParam(title=_("Image"), icon='image.png')
+        assert (0.0<=alpha<=1.0)
+        assert isinstance(alpha_mask, bool)
+        param.alpha_mask = alpha_mask
+        param.alpha = alpha
+        image = RGBImageItem(data, scale, param)
+        #image.set_filename(filename)
         return image
         
     def quadgrid(self, X, Y, Z, filename=None, title=None,

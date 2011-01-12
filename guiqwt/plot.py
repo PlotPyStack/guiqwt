@@ -106,7 +106,7 @@ import weakref, warnings
 
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QSizePolicy, QApplication)
+                         QSizePolicy, QApplication, QWidget)
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
@@ -127,7 +127,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
                           CrossSectionTool, AverageCrossSectionTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_VISIBILITY_CHANGED)
+                            SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
 
 
 class DefaultPlotID(object):
@@ -152,6 +152,7 @@ class PlotManager(object):
         self.default_tool = None
         self.default_plot = None
         self.default_toolbar = None
+        self.synchronized_plots = {}
         self.groups = {} # Action groups for grouping QActions
 
     def add_plot(self, plot, plot_id=DefaultPlotID):
@@ -177,10 +178,11 @@ class PlotManager(object):
         self.plots[plot_id] = plot
         if len(self.plots) == 1:
             self.default_plot = plot
-        plot.set_manager(self)
+        plot.set_manager(self, id)
         # Connecting signals
         plot.connect(plot, SIG_ITEMS_CHANGED, self.update_tools_status)
         plot.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.update_tools_status)
+        plot.connect(plot, SIG_PLOT_AXIS_CHANGED, self.plot_axis_changed)
         
     def set_default_plot(self, plot):
         """
@@ -345,6 +347,9 @@ class PlotManager(object):
         return the widget itself because the plot manager is integrated to it.
         """
         return self.main
+
+    def set_main(self, main):
+        self.main = main
 
     def get_panel(self, panel_id):
         """
@@ -534,7 +539,7 @@ class PlotManager(object):
         self.add_separator_tool()
         self.register_other_tools()
         self.get_default_tool().activate()
-    
+        
     def register_all_image_tools(self):
         """
         Register standard, image-related and other tools
@@ -553,7 +558,30 @@ class PlotManager(object):
         self.add_separator_tool()
         self.register_other_tools()
         self.get_default_tool().activate()
+        
+    def synchronize_axis(self, axis, plots):
+        for plot_id in plots:
+            synclist = self.synchronized_plots.setdefault(plot_id, [])
+            for plot2_id in plots:
+                if plot_id==plot2_id:
+                    continue
+                item = (axis,plot2_id)
+                if item not in synclist:
+                    synclist.append(item)
 
+    def plot_axis_changed(self, plot):
+        plot_id = plot.plot_id
+        if plot_id not in self.synchronized_plots:
+            return
+        for (axis, other_plot_id) in self.synchronized_plots[plot_id]:
+            scalediv = plot.axisScaleDiv(axis)
+            map = plot.canvasMap(axis)
+            other = self.get_plot(other_plot_id)
+            lb = scalediv.lowerBound()
+            ub = scalediv.upperBound()
+            other.setAxisScale(axis, lb, ub)
+            other.replot()
+        
 assert_interfaces_valid(PlotManager)
 
 
@@ -571,6 +599,36 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setStretchFactor(0, 0)
         qsplit.setStretchFactor(1, 1)
         qsplit.setSizes([1, 2])
+
+class SubplotWidget(QSplitter):
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None):
+        QSplitter.__init__(self, Qt.Horizontal, parent)
+        
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+        self.plots = []
+
+        parent = QWidget()
+        self.plotlayout = QGridLayout()
+        parent.setLayout(self.plotlayout)
+        self.addWidget(parent)
+
+        self.itemlist = PlotItemList(self)
+        self.itemlist.setVisible(show_itemlist)
+        self.addWidget(self.itemlist)
+
+    def add_subplot(self, plot, i=0, j=0, plot_id=None):
+        """Add a plot to the grid of plots"""
+        self.plotlayout.addWidget(plot, i, j)
+        self.plots.append(plot)
+        if plot_id is None:
+            plot_id = id(plot)
+        self.manager.add_plot(plot, plot_id)
+
+    def finalize(self):
+        self.manager.add_panel(self.itemlist)
+        configure_plot_splitter(self)
 
 class BaseCurveWidget(QSplitter):
     """

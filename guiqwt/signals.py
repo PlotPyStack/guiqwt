@@ -106,6 +106,8 @@ SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
 
 SIG_CLICK_EVENT = SIGNAL("click_event")
 SIG_START_TRACKING = SIGNAL("start_tracking")
+# Emitted when a plot axis' scale changes
+SIG_PLOT_AXIS_CHANGED = SIGNAL("plot_axis_changed(plot)")
 SIG_STOP_NOT_MOVING = SIGNAL("stop_notmoving")
 SIG_STOP_MOVING = SIGNAL("stop_moving")
 SIG_MOVE = SIGNAL("move")
