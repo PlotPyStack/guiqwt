@@ -119,7 +119,7 @@ Reference
 .. autofunction:: get_image_from_plot
 """
 
-import sys
+import sys, os, os.path as osp
 import numpy as np
 from math import fabs
 
@@ -139,6 +139,7 @@ from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import ImageParam, ImageAxesParam
 from guiqwt.shapes import RectangleShape
+from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
 
 stderr = sys.stderr
@@ -598,6 +599,16 @@ class ImageItem(BaseImageItem):
         if data is not None:
             self.set_data(data)
             self.imageparam.update_image(self)
+            
+    #---- BaseImageItem API ----------------------------------------------------
+    def get_filename(self):
+        filename = super(ImageItem, self).get_filename()
+        if not osp.isfile(filename):
+            other_try = osp.join(os.getcwdu(), osp.basename(filename))
+            if osp.isfile(other_try):
+                self.set_filename(other_try)
+                filename = other_try
+        return filename
         
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
@@ -620,16 +631,7 @@ class ImageItem(BaseImageItem):
         Load data from *filename* and eventually apply specified lut_range
         *filename* has been set using method 'set_filename'
         """
-        from guiqwt.io import imagefile_to_array
-        filename = self.get_filename()
-        import os.path as osp, os
-        if not osp.isfile(filename):
-            other_try = osp.join(os.getcwdu(), osp.basename(filename))
-            if osp.isfile(other_try):
-                self.set_filename(other_try)
-                filename = other_try
-        data = imagefile_to_array(filename,
-                            to_grayscale=not isinstance(self, RGBImageItem))
+        data = imagefile_to_array(self.get_filename(), to_grayscale=True)
         self.set_data(data, lut_range=lut_range)
         
     def set_data(self, data, lut_range=None):
@@ -1131,6 +1133,7 @@ class XYImageItem(ImageItem):
 
 assert_interfaces_valid(XYImageItem)
 
+
 #===============================================================================
 # RGB Image with alpha channel
 #===============================================================================
@@ -1150,6 +1153,21 @@ class RGBImageItem(ImageItem):
         super(RGBImageItem, self).__init__(data, param)
         self.lut = None
 
+    #---- Pickle methods -------------------------------------------------------
+    def __reduce__(self):
+        state = (self.imageparam, self.get_filename(), self.z())
+        res = ( self.__class__, (None,), state )
+        return res
+
+    def __setstate__(self, state):
+        param, filename, z = state
+        self.imageparam = param
+        self.set_filename(filename)
+        self.load_data()
+        self.setZ(z)
+        self.imageparam.update_image(self)
+        
+    #---- Public API -----------------------------------------------------------
     def recompute_alpha_channel(self):
         data = self.orig_data
         if self.orig_data is None:
@@ -1167,33 +1185,11 @@ class RGBImageItem(ImageItem):
             A[:, :]=int(255*alpha)
         self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
       
-    def set_data(self, data):
-        H, W, NC = data.shape
-        self.orig_data = data
-        self.data = np.empty((H, W), np.uint32)
-        self.recompute_alpha_channel()
-        self.srcRect = QRectF(QPointF(0, 0), QPointF(W, H))
-        self.update_bounds()
-        self.update_border()
-        self.lut = None
-
     def set_scale(self, scale):
         self.scale = scale
         self.update_bounds()
 
-    def update_bounds(self):
-        if self.orig_data is None:
-            return
-        H, W, NC = self.orig_data.shape
-        if self.scale is None:
-            x0 = 0
-            x1 = W
-            y0 = 0
-            y1 = H
-        else:
-            x0, y0, x1, y1 = self.scale
-        self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
-
+    #--- BaseImageItem API -----------------------------------------------------
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         sxl, syt, sxr, syb = srcRect
         xl, yb, xr, yt = self.boundingRect().getCoords()
@@ -1210,14 +1206,46 @@ class RGBImageItem(ImageItem):
         painter.drawImage(srcrect, self._image, srcrect)
 
     # Override lut/bg handling
+    def set_lut_range(self, range):
+        pass
+
     def set_background_color(self, qcolor):
         self.lut = None
 
     def set_color_map(self, name_or_table):
         self.lut = None
 
-    def set_lut_range(self, range):
-        pass
+    #---- ImageItem API --------------------------------------------------------
+    def load_data(self):
+        """
+        Load data from *filename*
+        *filename* has been set using method 'set_filename'
+        """
+        data = imagefile_to_array(self.get_filename(), to_grayscale=False)
+        self.set_data(data)
+        
+    def set_data(self, data):
+        H, W, NC = data.shape
+        self.orig_data = data
+        self.data = np.empty((H, W), np.uint32)
+        self.recompute_alpha_channel()
+        self.srcRect = QRectF(QPointF(0, 0), QPointF(W, H))
+        self.update_bounds()
+        self.update_border()
+        self.lut = None
+
+    def update_bounds(self):
+        if self.orig_data is None:
+            return
+        H, W, NC = self.orig_data.shape
+        if self.scale is None:
+            x0 = 0
+            x1 = W
+            y0 = 0
+            y1 = H
+        else:
+            x0, y0, x1, y1 = self.scale
+        self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
 
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
@@ -1230,6 +1258,7 @@ class RGBImageItem(ImageItem):
         return False
 
 assert_interfaces_valid(RGBImageItem)
+
 
 #===============================================================================
 # Image filter

@@ -558,20 +558,19 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.image.ImageItem` object or 
         :py:class:`guiqwt.image.RGBImageItem` object if data has 3 dimensions)
         """
+        param = ImageParam(title=_("Image"), icon='image.png')
+        data, filename, title = self._get_image_data(data, filename, title,
+                                                     to_grayscale=True)
         if data.ndim == 3:
             return self.rgbimage(data=data, filename=filename, title=title,
                                  alpha_mask=alpha_mask, alpha=alpha)
-        else:
-            assert data.ndim == 2, "Data must have 2 dimensions"
-            param = ImageParam(title=_("Image"), icon='image.png')
-            data, filename, title = self._get_image_data(data, filename, title,
-                                                         to_grayscale=True)
-            self.__set_image_param(param, title, alpha_mask, alpha,
-                                   background=background_color,
-                                   colormap=colormap)
-            image = ImageItem(data, param)
-            image.set_filename(filename)
-            return image
+        assert data.ndim == 2, "Data must have 2 dimensions"
+        self.__set_image_param(param, title, alpha_mask, alpha,
+                               background=background_color,
+                               colormap=colormap)
+        image = ImageItem(data, param)
+        image.set_filename(filename)
+        return image
 
     def rgbimage(self, data=None, scale=None, filename=None, title=None,
                  alpha_mask=False, alpha=1.0):
@@ -579,10 +578,10 @@ class PlotItemBuilder(object):
         Make a RGB image `plot item` from data
         (:py:class:`guiqwt.image.RGBImageItem` object)
         """
-        assert data.ndim == 3, "RGB data must have 3 dimensions"
         param = RGBImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
                                                      to_grayscale=False)
+        assert data.ndim == 3, "RGB data must have 3 dimensions"
         self.__set_image_param(param, title, alpha_mask, alpha)
         image = RGBImageItem(data, scale, param)
         image.set_filename(filename)
