@@ -162,7 +162,7 @@ class PlotItemBuilder(object):
                                    major_style, minor_style)
         return GridItem(gridparam)
     
-    def __set_axes(self, curve, xaxis, yaxis):
+    def __set_curve_axes(self, curve, xaxis, yaxis):
         """Set curve axes"""
         for axis in (xaxis, yaxis):
             if axis not in self.AXES:
@@ -322,7 +322,7 @@ class PlotItemBuilder(object):
         curve = CurveItem(param)
         curve.set_data(x, y)
         curve.update_params()
-        self.__set_axes(curve, xaxis, yaxis)
+        self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
 
     def curve(self, x, y, title=u"",
@@ -420,7 +420,7 @@ class PlotItemBuilder(object):
         curve = ErrorBarCurveItem(curveparam, errorbarparam)
         curve.set_data(x, y, dx, dy)
         curve.update_params()
-        self.__set_axes(curve, xaxis, yaxis)
+        self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
         
     def error(self, x, y, dx, dy, title=u"",
@@ -523,78 +523,80 @@ class PlotItemBuilder(object):
         hist = HistogramItem(curveparam, histparam)
         hist.update_params()
         hist.set_hist_data(data)
-        self.__set_axes(hist, xaxis, yaxis)
+        self.__set_curve_axes(hist, xaxis, yaxis)
         return hist
 
-    def __set_image_param(self, param, title, background_color,
-                          alpha_mask, alpha, colormap, **kwargs):
+    def __set_image_param(self, param, title, alpha_mask, alpha, **kwargs):
         if title:
             param.label = title
         else:
             global IMAGE_COUNT
             IMAGE_COUNT += 1
             param.label = make_title(_("Image"), IMAGE_COUNT)
-        if background_color is not None:
-            param.background = background_color
         if alpha_mask is not None:
+            assert isinstance(alpha_mask, bool)
             param.alpha_mask = alpha_mask
         if alpha is not None:
+            assert (0.0 <= alpha <= 1.0)
             param.alpha = alpha
-        if colormap is not None:
-            param.colormap = colormap
         for key, val in kwargs.items():
-            setattr(param, key, val)
+            if val is not None:
+                setattr(param, key, val)
 
-    def _get_image_data(self, data, filename, title, cmap):
+    def _get_image_data(self, data, filename, title, to_grayscale):
         if data is None:
             assert filename is not None
-            data = imagefile_to_array(filename)
+            data = imagefile_to_array(filename, to_grayscale=to_grayscale)
         if title is None and filename is not None:
             title = osp.basename(filename)
-        return data, filename, title, cmap
+        return data, filename, title
 
-    def image(self, data=None, filename=None, title=None, background_color=None,
-              alpha_mask=None, alpha=None, colormap=None,
-              xaxis="bottom", yaxis="left", zaxis="right"):
+    def image(self, data=None, filename=None, title=None, alpha_mask=None,
+              alpha=None, background_color=None, colormap=None):
         """
         Make an image `plot item` from data
-        (:py:class:`guiqwt.image.ImageItem` object)
+        (:py:class:`guiqwt.image.ImageItem` object or 
+        :py:class:`guiqwt.image.RGBImageItem` object if data has 3 dimensions)
         """
-        param = ImageParam(title=_("Image"), icon='image.png')
-        params = self._get_image_data(data, filename, title, colormap)
-        data, filename, title, colormap = params
-        self.__set_image_param(param, title, background_color,
-                               alpha_mask, alpha, colormap)
-        image = ImageItem(data, param)
-        image.set_filename(filename)
-        return image
+        if data.ndim == 3:
+            return self.rgbimage(data=data, filename=filename, title=title,
+                                 alpha_mask=alpha_mask, alpha=alpha)
+        else:
+            assert data.ndim == 2, "Data must have 2 dimensions"
+            param = ImageParam(title=_("Image"), icon='image.png')
+            data, filename, title = self._get_image_data(data, filename, title,
+                                                         to_grayscale=True)
+            self.__set_image_param(param, title, alpha_mask, alpha,
+                                   background=background_color,
+                                   colormap=colormap)
+            image = ImageItem(data, param)
+            image.set_filename(filename)
+            return image
 
     def rgbimage(self, data=None, scale=None, filename=None, title=None,
-                 alpha_mask=False, alpha=1.0,
-                 xaxis="bottom", yaxis="left", zaxis="right"):
+                 alpha_mask=False, alpha=1.0):
         """
         Make a RGB image `plot item` from data
         (:py:class:`guiqwt.image.RGBImageItem` object)
         """
+        assert data.ndim == 3, "RGB data must have 3 dimensions"
         param = RGBImageParam(title=_("Image"), icon='image.png')
-        assert (0.0<=alpha<=1.0)
-        assert isinstance(alpha_mask, bool)
-        param.alpha_mask = alpha_mask
-        param.alpha = alpha
+        data, filename, title = self._get_image_data(data, filename, title,
+                                                     to_grayscale=False)
+        self.__set_image_param(param, title, alpha_mask, alpha)
         image = RGBImageItem(data, scale, param)
-        #image.set_filename(filename)
+        image.set_filename(filename)
         return image
         
-    def quadgrid(self, X, Y, Z, filename=None, title=None,
-                 background_color=None, alpha_mask=None, alpha=None,
-                 colormap=None, xaxis="bottom", yaxis="left", zaxis="right"):
+    def quadgrid(self, X, Y, Z, filename=None, title=None, alpha_mask=None,
+                 alpha=None, background_color=None, colormap=None):
         """
         Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
         param = ImageParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, background_color,
-                               alpha_mask, alpha, colormap)
+        self.__set_image_param(param, title, alpha_mask, alpha,
+                               background=background_color, colormap=colormap)
         image = QuadGridItem(X, Y, Z, param)
         return image
 
@@ -618,9 +620,8 @@ class PlotItemBuilder(object):
             raise RuntimeError("1 or 3 non-keyword arguments expected")
         return self.quadgrid(X, Y, Z, **kwargs)
 
-    def trimage(self, data=None, filename=None, title=None,
-                background_color=None, alpha_mask=None, alpha=None,
-                colormap=None, xaxis="bottom", yaxis="left", zaxis="right",
+    def trimage(self, data=None, filename=None, title=None, alpha_mask=None,
+                alpha=None, background_color=None, colormap=None,
                 x0=0.0, y0=0.0, angle=0.0, dx=1.0, dy=1.0,
                 interpolation='linear'):
         """
@@ -636,10 +637,10 @@ class PlotItemBuilder(object):
             * interpolation: 'nearest', 'linear' (default), 'antialiasing' (5x5)
         """
         param = TrImageParam(title=_("Image"), icon='image.png')
-        params = self._get_image_data(data, filename, title, colormap)
-        data, filename, title, colormap = params
-        self.__set_image_param(param, title, background_color,
-                               alpha_mask, alpha, colormap,
+        data, filename, title = self._get_image_data(data, filename, title,
+                                                     to_grayscale=True)
+        self.__set_image_param(param, title, alpha_mask, alpha,
+                               background=background_color, colormap=colormap,
                                x0=x0, y0=y0, angle=angle, dx=dx, dy=dy)
         interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
         param.interpolation = interp_methods[interpolation]
@@ -647,9 +648,8 @@ class PlotItemBuilder(object):
         image.set_filename(filename)
         return image
 
-    def xyimage(self, x, y, data, title=None, background_color=None,
-                alpha_mask=None, alpha=None, colormap=None,
-                xaxis="bottom", yaxis="left", zaxis="right"):
+    def xyimage(self, x, y, data, title=None, alpha_mask=None, alpha=None,
+                background_color=None, colormap=None):
         """
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
@@ -659,8 +659,8 @@ class PlotItemBuilder(object):
             * title: image title (optional)
         """
         param = ImageParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, background_color,
-                               alpha_mask, alpha, colormap)
+        self.__set_image_param(param, title, alpha_mask, alpha,
+                               background=background_color, colormap=colormap)
         return XYImageItem(x, y, data, param)
     
     def imagefilter(self, xmin, xmax, ymin, ymax,

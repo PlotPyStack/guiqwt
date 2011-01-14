@@ -74,7 +74,7 @@ class ExampleDialog(ImageDialog):
         
     def open_image(self, filename):
         """Opening image *filename*"""
-        self.data = imagefile_to_array(filename)
+        self.data = imagefile_to_array(filename, to_grayscale=True)
         self.show_data(self.data)
         param = ImageParam()
         param.title = filename

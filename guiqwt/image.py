@@ -628,7 +628,8 @@ class ImageItem(BaseImageItem):
             if osp.isfile(other_try):
                 self.set_filename(other_try)
                 filename = other_try
-        data = imagefile_to_array(filename)
+        data = imagefile_to_array(filename,
+                            to_grayscale=not isinstance(self, RGBImageItem))
         self.set_data(data, lut_range=lut_range)
         
     def set_data(self, data, lut_range=None):

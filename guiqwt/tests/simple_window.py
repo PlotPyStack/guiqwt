@@ -148,7 +148,7 @@ class CentralWidget(QSplitter):
     def add_image_from_file(self, filename):
         image = ImageParam()
         image.title = unicode(filename)
-        image.data = imagefile_to_array(filename)
+        image.data = imagefile_to_array(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)
 

@@ -112,8 +112,11 @@ def set_dynamic_range_from_mode(data, mode):
     return set_dynamic_range_from_dtype(data, dtypes[mode])
 
 
-def imagefile_to_array(filename):
-    """Return a numpy array from an image file *filename*"""
+def imagefile_to_array(filename, to_grayscale=False):
+    """
+    Return a NumPy array from an image file *filename*
+    If *to_grayscale* is True, convert RGB images to grayscale
+    """
     if not isinstance(filename, basestring):
         filename = unicode(filename) # in case *filename* is a QString instance
     _base, ext = osp.splitext(filename)
@@ -121,8 +124,11 @@ def imagefile_to_array(filename):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
         img = PIL.Image.open(filename)
-        if img.mode in ("RGB", "RGBX", "RGBA", "CMYK", "YCbCr"):
-            # Converting RGB to greyscale
+        if img.mode in ("CMYK", "YCbCr"):
+            # Converting to RGB
+            img = img.convert("RGB")
+        if to_grayscale and img.mode in ("RGB", "RGBA", "RGBX"):
+            # Converting to grayscale
             img = img.convert("L")
         try:
             dtype, extra = DTYPES[img.mode]
@@ -132,6 +138,8 @@ def imagefile_to_array(filename):
         if extra is not None:
             shape += (extra,)
         arr = np.array(img.getdata(), dtype=np.dtype(dtype)).reshape(shape)
+        if img.mode in ("RGB", "RGBA", "RGBX"):
+            arr = np.flipud(arr)
     elif ext.lower() in (".dcm",):
         import dicom
         dcm = dicom.ReadFile(filename)
@@ -174,9 +182,9 @@ def imagefile_to_array(filename):
     else:
         raise RuntimeError("%s: unsupported image file"
                            % osp.basename(filename))
-    # Converting RGB to greyscale
-    if arr.ndim == 3:
-        return arr.mean(axis=2)
+    if to_grayscale and arr.ndim == 3:
+        # Converting to grayscale
+        return arr[...,:4].mean(axis=2)
     else:
         return arr
 
