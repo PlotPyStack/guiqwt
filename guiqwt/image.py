@@ -1135,12 +1135,12 @@ assert_interfaces_valid(XYImageItem)
 #===============================================================================
 class RGBImageItem(ImageItem):
     """
-    RGBImageItem : RGB image defined by a numpy array of uint8 (NxMx[34])
-    accept RGB or RGBA image
-    0 Red
-    1 Green
-    2 Blue
-    3 Alpha
+    Construct a RGB/RGBA image item
+        * data: NumPy array of uint8 (shape: NxMx[34] -- 3: RGB, 4: RGBA)
+        (last dimension: 0:Red, 1:Green, 2:Blue[, 3:Alpha])
+        * scale (optional): x0, y0, x1, y1 (if specified, rescales the image)
+        * param (optional): image parameters
+          (:py:class:`guiqwt.styles.RGBImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)
     def __init__(self, data=None, scale=None, param=None):
@@ -1154,24 +1154,24 @@ class RGBImageItem(ImageItem):
         if self.orig_data is None:
             return
         H, W, NC = data.shape
-        R = data[...,0].astype(np.uint32)
-        G = data[...,1].astype(np.uint32)
-        B = data[...,2].astype(np.uint32)
+        R = data[..., 0].astype(np.uint32)
+        G = data[..., 1].astype(np.uint32)
+        B = data[..., 2].astype(np.uint32)
         use_alpha = self.imageparam.alpha_mask
         alpha = self.imageparam.alpha
-        if NC>3 and use_alpha:
+        if NC > 3 and use_alpha:
             A = data[...,3].astype(np.uint32)
         else:
-            A  = np.zeros((H,W),np.uint32)
-            A[:,:]=int(255*alpha)
-        self.data[:,:] = (A<<24)+(R<<16)+(G<<8)+B
+            A = np.zeros((H, W), np.uint32)
+            A[:, :]=int(255*alpha)
+        self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
       
     def set_data(self, data):
         H, W, NC = data.shape
         self.orig_data = data
         self.data = np.empty((H, W), np.uint32)
         self.recompute_alpha_channel()
-        self.srcRect = QRectF(QPointF(0,0), QPointF(W,H))
+        self.srcRect = QRectF(QPointF(0, 0), QPointF(W, H))
         self.update_bounds()
         self.update_border()
         self.lut = None
@@ -1190,11 +1190,11 @@ class RGBImageItem(ImageItem):
             y0 = 0
             y1 = H
         else:
-            x0,y0,x1,y1 = self.scale
+            x0, y0, x1, y1 = self.scale
         self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        sxl,syt,sxr,syb = srcRect
+        sxl, syt, sxr, syb = srcRect
         xl, yb, xr, yt = self.boundingRect().getCoords()
         W = self.srcRect.width()
         H = self.srcRect.height()
@@ -1203,8 +1203,7 @@ class RGBImageItem(ImageItem):
         y0 = H*(syt-yt)/(yb-yt)
         y1 = H*(syb-yt)/(yb-yt)
         src2 = (x0,y0,x1,y1)
-        dest = _scale_rect(self.data, src2,
-                           self._offscreen, dstRect,
+        dest = _scale_rect(self.data, src2, self._offscreen, dstRect,
                            self.lut, self.interpolate)
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)

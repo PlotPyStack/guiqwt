@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2009-2010 CEA
-# Pierre Raybaut <pierre.raybaut@cea.fr>
+# Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
@@ -569,11 +569,12 @@ class PlotItemBuilder(object):
         image.set_filename(filename)
         return image
 
-    def rgb_image(self, data=None, scale=None, filename=None, title=None,
-              alpha_mask=False, alpha=1.0,
-              xaxis="bottom", yaxis="left", zaxis="right"):
+    def rgbimage(self, data=None, scale=None, filename=None, title=None,
+                 alpha_mask=False, alpha=1.0,
+                 xaxis="bottom", yaxis="left", zaxis="right"):
         """
-        Make image from data
+        Make a RGB image `plot item` from data
+        (:py:class:`guiqwt.image.RGBImageItem` object)
         """
         param = RGBImageParam(title=_("Image"), icon='image.png')
         assert (0.0<=alpha<=1.0)
