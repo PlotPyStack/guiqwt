@@ -981,7 +981,7 @@ class BaseImageParam(DataSet):
             .set_prop("display", hide=GetAttrProp("_multiselection"))
     alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
                           default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0,
+    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
                       help=_("Global alpha value"))
     _hide_colormap = False
     colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
@@ -998,7 +998,6 @@ class BaseImageParam(DataSet):
                                
     def update_param(self, image):
         self.label = unicode(image.title().text())
-        self.background = QColor(image.bg_qcolor).name()
         self.colormap = image.get_color_map_name()
         interpolation = image.get_interpolation()
         mode = interpolation[0]
@@ -1013,7 +1012,6 @@ class BaseImageParam(DataSet):
 
     def update_image(self, image):
         image.setTitle(self.label)
-        image.set_background_color(self.background)
         image.set_color_map(self.colormap)
         size = self.interpolation
         from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
@@ -1038,9 +1036,14 @@ class ImageParam(BaseImageParam):
     scale_dx = FloatItem(_("Width (dx)"), default=1.0)
     scale_dy = FloatItem(_("Height (dy)"), default=1.0)
     _end_ps = EndGroup(_("Pixel size"))
+    
+    def update_param(self, image):
+        super(ImageParam, self).update_param(image)
+        self.background = QColor(image.bg_qcolor).name()
 
     def update_image(self, image):
         super(ImageParam, self).update_image(image)
+        image.set_background_color(self.background)
         image.update_bounds()
         image.update_border()
 
@@ -1065,8 +1068,18 @@ ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
 
 
 class MaskedImageParam(ImageParam):
-    show_mask = BoolItem(_("Show image mask"), _("Alpha channel"),
-                         default=False)
+    g_mask = BeginGroup(_("Mask"))
+    filling_value = FloatItem(_("Filling value"))
+    show_mask = BoolItem(_("Show image mask"), default=False)
+    alpha_masked = FloatItem(_("Masked area alpha"),
+                             default=.7, min=0, max=1)
+    alpha_unmasked = FloatItem(_("Unmasked area alpha"),
+                               default=0., min=0, max=1)
+    _g_mask = EndGroup(_("Mask"))
+    
+    def update_image(self, image):
+        super(MaskedImageParam, self).update_image(image)
+        image.update_mask()
                          
 class MaskedImageParam_MS(MaskedImageParam):
     _multiselection = True

@@ -137,7 +137,8 @@ from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                ISerializableType, ICSImageItemType)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
-from guiqwt.styles import ImageParam, ImageAxesParam
+from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
+                           RGBImageParam, MaskedImageParam)
 from guiqwt.shapes import RectangleShape
 from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
@@ -796,6 +797,8 @@ class TrImageItem(ImageItem):
         self.points = np.array([ [0, 0, 2, 2],
                                  [0, 2, 2, 0],
                                  [1, 1, 1, 1] ], float)
+        if param is None:
+            param = TrImageParam(_("Image"))
         super(TrImageItem, self).__init__(data, param)
         
     #---- Public API -----------------------------------------------------------
@@ -1165,6 +1168,8 @@ class RGBImageItem(ImageItem):
     __implements__ = (IBasePlotItem, IBaseImageItem)
     def __init__(self, data=None, param=None):
         self.orig_data = None
+        if param is None:
+            param = RGBImageParam(_("Image"))
         super(RGBImageItem, self).__init__(data, param)
         self.lut = None
 
@@ -1256,6 +1261,69 @@ class RGBImageItem(ImageItem):
         return False
 
 assert_interfaces_valid(RGBImageItem)
+
+
+#===============================================================================
+# Masked Image
+#===============================================================================
+class MaskedImageItem(ImageItem):
+    """
+    Construct a masked image item
+        * data: 2D NumPy array
+        * mask (optional): 2D NumPy array
+        * param (optional): image parameters
+          (:py:class:`guiqwt.styles.MaskedImageParam` instance)
+    """
+    __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
+                      IVoiImageItemType)
+    def __init__(self, data, mask=None, param=None):
+        self.orig_data = None
+        if param is None:
+            param = MaskedImageParam(_("Image"))
+        self.mask = mask
+        super(MaskedImageItem, self).__init__(data, param)
+        
+    #---- Public API -----------------------------------------------------------
+    def update_mask(self):
+        if isinstance(self.data, np.ma.MaskedArray):
+            self.data.set_fill_value(self.imageparam.filling_value)
+            
+    #---- BaseImageItem API ----------------------------------------------------
+    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        super(MaskedImageItem, self).draw_image(painter, canvasRect,
+                                                srcRect, dstRect, xMap, yMap)
+        if self.imageparam.show_mask:
+            _a, _b, bg, _cmap = self.lut
+            alpha_masked = np.uint32(255*self.imageparam.alpha_masked+0.5
+                                     ).clip(0, 255) << 24
+            alpha_unmasked = np.uint32(255*self.imageparam.alpha_unmasked+0.5
+                                       ).clip(0, 255) << 24
+            cmap = np.array([np.uint32(0x000000 & 0xffffff) | alpha_unmasked,
+                             np.uint32(0xffffff & 0xffffff) | alpha_masked],
+                            dtype=np.uint32)
+            lut = (1, 0, bg, cmap)
+            shown_data = np.ma.getmaskarray(self.data)
+            dest = _scale_rect(shown_data, srcRect, self._offscreen, dstRect,
+                               lut, self.interpolate)
+            srcrect = QRectF(QPointF(dest[0], dest[1]),
+                             QPointF(dest[2], dest[3]))
+            painter.drawImage(srcrect, self._image, srcrect)
+            
+    #---- ImageItem API --------------------------------------------------------
+    def set_data(self, data, lut_range=None):
+        """
+        Set Image item data
+            * data: 2D NumPy array
+            * lut_range: LUT range -- tuple (levelmin, levelmax)
+        """
+        super(MaskedImageItem, self).set_data(data, lut_range)
+        self.orig_data = data
+        self.data = data.view(np.ma.MaskedArray)
+        self.data.mask = self.mask
+        if self.imageparam.filling_value is None:
+            self.imageparam.filling_value = self.data.get_fill_value()
+        self.data.harden_mask()
+        self.update_mask()
 
 
 #===============================================================================

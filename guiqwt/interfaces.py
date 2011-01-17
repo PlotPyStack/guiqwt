@@ -61,8 +61,12 @@ class IVoiImageItemType(IItemType):
         """Get maximum range for this dataset"""
         return 0.,255.
 
+class IColormapImageItemType(IItemType):
+    """An image with an associated colormap"""
+    pass
+
 class ICSImageItemType(IItemType):
-    """An image with cross section methods implemented"""
+    """An image supporting X/Y cross sections"""
     def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
         assert isinstance(y0, (float, int))
@@ -80,10 +84,6 @@ class ICSImageItemType(IItemType):
     def get_average_ysection(self, x0, y0, x1, y1, apply_lut=False):
         """Return average cross section along y-axis"""
         return np.array([])
-
-class IColormapImageItemType(IItemType):
-    """An image with an associated colormap"""
-    pass
 
 class IShapeItemType(IItemType):
     """A shape (annotation)"""

@@ -63,14 +63,15 @@ from guiqwt.config import _, CONF, make_title
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
-                          Histogram2DItem, RGBImageItem)
+                          Histogram2DItem, RGBImageItem, MaskedImageItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
                            SegmentShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
                                 AnnotatedSegment)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
-                           TrImageParam, HistogramParam, Histogram2DParam, RGBImageParam,
+                           TrImageParam, HistogramParam, Histogram2DParam,
+                           RGBImageParam, MaskedImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
                            LineStyleParam, AnnotationParam,
                            LabelParamWithContents)
@@ -571,6 +572,28 @@ class PlotItemBuilder(object):
                                colormap=colormap, scale_x0=x0, scale_y0=y0,
                                scale_dx=dx, scale_dy=dy)
         image = ImageItem(data, param)
+        image.set_filename(filename)
+        return image
+        
+    def maskedimage(self, data=None, mask=None, filename=None, title=None,
+                    alpha_mask=False, alpha=1.0,
+                    x0=None, y0=None, dx=None, dy=None,
+                    background_color=None, colormap=None,
+                    show_mask=False, fill_value=None):
+        """
+        Make a masked image `plot item` from data
+        (:py:class:`guiqwt.image.MaskedImageItem` object)
+        """
+        param = MaskedImageParam(title=_("Image"), icon='image.png')
+        data, filename, title = self._get_image_data(data, filename, title,
+                                                     to_grayscale=False)
+        assert data.ndim == 2, "Data must have 2 dimensions"
+        self.__set_image_param(param, title, alpha_mask, alpha,
+                               background=background_color,
+                               colormap=colormap, scale_x0=x0, scale_y0=y0,
+                               scale_dx=dx, scale_dy=dy,
+                               show_mask=show_mask, fill_value=fill_value)
+        image = MaskedImageItem(data, mask, param)
         image.set_filename(filename)
         return image
 
