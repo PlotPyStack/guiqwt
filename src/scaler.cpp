@@ -371,10 +371,11 @@ static bool check_dispatch_type(const char* name, PyArrayObject* p_src)
 	PyArray_TYPE(p_src) != NPY_UINT16 &&
 	PyArray_TYPE(p_src) != NPY_INT16 &&
 	PyArray_TYPE(p_src) != NPY_UINT8 &&
-	PyArray_TYPE(p_src) != NPY_INT8
+	PyArray_TYPE(p_src) != NPY_INT8 &&
+	PyArray_TYPE(p_src) != NPY_BOOL
 	) {
 	PyErr_Format(PyExc_TypeError,"%s data type must be one of the following:"
-		     " double, float, uint32, int32, uint16, int16, uint8, int8", name);
+                        " double, float, uint32, int32, uint16, int16, uint8, int8, bool", name);
 	return false;
     }
     return true;
@@ -620,6 +621,9 @@ static PyObject* dispatch_source(Params& p)
 	break;
     case NPY_INT8:
 	ok = scale_src_bw<Params,npy_int8>(p);
+	break;
+    case NPY_BOOL:
+	ok = scale_src_bw<Params,npy_bool>(p);
 	break;
     default:
 	PyErr_SetString(PyExc_TypeError,"Unknown source data type");

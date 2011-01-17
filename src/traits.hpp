@@ -88,6 +88,9 @@ static void dispatch_array(int npy_type, A& algo) {
     case NPY_INT8:
 	algo.template run<npy_int8>();
 	break;
+    case NPY_BOOL:
+	algo.template run<npy_bool>();
+	break;
     }
 }
 #endif
