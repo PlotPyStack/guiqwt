@@ -175,19 +175,24 @@ class BaseImageItem(QwtPlotItem):
         super(BaseImageItem, self).__init__()
         
         self.bounds = QRectF()
+        
         # BaseImageItem needs:
         # param.background
         # param.alpha_mask
         # param.alpha
         # param.colormap
         self.imageparam = param
+        
         self.selected = False
-        self.colormap_axis = None
+        
         self.data = None
+        
         self.min = 0.0
         self.max = 1.0
         self.cmap_table = None
         self.cmap = None
+        self.colormap_axis = None
+        
         self._offscreen = np.array((1, 1), np.uint32)
         
         # Linear interpolation is the default interpolation algorithm:
@@ -213,7 +218,13 @@ class BaseImageItem(QwtPlotItem):
         self._filename = fname
 
     def get_filename(self):
-        return self._filename
+        fname = self._filename
+        if not osp.isfile(fname):
+            other_try = osp.join(os.getcwdu(), osp.basename(fname))
+            if osp.isfile(other_try):
+                self.set_filename(other_try)
+                fname = other_try
+        return fname
 
     def get_filter(self, filterobj, filterparam):
         """Provides a filter object over this image's content"""
@@ -600,16 +611,6 @@ class ImageItem(BaseImageItem):
             self.set_data(data)
             self.imageparam.update_image(self)
             
-    #---- BaseImageItem API ----------------------------------------------------
-    def get_filename(self):
-        filename = super(ImageItem, self).get_filename()
-        if not osp.isfile(filename):
-            other_try = osp.join(os.getcwdu(), osp.basename(filename))
-            if osp.isfile(other_try):
-                self.set_filename(other_try)
-                filename = other_try
-        return filename
-        
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
         state = (self.imageparam, self.get_lut_range(),
@@ -790,11 +791,6 @@ class TrImageItem(ImageItem):
         super(TrImageItem, self).__init__(data, param)
         
     #---- Public API -----------------------------------------------------------
-    def get_filter(self, filterobj, filterparam):
-        """Provides a filter object over this image's content"""
-        #TODO: Implement TrImageFilterItem
-        return TrImageFilterItem(self, filterobj, filterparam)
-
     def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0,
                       hflip=False, vflip=False):
         self.imageparam.set_transform(x0, y0, angle, dx, dy, hflip, vflip)
@@ -850,10 +846,7 @@ class TrImageItem(ImageItem):
         self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
         self.update_border()
 
-    def update_border(self):
-        tpos = np.dot(self.itr, self.points)
-        self.border_rect.set_points(tpos.T[:,:2])
-
+    #--- ImageItem API ---------------------------------------------------------
     def set_data(self, data, lut_range=None):
         super(TrImageItem, self).set_data(data, lut_range)
         ni, nj = self.data.shape
@@ -862,6 +855,70 @@ class TrImageItem(ImageItem):
                                 [1,  1,  1,  1]], float)
         self.compute_bounds()
 
+    #--- BaseImageItem API -----------------------------------------------------    
+    def get_filter(self, filterobj, filterparam):
+        """Provides a filter object over this image's content"""
+        raise NotImplementedError
+        #TODO: Implement TrImageFilterItem
+#        return TrImageFilterItem(self, filterobj, filterparam)
+
+    def get_closest_indexes(self, x, y):
+        """Return closest image pixel indexes"""
+        v = self.tr*point(x, y)
+        x, y, _ = v[:, 0]
+        return super(TrImageItem, self).get_closest_indexes(x, y)
+        
+    def get_x_values(self, i0, i1):
+        v0 = self.itr*point(i0, 0)
+        x0, _y0, _ = v0[:, 0].A.ravel()
+        v1 = self.itr*point(i1, 0)
+        x1, _y1, _ = v1[:, 0].A.ravel()
+        return np.linspace(x0, x1, i1-i0)
+    
+    def get_y_values(self, j0, j1):
+        v0 = self.itr*point(0, j0)
+        _x0, y0, _ = v0[:, 0].A.ravel()
+        v1 = self.itr*point(0, j1)
+        _x1, y1, _ = v1[:, 0].A.ravel()
+        return np.linspace(y0, y1, j1-j0)
+
+    def get_closest_coordinates(self, x, y):
+        """Return closest image pixel coordinates"""
+        xi, yi = self.get_closest_indexes(x, y)
+        v = self.itr*point(xi, yi)
+        x, y, _ = v[:, 0].A.ravel()
+        return x, y
+    
+    def update_border(self):
+        tpos = np.dot(self.itr, self.points)
+        self.border_rect.set_points(tpos.T[:,:2])
+
+    def draw_border(self, painter, xMap, yMap, canvasRect):
+        self.border_rect.draw(painter, xMap, yMap, canvasRect)
+
+    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        W = canvasRect.width()
+        H = canvasRect.height()
+        if W<=1 or H<=1:
+            return
+
+        x0, y0, x1, y1 = srcRect
+        cx = canvasRect.left()
+        cy = canvasRect.top()
+        sx = (x1-x0)/(W-1)
+        sy = (y1-y0)/(H-1)
+        # tr1 = tr(x0,y0)*scale(sx,sy)*tr(-cx,-cy)
+        tr = np.matrix( [[sx,  0, x0-cx*sx],
+                         [ 0, sy, y0-cy*sy],
+                         [ 0,  0, 1]], float)
+        mat = self.tr*tr
+
+        dest = _scale_tr(self.data, mat, self._offscreen, dstRect,
+                         self.lut, self.interpolate)
+        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(srcrect, self._image, srcrect)
+        
+    #---- IBasePlotItem API ----------------------------------------------------
     def move_local_point_to(self, handle, pos):
         """Move a handle as returned by hit_test to the new position pos"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
@@ -902,59 +959,6 @@ class TrImageItem(ImageItem):
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
         self.set_transform(x0+dx, y0+dy, angle, dx, dy, hflip, vflip)
 
-    def draw_border(self, painter, xMap, yMap, canvasRect):
-        self.border_rect.draw(painter, xMap, yMap, canvasRect)
-
-    #--- BaseImageItem API -----------------------------------------------------    
-    def get_closest_indexes(self, x, y):
-        """Return closest image pixel indexes"""
-        v = self.tr*point(x, y)
-        x, y, _ = v[:, 0]
-        return super(TrImageItem, self).get_closest_indexes(x, y)
-        
-    def get_x_values(self, i0, i1):
-        v0 = self.itr*point(i0, 0)
-        x0, _y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*point(i1, 0)
-        x1, _y1, _ = v1[:, 0].A.ravel()
-        return np.linspace(x0, x1, i1-i0)
-    
-    def get_y_values(self, j0, j1):
-        v0 = self.itr*point(0, j0)
-        _x0, y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*point(0, j1)
-        _x1, y1, _ = v1[:, 0].A.ravel()
-        return np.linspace(y0, y1, j1-j0)
-
-    def get_closest_coordinates(self, x, y):
-        """Return closest image pixel coordinates"""
-        xi, yi = self.get_closest_indexes(x, y)
-        v = self.itr*point(xi, yi)
-        x, y, _ = v[:, 0].A.ravel()
-        return x, y
-    
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        W = canvasRect.width()
-        H = canvasRect.height()
-        if W<=1 or H<=1:
-            return
-
-        x0, y0, x1, y1 = srcRect
-        cx = canvasRect.left()
-        cy = canvasRect.top()
-        sx = (x1-x0)/(W-1)
-        sy = (y1-y0)/(H-1)
-        # tr1 = tr(x0,y0)*scale(sx,sy)*tr(-cx,-cy)
-        tr = np.matrix( [[sx,  0, x0-cx*sx],
-                         [ 0, sy, y0-cy*sy],
-                         [ 0,  0, 1]], float)
-        mat = self.tr*tr
-
-        dest = _scale_tr(self.data, mat, self._offscreen, dstRect,
-                         self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
-        
 assert_interfaces_valid(TrImageItem)
 
 def assemble_imageitems(items, srcrect, destw, desth, align=1, sampling=(0,),

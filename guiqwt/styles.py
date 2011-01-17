@@ -969,12 +969,6 @@ class ErrorBarParam(DataSet):
 # ===================================================
 # Image parameters
 # ===================================================
-def _create_choices():
-    choices = []
-    for cmap_name in get_colormap_list():
-        choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
-    return choices
-
 class RGBImageParam(DataSet):
     _multiselection = False
     label = StringItem(_("Image title"), default=_("Image")) \
@@ -1016,6 +1010,18 @@ class RGBImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
         image.recompute_alpha_channel()
+
+class RGBImageParam_MS(RGBImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
+
+
+def _create_choices():
+    choices = []
+    for cmap_name in get_colormap_list():
+        choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
+    return choices
 
 class ImageParam(DataSet):
     _multiselection = False
