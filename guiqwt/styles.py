@@ -969,73 +969,24 @@ class ErrorBarParam(DataSet):
 # ===================================================
 # Image parameters
 # ===================================================
-class RGBImageParam(DataSet):
-    _multiselection = False
-    label = StringItem(_("Image title"), default=_("Image")) \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
-                          default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0,
-                      help=_("Global alpha value"))
-    interpolation = ChoiceItem(_("Interpolation"),
-                               [(0, _("None (nearest pixel)")),
-                                (1, _("Linear interpolation")),
-                                (2, _("2x2 antialiasing filter")),
-                                (3, _("3x3 antialiasing filter")),
-                                (5, _("5x5 antialiasing filter"))],
-                               default=0, help=_("Image interpolation type"))
-
-    def update_param(self, image):
-        self.label = unicode(image.title().text())
-        interpolation = image.get_interpolation()
-        mode = interpolation[0]
-        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR
-        if mode == INTERP_NEAREST:
-            self.interpolation = 0
-        elif mode == INTERP_LINEAR:
-            self.interpolation = 1
-        else:
-            size = interpolation[1].shape[0]
-            self.interpolation = size
-
-    def update_image(self, image):
-        image.setTitle(self.label)
-        size = self.interpolation
-        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
-        if size == 0:
-            mode = INTERP_NEAREST
-        elif size == 1:
-            mode = INTERP_LINEAR
-        else:
-            mode = INTERP_AA
-        image.set_interpolation(mode, size)
-        image.recompute_alpha_channel()
-
-class RGBImageParam_MS(RGBImageParam):
-    _multiselection = True
-    
-ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
-
-
 def _create_choices():
     choices = []
     for cmap_name in get_colormap_list():
         choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
     return choices
 
-class ImageParam(DataSet):
+class BaseImageParam(DataSet):
     _multiselection = False
     label = StringItem(_("Image title"), default=_("Image")) \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
-    _hide_background = False
-    background = ColorItem(_("Background color"), default="#000000"
-                           ).set_prop("display",
-                                      hide=GetAttrProp("_hide_background"))
     alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
                           default=False)
     alpha = FloatItem(_("Global alpha"), default=1.0,
                       help=_("Global alpha value"))
-    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet")
+    _hide_colormap = False
+    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
+                               ).set_prop("display",
+                                      hide=GetAttrProp("_hide_colormap"))
     
     interpolation = ChoiceItem(_("Interpolation"),
                                [(0, _("None (nearest pixel)")),
@@ -1074,13 +1025,56 @@ class ImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
 
+class ImageParam(BaseImageParam):
+    _hide_background = False
+    background = ColorItem(_("Background color"), default="#000000"
+                           ).set_prop("display",
+                                      hide=GetAttrProp("_hide_background"))
+    _or = BeginGroup(_("Origin"))
+    scale_x0 = FloatItem(_("Origin (x0)"), default=0.)
+    scale_y0 = FloatItem(_("Origin (y0)"), default=0.)
+    _end_or = EndGroup(_("Origin"))
+    _ps = BeginGroup(_("Pixel size"))
+    scale_dx = FloatItem(_("Width (dx)"), default=1.0)
+    scale_dy = FloatItem(_("Height (dy)"), default=1.0)
+    _end_ps = EndGroup(_("Pixel size"))
+
+    def update_image(self, image):
+        super(ImageParam, self).update_image(image)
+        image.update_bounds()
+        image.update_border()
+
 class ImageParam_MS(ImageParam):
     _multiselection = True
     
 ItemParameters.register_multiselection(ImageParam, ImageParam_MS)
 
 
-class ImageFilterParam(ImageParam):
+class RGBImageParam(ImageParam):
+    _hide_background = True
+    _hide_colormap = True
+
+    def update_image(self, image):
+        super(RGBImageParam, self).update_image(image)
+        image.recompute_alpha_channel()
+
+class RGBImageParam_MS(RGBImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
+
+
+class MaskedImageParam(ImageParam):
+    show_mask = BoolItem(_("Show image mask"), _("Alpha channel"),
+                         default=False)
+                         
+class MaskedImageParam_MS(MaskedImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(MaskedImageParam, MaskedImageParam_MS)
+
+
+class ImageFilterParam(BaseImageParam):
     label = StringItem(_("Title"), default=_("Filter"))
     g1 = BeginGroup(_("Bounds"))
     xmin = FloatItem(_("x|min"))
@@ -1109,7 +1103,7 @@ class ImageFilterParam(ImageParam):
                                          self.xmax, self.ymax)
 
 
-class TrImageParam(ImageParam):
+class TrImageParam(BaseImageParam):
     _crop = BeginGroup(_("Crop"))
     crop_left = IntItem(_("Left"), default=0)
     crop_right = IntItem(_("Right"), default=0)
@@ -1117,8 +1111,8 @@ class TrImageParam(ImageParam):
     crop_bottom = IntItem(_("Bottom"), default=0)
     _end_crop = EndGroup(_("Cropping"))
     _ps = BeginGroup(_("Pixel size"))
-    dx = FloatItem(_("Width (δx)"), default=1.0)
-    dy = FloatItem(_("Height (δy)"), default=1.0)
+    dx = FloatItem(_("Width (dx)"), default=1.0)
+    dy = FloatItem(_("Height (dy)"), default=1.0)
     _end_ps = EndGroup(_("Pixel size"))
     _pos = BeginGroup(_("Translate, rotate and flip"))
     pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0)
@@ -1136,7 +1130,7 @@ class TrImageParam(ImageParam):
         # directly in this DataSet
 
     def update_image(self, image):
-        ImageParam.update_image(self, image)
+        BaseImageParam.update_image(self, image)
         image.set_transform(*self.get_transform())
 
     def get_transform(self):
@@ -1189,10 +1183,9 @@ class HistogramParam(DataSet):
 # ===================================================
 # Histogram 2D parameters
 # ===================================================
-class Histogram2DParam(ImageParam):
+class Histogram2DParam(BaseImageParam):
     """Histogram"""
     _multiselection = False
-    _hide_background = True
     label = StringItem(_("Title"), default=_("Histogram")) \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
     nx_bins = IntItem(_("X-axis bins"), default=100, min=1,

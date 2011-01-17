@@ -22,7 +22,7 @@ IMGFILE = osp.join(TESTDIR, "..", "images", "items", "image.png")
 
 def imshow( data ):
     win = ImageDialog(edit=False, toolbar=True, wintitle="RGB image item test")
-    item = make.rgbimage(data, scale=(-1,-1,1,1))
+    item = make.rgbimage(data, x0=-1, y0=-1, dx=.1, dy=.1)
     plot = win.get_plot()
     plot.add_item(item)
     win.show()

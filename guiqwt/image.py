@@ -174,6 +174,8 @@ class BaseImageItem(QwtPlotItem):
     def __init__(self, param):
         super(BaseImageItem, self).__init__()
         
+        self.bg_qcolor = QColor()
+        
         self.bounds = QRectF()
         
         # BaseImageItem needs:
@@ -653,7 +655,13 @@ class ImageItem(BaseImageItem):
         self.set_lut_range([_min, _max])
 
     def update_bounds(self):
-        self.bounds = QRectF(0, 0, self.data.shape[1], self.data.shape[0])
+        if self.data is None:
+            return
+        x0 = self.imageparam.scale_x0
+        x1 = self.data.shape[1]*self.imageparam.scale_dx
+        y0 = self.imageparam.scale_y0
+        y1 = self.data.shape[0]*self.imageparam.scale_dy
+        self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
 
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
@@ -854,6 +862,11 @@ class TrImageItem(ImageItem):
                                 [0, ni, ni,  0],
                                 [1,  1,  1,  1]], float)
         self.compute_bounds()
+
+    def update_bounds(self):
+        if self.data is None:
+            return
+        self.bounds = QRectF(0, 0, self.data.shape[1], self.data.shape[0])
 
     #--- BaseImageItem API -----------------------------------------------------    
     def get_filter(self, filterobj, filterparam):
@@ -1146,14 +1159,12 @@ class RGBImageItem(ImageItem):
     Construct a RGB/RGBA image item
         * data: NumPy array of uint8 (shape: NxMx[34] -- 3: RGB, 4: RGBA)
         (last dimension: 0:Red, 1:Green, 2:Blue[, 3:Alpha])
-        * scale (optional): x0, y0, x1, y1 (if specified, rescales the image)
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.RGBImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)
-    def __init__(self, data=None, scale=None, param=None):
+    def __init__(self, data=None, param=None):
         self.orig_data = None
-        self.scale = scale
         super(RGBImageItem, self).__init__(data, param)
         self.lut = None
 
@@ -1189,10 +1200,6 @@ class RGBImageItem(ImageItem):
             A[:, :]=int(255*alpha)
         self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
       
-    def set_scale(self, scale):
-        self.scale = scale
-        self.update_bounds()
-
     #--- BaseImageItem API -----------------------------------------------------
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         sxl, syt, sxr, syb = srcRect
@@ -1237,19 +1244,6 @@ class RGBImageItem(ImageItem):
         self.update_bounds()
         self.update_border()
         self.lut = None
-
-    def update_bounds(self):
-        if self.orig_data is None:
-            return
-        H, W, NC = self.orig_data.shape
-        if self.scale is None:
-            x0 = 0
-            x1 = W
-            y0 = 0
-            y1 = H
-        else:
-            x0, y0, x1, y1 = self.scale
-        self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
 
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
