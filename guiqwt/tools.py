@@ -50,6 +50,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.LoadItemsTool`
     * :py:class:`guiqwt.tools.AxisScaleTool`
     * :py:class:`guiqwt.tools.HelpTool`
+    * :py:class:`guiqwt.tools.DeleteItemTool`
 
 A `plot tool` is an object providing various features to a plotting widget 
 (:py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`): 
@@ -209,6 +210,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: HelpTool
+   :members:
+   :inherited-members:
+.. autoclass:: DeleteItemTool
    :members:
    :inherited-members:
 """
@@ -1505,6 +1509,32 @@ class HelpTool(CommandTool):
   - left-click + mouse move: move item (when available)
   - middle-click + mouse move: pan
   - right-click + mouse move: zoom"""))
+
+
+class DeleteItemTool(CommandTool):
+    def __init__(self, manager):
+        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png",
+                                            toolbar_id=None)
+        
+    def get_removable_items(self, plot):
+        return [item for item in plot.get_selected_items()
+                if not item.is_readonly()]
+
+    def update_status(self, plot):
+        self.action.setEnabled(len(self.get_removable_items(plot)) > 0)
+            
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        items = self.get_removable_items(plot)
+        if len(items) == 1:
+            message = _("Do you really want to remove this item?")
+        else:
+            message = _("Do you really want to remove selected items?")
+        answer = QMessageBox.warning(plot, _("Remove"), message,
+                                     QMessageBox.Yes | QMessageBox.No)
+        if answer == QMessageBox.Yes:
+            plot.del_items(items)
+            plot.replot()
 
 
 class DuplicateCurveTool(CommandTool):

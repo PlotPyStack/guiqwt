@@ -118,8 +118,8 @@ from guiqwt.config import _
 from guiqwt.baseplot import EnhancedQwtPlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.image import ImagePlot
-from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
-                          ReverseYAxisTool, BasePlotMenuTool, HelpTool,
+from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
+                          ReverseYAxisTool, BasePlotMenuTool, DeleteItemTool,
                           ItemListTool, AntiAliasingTool, PrintTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
                           AspectRatioTool, ContrastTool, DummySeparatorTool,
@@ -520,6 +520,8 @@ class PlotManager(object):
         self.add_tool(SaveAsTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
+        self.add_separator_tool()
+        self.add_tool(DeleteItemTool)
         
     def register_all_curve_tools(self):
         """
