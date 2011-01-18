@@ -466,6 +466,8 @@ class PlotManager(object):
         self.set_default_tool(t)
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
+        self.add_tool(DeleteItemTool)
+        self.add_separator_tool()
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
@@ -520,8 +522,6 @@ class PlotManager(object):
         self.add_tool(SaveAsTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
-        self.add_separator_tool()
-        self.add_tool(DeleteItemTool)
         
     def register_all_curve_tools(self):
         """
@@ -540,6 +540,7 @@ class PlotManager(object):
         self.register_curve_tools()
         self.add_separator_tool()
         self.register_other_tools()
+        self.add_separator_tool()
         self.get_default_tool().activate()
         
     def register_all_image_tools(self):
@@ -559,6 +560,7 @@ class PlotManager(object):
         self.register_image_tools()
         self.add_separator_tool()
         self.register_other_tools()
+        self.add_separator_tool()
         self.get_default_tool().activate()
         
     def synchronize_axis(self, axis, plots):

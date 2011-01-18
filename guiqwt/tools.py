@@ -511,8 +511,9 @@ class MultiLineTool(InteractiveTool):
     ICON = "polyline.png"
     CURSOR = Qt.ArrowCursor
 
-    def __init__(self, manager, handle_final_shape_cb=None, shape_style=None):
-        super(MultiLineTool, self).__init__(manager)
+    def __init__(self, manager, handle_final_shape_cb=None, shape_style=None,
+                 toolbar_id=DefaultToolbarID):
+        super(MultiLineTool, self).__init__(manager, toolbar_id)
         self.handle_final_shape_cb = handle_final_shape_cb
         self.shape = None
         self.current_handle = None
@@ -633,9 +634,10 @@ class LabelTool(InteractiveTool):
     LABEL_STYLE_SECT = "plot"
     LABEL_STYLE_KEY = "label"
     
-    def __init__(self, manager, handle_label_cb=None, label_style=None):
+    def __init__(self, manager, handle_label_cb=None, label_style=None,
+                 toolbar_id=DefaultToolbarID):
         self.handle_label_cb = handle_label_cb
-        InteractiveTool.__init__(self, manager)
+        InteractiveTool.__init__(self, manager, toolbar_id)
         if label_style is not None:
             self.label_style_sect = label_style[0]
             self.label_style_key = label_style[1]
@@ -677,9 +679,10 @@ class LabelTool(InteractiveTool):
 class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_SECT = "plot"
     SHAPE_STYLE_KEY = "shape/drag"
-    def __init__(self, manager, func, shape_style=None):
+    def __init__(self, manager, func, shape_style=None,
+                 toolbar_id=DefaultToolbarID):
         self.action_func = func
-        InteractiveTool.__init__(self, manager)
+        InteractiveTool.__init__(self, manager, toolbar_id)
         if shape_style is not None:
             self.shape_style_sect = shape_style[0]
             self.shape_style_key = shape_style[1]
@@ -737,9 +740,10 @@ class RectangularShapeTool(RectangularActionTool):
     TITLE = None
     ICON = None
     def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
-                 shape_style=None):
+                 shape_style=None, toolbar_id=DefaultToolbarID):
         RectangularActionTool.__init__(self, manager,
-                                       self.add_shape_to_plot, shape_style)
+                                       self.add_shape_to_plot, shape_style,
+                                       toolbar_id=toolbar_id)
         self.setup_shape_cb = setup_shape_cb
         self.handle_final_shape_cb = handle_final_shape_cb
         
@@ -913,8 +917,8 @@ class HRangeTool(InteractiveTool):
     TITLE = _("Horizontal selection")
     ICON = "xrange.png"
 
-    def __init__(self, manager):
-        super(HRangeTool, self).__init__(manager)
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+        super(HRangeTool, self).__init__(manager, toolbar_id)
         self.shape = None
     
     def setup_filter(self, baseplot):
@@ -1320,8 +1324,9 @@ def save_snapshot(plot, p0, p1):
 class SnapshotTool(RectangularActionTool):
     TITLE = _("Rectangle snapshot")
     ICON = "snapshot.png"
-    def __init__(self, manager):
-        RectangularActionTool.__init__(self, manager, save_snapshot)
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+        RectangularActionTool.__init__(self, manager, save_snapshot,
+                                       toolbar_id=toolbar_id)
 
 
 class PrintFilter(QwtPlotPrintFilter):
@@ -1513,8 +1518,7 @@ class HelpTool(CommandTool):
 
 class DeleteItemTool(CommandTool):
     def __init__(self, manager):
-        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png",
-                                            toolbar_id=None)
+        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png")
         
     def get_removable_items(self, plot):
         return [item for item in plot.get_selected_items()
