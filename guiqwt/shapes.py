@@ -97,6 +97,7 @@ class AbstractShape(QwtPlotItem):
     __implements__ = (IBasePlotItem,)
 
     _readonly = False
+    _private = False
     _can_select = True
     _can_resize = True
     _can_rotate = False #TODO: implement shape rotation?
@@ -124,6 +125,14 @@ class AbstractShape(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def hit_test(self, pos):
         """return (dist,handle,inside)"""
@@ -202,6 +211,7 @@ class Marker(QwtPlotMarker):
     """
     __implements__ = (IBasePlotItem,)
     _readonly = True
+    _private = False
 
     def __init__(self, label_cb=None, constraint_cb=None):
         super(Marker, self).__init__()
@@ -233,6 +243,14 @@ class Marker(QwtPlotMarker):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def hit_test(self, pos):
         """return (dist,handle,inside)"""

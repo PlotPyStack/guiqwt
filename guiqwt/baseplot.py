@@ -199,7 +199,7 @@ class EnhancedQwtPlot(QwtPlot):
             self.update_axis_style(axis_id)
 
     def get_items(self, z_sorted=False, item_type=None):
-        """Return widget item list
+        """Return widget's item list
         (items are based on IBasePlotItem's interface)"""
         if z_sorted:
             items = sorted(self.items, reverse=True, key=lambda x:x.z())
@@ -210,6 +210,20 @@ class EnhancedQwtPlot(QwtPlot):
         else:
             assert issubclass(item_type, IItemType)
             return [item for item in items if item_type in item.types()]
+            
+    def get_public_items(self, z_sorted=False, item_type=None):
+        """Return widget's public item list
+        (items are based on IBasePlotItem's interface)"""
+        return [item for item in self.get_items(z_sorted=z_sorted,
+                                                item_type=item_type)
+                if not item.is_private()]
+            
+    def get_private_items(self, z_sorted=False, item_type=None):
+        """Return widget's private item list
+        (items are based on IBasePlotItem's interface)"""
+        return [item for item in self.get_items(z_sorted=z_sorted,
+                                                item_type=item_type)
+                if item.is_private()]
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""
@@ -229,12 +243,8 @@ class EnhancedQwtPlot(QwtPlot):
         
     def get_selected_items(self, item_type=None):
         """Return selected items"""
-        if item_type is None:
-            return [item for item in self.items if item.selected]
-        else:
-            assert issubclass(item_type, IItemType)
-            return [item for item in self.items
-                    if item.selected and item_type in item.types()]
+        return [item for item in self.get_items(item_type=item_type)
+                if item.selected]
             
     def get_max_z(self):
         """

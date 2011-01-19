@@ -171,6 +171,7 @@ class BaseImageItem(QwtPlotItem):
     _can_move = False
     _can_rotate = False
     _readonly = False
+    _private = False
     
     def __init__(self, param):
         super(BaseImageItem, self).__init__()
@@ -431,6 +432,14 @@ class BaseImageItem(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
     
     def select(self):
         """Select item"""

@@ -193,6 +193,7 @@ class GridItem(QwtPlotGrid):
     __implements__ = (IBasePlotItem,)
     
     _readonly = True
+    _private = False
     
     def __init__(self, gridparam=None):
         super(GridItem, self).__init__()
@@ -220,6 +221,14 @@ class GridItem(QwtPlotGrid):
     def is_readonly(self):
         """Return object read-only state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def can_select(self):
         return False
@@ -271,6 +280,7 @@ class CurveItem(QwtPlotCurve):
     __implements__ = (IBasePlotItem,)
     
     _readonly = False
+    _private = False
     
     def __init__(self, curveparam=None):
         super(CurveItem, self).__init__()
@@ -315,6 +325,14 @@ class CurveItem(QwtPlotCurve):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()
@@ -792,7 +810,7 @@ class ItemListWidget(QListWidget):
         self.plot = plot
         _block = self.blockSignals(True)
         active = plot.get_active_item()
-        self.items = plot.get_items(z_sorted=True)
+        self.items = plot.get_public_items(z_sorted=True)
         self.clear()
         for item in self.items:
             title = item.title().text()

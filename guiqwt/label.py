@@ -78,6 +78,7 @@ class AbstractLabelItem(QwtPlotItem):
     the label will keep a fixed position wrt the canvas rect
     """
     _readonly = False
+    _private = False
     
     def __init__(self, labelparam):
         super(AbstractLabelItem, self).__init__()
@@ -145,6 +146,14 @@ class AbstractLabelItem(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()

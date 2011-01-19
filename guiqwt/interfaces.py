@@ -105,6 +105,7 @@ class IBasePlotItem(object):
     """
     selected = False # True if this item is selected
     _readonly = False
+    _private = False
     _can_select = True # Indicate this item can be selected
     _can_move = True
     _can_resize = True
@@ -133,6 +134,14 @@ class IBasePlotItem(object):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def select(self):
         """
