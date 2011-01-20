@@ -71,7 +71,7 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
-                           RGBImageParam, MaskedImageParam,
+                           RGBImageParam, MaskedImageParam, XYImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
                            LineStyleParam, AnnotationParam,
                            LabelParamWithContents)
@@ -685,7 +685,7 @@ class PlotItemBuilder(object):
             * data: 2D NumPy array (image pixel data)
             * title: image title (optional)
         """
-        param = ImageParam(title=_("Image"), icon='image.png')
+        param = XYImageParam(title=_("Image"), icon='image.png')
         self.__set_image_param(param, title, alpha_mask, alpha,
                                background=background_color, colormap=colormap)
         return XYImageItem(x, y, data, param)

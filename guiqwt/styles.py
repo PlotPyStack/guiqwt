@@ -1023,27 +1023,71 @@ class BaseImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
 
-class ImageParam(BaseImageParam):
+
+class RawImageParam(BaseImageParam):
     _hide_background = False
     background = ColorItem(_("Background color"), default="#000000"
                            ).set_prop("display",
                                       hide=GetAttrProp("_hide_background"))
-    _or = BeginGroup(_("Origin"))
-    scale_x0 = FloatItem(_("Origin (x0)"), default=0.)
-    scale_y0 = FloatItem(_("Origin (y0)"), default=0.)
-    _end_or = EndGroup(_("Origin"))
-    _ps = BeginGroup(_("Pixel size"))
-    scale_dx = FloatItem(_("Width (dx)"), default=1.0)
-    scale_dy = FloatItem(_("Height (dy)"), default=1.0)
-    _end_ps = EndGroup(_("Pixel size"))
     
     def update_param(self, image):
-        super(ImageParam, self).update_param(image)
+        super(RawImageParam, self).update_param(image)
         self.background = QColor(image.bg_qcolor).name()
 
     def update_image(self, image):
-        super(ImageParam, self).update_image(image)
+        super(RawImageParam, self).update_image(image)
         image.set_background_color(self.background)
+
+class RawImageParam_MS(RawImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(RawImageParam, RawImageParam_MS)
+
+
+class XYImageParam(RawImageParam):
+    pass
+
+class XYImageParam_MS(XYImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(XYImageParam, XYImageParam_MS)
+
+
+class ImageParam(RawImageParam):
+    _xdata = BeginGroup(_("Image placement along X-axis"))
+    xmin = FloatItem(_("x|min"), default=None)
+    xmax = FloatItem(_("x|max"), default=None)
+    _end_xdata = EndGroup(_("Image placement along X-axis"))
+    _ydata = BeginGroup(_("Image placement along Y-axis"))
+    ymin = FloatItem(_("y|min"), default=None)
+    ymax = FloatItem(_("y|max"), default=None)
+    _end_ydata = EndGroup(_("Image placement along Y-axis"))
+    
+    def update_param(self, image):
+        super(ImageParam, self).update_param(image)
+        self.xmin = image.xmin
+        if self.xmin is None:
+            self.xmin = 0.
+        self.ymin = image.ymin
+        if self.ymin is None:
+            self.ymin = 0.
+        if image.is_empty():
+            shape = (0, 0)
+        else:
+            shape = image.data.shape
+        self.xmax = image.xmax
+        if self.xmax is None:
+            self.xmax = float(shape[1])
+        self.ymax = image.ymax
+        if self.ymax is None:
+            self.ymax = float(shape[0])
+
+    def update_image(self, image):
+        super(ImageParam, self).update_image(image)
+        image.xmin = self.xmin
+        image.xmax = self.xmax
+        image.ymin = self.ymin
+        image.ymax = self.ymax
         image.update_bounds()
         image.update_border()
 
