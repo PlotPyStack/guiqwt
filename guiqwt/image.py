@@ -399,8 +399,7 @@ class BaseImageItem(QwtPlotItem):
         self.border_rect.draw(painter, xMap, yMap, canvasRect)
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        dest = _scale_rect(self.data, srcRect,
-                           self._offscreen, dstRect,
+        dest = _scale_rect(self.data, srcRect, self._offscreen, dstRect,
                            self.lut, self.interpolate)
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
@@ -779,7 +778,7 @@ class ImageItem(RawImageItem):
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         sxl, syt, sxr, syb = srcRect
-        xl, yb, xr, yt = self.boundingRect().getCoords()
+        xl, yt, xr, yb = self.boundingRect().getCoords()
         H, W = self.data.shape[:2]
         x0 = W*(sxl-xl)/(xr-xl)
         x1 = W*(sxr-xl)/(xr-xl)
@@ -1013,7 +1012,7 @@ class TrImageItem(RawImageItem):
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         W = canvasRect.width()
         H = canvasRect.height()
-        if W<=1 or H<=1:
+        if W <= 1 or H <= 1:
             return
 
         x0, y0, x1, y1 = srcRect
