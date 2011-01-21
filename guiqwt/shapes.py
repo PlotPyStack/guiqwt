@@ -634,21 +634,58 @@ assert_interfaces_valid(RectangleShape)
 
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1
-class EllipseShape(RectangleShape):
+class EllipseShape(PolygonShape):
     def __init__(self, x1, y1, x2, y2, ratio=None):
-        self.is_ellipse = False
         self.ratio = ratio
-        super(EllipseShape, self).__init__(x1, y1, x2, y2)
+        super(EllipseShape, self).__init__([], closed=True)
+        self.is_ellipse = False
+        self.set_xdiameter(x1, y1, x2, y2)
         
     def switch_to_ellipse(self):
         self.is_ellipse = True
 
-    def set_rect(self, x1, y1, x2, y2):
-        """
-        Set the start point of the ellipse's X-axis diameter to (x1, y1) 
-        and its end point to (x2, y2)
-        """
-        self.set_xdiameter(x1, y1, x2, y2)
+    def set_xdiameter(self, x0, y0, x1, y1):
+        """Set the coordinates of the ellipse's X-axis diameter"""
+        xline = QLineF(x0, y0, x1, y1)
+        yline = xline.normalVector()
+        yline.translate(xline.pointAt(.5)-xline.p1())
+        if self.is_ellipse:
+            yline.setLength(self.get_yline().length())
+        elif self.ratio is not None:
+            yline.setLength(xline.length()*self.ratio)
+        yline.translate(yline.pointAt(.5)-yline.p2())
+        self.set_points([(x0, y0), (x1, y1),
+                         (yline.x1(), yline.y1()), (yline.x2(), yline.y2())])
+                         
+    def get_xdiameter(self):
+        """Return the coordinates of the ellipse's X-axis diameter"""
+        return tuple(self.points[0])+tuple(self.points[1])
+                         
+    def set_ydiameter(self, x2, y2, x3, y3):
+        """Set the coordinates of the ellipse's Y-axis diameter"""
+        yline = QLineF(x2, y2, x3, y3)
+        xline = yline.normalVector()
+        xline.translate(yline.pointAt(.5)-yline.p1())
+        if self.is_ellipse:
+            xline.setLength(self.get_xline().length())
+        xline.translate(xline.pointAt(.5)-xline.p2())
+        self.set_points([(xline.x1(), xline.y1()), (xline.x2(), xline.y2()),
+                         (x2, y2), (x3, y3)])
+                         
+    def get_ydiameter(self):
+        """Return the coordinates of the ellipse's Y-axis diameter"""
+        return tuple(self.points[2])+tuple(self.points[3])
+        
+    def get_rect(self):
+        xMap = self.plot().canvasMap(self.xAxis())
+        yMap = self.plot().canvasMap(self.yAxis())
+        _points, _line0, _line1, rect = self.compute_elements(xMap, yMap)
+        x1, y1, x2, y2 = rect.getCoords()
+        x1 = xMap.invTransform(x1)
+        x2 = xMap.invTransform(x2)
+        y1 = yMap.invTransform(y1)
+        y2 = yMap.invTransform(y2)
+        return x1, y1, x2, y2
 
     def compute_elements(self, xMap, yMap):
         """Return points, lines and ellipse rect"""
@@ -698,28 +735,6 @@ class EllipseShape(RectangleShape):
     def get_yline(self):
         return QLineF(*(tuple(self.points[2])+tuple(self.points[3])))
 
-    def set_xdiameter(self, x0, y0, x1, y1):
-        xline = QLineF(x0, y0, x1, y1)
-        yline = xline.normalVector()
-        yline.translate(xline.pointAt(.5)-xline.p1())
-        if self.is_ellipse:
-            yline.setLength(self.get_yline().length())
-        elif self.ratio is not None:
-            yline.setLength(xline.length()*self.ratio)
-        yline.translate(yline.pointAt(.5)-yline.p2())
-        self.set_points([(x0, y0), (x1, y1),
-                         (yline.x1(), yline.y1()), (yline.x2(), yline.y2())])
-                         
-    def set_ydiameter(self, x2, y2, x3, y3):
-        yline = QLineF(x2, y2, x3, y3)
-        xline = yline.normalVector()
-        xline.translate(yline.pointAt(.5)-yline.p1())
-        if self.is_ellipse:
-            xline.setLength(self.get_xline().length())
-        xline.translate(xline.pointAt(.5)-xline.p2())
-        self.set_points([(xline.x1(), xline.y1()), (xline.x2(), xline.y2()),
-                         (x2, y2), (x3, y3)])
-
     def move_point_to(self, handle, pos):
         nx, ny = pos
         if handle == 0:
@@ -740,6 +755,10 @@ class EllipseShape(RectangleShape):
         elif handle == -1:
             delta = (nx, ny)-self.points.mean(axis=0)
             self.points += delta
+
+    def __reduce__(self):
+        state = (self.shapeparam, self.points, self.z())
+        return (self.__class__, (0,0,0,0), state)
 
 assert_interfaces_valid(EllipseShape)
 
