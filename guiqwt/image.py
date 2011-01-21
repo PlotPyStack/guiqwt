@@ -255,11 +255,40 @@ class BaseImageItem(QwtPlotItem):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
     
-    def get_closest_indexes(self, x, y):
-        """Return closest image pixel indexes"""
-        i = max([0, min([self.data.shape[1]-1, int(np.round(x))])])
-        j = max([0, min([self.data.shape[0]-1, int(np.round(y))])])
+    def get_closest_indexes(self, x, y, corner=None):
+        """
+        Return closest image pixel indexes
+        corner: None (not a corner), 'TL' (top-left corner),
+        'BR' (bottom-right corner)
+        """
+        assert corner is None or corner in ('TL', 'BR')
+        if corner is None:
+            rndfunc = np.round
+        elif corner == 'TL':
+            rndfunc = np.ceil
+        else:
+            rndfunc = np.floor
+        i = max([0, min([self.data.shape[1]-1, int(rndfunc(x))])])
+        j = max([0, min([self.data.shape[0]-1, int(rndfunc(y))])])
         return i, j
+        
+    def get_closest_index_rect(self, x0, y0, x1, y1):
+        """
+        Return closest image rectangular pixel area index bounds
+        Avoid returning empty rectangular area (return 1x1 pixel area instead)
+        Handle reversed/not-reversed Y-axis orientation
+        """
+        ix0, iy0 = self.get_closest_indexes(x0, y0, corner='TL')
+        ix1, iy1 = self.get_closest_indexes(x1, y1, corner='BR')
+        if ix0 > ix1:
+            ix1, ix0 = ix0, ix1
+        if iy0 > iy1:
+            iy1, iy0 = iy0, iy1
+        if ix0 == ix1:
+            ix1 = ix0+1
+        if iy0 == iy1:
+            iy1 = iy0+1
+        return ix0, iy0, ix1, iy1
 
     def get_x_values(self, i0, i1):
         return np.arange(i0, i1)
@@ -588,32 +617,14 @@ class BaseImageItem(QwtPlotItem):
 
     def get_average_xsection(self, x0, y0, x1, y1, apply_lut=False):
         """Return average cross section along x-axis"""
-        ix0, iy0 = self.get_closest_indexes(x0, y0)
-        ix1, iy1 = self.get_closest_indexes(x1, y1)
-        if ix0 > ix1:
-            ix1, ix0 = ix0, ix1
-        if iy0 > iy1:
-            iy1, iy0 = iy0, iy1
-        if ix0 == ix1:
-            ix1 = ix0+1
-        if iy0 == iy1:
-            iy1 = iy0+1
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=0)
         return (self.get_x_values(ix0, ix1),
                 self.__process_cross_section(ydata, apply_lut))
 
     def get_average_ysection(self, x0, y0, x1, y1, apply_lut=False):
         """Return average cross section along y-axis"""
-        ix0, iy0 = self.get_closest_indexes(x0, y0)
-        ix1, iy1 = self.get_closest_indexes(x1, y1)
-        if ix0 > ix1:
-            ix1, ix0 = ix0, ix1
-        if iy0 > iy1:
-            iy1, iy0 = iy0, iy1
-        if ix0 == ix1:
-            ix1 = ix0+1
-        if iy0 == iy1:
-            iy1 = iy0+1
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=1)
         return (self.get_y_values(iy0, iy1),
                 self.__process_cross_section(ydata, apply_lut))
@@ -751,12 +762,12 @@ class ImageItem(RawImageItem):
         self.bounds = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax))
 
     #---- BaseImageItem API ----------------------------------------------------
-    def get_closest_indexes(self, x, y):
+    def get_closest_indexes(self, x, y, corner=None):
         """Return closest image pixel indexes"""
         xmin, xmax, ymin, ymax = self.get_xydata()
         x = self.data.shape[1]*(x-xmin)/(xmax-xmin)
         y = self.data.shape[0]*(y-ymin)/(ymax-ymin)
-        return super(ImageItem, self).get_closest_indexes(x, y)
+        return super(ImageItem, self).get_closest_indexes(x, y, corner)
         
     def get_x_values(self, i0, i1):
         xmin, xmax, ymin, ymax = self.get_xydata()
@@ -975,11 +986,11 @@ class TrImageItem(RawImageItem):
         #TODO: Implement TrImageFilterItem
 #        return TrImageFilterItem(self, filterobj, filterparam)
 
-    def get_closest_indexes(self, x, y):
+    def get_closest_indexes(self, x, y, corner=None):
         """Return closest image pixel indexes"""
         v = self.tr*point(x, y)
         x, y, _ = v[:, 0]
-        return super(TrImageItem, self).get_closest_indexes(x, y)
+        return super(TrImageItem, self).get_closest_indexes(x, y, corner)
         
     def get_x_values(self, i0, i1):
         v0 = self.itr*point(i0, 0)
@@ -1223,10 +1234,10 @@ class XYImageItem(RawImageItem):
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
 
-    def get_closest_indexes(self, x, y):
+    def get_closest_indexes(self, x, y, corner=None):
         """Return closest image pixel indexes"""
         i, j = self.x.searchsorted(x), self.y.searchsorted(y)
-        return super(XYImageItem, self).get_closest_indexes(i, j)
+        return super(XYImageItem, self).get_closest_indexes(i, j, corner)
         
     def get_x_values(self, i0, i1):
         return self.x[i0:i1]
