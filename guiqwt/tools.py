@@ -342,7 +342,14 @@ class InteractiveTool(GuiTool):
     TIP = None
     CURSOR = Qt.CrossCursor
 
-    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        if title is not None:
+            self.TITLE = title
+        if icon is not None:
+            self.ICON = icon
+        if tip is not None:
+            self.TIP = tip
         super(InteractiveTool, self).__init__(manager, toolbar_id)
         # Starting state for every plotwidget we can act upon
         self.start_state = {}
@@ -436,12 +443,10 @@ class SelectPointTool(InteractiveTool):
     CURSOR = Qt.PointingHandCursor
     
     def __init__(self, manager, mode="reuse", on_active_item=False,
-                 title=None, tip=None, end_callback=None,
+                 title=None, icon=None, tip=None, end_callback=None,
                  toolbar_id=DefaultToolbarID, marker_style=None):
-        if title is not None:
-            self.TITLE = title
-        self.TIP = tip
-        super(SelectPointTool, self).__init__(manager, toolbar_id)
+        super(SelectPointTool, self).__init__(manager, toolbar_id,
+                                              title=title, icon=icon, tip=tip)
         assert mode in ("reuse", "create")
         self.mode = mode
         self.end_callback = end_callback
@@ -517,8 +522,9 @@ class MultiLineTool(InteractiveTool):
     CURSOR = Qt.ArrowCursor
 
     def __init__(self, manager, handle_final_shape_cb=None, shape_style=None,
-                 toolbar_id=DefaultToolbarID):
-        super(MultiLineTool, self).__init__(manager, toolbar_id)
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
+        super(MultiLineTool, self).__init__(manager, toolbar_id,
+                                            title=title, icon=icon, tip=tip)
         self.handle_final_shape_cb = handle_final_shape_cb
         self.shape = None
         self.current_handle = None
@@ -640,9 +646,10 @@ class LabelTool(InteractiveTool):
     LABEL_STYLE_KEY = "label"
     
     def __init__(self, manager, handle_label_cb=None, label_style=None,
-                 toolbar_id=DefaultToolbarID):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
         self.handle_label_cb = handle_label_cb
-        InteractiveTool.__init__(self, manager, toolbar_id)
+        InteractiveTool.__init__(self, manager, toolbar_id,
+                                 title=title, icon=icon, tip=tip)
         if label_style is not None:
             self.label_style_sect = label_style[0]
             self.label_style_key = label_style[1]
@@ -685,9 +692,10 @@ class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_SECT = "plot"
     SHAPE_STYLE_KEY = "shape/drag"
     def __init__(self, manager, func, shape_style=None,
-                 toolbar_id=DefaultToolbarID):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
         self.action_func = func
-        InteractiveTool.__init__(self, manager, toolbar_id)
+        InteractiveTool.__init__(self, manager, toolbar_id,
+                                 title=title, icon=icon, tip=tip)
         if shape_style is not None:
             self.shape_style_sect = shape_style[0]
             self.shape_style_key = shape_style[1]
@@ -745,10 +753,12 @@ class RectangularShapeTool(RectangularActionTool):
     TITLE = None
     ICON = None
     def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
-                 shape_style=None, toolbar_id=DefaultToolbarID):
+                 shape_style=None, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
         RectangularActionTool.__init__(self, manager,
                                        self.add_shape_to_plot, shape_style,
-                                       toolbar_id=toolbar_id)
+                                       toolbar_id=toolbar_id,
+                                       title=title, icon=icon, tip=tip)
         self.setup_shape_cb = setup_shape_cb
         self.handle_final_shape_cb = handle_final_shape_cb
         
@@ -922,8 +932,10 @@ class HRangeTool(InteractiveTool):
     TITLE = _("Horizontal selection")
     ICON = "xrange.png"
 
-    def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(HRangeTool, self).__init__(manager, toolbar_id)
+    def __init__(self, manager, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        super(HRangeTool, self).__init__(manager, toolbar_id,
+                                         title=title, icon=icon, tip=tip)
         self.shape = None
     
     def setup_filter(self, baseplot):
