@@ -258,7 +258,8 @@ from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
-                            SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED)
+                            SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
+                            SIG_ITEM_SELECTION_CHANGED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -1658,3 +1659,117 @@ class ColormapTool(CommandTool):
             else:
                 self.action.setEnabled(False)
             self.action.setIcon(icon)
+
+
+class ImageMaskTool(CommandTool):
+    def __init__(self, manager):
+        self._shapes = []
+        super(ImageMaskTool, self).__init__(manager, _("Mask"),
+                                            icon="mask_tool.png",
+                                            tip=_("Toggle mask editing mode"))
+        self.masked_image = None # associated masked image item
+
+    def create_action_menu(self, manager):
+        """Create and return menu for the tool's action"""
+        rect_tool = manager.add_tool(RectangleTool, toolbar_id=None,
+                                     handle_final_shape_cb=self.handle_shape,
+                                     title=_("Mask rectangular area"),
+                                     icon="mask_rectangle.png")
+        ellipse_tool = manager.add_tool(CircleTool, toolbar_id=None,
+                                     handle_final_shape_cb=self.handle_shape,
+                                     title=_("Mask circular area"),
+                                     icon="mask_circle.png")
+        
+        menu = QMenu()
+        self.showmask_action = manager.create_action(_("Show mask"),
+                                                     toggled=self.show_mask)
+        showshapes_action = manager.create_action(_("Show shapes"),
+                                                  toggled=self.show_shapes)
+        showshapes_action.setChecked(True)
+        applymask_a = manager.create_action(_("Apply mask"),
+                                            icon=get_icon("apply.png"),
+                                            triggered=self.apply_mask)
+        clearmask_a = manager.create_action(_("Clear mask"),
+                                            icon=get_icon("delete.png"),
+                                            triggered=self.clear_mask)
+        add_actions(menu, (self.showmask_action, None,
+                           showshapes_action, rect_tool.action,
+                           ellipse_tool.action, applymask_a, None, clearmask_a))
+        self.action.setMenu(menu)
+        return menu
+        
+    def update_status(self, plot):
+        self.action.setEnabled(self.masked_image is not None)
+
+    def register_plot(self, baseplot):
+        super(ImageMaskTool, self).register_plot(baseplot)
+        self.connect(baseplot, SIG_ITEMS_CHANGED, self.items_changed)
+        self.connect(baseplot, SIG_ITEM_SELECTION_CHANGED,
+                     self.item_selection_changed)
+
+    def show_mask(self, state):
+        self.masked_image.set_mask_visible(state)
+        
+    def apply_mask(self):
+        self.masked_image.unmask_all()
+        mask = self.masked_image.get_mask()
+        for shape in self._shapes:
+            x0, y0, x1, y1 = shape.get_rect()
+            if isinstance(shape, RectangleShape):
+                self.masked_image.mask_rectangular_area(x0, y0, x1, y1)
+            else:
+                self.masked_image.mask_circular_area(x0, y0, x1, y1)
+        self.masked_image.set_mask(mask)
+        plot = self.get_active_plot()
+        plot.replot()
+
+    def show_shapes(self, state):
+        for shape in self._shapes:
+            shape.setVisible(state)
+        plot = self.get_active_plot()
+        if plot is not None:
+            plot.replot()
+        
+    def handle_shape(self, shape):
+        shape.set_private(True)
+        plot = self.get_active_plot()
+        plot.set_active_item(shape)
+        self._shapes.append(shape)
+    
+    def find_masked_image(self, plot):
+        item = plot.get_active_item()
+        from guiqwt.image import MaskedImageItem
+        if isinstance(item, MaskedImageItem):
+            return item
+        else:
+            items = [item for item in plot.get_items()
+                     if isinstance(item, MaskedImageItem)]
+            if items:
+                return items[-1]
+                
+    def set_masked_image(self, plot):
+        self.masked_image = item = self.find_masked_image(plot)
+        enable = False if item is None else item.is_mask_visible()
+        self.showmask_action.setChecked(enable)
+
+    def items_changed(self, plot):
+        self.set_masked_image(plot)
+        self._shapes = [shape for shape in self._shapes if shape.plot() is plot]
+        self.update_status(plot)
+                        
+    def item_selection_changed(self, plot):
+        self.set_masked_image(plot)
+        self.update_status(plot)
+            
+    def clear_mask(self):
+        message = _("Do you really want to clear the mask?")
+        plot = self.get_active_plot()
+        answer = QMessageBox.warning(plot, _("Clear mask"), message,
+                                     QMessageBox.Yes | QMessageBox.No)
+        if answer == QMessageBox.Yes:
+            self.masked_image.unmask_all()
+            plot.replot()
+
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        pass

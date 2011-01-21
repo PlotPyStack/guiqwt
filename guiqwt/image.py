@@ -1369,7 +1369,7 @@ class MaskedImageItem(ImageItem):
         self.orig_data = None
         if param is None:
             param = MaskedImageParam(_("Image"))
-        self.mask = mask
+        self._mask = mask
         super(MaskedImageItem, self).__init__(data, param)
         
     #---- Public API -----------------------------------------------------------
@@ -1377,11 +1377,54 @@ class MaskedImageItem(ImageItem):
         if isinstance(self.data, np.ma.MaskedArray):
             self.data.set_fill_value(self.imageparam.filling_value)
             
+    def set_mask(self, mask):
+        """Set image mask"""
+        self.data.mask = mask
+        
+    def get_mask(self):
+        """Return image mask"""
+        return self.data.mask
+            
+    def mask_all(self):
+        """Mask all pixels"""
+        self.data.mask = True
+        
+    def unmask_all(self):
+        """Unmask all pixels"""
+        self.data.mask = np.ma.nomask
+        
+    def mask_rectangular_area(self, x0, y0, x1, y1):
+        """Mask rectangular area"""
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
+        self.data[iy0:iy1, ix0:ix1] = np.ma.masked
+        
+    def mask_circular_area(self, x0, y0, x1, y1):
+        """Mask circular area"""
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
+        xc, yc, radius = .5*(x0+x1), .5*(y0+y1), .5*(x1-x0)
+        xdata, ydata = self.get_x_values(ix0, ix1), self.get_y_values(iy0, iy1)
+        for ix in range(ix0, ix1):
+            for iy in range(iy0, iy1):
+                distance = np.sqrt((xdata[ix-ix0]-xc)**2+(ydata[iy-iy0]-yc)**2)
+                if distance <= radius:
+                    self.data[iy, ix] = np.ma.masked
+
+    def is_mask_visible(self):
+        """Return mask visibility"""
+        return self.imageparam.show_mask
+        
+    def set_mask_visible(self, state):
+        """Set mask visibility"""
+        self.imageparam.show_mask = state
+        plot = self.plot()
+        if plot is not None:
+            plot.replot()
+            
     #---- BaseImageItem API ----------------------------------------------------
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         super(MaskedImageItem, self).draw_image(painter, canvasRect,
                                                 srcRect, dstRect, xMap, yMap)
-        if self.imageparam.show_mask:
+        if self.is_mask_visible():
             _a, _b, bg, _cmap = self.lut
             alpha_masked = np.uint32(255*self.imageparam.alpha_masked+0.5
                                      ).clip(0, 255) << 24
@@ -1408,10 +1451,11 @@ class MaskedImageItem(ImageItem):
         super(MaskedImageItem, self).set_data(data, lut_range)
         self.orig_data = data
         self.data = data.view(np.ma.MaskedArray)
-        self.data.mask = self.mask
+        self.set_mask(self._mask)
+        self._mask = None # removing reference to this temporary array
         if self.imageparam.filling_value is None:
             self.imageparam.filling_value = self.data.get_fill_value()
-        self.data.harden_mask()
+#        self.data.harden_mask()
         self.update_mask()
 
 

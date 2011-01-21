@@ -17,6 +17,7 @@ SHOW = True # Show test in GUI-based test launcher
 import os.path as osp, numpy as np
 
 from guiqwt.plot import ImageDialog
+from guiqwt.tools import ImageMaskTool
 from guiqwt.io import imagefile_to_array
 from guiqwt.builder import make
 
@@ -26,11 +27,11 @@ if __name__ == "__main__":
     import guidata
     guidata.qapplication()
     win = ImageDialog(toolbar=True, wintitle="Masked image item test")
+    win.add_tool(ImageMaskTool)
     data = imagefile_to_array(osp.join(osp.abspath(osp.dirname(__file__)),
                                        "brain.png"))
     mask = np.zeros_like(data)
     mask[20:120, 20:120] = True
-    print mask
     win.get_plot().add_item( make.maskedimage(data, mask, colormap='gray',
                                               show_mask=True) )
     win.show()
