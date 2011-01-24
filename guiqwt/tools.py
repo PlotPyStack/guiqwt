@@ -1727,7 +1727,6 @@ class ImageMaskTool(CommandTool):
         self.masked_image.set_mask_visible(state)
         
     def apply_mask(self):
-        self.masked_image.unmask_all()
         mask = self.masked_image.get_mask()
         for shape, inside in self._mask_shapes.iteritems():
             x0, y0, x1, y1 = shape.get_rect()
@@ -1749,7 +1748,6 @@ class ImageMaskTool(CommandTool):
         if answer == QMessageBox.Yes:
             plot.del_items(self._mask_shapes.keys()) # remove shapes
             self._mask_shapes = {}
-            self.masked_image.unmask_all() # remove mask
             plot.replot()
 
     def show_shapes(self, state):

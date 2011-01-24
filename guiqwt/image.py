@@ -155,7 +155,7 @@ from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            RawImageParam)
-from guiqwt.shapes import RectangleShape
+from guiqwt.shapes import RectangleShape, EllipseShape
 from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
 
@@ -1370,7 +1370,31 @@ class MaskedImageItem(ImageItem):
         if param is None:
             param = MaskedImageParam(_("Image"))
         self._mask = mask
+        self._mask_filename = None
+        self._masked_areas = []
         super(MaskedImageItem, self).__init__(data, param)
+        
+    #---- Pickle methods -------------------------------------------------------
+    def __reduce__(self):
+        state = (self.imageparam, self.get_lut_range(),
+                 self.get_filename(), self.z(),
+                 self.get_mask_filename(), self.get_masked_areas())
+        res = ( self.__class__, (None,), state )
+        return res
+
+    def __setstate__(self, state):
+        param, lut_range, filename, z, mask_filename, masked_areas = state
+        self.imageparam = param
+        self.set_filename(filename)
+        self.load_data(lut_range)
+        self.setZ(z)
+        self.imageparam.update_image(self)
+        if mask_filename is not None:
+            self.set_mask_filename(mask_filename)
+            self.load_mask_data()
+        elif masked_areas:
+            self.set_masked_areas(masked_areas)
+            self.apply_masked_areas()
         
     #---- Public API -----------------------------------------------------------
     def update_mask(self):
@@ -1384,6 +1408,54 @@ class MaskedImageItem(ImageItem):
     def get_mask(self):
         """Return image mask"""
         return self.data.mask
+        
+    def set_mask_filename(self, fname):
+        """
+        Set mask filename
+        There are two ways for pickling mask data of MaskedImageItem objects:
+            1. using the mask filename (as for data itself)
+            2. using the mask areas (MaskedAreas instance, see set_mask_areas)
+        When saving objects, the first method is tried and then, if no 
+        filename has been defined for mask data, the second method is used.
+        """
+        self._mask_filename = fname
+        
+    def get_mask_filename(self):
+        return self._mask_filename
+
+    def load_mask_data(self):
+        data = imagefile_to_array(self.get_mask_filename(), to_grayscale=True)
+        self.set_mask(data)
+        
+    def set_masked_areas(self, areas):
+        """Set masked areas (see set_mask_filename)"""
+        self._masked_areas = areas
+        
+    def get_masked_areas(self):
+        return self._masked_areas
+        
+    def add_masked_areas(self, geometry, x0, y0, x1, y1, inside):
+        self._masked_areas.append((geometry, x0, y0, x1, y1, inside))
+        
+    def apply_masked_areas(self):
+        for geometry, x0, y0, x1, y1, inside in self._masked_areas:
+            if geometry == 'rectangular':
+                self.mask_rectangular_area(x0, y0, x1, y1, inside,
+                                           restore=True)
+            else:
+                self.mask_circular_area(x0, y0, x1, y1, inside, restore=True)
+                
+    def create_shapes_from_masked_areas(self):
+        shapes = []
+        for geometry, x0, y0, x1, y1, inside in self._masked_areas:
+            if geometry == 'rectangular':
+                shape = RectangleShape(self.x0, self.y0, self.x1, self.y1)
+                shape.set_private(True)
+            else:
+                shape = EllipseShape(self.x0, self.y0, self.x1, self.y1, 1.)
+                shape.set_private(True)
+            shapes.append(shape)
+        return shapes
             
     def mask_all(self):
         """Mask all pixels"""
@@ -1392,8 +1464,9 @@ class MaskedImageItem(ImageItem):
     def unmask_all(self):
         """Unmask all pixels"""
         self.data.mask = np.ma.nomask
+        self.set_masked_areas([])
         
-    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True):
+    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True, restore=False):
         """
         Mask rectangular area
         If inside is True (default), mask the inside of the area
@@ -1406,8 +1479,10 @@ class MaskedImageItem(ImageItem):
             indexes = np.ones(self.data.shape, dtype=np.bool)
             indexes[iy0:iy1, ix0:ix1] = False
             self.data[indexes] = np.ma.masked
+        if not restore:
+            self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
         
-    def mask_circular_area(self, x0, y0, x1, y1, inside=True):
+    def mask_circular_area(self, x0, y0, x1, y1, inside=True, restore=False):
         """
         Mask circular area
         If inside is True (default), mask the inside of the area
@@ -1426,6 +1501,8 @@ class MaskedImageItem(ImageItem):
                     self.data[iy, ix] = np.ma.masked
         if not inside:
             self.mask_rectangular_area(x0, y0, x1, y1, inside)
+        if not restore:
+            self.add_masked_areas('circular', x0, y0, x1, y1, inside)
 
     def is_mask_visible(self):
         """Return mask visibility"""
