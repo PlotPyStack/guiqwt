@@ -1664,6 +1664,7 @@ class ColormapTool(CommandTool):
 class ImageMaskTool(CommandTool):
     def __init__(self, manager):
         self._mask_shapes = {}
+        self._mask_already_restored = {}
         super(ImageMaskTool, self).__init__(manager, _("Mask"),
                                             icon="mask_tool.png")
         self.masked_image = None # associated masked image item
@@ -1719,6 +1720,7 @@ class ImageMaskTool(CommandTool):
 
     def register_plot(self, baseplot):
         super(ImageMaskTool, self).register_plot(baseplot)
+        self._mask_shapes.setdefault(baseplot, [])
         self.connect(baseplot, SIG_ITEMS_CHANGED, self.items_changed)
         self.connect(baseplot, SIG_ITEM_SELECTION_CHANGED,
                      self.item_selection_changed)
@@ -1728,7 +1730,9 @@ class ImageMaskTool(CommandTool):
         
     def apply_mask(self):
         mask = self.masked_image.get_mask()
-        for shape, inside in self._mask_shapes.iteritems():
+        plot = self.get_active_plot()
+        for shape, inside in self._mask_shapes[plot]:
+            print shape, inside
             x0, y0, x1, y1 = shape.get_rect()
             if isinstance(shape, RectangleShape):
                 self.masked_image.mask_rectangular_area(x0, y0, x1, y1,
@@ -1737,7 +1741,6 @@ class ImageMaskTool(CommandTool):
                 self.masked_image.mask_circular_area(x0, y0, x1, y1,
                                                      inside=inside)
         self.masked_image.set_mask(mask)
-        plot = self.get_active_plot()
         plot.replot()
         
     def remove_all_shapes(self):
@@ -1746,22 +1749,24 @@ class ImageMaskTool(CommandTool):
         answer = QMessageBox.warning(plot, _("Remove all masking shapes"),
                                      message, QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
-            plot.del_items(self._mask_shapes.keys()) # remove shapes
-            self._mask_shapes = {}
+            plot.del_items([shape for shape, _inside
+                            in self._mask_shapes[plot]]) # remove shapes
+            self._mask_shapes[plot] = []
             plot.replot()
 
     def show_shapes(self, state):
-        for shape in self._mask_shapes:
-            shape.setVisible(state)
         plot = self.get_active_plot()
         if plot is not None:
+            for shape, _inside in self._mask_shapes[plot]:
+                shape.setVisible(state)
             plot.replot()
         
     def handle_shape(self, shape, inside):
+        shape.set_style("plot", "shape/mask")
         shape.set_private(True)
         plot = self.get_active_plot()
         plot.set_active_item(shape)
-        self._mask_shapes[shape] = inside
+        self._mask_shapes[plot] += [(shape, inside)]
     
     def find_masked_image(self, plot):
         item = plot.get_active_item()
@@ -1773,17 +1778,37 @@ class ImageMaskTool(CommandTool):
                      if isinstance(item, MaskedImageItem)]
             if items:
                 return items[-1]
+
+    def create_shapes_from_masked_areas(self):
+        if self._mask_already_restored:
+            return
+        plot = self.get_active_plot()
+        self._mask_shapes[plot] = []
+        masked_areas = self.masked_image.get_masked_areas()
+        for geometry, x0, y0, x1, y1, inside in masked_areas:
+            if geometry == 'rectangular':
+                shape = RectangleShape(x0, y0, x1, y1)
+            else:
+                shape = EllipseShape(x0, .5*(y0+y1), x1, .5*(y0+y1))
+            shape.set_style("plot", "shape/mask")
+            shape.set_private(True)
+            self._mask_shapes[plot] += [(shape, inside)]
+            plot.blockSignals(True)
+            plot.add_item(shape)
+            plot.blockSignals(False)
+        self._mask_already_restored = True
                 
     def set_masked_image(self, plot):
         self.masked_image = item = self.find_masked_image(plot)
+        self.create_shapes_from_masked_areas()
         enable = False if item is None else item.is_mask_visible()
         self.showmask_action.setChecked(enable)
 
     def items_changed(self, plot):
         self.set_masked_image(plot)
-        for shape in self._mask_shapes.keys():
-            if shape.plot() is not plot:
-                self._mask_shapes.pop(shape)
+        self._mask_shapes[plot] = [(shape, inside) for shape, inside
+                                   in self._mask_shapes[plot]
+                                   if shape.plot() is plot]
         self.update_status(plot)
                         
     def item_selection_changed(self, plot):

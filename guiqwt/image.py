@@ -1440,23 +1440,10 @@ class MaskedImageItem(ImageItem):
     def apply_masked_areas(self):
         for geometry, x0, y0, x1, y1, inside in self._masked_areas:
             if geometry == 'rectangular':
-                self.mask_rectangular_area(x0, y0, x1, y1, inside,
-                                           restore=True)
+                self.mask_rectangular_area(x0, y0, x1, y1, inside, trace=False)
             else:
-                self.mask_circular_area(x0, y0, x1, y1, inside, restore=True)
-                
-    def create_shapes_from_masked_areas(self):
-        shapes = []
-        for geometry, x0, y0, x1, y1, inside in self._masked_areas:
-            if geometry == 'rectangular':
-                shape = RectangleShape(self.x0, self.y0, self.x1, self.y1)
-                shape.set_private(True)
-            else:
-                shape = EllipseShape(self.x0, self.y0, self.x1, self.y1, 1.)
-                shape.set_private(True)
-            shapes.append(shape)
-        return shapes
-            
+                self.mask_circular_area(x0, y0, x1, y1, inside, trace=False)
+                            
     def mask_all(self):
         """Mask all pixels"""
         self.data.mask = True
@@ -1466,7 +1453,7 @@ class MaskedImageItem(ImageItem):
         self.data.mask = np.ma.nomask
         self.set_masked_areas([])
         
-    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True, restore=False):
+    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True, trace=True):
         """
         Mask rectangular area
         If inside is True (default), mask the inside of the area
@@ -1479,10 +1466,10 @@ class MaskedImageItem(ImageItem):
             indexes = np.ones(self.data.shape, dtype=np.bool)
             indexes[iy0:iy1, ix0:ix1] = False
             self.data[indexes] = np.ma.masked
-        if not restore:
+        if trace:
             self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
         
-    def mask_circular_area(self, x0, y0, x1, y1, inside=True, restore=False):
+    def mask_circular_area(self, x0, y0, x1, y1, inside=True, trace=True):
         """
         Mask circular area
         If inside is True (default), mask the inside of the area
@@ -1500,8 +1487,8 @@ class MaskedImageItem(ImageItem):
                 elif distance > radius:
                     self.data[iy, ix] = np.ma.masked
         if not inside:
-            self.mask_rectangular_area(x0, y0, x1, y1, inside)
-        if not restore:
+            self.mask_rectangular_area(x0, y0, x1, y1, inside, trace=False)
+        if trace:
             self.add_masked_areas('circular', x0, y0, x1, y1, inside)
 
     def is_mask_visible(self):

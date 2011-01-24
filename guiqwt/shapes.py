@@ -686,6 +686,10 @@ class EllipseShape(PolygonShape):
         y1 = yMap.invTransform(y1)
         y2 = yMap.invTransform(y2)
         return x1, y1, x2, y2
+    
+    def set_rect(self, x0, y0, x1, y1):
+        """Circle only!"""
+        self.set_xdiameter(x0, .5*(y0+y1), x1, .5*(y0+y1))
 
     def compute_elements(self, xMap, yMap):
         """Return points, lines and ellipse rect"""
