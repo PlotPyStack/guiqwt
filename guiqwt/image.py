@@ -1393,21 +1393,39 @@ class MaskedImageItem(ImageItem):
         """Unmask all pixels"""
         self.data.mask = np.ma.nomask
         
-    def mask_rectangular_area(self, x0, y0, x1, y1):
-        """Mask rectangular area"""
+    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True):
+        """
+        Mask rectangular area
+        If inside is True (default), mask the inside of the area
+        Otherwise, mask the outside
+        """
         ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
-        self.data[iy0:iy1, ix0:ix1] = np.ma.masked
+        if inside:
+            self.data[iy0:iy1, ix0:ix1] = np.ma.masked
+        else:
+            indexes = np.ones(self.data.shape, dtype=np.bool)
+            indexes[iy0:iy1, ix0:ix1] = False
+            self.data[indexes] = np.ma.masked
         
-    def mask_circular_area(self, x0, y0, x1, y1):
-        """Mask circular area"""
+    def mask_circular_area(self, x0, y0, x1, y1, inside=True):
+        """
+        Mask circular area
+        If inside is True (default), mask the inside of the area
+        Otherwise, mask the outside
+        """
         ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
         xc, yc, radius = .5*(x0+x1), .5*(y0+y1), .5*(x1-x0)
         xdata, ydata = self.get_x_values(ix0, ix1), self.get_y_values(iy0, iy1)
         for ix in range(ix0, ix1):
             for iy in range(iy0, iy1):
                 distance = np.sqrt((xdata[ix-ix0]-xc)**2+(ydata[iy-iy0]-yc)**2)
-                if distance <= radius:
+                if inside:
+                    if distance <= radius:
+                        self.data[iy, ix] = np.ma.masked
+                elif distance > radius:
                     self.data[iy, ix] = np.ma.masked
+        if not inside:
+            self.mask_rectangular_area(x0, y0, x1, y1, inside)
 
     def is_mask_visible(self):
         """Return mask visibility"""
