@@ -6,6 +6,7 @@
 \.chm$
 \.pyd$
 \.gui$
+\.pickle$
 ^build/
 ^dist/
 ^tests/build

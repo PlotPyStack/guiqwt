@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-01-24 11:04+Paris, Madrid\n"
+"POT-Creation-Date: 2011-01-24 12:08+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -680,8 +680,8 @@ msgstr "Ordonnées"
 
 #: guiqwt\styles.py:543 guiqwt\styles.py:549 guiqwt\styles.py:683
 #: guiqwt\styles.py:890 guiqwt\styles.py:1276 guiqwt\styles.py:1279
-#: guiqwt\styles.py:1315 guiqwt\styles.py:1318 guiqwt\styles.py:1371
-#: guiqwt\styles.py:1374
+#: guiqwt\styles.py:1325 guiqwt\styles.py:1328 guiqwt\styles.py:1381
+#: guiqwt\styles.py:1384
 msgid "Line"
 msgstr "Trait"
 
@@ -691,7 +691,7 @@ msgstr "Quadrillage secondaire"
 
 #: guiqwt\styles.py:580 guiqwt\styles.py:719 guiqwt\styles.py:848
 #: guiqwt\styles.py:888 guiqwt\styles.py:1135 guiqwt\styles.py:1246
-#: guiqwt\styles.py:1347 guiqwt\tests\signal_app.py:43
+#: guiqwt\styles.py:1357 guiqwt\tests\signal_app.py:43
 #: guiqwt\tests\simple_dialog.py:28 guiqwt\tests\simple_window.py:39
 msgid "Title"
 msgstr "Titre"
@@ -771,8 +771,8 @@ msgid "Upper z-axis limit"
 msgstr "Borne supérieure des niveaux"
 
 #: guiqwt\styles.py:681 guiqwt\styles.py:731 guiqwt\styles.py:891
-#: guiqwt\styles.py:1281 guiqwt\styles.py:1284 guiqwt\styles.py:1376
-#: guiqwt\styles.py:1379 guiqwt\tests\styles.py:27 guiqwt\tests\styles.py:33
+#: guiqwt\styles.py:1281 guiqwt\styles.py:1284 guiqwt\styles.py:1386
+#: guiqwt\styles.py:1389 guiqwt\tests\styles.py:27 guiqwt\tests\styles.py:33
 #: guiqwt\tests\styles.py:41 guiqwt\tests\styles.py:43
 #: guiqwt\tests\styles.py:49 guiqwt\tests\styles.py:52
 msgid "Symbol"
@@ -1163,24 +1163,24 @@ msgstr "Nombre de classes le long de l'axes des ordonnées"
 msgid "Z-axis scale"
 msgstr "Échelle en z"
 
-#: guiqwt\styles.py:1277 guiqwt\styles.py:1372
+#: guiqwt\styles.py:1277 guiqwt\styles.py:1382
 msgid "Line (not selected)"
 msgstr "Trait (hors sélection)"
 
-#: guiqwt\styles.py:1278 guiqwt\styles.py:1373
+#: guiqwt\styles.py:1278 guiqwt\styles.py:1383
 msgid "Line (selected)"
 msgstr "Trait (sélection)"
 
-#: guiqwt\styles.py:1282 guiqwt\styles.py:1377
+#: guiqwt\styles.py:1282 guiqwt\styles.py:1387
 msgid "Symbol (not selected)"
 msgstr "Symbole (hors sélection)"
 
-#: guiqwt\styles.py:1283 guiqwt\styles.py:1378
+#: guiqwt\styles.py:1283 guiqwt\styles.py:1388
 msgid "Symbol (selected)"
 msgstr "Symbole (sélection)"
 
-#: guiqwt\styles.py:1286 guiqwt\styles.py:1290 guiqwt\styles.py:1320
-#: guiqwt\styles.py:1324
+#: guiqwt\styles.py:1286 guiqwt\styles.py:1290 guiqwt\styles.py:1330
+#: guiqwt\styles.py:1334
 msgid "Fill pattern"
 msgstr "Motif de remplissage"
 
@@ -1192,59 +1192,78 @@ msgstr "Motif de remplissage (hors sélection)"
 msgid "Fill pattern (selected)"
 msgstr "Motif de remplissage (sélection)"
 
-#: guiqwt\styles.py:1311
+#: guiqwt\styles.py:1293
+msgid "Read-only shape"
+msgstr "Lecture seule"
+
+#: guiqwt\styles.py:1294
+msgid "Read-only shapes can't be removed from the item list panel"
+msgstr ""
+"Les formes en lecture seule ne peuvent pas être supprimer du panneau de "
+"liste des objets"
+
+#: guiqwt\styles.py:1296
+msgid "Private shape"
+msgstr "Forme privée"
+
+#: guiqwt\styles.py:1297
+msgid "Private shapes are not shown in the item list panel"
+msgstr ""
+"Les formes privées ne sont pas affichées dans le panneau de liste des objets"
+
+#: guiqwt\styles.py:1321
 msgid "Arrow angle (°)"
 msgstr "Angle de la flèche (°)"
 
-#: guiqwt\styles.py:1312
+#: guiqwt\styles.py:1322
 msgid "Arrow size (%)"
 msgstr "Taille de la flèche (%)"
 
-#: guiqwt\styles.py:1316
+#: guiqwt\styles.py:1326
 msgid "Line (X-Axis)"
 msgstr "Trait (axes des x)"
 
-#: guiqwt\styles.py:1317
+#: guiqwt\styles.py:1327
 msgid "Line (Y-Axis)"
 msgstr "Trait (axes des y)"
 
-#: guiqwt\styles.py:1322
+#: guiqwt\styles.py:1332
 msgid "Fill pattern (X-Axis)"
 msgstr "Motif de remplissage (axes des x)"
 
-#: guiqwt\styles.py:1323
+#: guiqwt\styles.py:1333
 msgid "Fill pattern (Y-Axis)"
 msgstr "Motif de remplissage (axes des y)"
 
-#: guiqwt\styles.py:1345
+#: guiqwt\styles.py:1355
 msgid "Show annotation"
 msgstr "Afficher l'annotation"
 
-#: guiqwt\styles.py:1346
+#: guiqwt\styles.py:1356
 msgid "Show position and size"
 msgstr "Afficher la position et la taille"
 
-#: guiqwt\styles.py:1348
+#: guiqwt\styles.py:1358
 msgid "Subtitle"
 msgstr "Sous-titre"
 
-#: guiqwt\styles.py:1349
+#: guiqwt\styles.py:1359
 msgid "String formatting"
 msgstr "Format"
 
-#: guiqwt\styles.py:1350
+#: guiqwt\styles.py:1360
 msgid "Transform matrix"
 msgstr "Matrice de transformation"
 
-#: guiqwt\styles.py:1381 guiqwt\styles.py:1385
+#: guiqwt\styles.py:1391 guiqwt\styles.py:1395
 msgid "Fill"
 msgstr "Remplissage"
 
-#: guiqwt\styles.py:1383
+#: guiqwt\styles.py:1393
 msgid "Fill color"
 msgstr "Couleur de remplissage"
 
-#: guiqwt\styles.py:1384
+#: guiqwt\styles.py:1394
 msgid "Shade"
 msgstr "Ombre"
 
@@ -1691,19 +1710,19 @@ msgstr "Afficher les formes de masquage"
 msgid "Apply mask"
 msgstr "Appliquer le masque"
 
-#: guiqwt\tools.py:1703 guiqwt\tools.py:1798
+#: guiqwt\tools.py:1703 guiqwt\tools.py:1810
 msgid "Clear mask"
 msgstr "Effacer le masque"
 
-#: guiqwt\tools.py:1706 guiqwt\tools.py:1747
+#: guiqwt\tools.py:1706 guiqwt\tools.py:1754
 msgid "Remove all masking shapes"
 msgstr "Supprimer toutes les formes de masquage"
 
-#: guiqwt\tools.py:1745
+#: guiqwt\tools.py:1752
 msgid "Do you really want to remove all masking shapes?"
 msgstr "Souhaitez-vous vraiment supprimer toutes les formes de masquage ?"
 
-#: guiqwt\tools.py:1796
+#: guiqwt\tools.py:1808
 msgid "Do you really want to clear the mask?"
 msgstr "Souhaitez-vous vraiment effacer le masque ?"
 

@@ -1290,6 +1290,12 @@ class ShapeParam(DataSet):
     ___efill = EndGroup(_("Fill pattern"))
     #----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
+    readonly = BoolItem(_("Read-only shape"), default=False,
+                        help=_("Read-only shapes can't be removed from "
+                               "the item list panel"))
+    private = BoolItem(_("Private shape"), default=False,
+                        help=_("Private shapes are not shown in "
+                               "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
         self.line.update_param(obj.pen)
@@ -1298,6 +1304,8 @@ class ShapeParam(DataSet):
         self.sel_line.update_param(obj.sel_pen)
         self.sel_symbol.update_param(obj.sel_symbol)
         self.sel_fill.update_param(obj.sel_brush)
+        self.readonly = obj.is_readonly()
+        self.private = obj.is_private()
         
     def update_shape(self, obj):
         obj.pen = self.line.build_pen()
@@ -1306,6 +1314,8 @@ class ShapeParam(DataSet):
         obj.sel_pen = self.sel_line.build_pen()
         obj.sel_symbol = self.sel_symbol.build_symbol()
         obj.sel_brush = self.sel_fill.build_brush()
+        obj.set_readonly(self.readonly)
+        obj.set_private(self.private)
 
 class AxesShapeParam(DataSet):
     arrow_angle = FloatItem(_("Arrow angle (°)"), min=0, max=90, nonzero=True)
