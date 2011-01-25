@@ -677,15 +677,11 @@ class EllipseShape(PolygonShape):
         return tuple(self.points[2])+tuple(self.points[3])
         
     def get_rect(self):
-        xMap = self.plot().canvasMap(self.xAxis())
-        yMap = self.plot().canvasMap(self.yAxis())
-        _points, _line0, _line1, rect = self.compute_elements(xMap, yMap)
-        x1, y1, x2, y2 = rect.getCoords()
-        x1 = xMap.invTransform(x1)
-        x2 = xMap.invTransform(x2)
-        y1 = yMap.invTransform(y1)
-        y2 = yMap.invTransform(y2)
-        return x1, y1, x2, y2
+        """Circle only!"""
+        (x0, y0), (x1, y1) = self.points[0], self.points[1]
+        xc, yc = .5*(x0+x1), .5*(y0+y1)
+        radius = .5*np.sqrt((x1-x0)**2+(y1-y0)**2)
+        return xc-radius, yc-radius, xc+radius, yc+radius
     
     def set_rect(self, x0, y0, x1, y1):
         """Circle only!"""
