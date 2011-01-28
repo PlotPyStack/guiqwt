@@ -307,6 +307,27 @@ class BaseImageItem(QwtPlotItem):
         if iy0 == iy1:
             iy1 += 1
         return ix0, iy0, ix1, iy1
+        
+    def align_rectangular_shape(self, shape):
+        """Align rectangular shape to image pixels"""
+        shape.set_rect(*self.get_closest_index_rect(*shape.get_rect()))
+        
+    def get_closest_pixel_indexes(self, x, y):
+        """
+        Return closest pixel indexes
+        Instead of returning indexes of an image pixel like the method 
+        'get_closest_indexes', this method returns the indexes of the 
+        closest pixel which is not necessarily on the image itself 
+        (i.e. indexes may be outside image index bounds: negative or 
+        superior than the image dimension)
+        
+        Note: this is *not* the same as retrieving the canvas pixel 
+        coordinates (which depends on the zoom level)
+        """
+        x, y = self.get_pixel_coordinates(x, y)
+        i = int(pixelround(x))
+        j = int(pixelround(y))
+        return i, j
 
     def get_x_values(self, i0, i1):
         return np.arange(i0, i1)
@@ -646,7 +667,7 @@ class BaseImageItem(QwtPlotItem):
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=1)
         return (self.get_y_values(iy0, iy1),
                 self.__process_cross_section(ydata, apply_lut))
-
+                
 assert_interfaces_valid(BaseImageItem)
 
 
@@ -1464,6 +1485,10 @@ class MaskedImageItem(ImageItem):
         return self._masked_areas
         
     def add_masked_areas(self, geometry, x0, y0, x1, y1, inside):
+        for _g, _x0, _y0, _x1, _y1, _i in self._masked_areas:
+            if _g == geometry and _x0 == x0 and _y0 == y0 and \
+               _x1 == x1 and _y1 == y1 and _i == inside:
+                   return
         self._masked_areas.append((geometry, x0, y0, x1, y1, inside))
         
     def apply_masked_areas(self):
@@ -1500,12 +1525,14 @@ class MaskedImageItem(ImageItem):
         
     def mask_circular_area(self, x0, y0, x1, y1, inside=True, trace=True):
         """
-        Mask circular area
+        Mask circular area, inside the rectangle (x0, y0, x1, y1), i.e. 
+        circle with a radius of .5*(x1-x0)
         If inside is True (default), mask the inside of the area
         Otherwise, mask the outside
         """
         ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
-        xc, yc, radius = .5*(x0+x1), .5*(y0+y1), .5*(x1-x0)
+        xc, yc = .5*(x0+x1), .5*(y0+y1)
+        radius = .5*(x1-x0)
         xdata, ydata = self.get_x_values(ix0, ix1), self.get_y_values(iy0, iy1)
         for ix in range(ix0, ix1):
             for iy in range(iy0, iy1):
