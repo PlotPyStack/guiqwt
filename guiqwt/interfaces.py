@@ -260,3 +260,7 @@ class IPanel(object):
     def register_panel(self, manager):
         """Register panel to plot manager"""
         pass
+    
+    def configure_panel(self):
+        """Configure panel"""
+        pass

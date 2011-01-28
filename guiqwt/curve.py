@@ -915,6 +915,10 @@ class PlotItemList(PanelWidget):
         """Register panel to plot manager"""
         self.manager = manager
         self.listwidget.register_panel(manager)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        pass
 
 assert_interfaces_valid(PlotItemList)
 

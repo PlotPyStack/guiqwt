@@ -649,6 +649,10 @@ class CrossSectionWidget(PanelWidget):
                          self.cs_plot.toggle_autoscale)
             self.connect(other.refresh_ac, SIGNAL("triggered()"),
                          self.cs_plot.update_plot)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        pass
 
     def get_plot(self):
         return self.manager.get_active_plot()

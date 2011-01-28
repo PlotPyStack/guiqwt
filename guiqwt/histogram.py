@@ -449,6 +449,21 @@ class ContrastAdjustment(PanelWidget):
         self.setup_actions()
         for plot in manager.get_plots():
             self.histogram.connect_plot(plot)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        self.min_select_tool = self.manager.add_tool(SelectPointTool,
+                                       title=_("Minimum level"),
+                                       on_active_item=True,mode="create",
+                                       tip=_("Select minimum level on image"),
+                                       toolbar_id="contrast",
+                                       end_callback=self.apply_min_selection)
+        self.max_select_tool = self.manager.add_tool(SelectPointTool,
+                                       title=_("Maximum level"),
+                                       on_active_item=True,mode="create",
+                                       tip=_("Select maximum level on image"),
+                                       toolbar_id="contrast",
+                                       end_callback=self.apply_max_selection)        
 
     def get_plot(self):
         return self.manager.get_active_plot()
@@ -470,18 +485,6 @@ class ContrastAdjustment(PanelWidget):
                                            "outliers and scale the image's "
                                            "display range accordingly") )
         add_actions(self.toolbar,[fullrange_ac, autorange_ac])
-        self.min_select_tool = self.manager.add_tool(SelectPointTool,
-                                       title=_("Minimum level"),
-                                       on_active_item=True,mode="create",
-                                       tip=_("Select minimum level on image"),
-                                       toolbar_id="contrast",
-                                       end_callback=self.apply_min_selection)
-        self.max_select_tool = self.manager.add_tool(SelectPointTool,
-                                       title=_("Maximum level"),
-                                       on_active_item=True,mode="create",
-                                       tip=_("Select maximum level on image"),
-                                       toolbar_id="contrast",
-                                       end_callback=self.apply_max_selection)        
     
     def eliminate_outliers(self):
         def apply(param):

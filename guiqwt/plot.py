@@ -154,6 +154,8 @@ class PlotManager(object):
         self.default_toolbar = None
         self.synchronized_plots = {}
         self.groups = {} # Action groups for grouping QActions
+        # Keep track of the registration sequence (plots, panels, tools):
+        self._first_tool_flag = True
 
     def add_plot(self, plot, plot_id=DefaultPlotID):
         """
@@ -213,6 +215,17 @@ class PlotManager(object):
         assert not self.tools, "tools must be added after panels"
         self.panels[panel.PANEL_ID] = panel
         panel.register_panel(self)
+        
+    def configure_panels(self):
+        """
+        Call all the registred panels 'configure_panel' methods to finalize the 
+        object construction (this allows to use tools registered to the same 
+        plot manager as the panel itself with breaking the registration 
+        sequence: "add plots, then panels, then tools")
+        """
+        for panel_id in self.panels:
+            panel = self.get_panel(panel_id)
+            panel.configure_panel()
 
     def add_toolbar(self, toolbar, toolbar_id="default"):
         """
@@ -250,6 +263,10 @@ class PlotManager(object):
             2. add panels
             3. add tools
         """
+        if self._first_tool_flag:
+            # This is the very first tool to be added to this manager
+            self._first_tool_flag = False
+            self.configure_panels()
         tool = ToolKlass(self, *args, **kwargs)
         self.tools.append(tool)
         for plot in self.plots.values():
@@ -667,9 +684,11 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
+        * panels (optional): additionnal panels (list, tuple)
     """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 section="plot", show_itemlist=False, gridparam=None):
+                 section="plot", show_itemlist=False, gridparam=None,
+                 panels=None):
         BaseCurveWidget.__init__(self, parent, title, xlabel, ylabel,
                                      section, show_itemlist, gridparam)
         PlotManager.__init__(self, main=self)
@@ -677,6 +696,9 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         # Configuring plot manager
         self.add_plot(self.plot)
         self.add_panel(self.itemlist)
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
         
 class CurveDialog(QDialog, PlotManager):
     """
@@ -690,8 +712,8 @@ class CurveDialog(QDialog, PlotManager):
           (dictionary)
         * parent: parent widget
     """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png", edit=False,
+                 toolbar=False, options=None, parent=None):
         QDialog.__init__(self, parent)
         PlotManager.__init__(self, main=self)
 
@@ -891,13 +913,14 @@ class ImageWidget(BaseImageWidget, PlotManager):
           (string: "top", "bottom")
         * ysection_pos: y-axis cross section plot position 
           (string: "left", "right")
+        * panels (optional): additionnal panels (list, tuple)
     """
     def __init__(self, parent=None, title="",
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None):
+                 gridparam=None, panels=None):
         BaseImageWidget.__init__(self, parent, title, xlabel, ylabel,
                  zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
                  show_contrast, show_itemlist, show_xsection, show_ysection,
@@ -910,6 +933,9 @@ class ImageWidget(BaseImageWidget, PlotManager):
         self.add_panel(self.xcsw)
         self.add_panel(self.ycsw)
         self.add_panel(self.contrast)
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
 
 class ImageDialog(CurveDialog):
     """
@@ -923,8 +949,8 @@ class ImageDialog(CurveDialog):
           (dictionary)
         * parent: parent widget
     """
-    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
+    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png", edit=False,
+                 toolbar=False, options=None, parent=None):
         CurveDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
                                  toolbar=toolbar, options=options,
                                  parent=parent)
@@ -978,6 +1004,7 @@ class CurvePlotWidget(CurveWidget):
                  section="plot", show_itemlist=False, gridparam=None):
         CurveWidget.__init__(self, parent, title, xlabel, ylabel, section,
                              show_itemlist, gridparam)
+        self.manager = self
         warnings.warn("For clarity's sake, the 'CurvePlotWidget' class has "
                       "been renamed to 'CurveWidget' (this will raise an "
                       "exception in future versions)", FutureWarning)
@@ -997,6 +1024,7 @@ class CurvePlotDialog(CurveDialog):
                  edit=False, toolbar=False, options=None, parent=None):
         CurveDialog.__init__(self, wintitle, icon, edit, toolbar, options,
                              parent)
+        self.manager = self
         warnings.warn("For clarity's sake, the 'CurvePlotDialog' class has "
                       "been renamed to 'CurveDialog' (this will raise an "
                       "exception in future versions)", FutureWarning)
@@ -1030,6 +1058,7 @@ class ImagePlotWidget(ImageWidget):
                              lock_aspect_ratio, show_contrast, show_itemlist,
                              show_xsection, show_ysection, xsection_pos,
                              ysection_pos, gridparam)
+        self.manager = self
         warnings.warn("For clarity's sake, the 'ImagePlotWidget' class has "
                       "been renamed to 'ImageWidget' (this will raise an "
                       "exception in future versions)", FutureWarning)
@@ -1049,6 +1078,7 @@ class ImagePlotDialog(ImageDialog):
                  edit=False, toolbar=False, options=None, parent=None):
         ImageDialog.__init__(self, wintitle, icon, edit, toolbar, options,
                              parent)
+        self.manager = self
         warnings.warn("For clarity's sake, the 'ImagePlotDialog' class has "
                       "been renamed to 'ImageDialog' (this will raise an "
                       "exception in future versions)", FutureWarning)
