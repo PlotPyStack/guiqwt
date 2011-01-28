@@ -582,11 +582,15 @@ class ErrorBarCurveItem(CurveItem):
     def boundingRect(self):
         """Return the bounding rectangle of the data, error bars included"""
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        if xmin is None:
+            return super(ErrorBarCurveItem, self).boundingRect()
         return QRectF( xmin.min(), ymin.min(),
                        xmax.max()-xmin.min(), ymax.max()-ymin.min() )
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
+        if x is None:
+            return
         y = self._y
         tx = vmap(xMap, x)
         ty = vmap(yMap, y)
