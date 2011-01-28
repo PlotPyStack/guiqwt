@@ -28,7 +28,7 @@ if __name__ == "__main__":
     import guidata
     guidata.qapplication()
     win = ImageDialog(toolbar=True, wintitle="Masked image item test")
-    tool = win.add_tool(ImageMaskTool)
+    win.add_tool(ImageMaskTool)
     fname = osp.join(osp.abspath(osp.dirname(__file__)), "brain.png")
     if os.access(FNAME, os.R_OK):
         print "Restoring mask...",

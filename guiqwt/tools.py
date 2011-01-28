@@ -260,7 +260,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED)
-from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
+from guiqwt.panels import ID_XCS, ID_YCS, ID_RACS, ID_ITEMLIST, ID_CONTRAST
 
 
 class DefaultToolbarID:
@@ -861,10 +861,11 @@ class AnnotatedSegmentTool(SegmentTool):
         return AnnotatedSegment(0, 0, 1, 1), 0, 2
 
         
-class CrossSectionTool(AnnotatedPointTool):
+class CrossSectionTool(RectangularShapeTool):
     TITLE = _("Cross sections")
     ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
+    PANEL_IDS = (ID_XCS, ID_YCS)
     def create_shape(self):
         return AnnotatedPoint(0, 0), 0, 0
         
@@ -883,14 +884,14 @@ class CrossSectionTool(AnnotatedPointTool):
         if plot is not None:
             plot.unselect_all()
             plot.set_active_item(shape)
-        for panel_id in (ID_XCS, ID_YCS):
+        for panel_id in self.PANEL_IDS:
             panel = self.manager.get_panel(panel_id)
             panel.register_shape(shape, final=final)
 
     def activate(self):
         """Activate tool"""
         super(CrossSectionTool, self).activate()
-        for panel_id in (ID_XCS, ID_YCS):
+        for panel_id in self.PANEL_IDS:
             panel = self.manager.get_panel(panel_id)
             panel.setVisible(True)
             shape = self.get_last_final_shape()
@@ -904,10 +905,27 @@ class CrossSectionTool(AnnotatedPointTool):
 
 class AverageCrossSectionTool(CrossSectionTool):
     TITLE = _("Average cross sections")
-    ICON = "csection_avg.png"
+    ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
     def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
+
+class RACrossSectionTool(CrossSectionTool):
+    TITLE = _("Radially-averaged cross sections")
+    ICON = "csection_ra.png"
+    SHAPE_STYLE_KEY = "shape/average_cross_section"
+    PANEL_IDS = (ID_RACS, )
+    def create_shape(self):
+        return AnnotatedCircle(0, 0, 1, 1), 0, 1
+
+    def activate(self):
+        """Activate tool"""
+        RectangularShapeTool.activate(self)
+        panel = self.manager.get_panel(ID_RACS)
+        panel.setVisible(True)
+        shape = self.get_last_final_shape()
+        if shape is not None:
+            panel.update_plot(shape)
 
 
 class RectZoomTool(InteractiveTool):
