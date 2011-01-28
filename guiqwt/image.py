@@ -155,7 +155,7 @@ from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            RawImageParam)
-from guiqwt.shapes import RectangleShape, EllipseShape
+from guiqwt.shapes import RectangleShape
 from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
 
@@ -174,6 +174,21 @@ except ImportError:
 
 LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
+
+
+def pixelround(x, corner=None):
+    """
+    Return pixel index (int) from pixel coordinate (float)
+    corner: None (not a corner), 'TL' (top-left corner),
+    'BR' (bottom-right corner)
+    """
+    assert corner is None or corner in ('TL', 'BR')
+    if corner is None:
+        return np.floor(x)
+    elif corner == 'BR':
+        return np.ceil(x)
+    elif corner == 'TL':
+        return np.floor(x)
 
 
 #===============================================================================
@@ -255,21 +270,24 @@ class BaseImageItem(QwtPlotItem):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
     
+    def get_pixel_coordinates(self, x, y):
+        """Return (image) pixel coordinates"""
+        return x, y
+        
     def get_closest_indexes(self, x, y, corner=None):
         """
         Return closest image pixel indexes
         corner: None (not a corner), 'TL' (top-left corner),
         'BR' (bottom-right corner)
         """
-        assert corner is None or corner in ('TL', 'BR')
-        if corner is None:
-            rndfunc = np.round
-        elif corner == 'TL':
-            rndfunc = np.ceil
-        else:
-            rndfunc = np.floor
-        i = max([0, min([self.data.shape[1]-1, int(rndfunc(x))])])
-        j = max([0, min([self.data.shape[0]-1, int(rndfunc(y))])])
+        x, y = self.get_pixel_coordinates(x, y)
+        i_max = self.data.shape[1]-1
+        j_max = self.data.shape[0]-1
+        if corner == 'BR':
+            i_max += 1
+            j_max += 1
+        i = max([0, min([i_max, int(pixelround(x, corner))])])
+        j = max([0, min([j_max, int(pixelround(y, corner))])])
         return i, j
         
     def get_closest_index_rect(self, x0, y0, x1, y1):
@@ -285,9 +303,9 @@ class BaseImageItem(QwtPlotItem):
         if iy0 > iy1:
             iy1, iy0 = iy0, iy1
         if ix0 == ix1:
-            ix1 = ix0+1
+            ix1 += 1
         if iy0 == iy1:
-            iy1 = iy0+1
+            iy1 += 1
         return ix0, iy0, ix1, iy1
 
     def get_x_values(self, i0, i1):
@@ -733,59 +751,70 @@ class ImageItem(RawImageItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType)
     def __init__(self, data, param=None):
-        if param is None:
-            param = ImageParam(_("Image"))
-        super(ImageItem, self).__init__(data=data, param=param)
         self.xmin = None
         self.xmax = None
         self.ymin = None
         self.ymax = None
+        if param is None:
+            param = ImageParam(_("Image"))
+        super(ImageItem, self).__init__(data=data, param=param)
         
     #---- Public API -----------------------------------------------------------
-    def get_xydata(self):
-        """Return (xmin, xmax, ymin, ymax)"""
-        xmin, xmax, ymin, ymax = self.xmin, self.xmax, self.ymin, self.ymax
+    def get_xdata(self):
+        """Return (xmin, xmax)"""
+        xmin, xmax = self.xmin, self.xmax
         if xmin is None:
             xmin = 0.
         if xmax is None:
             xmax = self.data.shape[1]
+        return xmin, xmax
+        
+    def get_ydata(self):
+        """Return (ymin, ymax)"""
+        ymin, ymax = self.ymin, self.ymax
         if ymin is None:
             ymin = 0.
         if ymax is None:
             ymax = self.data.shape[0]
-        return xmin, xmax, ymin, ymax
+        return ymin, ymax
+        
+    def set_xdata(self, xmin=None, xmax=None):
+        self.xmin, self.xmax = xmin, xmax
+        
+    def set_ydata(self, ymin=None, ymax=None):
+        self.ymin, self.ymax = ymin, ymax
 
     def update_bounds(self):
         if self.data is None:
             return
-        xmin, xmax, ymin, ymax = self.get_xydata()
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
         self.bounds = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax))
 
     #---- BaseImageItem API ----------------------------------------------------
-    def get_closest_indexes(self, x, y, corner=None):
-        """Return closest image pixel indexes"""
-        xmin, xmax, ymin, ymax = self.get_xydata()
-        x = self.data.shape[1]*(x-xmin)/(xmax-xmin)
-        y = self.data.shape[0]*(y-ymin)/(ymax-ymin)
-        return super(ImageItem, self).get_closest_indexes(x, y, corner)
-        
+    def get_pixel_coordinates(self, x, y):
+        """Return (image) pixel coordinates"""
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
+        xpix = self.data.shape[1]*(x-xmin)/(xmax-xmin)
+        ypix = self.data.shape[0]*(y-ymin)/(ymax-ymin)
+        return xpix, ypix
+
     def get_x_values(self, i0, i1):
-        xmin, xmax, ymin, ymax = self.get_xydata()
-        xdata = np.linspace(xmin, xmax, self.data.shape[1])
-        return xdata[i0:i1]
+        xmin, xmax = self.get_xdata()
+        xfunc = lambda index: xmin+(xmax-xmin)*index/self.data.shape[1]
+        return np.linspace(xfunc(i0), xfunc(i1), i1-i0)
     
     def get_y_values(self, j0, j1):
-        xmin, xmax, ymin, ymax = self.get_xydata()
-        ydata = np.linspace(ymin, ymax, self.data.shape[0])
-        return ydata[j0:j1]
+        ymin, ymax = self.get_ydata()
+        yfunc = lambda index: ymin+(ymax-ymin)*index/self.data.shape[0]
+        return np.linspace(yfunc(j0), yfunc(j1), j1-j0)
     
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
-        xmin, xmax, ymin, ymax = self.get_xydata()
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
         i, j = self.get_closest_indexes(x, y)
-        xdata = np.linspace(xmin, xmax, self.data.shape[1])
-        ydata = np.linspace(ymin, ymax, self.data.shape[0])
-        return xdata[i], ydata[j]
+        xpix = np.linspace(xmin, xmax, self.data.shape[1]+1)
+        ypix = np.linspace(ymin, ymax, self.data.shape[0]+1)
+        return xpix[i], ypix[j]
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         sxl, syt, sxr, syb = srcRect
@@ -986,11 +1015,11 @@ class TrImageItem(RawImageItem):
         #TODO: Implement TrImageFilterItem
 #        return TrImageFilterItem(self, filterobj, filterparam)
 
-    def get_closest_indexes(self, x, y, corner=None):
-        """Return closest image pixel indexes"""
+    def get_pixel_coordinates(self, x, y):
+        """Return (image) pixel coordinates"""
         v = self.tr*point(x, y)
         x, y, _ = v[:, 0]
-        return super(TrImageItem, self).get_closest_indexes(x, y, corner)
+        return x, y
         
     def get_x_values(self, i0, i1):
         v0 = self.itr*point(i0, 0)
@@ -1234,10 +1263,10 @@ class XYImageItem(RawImageItem):
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
 
-    def get_closest_indexes(self, x, y, corner=None):
-        """Return closest image pixel indexes"""
-        i, j = self.x.searchsorted(x), self.y.searchsorted(y)
-        return super(XYImageItem, self).get_closest_indexes(i, j, corner)
+    def get_pixel_coordinates(self, x, y):
+        """Return (image) pixel coordinates"""
+        x, y = self.x.searchsorted(x), self.y.searchsorted(y)
+        return x, y
         
     def get_x_values(self, i0, i1):
         return self.x[i0:i1]
