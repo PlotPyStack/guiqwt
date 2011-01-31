@@ -106,7 +106,7 @@ import weakref, warnings
 
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QSizePolicy, QApplication, QWidget)
+                         QSizePolicy, QApplication, QWidget, QMainWindow)
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
@@ -699,70 +699,44 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         if panels is not None:
             for panel in panels:
                 self.add_panel(panel)
-        
-class CurveDialog(QDialog, PlotManager):
-    """
-    Construct a CurveDialog object: plotting dialog box with integrated 
-    plot manager
-        * wintitle: window title
-        * icon: window icon
-        * edit: editable state
-        * toolbar: show/hide toolbar
-        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
-          (dictionary)
-        * parent: parent widget
-    """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png", edit=False,
-                 toolbar=False, options=None, parent=None):
-        QDialog.__init__(self, parent)
+
+class CurveWidgetMixin(PlotManager):
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 toolbar=False, options=None, panels=None):
         PlotManager.__init__(self, main=self)
 
-        self.edit = edit
+        self.plot_layout = QGridLayout()
+        
+        if options is None:
+            options = {}
+        self.create_plot(options)
+        
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
+        
+        self.toolbar = QToolBar(_("Tools"))
+        if not toolbar:
+            self.toolbar.hide()
+
+        # Configuring widget layout
+        self.setup_widget_properties(wintitle=wintitle, icon=icon)
+        self.setup_widget_layout()
+        
+        # Configuring plot manager
+        self.add_toolbar(self.toolbar, "default")
+        self.register_tools()
+        
+    def setup_widget_layout(self):
+        raise NotImplementedError
+        
+    def setup_widget_properties(self, wintitle, icon):
         self.setWindowTitle(wintitle)
         if isinstance(icon, basestring):
             icon = get_icon(icon)
         self.setWindowIcon(icon)
         self.setMinimumSize(320, 240)
         self.resize(640, 480)
-        self.setWindowFlags(Qt.Window)
-        
-        self.plot_layout = QGridLayout()
-        
-        if options is None:
-            options = {}
-            
-        self.create_plot(options)
-        
-        self.vlayout = QVBoxLayout(self)
-        
-        self.toolbar = QToolBar(_("Tools"))
-        if not toolbar:
-            self.toolbar.hide()
-        self.vlayout.addWidget(self.toolbar)
-        
-        self.setLayout(self.vlayout)
-        self.vlayout.addLayout(self.plot_layout)
-        
-        if self.edit:
-            self.button_layout = QHBoxLayout()
-            self.install_button_layout()
-            self.vlayout.addLayout(self.button_layout)
-        
-        # Configuring plot manager
-        self.add_toolbar(self.toolbar, "default")
-        self.register_tools()
-        
-    def install_button_layout(self):
-        """
-        Install standard buttons (OK, Cancel) in dialog button box layout 
-        (:py:attr:`guiqwt.plot.CurveDialog.button_layout`)
-        
-        This method may be overriden to customize the button box
-        """
-        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
-        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
-        self.button_layout.addWidget(bbox)
 
     def register_tools(self):
         """
@@ -791,6 +765,82 @@ class CurveDialog(QDialog, PlotManager):
         # Configuring plot manager
         self.add_plot(widget.plot)
         self.add_panel(widget.itemlist)
+
+class CurveDialog(QDialog, CurveWidgetMixin):
+    """
+    Construct a CurveDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png", edit=False,
+                 toolbar=False, options=None, parent=None, panels=None):
+        QDialog.__init__(self, parent)
+        self.edit = edit
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                 toolbar=toolbar, options=options,
+                                 panels=panels)
+        self.setWindowFlags(Qt.Window)
+        
+    def setup_widget_layout(self):
+        vlayout = QVBoxLayout(self)
+        vlayout.addWidget(self.toolbar)
+        vlayout.addLayout(self.plot_layout)
+        self.setLayout(vlayout)
+        if self.edit:
+            self.button_layout = QHBoxLayout()
+            self.install_button_layout()
+            self.vlayout.addLayout(self.button_layout)
+        
+    def install_button_layout(self):
+        """
+        Install standard buttons (OK, Cancel) in dialog button box layout 
+        (:py:attr:`guiqwt.plot.CurveDialog.button_layout`)
+        
+        This method may be overriden to customize the button box
+        """
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
+        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        self.button_layout.addWidget(bbox)
+        
+class CurveWindow(QMainWindow, CurveWidgetMixin):
+    """
+    Construct a CurveWindow object: plotting window with integrated plot manager
+        * wintitle: window title
+        * icon: window icon
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 toolbar=False, options=None, parent=None, panels=None):
+        QMainWindow.__init__(self, parent)
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                 toolbar=toolbar, options=options,
+                                 panels=panels)
+        
+    def setup_widget_layout(self):
+        self.addToolBar(self.toolbar)
+        widget = QWidget()
+        widget.setLayout(self.plot_layout)
+        self.setCentralWidget(widget)
+        
+    def closeEvent(self, event):
+        # Closing panels (necessary if at least one of these panels has no 
+        # parent widget: otherwise, this panel will stay open after the main
+        # window has been closed which is not the expected behavior)
+        for panel in self.panels:
+            self.get_panel(panel).close()
+        QMainWindow.closeEvent(self, event)
 
 
 #===============================================================================
@@ -937,24 +987,7 @@ class ImageWidget(BaseImageWidget, PlotManager):
             for panel in panels:
                 self.add_panel(panel)
 
-class ImageDialog(CurveDialog):
-    """
-    Construct a ImageDialog object: plotting dialog box with integrated 
-    plot manager
-        * wintitle: window title
-        * icon: window icon
-        * edit: editable state
-        * toolbar: show/hide toolbar
-        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
-          (dictionary)
-        * parent: parent widget
-    """
-    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png", edit=False,
-                 toolbar=False, options=None, parent=None):
-        CurveDialog.__init__(self, wintitle=wintitle, icon=icon, edit=edit,
-                                 toolbar=toolbar, options=options,
-                                 parent=parent)
-
+class ImageWidgetMixin(CurveWidgetMixin):
     def register_tools(self):
         """
         Register the plotting dialog box tools: the base implementation 
@@ -986,6 +1019,34 @@ class ImageDialog(CurveDialog):
         self.add_panel(widget.xcsw)
         self.add_panel(widget.ycsw)
         self.add_panel(widget.contrast)
+
+class ImageDialog(CurveDialog, ImageWidgetMixin):
+    """
+    Construct a ImageDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    pass
+
+class ImageWindow(CurveWindow, ImageWidgetMixin):
+    """
+    Construct a ImageWindow object: plotting window with integrated plot manager
+        * wintitle: window title
+        * icon: window icon
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    pass
 
 
 #===============================================================================
