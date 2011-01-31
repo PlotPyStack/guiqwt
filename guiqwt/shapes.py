@@ -743,19 +743,32 @@ class EllipseShape(PolygonShape):
         nx, ny = pos
         if handle == 0:
             x1, y1 = self.points[1]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x0, y0 = self.points[0]
+                x1, y1 = x1+x0-nx, y1+y0-ny
             self.set_xdiameter(nx, ny, x1, y1)
         elif handle == 1:
             x0, y0 = self.points[0]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x1, y1 = self.points[1]
+                x0, y0 = x0+x1-nx, y0+y1-ny
             self.set_xdiameter(x0, y0, nx, ny)
-        elif handle == 2 and self.is_ellipse:
+        elif handle == 2:
             x3, y3 = self.points[3]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x2, y2 = self.points[2]
+                x3, y3 = x3+x2-nx, y3+y2-ny
             self.set_ydiameter(nx, ny, x3, y3)
-        elif handle == 3 and self.is_ellipse:
+        elif handle == 3:
             x2, y2 = self.points[2]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x3, y3 = self.points[3]
+                x2, y2 = x2+x3-nx, y2+y3-ny
             self.set_ydiameter(x2, y2, nx, ny)
-        elif handle in (2, 3):
-            delta = (nx, ny)-self.points[handle]
-            self.points += delta
         elif handle == -1:
             delta = (nx, ny)-self.points.mean(axis=0)
             self.points += delta
