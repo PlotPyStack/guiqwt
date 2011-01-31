@@ -862,7 +862,7 @@ class AnnotatedSegmentTool(SegmentTool):
 
         
 class CrossSectionTool(RectangularShapeTool):
-    TITLE = _("Cross sections")
+    TITLE = _("Cross section")
     ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
     PANEL_IDS = (ID_XCS, ID_YCS)
@@ -904,14 +904,14 @@ class CrossSectionTool(RectangularShapeTool):
         self.register_shape(shape, final=True)
 
 class AverageCrossSectionTool(CrossSectionTool):
-    TITLE = _("Average cross sections")
+    TITLE = _("Average cross section")
     ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
     def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
 class RACrossSectionTool(CrossSectionTool):
-    TITLE = _("Radially-averaged cross sections")
+    TITLE = _("Radially-averaged cross section")
     ICON = "csection_ra.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
     PANEL_IDS = (ID_RACS, )
