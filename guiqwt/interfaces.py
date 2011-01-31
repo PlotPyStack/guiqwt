@@ -190,8 +190,9 @@ class IBasePlotItem(object):
         """
         pass
     
-    def move_local_point_to(self, handle, pos ):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pass
 
     def move_local_shape(self, old_pos, new_pos):

@@ -148,12 +148,14 @@ class AbstractShape(QwtPlotItem):
         plot = self.plot()
         return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         pass
     
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pt = self.canvas_to_axes(pos)
-        self.move_point_to(handle, pt)
+        self.move_point_to(handle, pt, ctrl)
         
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
@@ -281,7 +283,7 @@ class Marker(QwtPlotMarker):
         plot = self.plot()
         return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         x, y = pos
         if self.constraint_cb:
             x, y = self.constraint_cb(self, x, y)
@@ -290,7 +292,9 @@ class Marker(QwtPlotMarker):
         if self.plot():
             self.plot().emit(SIG_MARKER_CHANGED, self)
     
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pt = self.canvas_to_axes(pos)
         self.move_point_to(handle, pt)
         
@@ -515,7 +519,7 @@ class PolygonShape(AbstractShape):
         else:
             return self.points.shape[0]-1
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         self.points[handle, :] = pos
         
     def move_shape(self, old_pos, new_pos):
@@ -548,7 +552,7 @@ class PointShape(PolygonShape):
         """Return the point coordinates"""
         return tuple(self.points[0])
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         self.points[0] = (nx, ny)
 
@@ -578,7 +582,7 @@ class SegmentShape(PolygonShape):
         self.points[1] = (self.points[0]+self.points[2])/2.
         super(SegmentShape, self).draw(painter, xMap, yMap, canvasRect)
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         if handle == 0:
             self.points[0] = (nx, ny)
@@ -610,7 +614,7 @@ class RectangleShape(PolygonShape):
     def get_rect(self):
         return tuple(self.points[0])+tuple(self.points[2])
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         x1, y1 = self.points[0]
         x2, y2 = self.points[2]
@@ -735,7 +739,7 @@ class EllipseShape(PolygonShape):
     def get_yline(self):
         return QLineF(*(tuple(self.points[2])+tuple(self.points[3])))
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         if handle == 0:
             x1, y1 = self.points[1]
@@ -806,7 +810,7 @@ class Axes(PolygonShape):
         self.axesparam.read_config(CONF, section, option)
         self.axesparam.update_axes(self)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         _nx, _ny = pos
         p0, p1, _p3, p2 = list(self.points)
         d1x = p1[0]-p0[0]
@@ -975,11 +979,13 @@ class XRangeSelection(AbstractShape):
         inside = bool(x0<x<x1)
         return dist, handle, inside, None
         
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         val = self.plot().invTransform(self.xAxis(), pos.x())
         self.move_point_to(handle, (val, 0))
         
-    def move_point_to(self, hnd, pos):
+    def move_point_to(self, hnd, pos, ctrl=None):
         val, _ = pos
         if hnd == 0:
             self._min = val

@@ -200,8 +200,8 @@ class AnnotatedShape(AbstractShape):
         return self.shape.poly_hit_test(self.plot(),
                                         self.xAxis(), self.yAxis(), pos)
             
-    def move_point_to(self, handle, pos):
-        self.shape.move_point_to(handle, pos)
+    def move_point_to(self, handle, pos, ctrl=None):
+        self.shape.move_point_to(handle, pos, ctrl)
         self.set_label_position()
         if self.plot():
             self.plot().emit(SIG_ANNOTATION_CHANGED, self)

@@ -206,8 +206,9 @@ class AbstractLabelItem(QwtPlotItem):
         if self.selected:
             self.select()
     
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         if handle != -1:
             return
     

@@ -250,7 +250,7 @@ class GridItem(QwtPlotGrid):
     def hit_test(self, pos):
         return sys.maxint, 0, False, None
 
-    def move_local_point_to(self, handle, pos ):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -438,7 +438,7 @@ class CurveItem(QwtPlotCurve):
         ay = self.yAxis()
         return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
 
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return
         if handle < 0 or handle > self._x.shape[0]:

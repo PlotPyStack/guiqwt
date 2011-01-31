@@ -786,7 +786,7 @@ def compute_radial_section(item, x0, y0, x1, y1, dyfunc=None):
     ixc, iyc = item.get_closest_pixel_indexes(.5*(x0+x1), .5*(y0+y1))
     iradius = int(np.floor(.5*np.sqrt(.5*(ix1-ix0)**2+.5*(iy1-iy0)**2)+.5))
     if iradius == 0:
-        return np.array([]), np.array([])
+        return np.array([]), np.array([]), np.array([])
     data = item.data
     ydata = np.zeros((iradius+1,), dtype=np.float64)
     ycount = np.zeros((iradius+1,), dtype=np.float64)

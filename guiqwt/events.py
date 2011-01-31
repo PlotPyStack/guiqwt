@@ -454,7 +454,8 @@ class ObjectHandler(object):
         if self.inside:
             self.active.move_local_shape(self.last_pos, event.pos())
         else:
-            self.active.move_local_point_to(self.handle, event.pos())
+            ctrl = event.modifiers() & Qt.ControlModifier == Qt.ControlModifier
+            self.active.move_local_point_to(self.handle, event.pos(), ctrl)
         self.last_pos = QPoint(event.pos())
         filter.plot.replot()
         

@@ -581,8 +581,9 @@ class BaseImageItem(QwtPlotItem):
     def set_item_parameters(self, itemparams):
         self.border_rect.set_item_parameters(itemparams)
 
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -1093,8 +1094,9 @@ class TrImageItem(RawImageItem):
         painter.drawImage(srcrect, self._image, srcrect)
         
     #---- IBasePlotItem API ----------------------------------------------------
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
         nx, ny = self.canvas_to_axes(pos)
         handles = self.itr*self.points
@@ -1658,8 +1660,9 @@ class ImageFilterItem(BaseImageItem):
         self.imagefilterparam.update_imagefilter(self)
         super(ImageFilterItem, self).set_item_parameters(itemparams)
 
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         npos = self.canvas_to_axes(pos)
         self.border_rect.move_point_to(handle, npos)
 
