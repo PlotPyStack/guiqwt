@@ -654,7 +654,7 @@ class CrossSectionWidget(PanelWidget):
             self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
                          self.cs_plot.toggle_autoscale)
             self.connect(other.refresh_ac, SIGNAL("triggered()"),
-                         self.cs_plot.update_plot)
+                         lambda: self.cs_plot.update_plot())
                          
     def configure_panel(self):
         """Configure panel"""
@@ -693,7 +693,7 @@ class CrossSectionWidget(PanelWidget):
                                    toggled=self.cs_plot.toggle_autoscale)
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
-                                   triggered=self.cs_plot.update_plot)
+                                   triggered=lambda: self.cs_plot.update_plot())
 
         self.peritem_ac.setChecked(True)
         self.autoscale_ac.setChecked(True)
