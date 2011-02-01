@@ -1184,19 +1184,19 @@ class CurvePlot(BasePlot):
                 self.replot()
             
     #---- Public API -----------------------------------------------------------    
-    def get_axis_direction(self, axis):
+    def get_axis_direction(self, axis_id):
         """
         Return axis direction of increasing values
-            * axis: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         return self.axes_reverse[axis_id]
             
-    def set_axis_direction(self, axis, reverse=False):
+    def set_axis_direction(self, axis_id, reverse=False):
         """
         Set axis direction of increasing values
-            * axis: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
             * reverse: False (default)
                 - x-axis values increase from left to right
@@ -1205,7 +1205,7 @@ class CurvePlot(BasePlot):
                 - x-axis values increase from right to left
                 - y-axis values increase from top to bottom
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         if reverse != self.axes_reverse[axis_id]:
             self.replot()
             self.axes_reverse[axis_id] = reverse

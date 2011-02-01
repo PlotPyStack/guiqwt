@@ -206,6 +206,57 @@ class BasePlot(QwtPlot):
         for axis_id in self.AXIS_IDS:
             self.update_axis_style(axis_id)
 
+    def get_axis_limits(self, axis_id):
+        """Return axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        sdiv = self.axisScaleDiv(axis_id)
+        return sdiv.lowerBound(), sdiv.upperBound()
+            
+    def set_axis_limits(self, axis_id, vmin, vmax):
+        """Set axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        self.setAxisScale(axis_id, vmin, vmax)
+
+    def get_axis_scale(self, axis):
+        """Return the name ('lin' or 'log') of the scale used by axis"""
+        engine = self.axisScaleEngine(axis)
+        for axis_label, axis_type in self.AXIS_TYPES.items():
+            if isinstance(engine, axis_type):
+                return axis_label
+        return "lin"  # unknown default to linear
+
+    def set_axis_scale(self, axis, scale):
+        """Set axis scale
+        Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
+        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
+
+    def set_scales(self, xscale, yscale):
+        """Set active curve scales
+        Example: self.set_scales('lin', 'lin')"""
+        ax, ay = self.get_active_axes()
+        self.set_axis_scale(ax, xscale)
+        self.set_axis_scale(ay, yscale)
+        self.replot()
+
+    def enable_used_axes(self):
+        """
+        Enable only used axes
+        For now, this is needed only by the pyplot interface
+        """
+        for axis in self.AXIS_IDS:
+            self.enableAxis(axis, True)
+        self.disable_unused_axes()
+
+    def disable_unused_axes(self):
+        """Disable unused axes"""
+        used_axes = set()
+        for item in self.get_items():
+            used_axes.add(item.xAxis())
+            used_axes.add(item.yAxis())
+        unused_axes = set(self.AXIS_IDS) - set(used_axes)
+        for axis in unused_axes:
+            self.enableAxis(axis, False)
+
     def get_items(self, z_sorted=False, item_type=None):
         """Return widget's item list
         (items are based on IBasePlotItem's interface)"""
@@ -570,46 +621,6 @@ class BasePlot(QwtPlot):
                 selobj, distance, handle, inside = obj, d, _handle, _inside
                 break
         return selobj, distance, handle, inside
-
-    def get_axis_scale(self, axis):
-        """Return the name ('lin' or 'log') of the scale used by axis"""
-        engine = self.axisScaleEngine(axis)
-        for axis_label, axis_type in self.AXIS_TYPES.items():
-            if isinstance(engine, axis_type):
-                return axis_label
-        return "lin"  # unknown default to linear
-
-    def set_axis_scale(self, axis, scale):
-        """Set axis scale
-        Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
-        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
-
-    def set_scales(self, xscale, yscale):
-        """Set active curve scales
-        Example: self.set_scales('lin', 'lin')"""
-        ax, ay = self.get_active_axes()
-        self.set_axis_scale(ax, xscale)
-        self.set_axis_scale(ay, yscale)
-        self.replot()
-
-    def enable_used_axes(self):
-        """
-        Enable only used axes
-        For now, this is needed only by the pyplot interface
-        """
-        for axis in self.AXIS_IDS:
-            self.enableAxis(axis, True)
-        self.disable_unused_axes()
-
-    def disable_unused_axes(self):
-        """Disable unused axes"""
-        used_axes = set()
-        for item in self.get_items():
-            used_axes.add(item.xAxis())
-            used_axes.add(item.yAxis())
-        unused_axes = set(self.AXIS_IDS) - set(used_axes)
-        for axis in unused_axes:
-            self.enableAxis(axis, False)
         
     def get_context_menu(self):
         """Return widget context menu"""

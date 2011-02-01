@@ -374,7 +374,7 @@ class CrossSectionPlot(CurvePlot):
         self.connect(plot, SIG_PLOT_LABELS_CHANGED, self.plot_labels_changed)
         self.connect(plot, SIG_AXIS_DIRECTION_CHANGED, self.axis_dir_changed)
         self.plot_labels_changed(plot)
-        for axis_id in plot.AXES:
+        for axis_id in plot.AXIS_IDS:
             self.axis_dir_changed(plot, axis_id)
         self.items_changed(plot)
         

@@ -1170,7 +1170,7 @@ def get_plot_source_rect(plot, p0, p1):
     Return source rect in plot coordinates
     from top-left and bottom-right QPoint objects in canvas coordinates
     """
-    ax, ay = plot.AXES['bottom'], plot.AXES['left']
+    ax, ay = plot.X_BOTTOM, plot.Y_LEFT
     p0x, p0y = plot.invTransform(ax, p0.x()), plot.invTransform(ay, p0.y())
     p1x, p1y = plot.invTransform(ax, p1.x()), plot.invTransform(ay, p1.y())
     w, h = (p1x-p0x+1), (p1y-p0y+1)
