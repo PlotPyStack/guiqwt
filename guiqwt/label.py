@@ -426,7 +426,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
         return (self.__class__, (self.labelparam, []))
 
     def include_item(self, item):
-        return LegendBoxItem.include_item(self) and item in self.itemlist
+        return LegendBoxItem.include_item(self, item) and item in self.itemlist
         
     def add_item(self, item):
         self.itemlist.append(item)
