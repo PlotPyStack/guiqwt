@@ -796,7 +796,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         if self.edit:
             self.button_layout = QHBoxLayout()
             self.install_button_layout()
-            self.vlayout.addLayout(self.button_layout)
+            vlayout.addLayout(self.button_layout)
         
     def install_button_layout(self):
         """
