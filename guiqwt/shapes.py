@@ -75,11 +75,11 @@ from math import fabs, sqrt, sin, cos, pi
 
 from PyQt4.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
 from PyQt4.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
-from PyQt4.Qwt5 import QwtPlotItem, QwtSymbol, QwtPlotMarker
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,

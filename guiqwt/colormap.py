@@ -13,12 +13,12 @@ The `colormap` module contains definition of common colormaps and tools
 to manipulate and create them
 """
 
-from PyQt4.Qwt5 import QwtLinearColorMap, QwtDoubleInterval, toQImage
 from PyQt4.QtGui import QColor, QIcon, QPixmap
 
 from numpy import array, uint8, linspace, zeros, newaxis
 
 # Local imports
+from guiqwt.transitional import QwtLinearColorMap, QwtDoubleInterval, toQImage
 from guiqwt import _cm # Reuse matplotlib data
 
 

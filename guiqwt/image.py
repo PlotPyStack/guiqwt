@@ -140,11 +140,11 @@ from math import fabs
 
 from PyQt4.QtGui import QColor, QImage
 from PyQt4.QtCore import QRectF, QPointF, QRect
-from PyQt4.Qwt5 import QwtPlot, QwtPlotItem, QwtDoubleInterval
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlot, QwtPlotItem, QwtDoubleInterval
 from guiqwt.config import _
 from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,

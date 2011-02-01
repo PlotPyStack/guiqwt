@@ -9,9 +9,6 @@
 guiqwt
 ======
 
-Extension to PyQt4.Qwt5:
-set of tools for curve and image plotting
-
 Copyright © 2009-2010 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License

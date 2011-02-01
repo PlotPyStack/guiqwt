@@ -102,7 +102,6 @@ import numpy as np
 
 from PyQt4.QtGui import QPen, QBrush, QColor, QFont, QFontDialog, QTransform
 from PyQt4.QtCore import Qt, QSize, QPointF
-from PyQt4.Qwt5 import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,
@@ -116,6 +115,7 @@ from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 from guiqwt.signals import SIG_ITEMS_CHANGED

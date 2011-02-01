@@ -56,9 +56,8 @@ Reference
 
 from numpy import arange, array, zeros, meshgrid, ndarray
 
-from PyQt4.Qwt5 import QwtPlot
-
 # Local imports
+from guiqwt.transitional import QwtPlot
 from guiqwt.config import _, CONF, make_title
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem

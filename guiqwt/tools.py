@@ -234,7 +234,6 @@ import sys, numpy as np, weakref
 from PyQt4.QtCore import Qt, QObject, SIGNAL
 from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
                          QMessageBox, QPrintDialog, QFont, QAction, QToolButton)
-from PyQt4.Qwt5 import QwtPlotPrintFilter
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
@@ -243,6 +242,7 @@ from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
 
 #Local imports
+from guiqwt.transitional import QwtPlotPrintFilter
 from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, QtDragHandler, ZoomRectHandler,

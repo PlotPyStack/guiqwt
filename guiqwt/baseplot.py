@@ -47,12 +47,12 @@ import numpy as np
 
 from PyQt4.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
 from PyQt4.QtCore import QSize, Qt
-from PyQt4.Qwt5 import (QwtPlot, QwtLinearScaleEngine, QwtLog10ScaleEngine,
-                        QwtText, QwtPlotCanvas)
 
 from guidata.configtools import get_font
 
 # Local imports
+from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
+                                 QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType

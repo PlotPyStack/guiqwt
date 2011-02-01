@@ -46,11 +46,11 @@ Reference
 
 from PyQt4.QtGui import QPen, QColor, QTextDocument
 from PyQt4.QtCore import QRectF
-from PyQt4.Qwt5 import QwtPlotItem
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlotItem
 from guiqwt.config import CONF
 from guiqwt.curve import CurveItem
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType

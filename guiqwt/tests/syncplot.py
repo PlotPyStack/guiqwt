@@ -7,13 +7,16 @@
 
 """CurvePlotDialog test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import QFont
+
+from guiqwt.transitional import QwtPlot
 
 from guiqwt.plot import CurvePlotDialog, CurvePlotWidget, PlotManager
 from guiqwt.builder import make
 from guiqwt.curve import CurvePlot
-from PyQt4.Qwt5 import QwtPlot
-SHOW = True # Show test in GUI-based test launcher
+
 
 class MyPlotDialog(CurvePlotDialog):
     def create_plot(self, options):

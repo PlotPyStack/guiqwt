@@ -44,7 +44,6 @@ Reference
 import numpy as np
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
-from PyQt4.Qwt5 import QwtPlotCurve
 
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem
@@ -53,6 +52,7 @@ from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import add_actions, create_action
 
 # Local imports
+from guiqwt.transitional import QwtPlotCurve
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
                                IVoiImageItemType, IPanel)

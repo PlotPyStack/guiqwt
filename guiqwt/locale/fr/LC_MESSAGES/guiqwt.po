@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-01-31 10:55+Paris, Madrid\n"
+"POT-Creation-Date: 2011-01-31 16:56+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,7 +81,7 @@ msgstr "Haut"
 msgid "Unknown file extension"
 msgstr "Extension de fichier inconnue"
 
-#: guiqwt\baseplot.py:645 guiqwt\shapes.py:777 guiqwt\tools.py:830
+#: guiqwt\baseplot.py:645 guiqwt\shapes.py:794 guiqwt\tools.py:830
 msgid "Axes"
 msgstr "Axes"
 
@@ -111,9 +111,9 @@ msgstr "Histogramme"
 
 #: guiqwt\builder.py:536 guiqwt\builder.py:563 guiqwt\builder.py:587
 #: guiqwt\builder.py:607 guiqwt\builder.py:624 guiqwt\builder.py:666
-#: guiqwt\builder.py:688 guiqwt\image.py:688 guiqwt\image.py:780
-#: guiqwt\image.py:964 guiqwt\image.py:1217 guiqwt\image.py:1327
-#: guiqwt\image.py:1421 guiqwt\image.py:1778 guiqwt\styles.py:980
+#: guiqwt\builder.py:688 guiqwt\image.py:689 guiqwt\image.py:781
+#: guiqwt\image.py:965 guiqwt\image.py:1219 guiqwt\image.py:1329
+#: guiqwt\image.py:1423 guiqwt\image.py:1781 guiqwt\styles.py:980
 msgid "Image"
 msgstr "Image"
 
@@ -228,6 +228,14 @@ msgstr "Échelle automatique"
 #: guiqwt\cross_section.py:694
 msgid "Refresh"
 msgstr "Rafraîchir"
+
+#: guiqwt\cross_section.py:830 guiqwt\tools.py:914
+msgid "Radially-averaged cross section"
+msgstr "Profil radial moyen"
+
+#: guiqwt\cross_section.py:831
+msgid "Activate the radially-averaged cross section tool"
+msgstr "Activer l'outil de profil radial moyen"
 
 #: guiqwt\curve.py:722
 msgid "Move to back"
@@ -400,11 +408,11 @@ msgstr ""
 "Supprime les bords (pourcentage choisi) de l'histogramme des niveaux de "
 "l'image, puis affiche l'image résultante"
 
-#: guiqwt\image.py:872
+#: guiqwt\image.py:873
 msgid "Quadrilaterals"
 msgstr "Quadrilatères"
 
-#: guiqwt\plot.py:738 guiqwt\pyplot.py:136
+#: guiqwt\plot.py:718 guiqwt\pyplot.py:136
 msgid "Tools"
 msgstr "Outils"
 
@@ -432,15 +440,15 @@ msgstr "Facteur de zoom :"
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: guiqwt\shapes.py:221
+#: guiqwt\shapes.py:223
 msgid "Marker"
 msgstr "Marqueur"
 
-#: guiqwt\shapes.py:394
+#: guiqwt\shapes.py:398
 msgid "Shape"
 msgstr "Forme"
 
-#: guiqwt\shapes.py:911
+#: guiqwt\shapes.py:928
 msgid "Range"
 msgstr "Intervalle"
 
@@ -1519,10 +1527,6 @@ msgstr "Profil rectiligne"
 #: guiqwt\tools.py:907
 msgid "Average cross section"
 msgstr "Profil rectiligne moyen"
-
-#: guiqwt\tools.py:914
-msgid "Radially-averaged cross section"
-msgstr "Profil radial moyen"
 
 #: guiqwt\tools.py:932
 msgid "Rectangle zoom"
