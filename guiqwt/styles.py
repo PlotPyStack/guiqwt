@@ -1159,7 +1159,7 @@ class ImageFilterParam(BaseImageParam):
                                          self.xmax, self.ymax)
 
 
-class TrImageParam(BaseImageParam):
+class TrImageParam(RawImageParam):
     _crop = BeginGroup(_("Crop"))
     crop_left = IntItem(_("Left"), default=0)
     crop_right = IntItem(_("Right"), default=0)
@@ -1186,7 +1186,7 @@ class TrImageParam(BaseImageParam):
         # directly in this DataSet
 
     def update_image(self, image):
-        BaseImageParam.update_image(self, image)
+        RawImageParam.update_image(self, image)
         image.set_transform(*self.get_transform())
 
     def get_transform(self):
