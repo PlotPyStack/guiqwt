@@ -259,7 +259,7 @@ class BaseImageItem(QwtPlotItem):
 
     def get_filename(self):
         fname = self._filename
-        if not osp.isfile(fname):
+        if fname is not None and not osp.isfile(fname):
             other_try = osp.join(os.getcwdu(), osp.basename(fname))
             if osp.isfile(other_try):
                 self.set_filename(other_try)
