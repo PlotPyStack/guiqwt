@@ -217,6 +217,17 @@ class BasePlot(QwtPlot):
         axis_id = self.get_axis_id(axis_id)
         self.setAxisScale(axis_id, vmin, vmax)
 
+    def set_axis_ticks(self, axis_id, stepsize=0.0, nmajor=None, nminor=None):
+        """Set axis major tick step size or maximum number of major ticks
+        and maximum of minor ticks"""
+        axis_id = self.get_axis_id(axis_id)
+        vmin, vmax = self.get_axis_limits(axis_id)
+        self.setAxisScale(axis_id, vmin, vmax, stepsize)
+        if nmajor is not None:
+            self.setAxisMaxMajor(axis_id, nmajor)
+        if nminor is not None:
+            self.setAxisMaxMinor(axis_id, nminor)
+
     def get_axis_scale(self, axis):
         """Return the name ('lin' or 'log') of the scale used by axis"""
         engine = self.axisScaleEngine(axis)
@@ -700,30 +711,8 @@ class BasePlot(QwtPlot):
         """Re-apply the axis scales so as to disable autoscaling
         without changing the view"""
         for axis_id in self.AXIS_IDS:
-            axis = self.axisScaleDiv(axis_id)
-            lb = axis.lowerBound()
-            hb = axis.upperBound()
-            self.setAxisScale(axis_id, lb, hb)
-
-
-    def _set_axis_range(self, axis, low, high, stepsize, nmajor, nminor):
-        self.setAxisScale(axis, low, high, stepsize)
-        if nmajor is not None:
-            self.setAxisMaxMajor(axis, nmajor)
-        if nminor is not None:
-            self.setAxisMaxMinor(axis, nminor)
-
-    def set_range_top(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.TOP_AXIS, low, high, stepsize, nmajor, nminor)
-
-    def set_range_left(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.LEFT_AXIS, low, high, stepsize, nmajor, nminor)
-
-    def set_range_right(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.RIGHT_AXIS, low, high, stepsize, nmajor, nminor)
-
-    def set_range_bottom(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.BOTTOM_AXIS, low, high, stepsize, nmajor, nminor)
+            vmin, vmax = self.get_axis_limits(axis_id)
+            self.set_axis_limits(axis_id, vmin, vmax)
 
     def invalidate(self):
         """Invalidate paint cache and schedule redraw
