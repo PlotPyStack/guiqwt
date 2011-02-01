@@ -115,9 +115,8 @@ from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
 
 # Local imports
-from guiqwt.transitional import QwtPlotCurve, QwtSymbol, QwtPlotMarker
+from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
-from guiqwt.baseplot import BasePlot
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 from guiqwt.signals import SIG_ITEMS_CHANGED
 
@@ -590,9 +589,9 @@ class AxeStyleParam(DataSet):
 class AxesParam(DataSet):
     xparams = BeginGroup(_("X Axis") )
     xaxis = ChoiceItem(_("Position"),
-                       [(BasePlot.X_BOTTOM, _("bottom")),
-                        (BasePlot.X_TOP, _("top"))],
-                       default=BasePlot.X_BOTTOM, help=_("X-axis position"))
+                       [(QwtPlot.xBottom, _("bottom")),
+                        (QwtPlot.xTop, _("top"))],
+                       default=QwtPlot.xBottom, help=_("X-axis position"))
     xscale = ChoiceItem(_("Scale"),
                         [("lin", _("linear")), ("log", _("logarithmic"))],
                         default="lin")
@@ -601,9 +600,9 @@ class AxesParam(DataSet):
     _xparams = EndGroup("end X")
     yparams = BeginGroup(_("Y Axis") )
     yaxis = ChoiceItem(_("Position"),
-                       [(BasePlot.Y_LEFT,  _("left")),
-                        (BasePlot.Y_RIGHT, _("right"))],
-                       default=BasePlot.Y_LEFT, help=_("Y-axis position"))
+                       [(QwtPlot.yLeft,  _("left")),
+                        (QwtPlot.yRight, _("right"))],
+                       default=QwtPlot.yLeft, help=_("Y-axis position"))
     yscale = ChoiceItem(_("Scale"),
                         [("lin", _("linear")), ("log", _("logarithmic"))],
                         default="lin")
