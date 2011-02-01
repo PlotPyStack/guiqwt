@@ -223,8 +223,8 @@ class LevelsHistogram(CurvePlot):
         self.set_active_item(self.range)
 
         self.setMinimumHeight(80)
-        self.setAxisMaxMajor(self.yLeft, 5)
-        self.setAxisMaxMinor(self.yLeft, 0)
+        self.setAxisMaxMajor(self.Y_LEFT, 5)
+        self.setAxisMaxMinor(self.Y_LEFT, 0)
 
         if parent is None:
             self.set_axis_title('bottom', 'Levels')

@@ -11,8 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import QFont
 
-from guiqwt.transitional import QwtPlot
-
+from guiqwt.baseplot import BasePlot
 from guiqwt.plot import CurvePlotDialog, CurvePlotWidget, PlotManager
 from guiqwt.builder import make
 from guiqwt.curve import CurvePlot
@@ -32,10 +31,10 @@ class MyPlotDialog(CurvePlotDialog):
         self.plotwidget.add_plot(plot3, 1, 0, "3")
         self.plotwidget.add_plot(plot4, 1, 1, "4")
         self.plotwidget.finalize()
-        manager.synchronize_axis(QwtPlot.xBottom, ["1","3"])
-        manager.synchronize_axis(QwtPlot.xBottom, ["2","4"])
-        manager.synchronize_axis(QwtPlot.yLeft,   ["1","2"])
-        manager.synchronize_axis(QwtPlot.yLeft,   ["3","4"])
+        manager.synchronize_axis(BasePlot.X_BOTTOM, ["1","3"])
+        manager.synchronize_axis(BasePlot.X_BOTTOM, ["2","4"])
+        manager.synchronize_axis(BasePlot.Y_LEFT,   ["1","2"])
+        manager.synchronize_axis(BasePlot.Y_LEFT,   ["3","4"])
         
         self.layout.addWidget(self.plotwidget, 0, 0)
 

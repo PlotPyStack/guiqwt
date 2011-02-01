@@ -1119,53 +1119,6 @@ class CurvePlot(BasePlot):
         self.replot()
 
     #---- BasePlot API ---------------------------------------------------------
-    def get_axis_title(self, axis):
-        """
-        Reimplement BasePlot method
-        
-        Return axis title
-            * axis: 'bottom', 'left', 'top' or 'right'
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        return super(CurvePlot, self).get_axis_title(axis)
-        
-    def set_axis_title(self, axis, title):
-        """
-        Reimplement BasePlot method
-        
-        Set axis title
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * title: string
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_title(axis, title)
-
-    def set_axis_font(self, axis, font):
-        """
-        Reimplement BasePlot method
-        
-        Set axis font
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * font: QFont instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_font(axis, font)
-    
-    def set_axis_color(self, axis, color):
-        """
-        Reimplement BasePlot method
-        
-        Set axis color
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * color: color name (string) or QColor instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_color(axis, color)
-
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
@@ -1234,7 +1187,7 @@ class CurvePlot(BasePlot):
     def get_axis_direction(self, axis):
         """
         Return axis direction of increasing values
-            * axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
         """
         axis_id = self.AXES.get(axis, axis)
@@ -1243,7 +1196,7 @@ class CurvePlot(BasePlot):
     def set_axis_direction(self, axis, reverse=False):
         """
         Set axis direction of increasing values
-            * axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
             * reverse: False (default)
                 - x-axis values increase from left to right
@@ -1311,16 +1264,20 @@ class CurvePlot(BasePlot):
     def set_plot_limits(self, x0, x1, y0, y1):
         """Set plot scale limits"""
         dy = y1-y0
-        if self.get_axis_direction(self.yLeft):
-            self.setAxisScale(self.yLeft, y0+dy, y0)
+        if self.get_axis_direction(self.Y_LEFT):
+            self.setAxisScale(self.Y_LEFT, y0+dy, y0)
         else:
-            self.setAxisScale(self.yLeft, y0, y0+dy)
+            self.setAxisScale(self.Y_LEFT, y0, y0+dy)
         dx = x1-x0
-        if self.get_axis_direction(self.xBottom):
-            self.setAxisScale(self.xBottom, x0+dx, x0)
+        if self.get_axis_direction(self.X_BOTTOM):
+            self.setAxisScale(self.X_BOTTOM, x0+dx, x0)
         else:
-            self.setAxisScale(self.xBottom, x0, x0+dx)
+            self.setAxisScale(self.X_BOTTOM, x0, x0+dx)
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.yLeft)
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.xBottom)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
+        
+    def get_plot_limits(self):
+        """Return plot scale limits"""
+        pass
         

@@ -115,8 +115,9 @@ from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
 
 # Local imports
-from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
+from guiqwt.transitional import QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
+from guiqwt.baseplot import BasePlot
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 from guiqwt.signals import SIG_ITEMS_CHANGED
 
@@ -589,9 +590,9 @@ class AxeStyleParam(DataSet):
 class AxesParam(DataSet):
     xparams = BeginGroup(_("X Axis") )
     xaxis = ChoiceItem(_("Position"),
-                       [(QwtPlot.xBottom, _("bottom")),
-                        (QwtPlot.xTop, _("top"))],
-                       default=QwtPlot.xBottom, help=_("X-axis position"))
+                       [(BasePlot.X_BOTTOM, _("bottom")),
+                        (BasePlot.X_TOP, _("top"))],
+                       default=BasePlot.X_BOTTOM, help=_("X-axis position"))
     xscale = ChoiceItem(_("Scale"),
                         [("lin", _("linear")), ("log", _("logarithmic"))],
                         default="lin")
@@ -600,9 +601,9 @@ class AxesParam(DataSet):
     _xparams = EndGroup("end X")
     yparams = BeginGroup(_("Y Axis") )
     yaxis = ChoiceItem(_("Position"),
-                       [(QwtPlot.yLeft, _("left")),
-                        (QwtPlot.yRight, _("right"))],
-                       default=QwtPlot.yLeft, help=_("Y-axis position"))
+                       [(BasePlot.Y_LEFT,  _("left")),
+                        (BasePlot.Y_RIGHT, _("right"))],
+                       default=BasePlot.Y_LEFT, help=_("Y-axis position"))
     yscale = ChoiceItem(_("Scale"),
                         [("lin", _("linear")), ("log", _("logarithmic"))],
                         default="lin")
@@ -611,33 +612,33 @@ class AxesParam(DataSet):
     _yparams = EndGroup("end Y")
 
     def update_param(self, item):
-        sw = item.plot()
+        plot = item.plot()
         self.xaxis = item.xAxis()
-        self.xscale = sw.get_axis_scale(self.xaxis)
-        xaxis = sw.axisScaleDiv(self.xaxis)
+        self.xscale = plot.get_axis_scale(self.xaxis)
+        xaxis = plot.axisScaleDiv(self.xaxis)
         self.xmin = xaxis.lowerBound()
         self.xmax = xaxis.upperBound()
         self.yaxis = item.yAxis()
-        self.yscale = sw.get_axis_scale(self.yaxis)
-        yaxis = sw.axisScaleDiv(self.yaxis)
+        self.yscale = plot.get_axis_scale(self.yaxis)
+        yaxis = plot.axisScaleDiv(self.yaxis)
         self.ymin = yaxis.lowerBound()
         self.ymax = yaxis.upperBound()
 
     def update_axes(self, item):
-        sw = item.plot()
-        sw.grid.setAxis(self.xaxis, self.yaxis)
+        plot = item.plot()
+        plot.grid.setAxis(self.xaxis, self.yaxis)
         # x
         item.setXAxis(self.xaxis)
-        sw.enableAxis(self.xaxis, True)
-        sw.set_axis_scale(self.xaxis, self.xscale)
-        sw.setAxisScale(self.xaxis, self.xmin, self.xmax)
+        plot.enableAxis(self.xaxis, True)
+        plot.set_axis_scale(self.xaxis, self.xscale)
+        plot.setAxisScale(self.xaxis, self.xmin, self.xmax)
         # y
         item.setYAxis(self.yaxis)
-        sw.enableAxis(self.yaxis, True)
-        sw.set_axis_scale(self.yaxis, self.yscale)
-        sw.setAxisScale(self.yaxis, self.ymin, self.ymax)
+        plot.enableAxis(self.yaxis, True)
+        plot.set_axis_scale(self.yaxis, self.yscale)
+        plot.setAxisScale(self.yaxis, self.ymin, self.ymax)
         
-        sw.disable_unused_axes()
+        plot.disable_unused_axes()
 
 class ImageAxesParam(DataSet):
     xparams = BeginGroup(_("X Axis") )
@@ -654,21 +655,20 @@ class ImageAxesParam(DataSet):
     _zparams = EndGroup("end Z")
 
     def update_param(self, item):
-        sw = item.plot()
-        xaxis = sw.axisScaleDiv(item.xAxis())
+        plot = item.plot()
+        xaxis = plot.axisScaleDiv(item.xAxis())
         self.xmin = xaxis.lowerBound()
         self.xmax = xaxis.upperBound()
-        yaxis = sw.axisScaleDiv(item.yAxis())
+        yaxis = plot.axisScaleDiv(item.yAxis())
         self.ymin = yaxis.lowerBound()
         self.ymax = yaxis.upperBound()
         self.zmin, self.zmax = item.min, item.max
 
     def update_axes(self, item):
-        sw = item.plot()
-        sw.setAxisScale(item.xAxis(), self.xmin, self.xmax)
-        sw.setAxisScale(item.yAxis(), self.ymin, self.ymax)
+        plot = item.plot()
+        plot.set_plot_limits(self.xmin, self.xmax, self.ymin, self.ymax)
         item.set_lut_range([self.zmin, self.zmax])
-        sw.update_colormap_axis(item)
+        plot.update_colormap_axis(item)
 
 # ===================================================
 # Marker parameters

@@ -57,8 +57,8 @@ Reference
 from numpy import arange, array, zeros, meshgrid, ndarray
 
 # Local imports
-from guiqwt.transitional import QwtPlot
 from guiqwt.config import _, CONF, make_title
+from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
@@ -103,13 +103,6 @@ class PlotItemBuilder(object):
     This is just a bare class used to regroup
     a set of factory functions in a single object
     """
-    AXES = {
-            'bottom': QwtPlot.xBottom,
-            'left'  : QwtPlot.yLeft,
-            'top'   : QwtPlot.xTop,
-            'right' : QwtPlot.yRight,
-            }
-    
     def __init__(self):
         self.style = style_generator()
         
@@ -165,10 +158,10 @@ class PlotItemBuilder(object):
     def __set_curve_axes(self, curve, xaxis, yaxis):
         """Set curve axes"""
         for axis in (xaxis, yaxis):
-            if axis not in self.AXES:
+            if axis not in BasePlot.AXIS_NAMES:
                 raise RuntimeError("Unknown axis %s" % axis)
-        curve.setXAxis(self.AXES[xaxis])
-        curve.setYAxis(self.AXES[yaxis])
+        curve.setXAxis(BasePlot.AXIS_NAMES[xaxis])
+        curve.setYAxis(BasePlot.AXIS_NAMES[yaxis])
 
     def __set_param(self, param, title, color, linestyle, linewidth,
                     marker, markersize, markerfacecolor, markeredgecolor,

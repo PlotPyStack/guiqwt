@@ -1890,7 +1890,7 @@ class ImagePlot(CurvePlot):
                                         xlabel=xlabel, ylabel=ylabel,
                                         gridparam=gridparam, section=section)
 
-        self.colormap_axis = QwtPlot.yRight
+        self.colormap_axis = self.Y_RIGHT
         axiswidget = self.axisWidget(self.colormap_axis)
         axiswidget.setColorBarEnabled(True)
         self.enableAxis(self.colormap_axis)
@@ -1920,10 +1920,10 @@ class ImagePlot(CurvePlot):
         
     def get_current_aspect_ratio(self):
         """Return current aspect ratio"""
-        dx = self.axisScaleDiv(self.xBottom).range()
-        dy = self.axisScaleDiv(self.yLeft).range()
-        h = self.canvasMap(self.yLeft).pDist()
-        w = self.canvasMap(self.xBottom).pDist()
+        dx = self.axisScaleDiv(self.X_BOTTOM).range()
+        dy = self.axisScaleDiv(self.Y_LEFT).range()
+        h = self.canvasMap(self.Y_LEFT).pDist()
+        w = self.canvasMap(self.X_BOTTOM).pDist()
         return fabs((h*dx)/(w*dy))
             
     def get_aspect_ratio(self):
@@ -1941,8 +1941,8 @@ class ImagePlot(CurvePlot):
     def apply_aspect_ratio(self, full_scale=False):
         if not self.isVisible():
             return
-        ymap = self.canvasMap(self.yLeft)
-        xmap = self.canvasMap(self.xBottom)
+        ymap = self.canvasMap(self.Y_LEFT)
+        xmap = self.canvasMap(self.X_BOTTOM)
         h = ymap.pDist()
         w = xmap.pDist()
         dx1, dy1 = xmap.sDist(), fabs(ymap.sDist())

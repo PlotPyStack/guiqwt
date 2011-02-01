@@ -81,17 +81,15 @@ class BasePlot(QwtPlot):
     Signals:
     SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED
     """
-    # Gestion des axes
-    AXES = {
-            'bottom': QwtPlot.xBottom,
-            'left': QwtPlot.yLeft,
-            'top': QwtPlot.xTop,
-            'right': QwtPlot.yRight,
-            }
-    
+    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = (QwtPlot.yLeft, QwtPlot.yRight,
+                                        QwtPlot.xBottom, QwtPlot.xTop)
+#    # To be replaced by (in the near future):
+#    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = range(4)
+    AXIS_IDS = (Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP)
+    AXIS_NAMES = {'left': Y_LEFT, 'right': Y_RIGHT,
+                  'bottom': X_BOTTOM, 'top': X_TOP}
     AXIS_TYPES = {"lin" : QwtLinearScaleEngine,
                   "log" : QwtLog10ScaleEngine }
-
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
 
     def __init__(self, parent=None, section="plot"):
@@ -107,8 +105,8 @@ class BasePlot(QwtPlot):
                             AxeStyleParam(_(u"Right")),
                             AxeStyleParam(_(u"Bottom")),
                             AxeStyleParam(_(u"Top"))]
-        self._active_xaxis = QwtPlot.xBottom
-        self._active_yaxis = QwtPlot.yLeft
+        self._active_xaxis = self.X_BOTTOM
+        self._active_yaxis = self.Y_LEFT
         self.read_axes_styles(section, self.AXIS_CONF_OPTIONS)
         self.font_title = get_font(CONF, section, "title")
         canvas = self.canvas()
@@ -142,11 +140,16 @@ class BasePlot(QwtPlot):
         self.setTitle(text)
         self.emit(SIG_PLOT_LABELS_CHANGED, self)
 
+    def get_axis_id(self, axis_name):
+        """Return axis ID from axis name
+        If axis ID is passed directly, check the ID"""
+        assert axis_name in self.AXIS_NAMES or axis_name in self.AXIS_IDS
+        return self.AXIS_NAMES.get(axis_name, axis_name)
+
     def read_axes_styles(self, section, options):
         """Read axes styles from section and options (one option
         for each axis in the order left,right,bottom,top).
-        skip axis if option is None
-        """
+        skip axis if option is None"""
         for prm, option in zip(self.axes_styles, options):
             if option is None:
                 continue
@@ -155,15 +158,18 @@ class BasePlot(QwtPlot):
         
     def get_axis_title(self, axis_id):
         """Get axis title"""
+        axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].title
         
     def set_axis_title(self, axis_id, text):
         """Set axis title"""
+        axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
         self.update_axis_style(axis_id)
     
     def set_axis_font(self, axis_id, font):
         """Set axis font"""
+        axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title_font.update_param(font)
         self.axes_styles[axis_id].ticks_font.update_param(font)
         self.update_axis_style(axis_id)
@@ -173,6 +179,7 @@ class BasePlot(QwtPlot):
         Set axis color
         color: color name (string) or QColor instance
         """
+        axis_id = self.get_axis_id(axis_id)
         if isinstance(color, basestring):
             color = QColor(color)
         self.axes_styles[axis_id].color = str(color.name())
@@ -180,6 +187,7 @@ class BasePlot(QwtPlot):
 
     def update_axis_style(self, axis_id):
         """Update axis style"""
+        axis_id = self.get_axis_id(axis_id)
         style = self.axes_styles[axis_id]
         
         title_font = style.title_font.build_font()
@@ -195,7 +203,7 @@ class BasePlot(QwtPlot):
 
     def update_all_axes_styles(self):
         """Update all axes styles"""
-        for axis_id in self.AXES.itervalues():
+        for axis_id in self.AXIS_IDS:
             self.update_axis_style(axis_id)
 
     def get_items(self, z_sorted=False, item_type=None):
@@ -589,7 +597,7 @@ class BasePlot(QwtPlot):
         Enable only used axes
         For now, this is needed only by the pyplot interface
         """
-        for axis in self.AXES.itervalues():
+        for axis in self.AXIS_IDS:
             self.enableAxis(axis, True)
         self.disable_unused_axes()
 
@@ -599,7 +607,7 @@ class BasePlot(QwtPlot):
         for item in self.get_items():
             used_axes.add(item.xAxis())
             used_axes.add(item.yAxis())
-        unused_axes = set(self.AXES.itervalues()) - set(used_axes)
+        unused_axes = set(self.AXIS_IDS) - set(used_axes)
         for axis in unused_axes:
             self.enableAxis(axis, False)
         
@@ -672,7 +680,7 @@ class BasePlot(QwtPlot):
         
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        for axis_id in self.AXES.itervalues():
+        for axis_id in self.AXIS_IDS:
             self.setAxisAutoScale(axis_id)
         if replot:
             self.replot()
@@ -680,7 +688,7 @@ class BasePlot(QwtPlot):
     def disable_autoscale(self):
         """Re-apply the axis scales so as to disable autoscaling
         without changing the view"""
-        for axis_id in self.AXES.itervalues():
+        for axis_id in self.AXIS_IDS:
             axis = self.axisScaleDiv(axis_id)
             lb = axis.lowerBound()
             hb = axis.upperBound()
@@ -695,16 +703,16 @@ class BasePlot(QwtPlot):
             self.setAxisMaxMinor(axis, nminor)
 
     def set_range_top(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['top'], low, high, stepsize, nmajor, nminor)
+        self._set_axis_range(self.TOP_AXIS, low, high, stepsize, nmajor, nminor)
 
     def set_range_left(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['left'], low, high, stepsize, nmajor, nminor)
+        self._set_axis_range(self.LEFT_AXIS, low, high, stepsize, nmajor, nminor)
 
     def set_range_right(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['right'], low, high, stepsize, nmajor, nminor)
+        self._set_axis_range(self.RIGHT_AXIS, low, high, stepsize, nmajor, nminor)
 
     def set_range_bottom(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['bottom'], low, high, stepsize, nmajor, nminor)
+        self._set_axis_range(self.BOTTOM_AXIS, low, high, stepsize, nmajor, nminor)
 
     def invalidate(self):
         """Invalidate paint cache and schedule redraw

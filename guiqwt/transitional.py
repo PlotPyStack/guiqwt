@@ -21,3 +21,4 @@ from PyQt4.Qwt5 import (QwtPlot, QwtSymbol, QwtLinearScaleEngine,
                         QwtLinearColorMap, QwtDoubleInterval, toQImage,
                         QwtPlotCurve, QwtPlotGrid, QwtPlotItem, QwtScaleMap,
                         QwtPlotMarker, QwtPlotPrintFilter)
+

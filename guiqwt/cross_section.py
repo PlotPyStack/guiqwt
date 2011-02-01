@@ -168,7 +168,7 @@ def get_plot_x_section(obj, apply_lut=False):
     """
     _x0, y0 = get_object_coordinates(obj)
     plot = obj.plot()
-    xmap = plot.canvasMap(plot.AXES["bottom"])
+    xmap = plot.canvasMap(plot.BOTTOM_AXIS)
     xc0, xc1 = xmap.p1(), xmap.p2()
     _xc0, yc0 = obj.axes_to_canvas(0, y0)
     if plot.get_axis_direction("left"):
@@ -193,7 +193,7 @@ def get_plot_y_section(obj, apply_lut=False):
     """
     x0, _y0 = get_object_coordinates(obj)
     plot = obj.plot()
-    ymap = plot.canvasMap(plot.AXES["left"])
+    ymap = plot.canvasMap(plot.LEFT_AXIS)
     yc0, yc1 = ymap.p1(), ymap.p2()
     if plot.get_axis_direction("left"):
         yc1, yc0 = yc0, yc1
@@ -290,7 +290,7 @@ class XCrossSectionItem(CrossSectionItem):
             
     def update_scale(self):
         plot = self.plot()
-        axis_id = plot.xBottom
+        axis_id = plot.X_BOTTOM
         source = self.get_source_image()
         sdiv = source.plot().axisScaleDiv(axis_id)
         plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
@@ -320,7 +320,7 @@ class YCrossSectionItem(CrossSectionItem):
             
     def update_scale(self):
         plot = self.plot()
-        axis_id = plot.yLeft
+        axis_id = plot.Y_LEFT
         source = self.get_source_image()
         sdiv = source.plot().axisScaleDiv(axis_id)
         plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
@@ -534,8 +534,8 @@ class CrossSectionPlot(CurvePlot):
 class XCrossSectionPlot(CrossSectionPlot):
     """X-axis cross section plot"""
     _height = 130
-    CS_AXIS = CurvePlot.xBottom
-    Z_AXIS = CurvePlot.yLeft
+    CS_AXIS = CurvePlot.X_BOTTOM
+    Z_AXIS = CurvePlot.Y_LEFT
     CURVETYPE = "Yfx"
     def sizeHint(self):
         return QSize(self.width(), self._height)
@@ -550,7 +550,7 @@ class XCrossSectionPlot(CrossSectionPlot):
         
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
-        if axis_id == plot.xBottom:
+        if axis_id == plot.X_BOTTOM:
             self.set_axis_direction("bottom", plot.get_axis_direction("bottom"))
             self.replot()
         
@@ -558,8 +558,8 @@ class XCrossSectionPlot(CrossSectionPlot):
 class YCrossSectionPlot(CrossSectionPlot):
     """Y-axis cross section plot"""
     _width = 140
-    CS_AXIS = CurvePlot.yLeft
-    Z_AXIS = CurvePlot.xBottom
+    CS_AXIS = CurvePlot.Y_LEFT
+    Z_AXIS = CurvePlot.X_BOTTOM
     Z_MAX_MAJOR = 3
     CURVETYPE = "Xfy"
     def sizeHint(self):
@@ -575,7 +575,7 @@ class YCrossSectionPlot(CrossSectionPlot):
         
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
-        if axis_id == plot.yLeft:
+        if axis_id == plot.Y_LEFT:
             self.set_axis_direction("left", plot.get_axis_direction("left"))
             self.replot()
 
