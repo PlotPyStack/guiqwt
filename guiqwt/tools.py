@@ -307,7 +307,7 @@ class GuiTool(QObject):
         self.parent_tool = tool
 
     def register_plot(self, baseplot):
-        """Every EnhancedQwtPlot using this tool should call register_plot
+        """Every BasePlot using this tool should call register_plot
         to notify the tool about this widget using it
         """
         self.plots.add(baseplot)
@@ -324,9 +324,9 @@ class GuiTool(QObject):
     def update_status(self, plot):
         """called by to allow derived
         classes to update the states of actions based on the currently
-        active EnhancedQwtPlot 
+        active BasePlot 
         
-        can also be called after an action modifying the EnhancedQwtPlot
+        can also be called after an action modifying the BasePlot
         (e.g. in order to update action states when an item is deselected)
         """
         pass
@@ -1042,7 +1042,7 @@ class ToggleTool(CommandTool):
 
 class BasePlotMenuTool(CommandTool):
     """
-    A tool that gather parameter panels from the EnhancedQwtPlot
+    A tool that gather parameter panels from the BasePlot
     and proposes to edit them and set them back
     """
     def __init__(self, manager, key, title=None,

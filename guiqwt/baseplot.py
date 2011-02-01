@@ -10,7 +10,7 @@ guiqwt.baseplot
 ---------------
 
 The `baseplot` module provides the `guiqwt` plotting widget base class: 
-:py:class:`guiqwt.baseplot.EnhancedQwtPlot`. This is an enhanced version of 
+:py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
 `PyQwt`'s QwtPlot plotting widget which supports the following features:
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
     * item selection and multiple selection
@@ -18,7 +18,7 @@ The `baseplot` module provides the `guiqwt` plotting widget base class:
     * plot parameters editing
 
 .. warning::
-    :py:class:`guiqwt.baseplot.EnhancedQwtPlot` is rather an internal class 
+    :py:class:`guiqwt.baseplot.BasePlot` is rather an internal class 
     than a ready-to-use plotting widget. The end user should prefer using 
     :py:class:`guiqwt.plot.CurvePlot` or :py:class:`guiqwt.plot.ImagePlot`.
 
@@ -37,7 +37,7 @@ The `baseplot` module provides the `guiqwt` plotting widget base class:
 Reference
 ~~~~~~~~~
 
-.. autoclass:: EnhancedQwtPlot
+.. autoclass:: BasePlot
    :members:
    :inherited-members:
 """
@@ -68,7 +68,7 @@ PARAMETERS_TITLE_ICON = {
                          }
     
 
-class EnhancedQwtPlot(QwtPlot):
+class BasePlot(QwtPlot):
     """
     An enhanced QwtPlot class that provides
     methods for handling plotitems and axes better
@@ -95,7 +95,7 @@ class EnhancedQwtPlot(QwtPlot):
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
 
     def __init__(self, parent=None, section="plot"):
-        super(EnhancedQwtPlot, self).__init__(parent)
+        super(BasePlot, self).__init__(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
         self.plot_id = None # id assigned by it's manager
@@ -343,7 +343,7 @@ class EnhancedQwtPlot(QwtPlot):
             * iofile: file object or filename
             * selected=False: if True, will save only selected items
             
-        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.restore_items`
+        See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items`
         """
         if selected:
             items = self.get_selected_items()
@@ -358,7 +358,7 @@ class EnhancedQwtPlot(QwtPlot):
         Restore items from file using the :py:mod:`pickle` protocol
             * iofile: file object or filename
             
-        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.save_items`
+        See also :py:meth:`guiqwt.baseplot.BasePlot.save_items`
         """
         import pickle
         items = pickle.load(iofile)

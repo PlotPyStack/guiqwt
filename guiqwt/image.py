@@ -2001,7 +2001,7 @@ class ImagePlot(CurvePlot):
             self.apply_aspect_ratio()
         self.replot()
 
-    #---- EnhancedQwtPlot API --------------------------------------------------
+    #---- BasePlot API ---------------------------------------------------------
     def add_item(self, item, z=None, autoscale=True):
         """
         Add a *plot item* instance to this *plot widget*

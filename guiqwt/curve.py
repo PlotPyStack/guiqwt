@@ -116,7 +116,7 @@ from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
                                ITrackableItemType, IPanel)
 from guiqwt.panels import PanelWidget, ID_ITEMLIST
-from guiqwt.baseplot import EnhancedQwtPlot
+from guiqwt.baseplot import BasePlot
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
@@ -928,10 +928,10 @@ class PlotItemList(PanelWidget):
 assert_interfaces_valid(PlotItemList)
 
 
-class CurvePlot(EnhancedQwtPlot):
+class CurvePlot(BasePlot):
     """
     Construct a 2D curve plotting widget 
-    (this class inherits :py:class:`guiqwt.baseplot.EnhancedQwtPlot`)
+    (this class inherits :py:class:`guiqwt.baseplot.BasePlot`)
         * parent: parent widget
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
@@ -1118,10 +1118,10 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, o1, o2)
         self.replot()
 
-    #---- EnhancedQwtPlot API --------------------------------------------------
+    #---- BasePlot API ---------------------------------------------------------
     def get_axis_title(self, axis):
         """
-        Reimplement EnhancedQwtPlot method
+        Reimplement BasePlot method
         
         Return axis title
             * axis: 'bottom', 'left', 'top' or 'right'
@@ -1132,7 +1132,7 @@ class CurvePlot(EnhancedQwtPlot):
         
     def set_axis_title(self, axis, title):
         """
-        Reimplement EnhancedQwtPlot method
+        Reimplement BasePlot method
         
         Set axis title
             * axis: 'bottom', 'left', 'top' or 'right'
@@ -1144,7 +1144,7 @@ class CurvePlot(EnhancedQwtPlot):
 
     def set_axis_font(self, axis, font):
         """
-        Reimplement EnhancedQwtPlot method
+        Reimplement BasePlot method
         
         Set axis font
             * axis: 'bottom', 'left', 'top' or 'right'
@@ -1156,7 +1156,7 @@ class CurvePlot(EnhancedQwtPlot):
     
     def set_axis_color(self, axis, color):
         """
-        Reimplement EnhancedQwtPlot method
+        Reimplement BasePlot method
         
         Set axis color
             * axis: 'bottom', 'left', 'top' or 'right'

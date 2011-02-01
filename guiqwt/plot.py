@@ -115,7 +115,7 @@ from guidata.qthelpers import create_action
 
 # Local imports
 from guiqwt.config import _
-from guiqwt.baseplot import EnhancedQwtPlot
+from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.image import ImagePlot
 from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
@@ -144,7 +144,7 @@ class PlotManager(object):
 
     def __init__(self, main):
         self.main = main # The main parent widget
-        self.plots = {} # maps ids to instances of EnhancedQwtPlot
+        self.plots = {} # maps ids to instances of BasePlot
         self.panels = {} # Qt widgets that need to know about the plots
         self.tools = []
         self.toolbars = {}
@@ -174,7 +174,7 @@ class PlotManager(object):
         if plot_id is DefaultPlotID:
             plot_id = id(plot)
         assert plot_id not in self.plots
-        assert isinstance(plot, EnhancedQwtPlot)
+        assert isinstance(plot, BasePlot)
         assert not self.tools, "tools must be added after plots"
         assert not self.panels, "panels must be added after plots"
         self.plots[plot_id] = plot

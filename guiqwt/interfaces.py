@@ -101,7 +101,7 @@ class ISerializableType(IItemType):
 class IBasePlotItem(object):
     """
     This is the interface that QwtPlotItem objects must implement
-    to be handled by *EnhancedQwtPlot* widgets
+    to be handled by *BasePlot* widgets
     """
     selected = False # True if this item is selected
     _readonly = False
@@ -232,11 +232,11 @@ class IHistDataSource(object):
         
 class IPlotManager(object):
     """A 'controller' that organizes relations between
-    plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
+    plots (BasePlot), panels, tools (GuiTool) and toolbar
     """
     def add_plot(self, plot, plot_id="default"):
         assert id not in self.plots
-        assert isinstance(plot, EnhancedQwtPlot)
+        assert isinstance(plot, BasePlot)
 
     def add_panel(self, panel):
         assert id not in self.panels
