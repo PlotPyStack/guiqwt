@@ -270,9 +270,23 @@ class BaseImageItem(QwtPlotItem):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
     
-    def get_pixel_coordinates(self, x, y):
-        """Return (image) pixel coordinates"""
-        return x, y
+    def get_pixel_coordinates(self, xplot, yplot):
+        """
+        Return (image) pixel coordinates
+        Transform the plot coordinates (arbitrary plot Z-axis unit)
+        into the image coordinates (pixel unit)
+        
+        Rounding is necessary to obtain array indexes from these coordinates
+        """
+        return xplot, yplot
+        
+    def get_plot_coordinates(self, xpixel, ypixel):
+        """
+        Return plot coordinates
+        Transform the image coordinates (pixel unit) 
+        into the plot coordinates (arbitrary plot Z-axis unit)
+        """
+        return xpixel, ypixel
         
     def get_closest_indexes(self, x, y, corner=None):
         """
@@ -310,7 +324,10 @@ class BaseImageItem(QwtPlotItem):
         
     def align_rectangular_shape(self, shape):
         """Align rectangular shape to image pixels"""
-        shape.set_rect(*self.get_closest_index_rect(*shape.get_rect()))
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(*shape.get_rect())
+        x0, y0 = self.get_plot_coordinates(ix0, iy0)
+        x1, y1 = self.get_plot_coordinates(ix1, iy1)
+        shape.set_rect(x0, y0, x1, y1)
         
     def get_closest_pixel_indexes(self, x, y):
         """
@@ -813,12 +830,19 @@ class ImageItem(RawImageItem):
         self.bounds = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax))
 
     #---- BaseImageItem API ----------------------------------------------------
-    def get_pixel_coordinates(self, x, y):
-        """Return (image) pixel coordinates"""
+    def get_pixel_coordinates(self, xplot, yplot):
+        """Return (image) pixel coordinates (from plot coordinates)"""
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
-        xpix = self.data.shape[1]*(x-xmin)/(xmax-xmin)
-        ypix = self.data.shape[0]*(y-ymin)/(ymax-ymin)
+        xpix = self.data.shape[1]*(xplot-xmin)/(xmax-xmin)
+        ypix = self.data.shape[0]*(yplot-ymin)/(ymax-ymin)
         return xpix, ypix
+
+    def get_plot_coordinates(self, xpixel, ypixel):
+        """Return plot coordinates (from image pixel coordinates)"""
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
+        xplot = xmin+(xmax-xmin)*xpixel/self.data.shape[1]
+        yplot = ymin+(ymax-ymin)*ypixel/self.data.shape[0]
+        return xplot, yplot
 
     def get_x_values(self, i0, i1):
         xmin, xmax = self.get_xdata()
@@ -1040,11 +1064,17 @@ class TrImageItem(RawImageItem):
         #TODO: Implement TrImageFilterItem
 #        return TrImageFilterItem(self, filterobj, filterparam)
 
-    def get_pixel_coordinates(self, x, y):
-        """Return (image) pixel coordinates"""
-        v = self.tr*point(x, y)
-        x, y, _ = v[:, 0]
-        return x, y
+    def get_pixel_coordinates(self, xplot, yplot):
+        """Return (image) pixel coordinates (from plot coordinates)"""
+        v = self.tr*point(xplot, yplot)
+        xpixel, ypixel, _ = v[:, 0]
+        return xpixel, ypixel
+        
+    def get_plot_coordinates(self, xpixel, ypixel):
+        """Return plot coordinates (from image pixel coordinates)"""
+        v0 = self.itr*point(xpixel, ypixel)
+        xplot, yplot, _ = v0[:, 0].A.ravel()
+        return xplot, yplot
         
     def get_x_values(self, i0, i1):
         v0 = self.itr*point(i0, 0)
@@ -1289,11 +1319,14 @@ class XYImageItem(RawImageItem):
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
 
-    def get_pixel_coordinates(self, x, y):
-        """Return (image) pixel coordinates"""
-        x, y = self.x.searchsorted(x), self.y.searchsorted(y)
-        return x, y
+    def get_pixel_coordinates(self, xplot, yplot):
+        """Return (image) pixel coordinates (from plot coordinates)"""
+        return self.x.searchsorted(xplot), self.y.searchsorted(yplot)
         
+    def get_plot_coordinates(self, xpixel, ypixel):
+        """Return plot coordinates (from image pixel coordinates)"""
+        return self.x[int(pixelround(xpixel))], self.y[int(pixelround(ypixel))]
+
     def get_x_values(self, i0, i1):
         return self.x[i0:i1]
     

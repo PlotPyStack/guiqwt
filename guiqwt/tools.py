@@ -1750,12 +1750,13 @@ class ImageMaskTool(CommandTool):
         mask = self.masked_image.get_mask()
         plot = self.get_active_plot()
         for shape, inside in self._mask_shapes[plot]:
-            self.masked_image.align_rectangular_shape(shape)
-            x0, y0, x1, y1 = shape.get_rect()
             if isinstance(shape, RectangleShape):
+                self.masked_image.align_rectangular_shape(shape)
+                x0, y0, x1, y1 = shape.get_rect()
                 self.masked_image.mask_rectangular_area(x0, y0, x1, y1,
                                                         inside=inside)
             else:
+                x0, y0, x1, y1 = shape.get_rect()
                 self.masked_image.mask_circular_area(x0, y0, x1, y1,
                                                      inside=inside)
         self.masked_image.set_mask(mask)
@@ -1806,9 +1807,9 @@ class ImageMaskTool(CommandTool):
         for geometry, x0, y0, x1, y1, inside in masked_areas:
             if geometry == 'rectangular':
                 shape = RectangleShape(x0, y0, x1, y1)
+                self.masked_image.align_rectangular_shape(shape)
             else:
                 shape = EllipseShape(x0, .5*(y0+y1), x1, .5*(y0+y1))
-            self.masked_image.align_rectangular_shape(shape)
             shape.set_style("plot", "shape/mask")
             shape.set_private(True)
             self._mask_shapes[plot] += [(shape, inside)]

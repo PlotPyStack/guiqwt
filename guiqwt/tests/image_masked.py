@@ -37,7 +37,8 @@ if __name__ == "__main__":
         iofile.close()
         print "OK"
     else:
-        image = make.maskedimage(filename=fname, colormap='gray', show_mask=True)
+        image = make.maskedimage(filename=fname, colormap='gray',
+                                 show_mask=True, xdata=[0, 20], ydata=[0, 25])
     win.get_plot().add_item(image)
     win.show()
     win.exec_()
