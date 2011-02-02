@@ -837,8 +837,8 @@ class ImageItem(RawImageItem):
         xpix = np.linspace(xmin, xmax, self.data.shape[1]+1)
         ypix = np.linspace(ymin, ymax, self.data.shape[0]+1)
         return xpix[i], ypix[j]
-
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        
+    def _rescale_srcrect(self, srcRect):
         sxl, syt, sxr, syb = srcRect
         xl, yt, xr, yb = self.boundingRect().getCoords()
         H, W = self.data.shape[:2]
@@ -846,7 +846,10 @@ class ImageItem(RawImageItem):
         x1 = W*(sxr-xl)/(xr-xl)
         y0 = H*(syt-yt)/(yb-yt)
         y1 = H*(syb-yt)/(yb-yt)
-        src2 = (x0, y0, x1, y1)
+        return x0, y0, x1, y1
+
+    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        src2 = self._rescale_srcrect(srcRect)
         dest = _scale_rect(self.data, src2, self._offscreen, dstRect,
                            self.lut, self.interpolate)
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1575,7 +1578,8 @@ class MaskedImageItem(ImageItem):
                             dtype=np.uint32)
             lut = (1, 0, bg, cmap)
             shown_data = np.ma.getmaskarray(self.data)
-            dest = _scale_rect(shown_data, srcRect, self._offscreen, dstRect,
+            src2 = self._rescale_srcrect(srcRect)
+            dest = _scale_rect(shown_data, src2, self._offscreen, dstRect,
                                lut, (INTERP_NEAREST,))
             srcrect = QRectF(QPointF(dest[0], dest[1]),
                              QPointF(dest[2], dest[3]))
