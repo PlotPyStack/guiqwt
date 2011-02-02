@@ -546,12 +546,14 @@ class PlotItemBuilder(object):
 
     def image(self, data=None, filename=None, title=None, alpha_mask=None,
               alpha=None, background_color=None, colormap=None,
-              x0=None, y0=None, dx=None, dy=None):
+              xdata=[None, None], ydata=[None, None]):
         """
         Make an image `plot item` from data
         (:py:class:`guiqwt.image.ImageItem` object or 
         :py:class:`guiqwt.image.RGBImageItem` object if data has 3 dimensions)
         """
+        assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
+        assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
         param = ImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
                                                      to_grayscale=True)
@@ -561,29 +563,33 @@ class PlotItemBuilder(object):
         assert data.ndim == 2, "Data must have 2 dimensions"
         self.__set_image_param(param, title, alpha_mask, alpha,
                                background=background_color,
-                               colormap=colormap, scale_x0=x0, scale_y0=y0,
-                               scale_dx=dx, scale_dy=dy)
+                               colormap=colormap,
+                               xmin=xdata[0], xmax=xdata[1],
+                               ymin=ydata[0], ymax=ydata[1])
         image = ImageItem(data, param)
         image.set_filename(filename)
         return image
         
     def maskedimage(self, data=None, mask=None, filename=None, title=None,
                     alpha_mask=False, alpha=1.0,
-                    x0=None, y0=None, dx=None, dy=None,
+                    xdata=[None, None], ydata=[None, None],
                     background_color=None, colormap=None,
                     show_mask=False, fill_value=None):
         """
         Make a masked image `plot item` from data
         (:py:class:`guiqwt.image.MaskedImageItem` object)
         """
+        assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
+        assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
         param = MaskedImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
                                                      to_grayscale=False)
         assert data.ndim == 2, "Data must have 2 dimensions"
         self.__set_image_param(param, title, alpha_mask, alpha,
                                background=background_color,
-                               colormap=colormap, scale_x0=x0, scale_y0=y0,
-                               scale_dx=dx, scale_dy=dy,
+                               colormap=colormap,
+                               xmin=xdata[0], xmax=xdata[1],
+                               ymin=ydata[0], ymax=ydata[1],
                                show_mask=show_mask, fill_value=fill_value)
         image = MaskedImageItem(data, mask, param)
         image.set_filename(filename)
@@ -591,18 +597,20 @@ class PlotItemBuilder(object):
 
     def rgbimage(self, data=None, filename=None, title=None,
                  alpha_mask=False, alpha=1.0,
-                 x0=None, y0=None, dx=None, dy=None):
+                 xdata=[None, None], ydata=[None, None]):
         """
         Make a RGB image `plot item` from data
         (:py:class:`guiqwt.image.RGBImageItem` object)
         """
+        assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
+        assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
         param = RGBImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
                                                      to_grayscale=False)
         assert data.ndim == 3, "RGB data must have 3 dimensions"
         self.__set_image_param(param, title, alpha_mask, alpha,
-                               scale_x0=x0, scale_y0=y0,
-                               scale_dx=dx, scale_dy=dy)
+                               xmin=xdata[0], xmax=xdata[1],
+                               ymin=ydata[0], ymax=ydata[1])
         image = RGBImageItem(data, param)
         image.set_filename(filename)
         return image

@@ -144,7 +144,7 @@ from PyQt4.QtCore import QRectF, QPointF, QRect
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
-from guiqwt.transitional import QwtPlot, QwtPlotItem, QwtDoubleInterval
+from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
 from guiqwt.config import _
 from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
