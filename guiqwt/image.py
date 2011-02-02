@@ -1576,7 +1576,7 @@ class MaskedImageItem(ImageItem):
             lut = (1, 0, bg, cmap)
             shown_data = np.ma.getmaskarray(self.data)
             dest = _scale_rect(shown_data, srcRect, self._offscreen, dstRect,
-                               lut, self.interpolate)
+                               lut, (INTERP_NEAREST,))
             srcrect = QRectF(QPointF(dest[0], dest[1]),
                              QPointF(dest[2], dest[3]))
             painter.drawImage(srcrect, self._image, srcrect)
