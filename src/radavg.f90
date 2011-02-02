@@ -16,9 +16,10 @@ subroutine radavg(ysection, ny, yw, nyw, image, n, m, ic, jc, radius)
   do i=max(ic-radius, 0),min(ic+radius, n-1)
      do j=max(jc-radius, 0),min(jc+radius, m-1)
         r = floor(sqrt(real((i-ic)**2+(j-jc)**2)+0.5))
-        if (r > radius) cycle
-        ysection(r) = (yw(r)*ysection(r)+image(i,j))/(yw(r)+1)
-        yw(r) = yw(r)+1
+        if (r <= radius) then
+            ysection(r) = (yw(r)*ysection(r)+image(i,j))/(yw(r)+1)
+            yw(r) = yw(r)+1
+        end if
      end do
   end do
 
@@ -35,10 +36,10 @@ subroutine radavg_mask(ysection, ny, yw, nyw, image, n, m, mask, nm, mm, ic, jc,
   do i=max(ic-radius, 0),min(ic+radius, n-1)
      do j=max(jc-radius, 0),min(jc+radius, m-1)
         r = floor(sqrt(real((i-ic)**2+(j-jc)**2)+0.5))
-        if (r > radius) cycle
-        if (mask(i,j) > 0) cycle
-        ysection(r) = (yw(r)*ysection(r)+image(i,j))/(yw(r)+1)
-        yw(r) = yw(r)+1
+        if (r <= radius .and. mask(i,j) == 0) then
+            ysection(r) = (yw(r)*ysection(r)+image(i,j))/(yw(r)+1)
+            yw(r) = yw(r)+1
+        end if
      end do
   end do
 
