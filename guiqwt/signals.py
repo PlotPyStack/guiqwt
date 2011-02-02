@@ -100,6 +100,9 @@ SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")
 # "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
 SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
 
+# Emitted by cross section plot when cross section curve data has changed
+SIG_CS_CURVE_CHANGED = SIGNAL("cs_curve_changed(PyQt_PyObject)")
+
 #===============================================================================
 # Event filter related signals (private)
 #===============================================================================

@@ -52,25 +52,30 @@ from guiqwt.config import CONF, _
 from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
                                ICurveItemType)
 from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_RACS
-from guiqwt.curve import CurvePlot, CurveItem, ErrorBarCurveItem
+from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot
 from guiqwt.styles import CurveParam
 from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_LUT_CHANGED)
+                            SIG_LUT_CHANGED, SIG_CS_CURVE_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 
 
-class CrossSectionItemMixin(object):
-    def __init__(self):
+class CrossSectionItem(ErrorBarCurveItem):
+    """A Qwt item representing cross section data"""
+    __implements__ = (IBasePlotItem,)
+    _inverted = None
+    
+    def __init__(self, curveparam=None, errorbarparam=None):
+        ErrorBarCurveItem.__init__(self, curveparam, errorbarparam)
         self.perimage_mode = True
         self.autoscale_mode = True
         self.apply_lut = False
         self.source = None
-
+        
     def set_source_image(self, src):
         """
         Set source image
@@ -86,32 +91,6 @@ class CrossSectionItemMixin(object):
     def get_cross_section(self, obj):
         """Get cross section data from source image"""
         raise NotImplementedError
-        
-    def update_curve_data(self, obj):
-        raise NotImplementedError
-
-    def update_item(self, obj):
-        plot = self.plot()
-        if not plot:
-            return
-        source = self.get_source_image()
-        if source is None or not plot.isVisible():
-            return
-        self.update_curve_data(obj)
-        if not self.autoscale_mode:
-            self.update_scale()
-
-    def update_scale(self):
-        raise NotImplementedError
-
-class CrossSectionItem(CurveItem, CrossSectionItemMixin):
-    """A Qwt item representing cross section data"""
-    __implements__ = (IBasePlotItem,)
-    _inverted = None
-    
-    def __init__(self, curveparam=None):
-        CurveItem.__init__(self, curveparam)
-        CrossSectionItemMixin.__init__(self)
 
     def update_curve_data(self, obj):
         sectx, secty = self.get_cross_section(obj)
@@ -121,6 +100,21 @@ class CrossSectionItem(CurveItem, CrossSectionItemMixin):
             self.set_data(secty, sectx)
         else:
             self.set_data(sectx, secty)
+
+    def update_item(self, obj):
+        plot = self.plot()
+        if not plot:
+            return
+        source = self.get_source_image()
+        if source is None or not plot.isVisible():
+            return
+        self.update_curve_data(obj)
+        self.plot().emit(SIG_CS_CURVE_CHANGED, self)
+        if not self.autoscale_mode:
+            self.update_scale()
+
+    def update_scale(self):
+        raise NotImplementedError
 
 
 def get_image_data(plot, p0, p1, apply_lut=False):
@@ -349,6 +343,7 @@ class CrossSectionPlot(CurvePlot):
         self.curveparam = CurveParam(_("Curve"), icon="curve.png")
         self.curveparam.read_config(CONF, "cross_section", "curve")
         self.curveparam.curvetype = self.CURVETYPE
+        self.curveparam.label = _("Cross section")
         
         if self._height is not None:
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -405,6 +400,12 @@ class CrossSectionPlot(CurvePlot):
         
     def create_cross_section_item(self):
         raise NotImplementedError
+        
+    def add_cross_section_item(self, source):
+        curve = self.create_cross_section_item()
+        curve.set_source_image(source)
+        self.add_item(curve, z=0)
+        self.known_items[source] = curve
 
     def items_changed(self, plot):
         self.known_items = {}
@@ -419,10 +420,7 @@ class CrossSectionPlot(CurvePlot):
             
         self.curveparam.shade = min([.3, .8/len(items)])
         for item in items:
-            curve = self.create_cross_section_item()
-            curve.set_source_image(item)
-            self.add_item(curve, z=0)
-            self.known_items[item] = curve
+            self.add_cross_section_item(source=item)
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
@@ -597,6 +595,8 @@ class CrossSectionWidget(PanelWidget):
         
         self.local_manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
+        self.connect(self.cs_plot, SIG_CS_CURVE_CHANGED,
+                     self.cs_curve_has_changed)
         
         self.spacer1 = QSpacerItem(0, 0)
         self.spacer2 = QSpacerItem(0, 0)
@@ -622,6 +622,11 @@ class CrossSectionWidget(PanelWidget):
         self.cs_plot.standard_tools(self.local_manager)
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
+        
+    def cs_curve_has_changed(self, curve):
+        """Cross section curve has just changed"""
+        # Do something with curve's data for example
+        pass
         
     def set_options(self, peritem=None, applylut=None, autoscale=None):
         assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
@@ -807,11 +812,10 @@ def compute_radial_section(item, x0, y0, x1, y1, dyfunc=None):
         print xdata, ydata
     return xdata, ydata, dydata
 
-class RACrossSectionItem(ErrorBarCurveItem, CrossSectionItemMixin):
+class RACrossSectionItem(CrossSectionItem):
     """A Qwt item representing radially-averaged cross section data"""
     def __init__(self, curveparam=None, errorbarparam=None):
-        ErrorBarCurveItem.__init__(self, curveparam, errorbarparam)
-        CrossSectionItemMixin.__init__(self)
+        CrossSectionItem.__init__(self, curveparam, errorbarparam)
         self.autoscale_mode = False
         
     def update_curve_data(self, obj):
@@ -830,6 +834,7 @@ class RACrossSectionPlot(XCrossSectionPlot):
         self.set_title(_("Radially-averaged cross section"))
         self.label.set_text(_("Activate the radially-averaged "
                               "cross section tool"))
+        self.curveparam.label = _("Radially-averaged cross section")
         
     def create_cross_section_item(self):
         return RACrossSectionItem(self.curveparam)
@@ -837,6 +842,9 @@ class RACrossSectionPlot(XCrossSectionPlot):
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
         pass
+
+    def add_cross_section_item(self, source):
+        XCrossSectionPlot.add_cross_section_item(self, source)
 
 class RACrossSection(CrossSectionWidget):
     """Radially-averaged cross section widget"""
