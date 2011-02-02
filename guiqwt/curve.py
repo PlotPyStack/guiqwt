@@ -519,7 +519,7 @@ class ErrorBarCurveItem(CurveItem):
         """
         return self._x, self._y, self._dx, self._dy
 
-    def set_data(self, x, y, dx, dy):
+    def set_data(self, x, y, dx=None, dy=None):
         """
         Set error-bar curve data:
             * x: NumPy array
