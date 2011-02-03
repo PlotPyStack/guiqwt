@@ -831,11 +831,12 @@ class RACrossSectionItem(CrossSectionItem):
 
 class RACrossSectionPlot(XCrossSectionPlot):
     """Radially-averaged cross section plot"""
+    PLOT_TITLE = _("Radially-averaged cross section")
+    LABEL_TEXT = _("Activate the radially-averaged cross section tool")
     def __init__(self, parent=None):
         XCrossSectionPlot.__init__(self, parent)
-        self.set_title(_("Radially-averaged cross section"))
-        self.label.set_text(_("Activate the radially-averaged "
-                              "cross section tool"))
+        self.set_title(self.PLOT_TITLE)
+        self.label.set_text(self.LABEL_TEXT)
         self.curveparam.label = _("Radially-averaged cross section")
         
     def create_cross_section_item(self):

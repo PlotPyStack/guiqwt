@@ -918,15 +918,6 @@ class RACrossSectionTool(CrossSectionTool):
     def create_shape(self):
         return AnnotatedCircle(0, 0, 1, 1), 0, 1
 
-    def activate(self):
-        """Activate tool"""
-        RectangularShapeTool.activate(self)
-        panel = self.manager.get_panel(ID_RACS)
-        panel.setVisible(True)
-        shape = self.get_last_final_shape()
-        if shape is not None:
-            panel.update_plot(shape)
-
 
 class RectZoomTool(InteractiveTool):
     TITLE = _("Rectangle zoom")
