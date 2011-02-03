@@ -816,7 +816,6 @@ class RACrossSectionItem(CrossSectionItem):
     """A Qwt item representing radially-averaged cross section data"""
     def __init__(self, curveparam=None, errorbarparam=None):
         CrossSectionItem.__init__(self, curveparam, errorbarparam)
-        self.autoscale_mode = False
         
     def update_curve_data(self, obj):
         source = self.get_source_image()
@@ -826,6 +825,9 @@ class RACrossSectionItem(CrossSectionItem):
             if secty.size == 0 or np.all(np.isnan(secty)):
                 sectx, secty, sectdy = np.array([]), np.array([]), None
             self.set_data(sectx, secty, None, sectdy)
+            
+    def update_scale(self):
+        pass
 
 class RACrossSectionPlot(XCrossSectionPlot):
     """Radially-averaged cross section plot"""
@@ -855,5 +857,5 @@ class RACrossSection(CrossSectionWidget):
     def register_panel(self, manager):
         """Register panel to plot manager"""
         CrossSectionWidget.register_panel(self, manager)
-        for action in (self.peritem_ac, self.applylut_ac, self.autoscale_ac):
+        for action in (self.peritem_ac, self.applylut_ac):
             action.setDisabled(True)
