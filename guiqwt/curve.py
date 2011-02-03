@@ -1161,27 +1161,48 @@ class CurvePlot(BasePlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        rect = None
-        for item in self.get_items():
-            if isinstance(item, self.AUTOSCALE_TYPES) and not item.is_empty() \
-               and item.isVisible():
-                bounds = item.boundingRect()
-                if rect is None:
-                    rect = bounds
-                else:
-                    rect = rect.united(bounds)
-        if rect is not None:
-            x0, x1 = rect.left(), rect.right()
-            y0, y1 = rect.top(), rect.bottom()
-            if x0 == x1: # same behavior as MATLAB
-                x0 -= 1
-                x1 += 1
-            if y0 == y1: # same behavior as MATLAB
-                y0 -= 1
-                y1 += 1
-            self.set_plot_limits(x0, x1, y0, y1)
-            if replot:
-                self.replot()
+        for axis_id in self.AXIS_IDS:
+            vmin, vmax = None, None
+            if not self.axisEnabled(axis_id):
+                continue
+            for item in self.get_items():
+                if isinstance(item, self.AUTOSCALE_TYPES) \
+                   and not item.is_empty() and item.isVisible():
+                    bounds = item.boundingRect()
+                    if axis_id == item.xAxis():
+                        xmin, xmax = bounds.left(), bounds.right()
+                        if vmin is None or xmin < vmin:
+                            vmin = xmin
+                        if vmax is None or xmax > vmax:
+                            vmax = xmax
+                    elif axis_id == item.yAxis():
+                        ymin, ymax = bounds.top(), bounds.bottom()
+                        if vmin is None or ymin < vmin:
+                            vmin = ymin
+                        if vmax is None or ymax > vmax:
+                            vmax = ymax
+            if vmin is None or vmax is None:
+                continue
+            if vmin == vmax: # same behavior as MATLAB
+                vmin -= 1
+                vmax += 1
+            else:
+                dv = vmax-vmin
+                vmin -= .002*dv
+                vmax += .002*dv
+            self.set_axis_limits(axis_id, vmin, vmax)
+        if replot:
+            self.replot()
+
+    def set_axis_limits(self, axis_id, vmin, vmax):
+        """Set axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        vmin, vmax = sorted([vmin, vmax])
+        dv = vmax-vmin
+        if self.get_axis_direction(axis_id):
+            self.setAxisScale(axis_id, vmin+dv, vmin)
+        else:
+            self.setAxisScale(axis_id, vmin, vmin+dv)
             
     #---- Public API -----------------------------------------------------------    
     def get_axis_direction(self, axis_id):
@@ -1261,23 +1282,17 @@ class CurvePlot(BasePlot):
                 curve.setRenderHint(QwtPlotItem.RenderAntialiased,
                                     self.antialiased)
 
-    def set_plot_limits(self, x0, x1, y0, y1):
+    def set_plot_limits(self, x0, x1, y0, y1, xaxis="bottom", yaxis="left"):
         """Set plot scale limits"""
-        dy = y1-y0
-        if self.get_axis_direction(self.Y_LEFT):
-            self.setAxisScale(self.Y_LEFT, y0+dy, y0)
-        else:
-            self.setAxisScale(self.Y_LEFT, y0, y0+dy)
-        dx = x1-x0
-        if self.get_axis_direction(self.X_BOTTOM):
-            self.setAxisScale(self.X_BOTTOM, x0+dx, x0)
-        else:
-            self.setAxisScale(self.X_BOTTOM, x0, x0+dx)
+        self.set_axis_limits(yaxis, y0, y1)
+        self.set_axis_limits(xaxis, x0, x1)
         self.updateAxes()
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
         self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
         
-    def get_plot_limits(self):
+    def get_plot_limits(self, xaxis="bottom", yaxis="left"):
         """Return plot scale limits"""
-        pass
+        x0, x1 = self.get_axis_limits(xaxis)
+        y0, y1 = self.get_axis_limits(yaxis)
+        return x0, x1, y0, y1
         

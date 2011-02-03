@@ -2057,6 +2057,7 @@ class ImagePlot(CurvePlot):
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
         super(ImagePlot, self).do_autoscale(replot=False)
+        self.updateAxes()
         if self.lock_aspect_ratio:
             self.apply_aspect_ratio(full_scale=True)
         if replot:
