@@ -329,6 +329,7 @@ class CrossSectionPlot(CurvePlot):
     Z_AXIS = None
     Z_MAX_MAJOR = 5
     CURVETYPE = None
+    SHADE = .2
     def __init__(self, parent=None):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
                                                section="cross_section")
@@ -410,7 +411,7 @@ class CrossSectionPlot(CurvePlot):
             self.replot()
             return
             
-        self.curveparam.shade = min([.3, .8/len(items)])
+        self.curveparam.shade = self.SHADE/len(items)
         for item in items:
             self.add_cross_section_item(source=item)
 
@@ -607,11 +608,11 @@ class CrossSectionWidget(PanelWidget):
         self.setWindowTitle(widget_title)
         
         self.toolbar = QToolBar(self)
+        self.toolbar.setOrientation(Qt.Vertical)
         
         self.setup_widget()
         
     def setup_widget(self):
-        self.toolbar.setOrientation(Qt.Vertical)
         layout = QHBoxLayout()
         layout.addWidget(self.cs_plot)
         layout.addWidget(self.toolbar)
