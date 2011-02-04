@@ -571,14 +571,17 @@ class YCrossSectionPlot(CrossSectionPlot):
 
 
 class CrossSectionWidget(PanelWidget):
-    """Cross section widget"""
+    PANEL_ID = None
     CrossSectionPlotKlass = None
-    OTHER_PANEL_ID = None
-    
+        
     __implements__ = (IPanel,)
 
     def __init__(self, parent=None):
         super(CrossSectionWidget, self).__init__(parent)
+        
+        self.export_ac = None
+        self.autoscale_ac = None
+        self.refresh_ac = None
         
         widget_title = _("Cross section tool")
         widget_icon = "csection.png"
@@ -589,25 +592,6 @@ class CrossSectionWidget(PanelWidget):
         self.cs_plot = self.CrossSectionPlotKlass(parent)
         self.connect(self.cs_plot, SIG_CS_CURVE_CHANGED,
                      self.cs_curve_has_changed)
-        
-        self.spacer1 = QSpacerItem(0, 0)
-        self.spacer2 = QSpacerItem(0, 0)
-        
-        self.toolbar = toolbar = QToolBar(self)
-        if self.CrossSectionPlotKlass is YCrossSectionPlot:
-            toolbar.setOrientation(Qt.Horizontal)
-            layout = QVBoxLayout()
-            layout.addSpacerItem(self.spacer1)
-            layout.addWidget(toolbar)
-            layout.addWidget(self.cs_plot)
-            layout.addSpacerItem(self.spacer2)
-        else:
-            toolbar.setOrientation(Qt.Vertical)
-            layout = QHBoxLayout()
-            layout.addWidget(self.cs_plot)
-            layout.addWidget(toolbar)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
         
         # Configure the local manager
         lman = self.local_manager
@@ -622,43 +606,30 @@ class CrossSectionWidget(PanelWidget):
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
+        self.toolbar = QToolBar(self)
+        
+        self.setup_widget()
+        
+    def setup_widget(self):
+        self.toolbar.setOrientation(Qt.Vertical)
+        layout = QHBoxLayout()
+        layout.addWidget(self.cs_plot)
+        layout.addWidget(self.toolbar)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        
     def cs_curve_has_changed(self, curve):
         """Cross section curve has just changed"""
         # Do something with curve's data for example
         pass
         
-    def set_options(self, peritem=None, applylut=None, autoscale=None):
-        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
-        if peritem is not None:
-            self.peritem_ac.setChecked(peritem)
-        if applylut is not None:
-            self.applylut_ac.setChecked(applylut)
-        if autoscale is not None:
-            self.autoscale_ac.setChecked(autoscale)
-    
     def register_panel(self, manager):
         """Register panel to plot manager"""
         self.manager = manager
         for plot in manager.get_plots():
             self.cs_plot.connect_plot(plot)
         self.setup_actions()
-        other = manager.get_panel(self.OTHER_PANEL_ID)
-        if other is None:
-            add_actions(self.toolbar,
-                        (self.peritem_ac, self.applylut_ac, None,
-                         self.export_ac, self.autoscale_ac, self.refresh_ac))
-        else:
-            add_actions(self.toolbar,
-                        (other.peritem_ac, other.applylut_ac, None,
-                         self.export_ac, other.autoscale_ac, other.refresh_ac))
-            self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_perimage_mode)
-            self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_apply_lut)
-            self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_autoscale)
-            self.connect(other.refresh_ac, SIGNAL("triggered()"),
-                         lambda: self.cs_plot.update_plot())
+        self.add_actions_to_toolbar()
                          
     def configure_panel(self):
         """Configure panel"""
@@ -667,27 +638,7 @@ class CrossSectionWidget(PanelWidget):
     def get_plot(self):
         return self.manager.get_active_plot()
         
-    def closeEvent(self, event):
-        self.hide()
-        event.ignore()
-        
     def setup_actions(self):
-        self.peritem_ac = create_action(self, _("Per image cross-section"),
-                        icon=get_icon('csperimage.png'),
-                        toggled=self.cs_plot.toggle_perimage_mode,
-                        tip=_("Enable the per-image cross-section mode, "
-                              "which works directly on image rows/columns.\n"
-                              "That is the fastest method to compute "
-                              "cross-section curves but it ignores "
-                              "image transformations (e.g. rotation)"))
-        self.applylut_ac = create_action(self,
-                        _("Apply LUT\n(contrast settings)"),
-                        icon=get_icon('csapplylut.png'),
-                        toggled=self.cs_plot.toggle_apply_lut,
-                        tip=_("Apply LUT (Look-Up Table) contrast settings.\n"
-                              "This is the easiest way to compare images "
-                              "which have slightly different level ranges.\n\n"
-                              "Note: LUT is coded over 1024 levels (0...1023)"))
         self.export_ac = create_action(self, _("Export"),
                                    icon=get_std_icon("DialogSaveButton", 16),
                                    triggered=self.cs_plot.export,
@@ -698,10 +649,11 @@ class CrossSectionWidget(PanelWidget):
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
                                    triggered=lambda: self.cs_plot.update_plot())
-
-        self.peritem_ac.setChecked(True)
         self.autoscale_ac.setChecked(True)
-        self.applylut_ac.setChecked(False)
+        
+    def add_actions_to_toolbar(self):
+        add_actions(self.toolbar, (self.export_ac, self.autoscale_ac, None,
+                                   self.refresh_ac))
         
     def register_shape(self, shape, final):
         plot = self.get_plot()
@@ -720,16 +672,73 @@ class CrossSectionWidget(PanelWidget):
         self.cs_plot.update_plot(obj)
 
 assert_interfaces_valid(CrossSectionWidget)
-
+        
 
 class XCrossSection(CrossSectionWidget):
     """X-axis cross section widget"""
     PANEL_ID = ID_XCS
     OTHER_PANEL_ID = ID_YCS
     CrossSectionPlotKlass = XCrossSectionPlot
+    def __init__(self, parent=None):
+        super(XCrossSection, self).__init__(parent)
+        self.peritem_ac = None
+        self.applylut_ac = None
+        
+    def set_options(self, peritem=None, applylut=None, autoscale=None):
+        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
+        if peritem is not None:
+            self.peritem_ac.setChecked(peritem)
+        if applylut is not None:
+            self.applylut_ac.setChecked(applylut)
+        if autoscale is not None:
+            self.autoscale_ac.setChecked(autoscale)
+            
+    def add_actions_to_toolbar(self):
+        other = self.manager.get_panel(self.OTHER_PANEL_ID)
+        if other is None:
+            add_actions(self.toolbar,
+                        (self.peritem_ac, self.applylut_ac, None,
+                         self.export_ac, self.autoscale_ac, self.refresh_ac))
+        else:
+            add_actions(self.toolbar,
+                        (other.peritem_ac, other.applylut_ac, None,
+                         self.export_ac, other.autoscale_ac, other.refresh_ac))
+            self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_perimage_mode)
+            self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_apply_lut)
+            self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_autoscale)
+            self.connect(other.refresh_ac, SIGNAL("triggered()"),
+                         lambda: self.cs_plot.update_plot())
+        
+    def closeEvent(self, event):
+        self.hide()
+        event.ignore()
+        
+    def setup_actions(self):
+        super(XCrossSection, self).setup_actions()
+        self.peritem_ac = create_action(self, _("Per image cross-section"),
+                        icon=get_icon('csperimage.png'),
+                        toggled=self.cs_plot.toggle_perimage_mode,
+                        tip=_("Enable the per-image cross-section mode, "
+                              "which works directly on image rows/columns.\n"
+                              "That is the fastest method to compute "
+                              "cross-section curves but it ignores "
+                              "image transformations (e.g. rotation)"))
+        self.applylut_ac = create_action(self,
+                        _("Apply LUT\n(contrast settings)"),
+                        icon=get_icon('csapplylut.png'),
+                        toggled=self.cs_plot.toggle_apply_lut,
+                        tip=_("Apply LUT (Look-Up Table) contrast settings.\n"
+                              "This is the easiest way to compare images "
+                              "which have slightly different level ranges.\n\n"
+                              "Note: LUT is coded over 1024 levels (0...1023)"))
+        self.peritem_ac.setChecked(True)
+        self.applylut_ac.setChecked(False)
 
 
-class YCrossSection(CrossSectionWidget):
+class YCrossSection(XCrossSection):
     """
     Y-axis cross section widget
     parent (QWidget): parent widget
@@ -739,8 +748,21 @@ class YCrossSection(CrossSectionWidget):
     OTHER_PANEL_ID = ID_XCS
     CrossSectionPlotKlass = YCrossSectionPlot
     def __init__(self, parent=None, position="right"):
-        CrossSectionWidget.__init__(self, parent)
+        self.spacer1 = QSpacerItem(0, 0)
+        self.spacer2 = QSpacerItem(0, 0)
+        super(YCrossSection, self).__init__(parent)
         self.cs_plot.set_axis_direction("bottom", reverse=position == "left")
+        
+    def setup_widget(self):
+        toolbar = self.toolbar
+        toolbar.setOrientation(Qt.Horizontal)
+        layout = QVBoxLayout()
+        layout.addSpacerItem(self.spacer1)
+        layout.addWidget(toolbar)
+        layout.addWidget(self.cs_plot)
+        layout.addSpacerItem(self.spacer2)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
 
 #===============================================================================
@@ -851,11 +873,4 @@ class RACrossSectionPlot(XCrossSectionPlot):
 class RACrossSection(CrossSectionWidget):
     """Radially-averaged cross section widget"""
     PANEL_ID = ID_RACS
-    OTHER_PANEL_ID = None
     CrossSectionPlotKlass = RACrossSectionPlot
-    
-    def register_panel(self, manager):
-        """Register panel to plot manager"""
-        CrossSectionWidget.register_panel(self, manager)
-        for action in (self.peritem_ac, self.applylut_ac):
-            action.setDisabled(True)
