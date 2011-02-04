@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-01-31 16:56+Paris, Madrid\n"
+"POT-Creation-Date: 2011-02-04 11:37+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,71 +53,71 @@ msgstr "Grille..."
 msgid "Axes style..."
 msgstr "Style des axes..."
 
-#: guiqwt\baseplot.py:67 guiqwt\curve.py:728
+#: guiqwt\baseplot.py:67 guiqwt\curve.py:729
 msgid "Parameters..."
 msgstr "Paramètres..."
 
-#: guiqwt\baseplot.py:106 guiqwt\styles.py:754 guiqwt\styles.py:799
-#: guiqwt\styles.py:1165
+#: guiqwt\baseplot.py:104 guiqwt\styles.py:753 guiqwt\styles.py:798
+#: guiqwt\styles.py:1164
 msgid "Left"
 msgstr "Gauche"
 
-#: guiqwt\baseplot.py:107 guiqwt\styles.py:755 guiqwt\styles.py:800
-#: guiqwt\styles.py:1166
+#: guiqwt\baseplot.py:105 guiqwt\styles.py:754 guiqwt\styles.py:799
+#: guiqwt\styles.py:1165
 msgid "Right"
 msgstr "Droite"
 
-#: guiqwt\baseplot.py:108 guiqwt\styles.py:757 guiqwt\styles.py:802
-#: guiqwt\styles.py:1168
+#: guiqwt\baseplot.py:106 guiqwt\styles.py:756 guiqwt\styles.py:801
+#: guiqwt\styles.py:1167
 msgid "Bottom"
 msgstr "Bas"
 
-#: guiqwt\baseplot.py:109 guiqwt\styles.py:756 guiqwt\styles.py:801
-#: guiqwt\styles.py:1167
+#: guiqwt\baseplot.py:107 guiqwt\styles.py:755 guiqwt\styles.py:800
+#: guiqwt\styles.py:1166
 msgid "Top"
 msgstr "Haut"
 
-#: guiqwt\baseplot.py:242 guiqwt\tools.py:1358
+#: guiqwt\baseplot.py:312 guiqwt\tools.py:1349
 msgid "Unknown file extension"
 msgstr "Extension de fichier inconnue"
 
-#: guiqwt\baseplot.py:645 guiqwt\shapes.py:794 guiqwt\tools.py:830
+#: guiqwt\baseplot.py:675 guiqwt\shapes.py:794 guiqwt\tools.py:830
 msgid "Axes"
 msgstr "Axes"
 
-#: guiqwt\baseplot.py:646
+#: guiqwt\baseplot.py:676
 msgid "Axes associated to selected item"
 msgstr "Axes associés à l'objet sélectionné"
 
-#: guiqwt\builder.py:130 guiqwt\curve.py:201 guiqwt\curve.py:976
-#: guiqwt\curve.py:1005
+#: guiqwt\builder.py:122 guiqwt\curve.py:202 guiqwt\curve.py:977
+#: guiqwt\curve.py:1006
 msgid "Grid"
 msgstr "Grille"
 
-#: guiqwt\builder.py:298 guiqwt\builder.py:372 guiqwt\builder.py:391
-#: guiqwt\builder.py:471 guiqwt\builder.py:497 guiqwt\cross_section.py:349
-#: guiqwt\curve.py:288 guiqwt\histogram.py:110 guiqwt\histogram.py:208
+#: guiqwt\builder.py:290 guiqwt\builder.py:364 guiqwt\builder.py:383
+#: guiqwt\builder.py:463 guiqwt\builder.py:489 guiqwt\cross_section.py:343
+#: guiqwt\curve.py:289 guiqwt\histogram.py:110 guiqwt\histogram.py:208
 msgid "Curve"
 msgstr "Courbe"
 
-#: guiqwt\builder.py:393 guiqwt\builder.py:473 guiqwt\curve.py:498
+#: guiqwt\builder.py:385 guiqwt\builder.py:465 guiqwt\curve.py:499
 msgid "Error bars"
 msgstr "Barres d'erreur"
 
-#: guiqwt\builder.py:495 guiqwt\histogram.py:113 guiqwt\histogram.py:211
-#: guiqwt\styles.py:1246
+#: guiqwt\builder.py:487 guiqwt\histogram.py:113 guiqwt\histogram.py:211
+#: guiqwt\styles.py:1245
 msgid "Histogram"
 msgstr "Histogramme"
 
-#: guiqwt\builder.py:536 guiqwt\builder.py:563 guiqwt\builder.py:587
+#: guiqwt\builder.py:528 guiqwt\builder.py:557 guiqwt\builder.py:584
 #: guiqwt\builder.py:607 guiqwt\builder.py:624 guiqwt\builder.py:666
-#: guiqwt\builder.py:688 guiqwt\image.py:689 guiqwt\image.py:781
-#: guiqwt\image.py:965 guiqwt\image.py:1219 guiqwt\image.py:1329
-#: guiqwt\image.py:1423 guiqwt\image.py:1781 guiqwt\styles.py:980
+#: guiqwt\builder.py:688 guiqwt\image.py:706 guiqwt\image.py:798
+#: guiqwt\image.py:992 guiqwt\image.py:1252 guiqwt\image.py:1365
+#: guiqwt\image.py:1459 guiqwt\image.py:1818 guiqwt\styles.py:979
 msgid "Image"
 msgstr "Image"
 
-#: guiqwt\builder.py:702 guiqwt\styles.py:1135
+#: guiqwt\builder.py:702 guiqwt\styles.py:1134
 msgid "Filter"
 msgstr "Filtre"
 
@@ -145,45 +145,49 @@ msgstr "Pixels"
 msgid "Intensity"
 msgstr "Intensité"
 
-#: guiqwt\cross_section.py:358
+#: guiqwt\cross_section.py:346 guiqwt\tools.py:865
+msgid "Cross section"
+msgstr "Profil rectiligne"
+
+#: guiqwt\cross_section.py:353
 msgid "Enable a marker"
 msgstr "Activer un marqueur"
 
-#: guiqwt\cross_section.py:495 guiqwt\cross_section.py:501
-#: guiqwt\cross_section.py:506 guiqwt\cross_section.py:512
-#: guiqwt\cross_section.py:687
+#: guiqwt\cross_section.py:493 guiqwt\cross_section.py:499
+#: guiqwt\cross_section.py:504 guiqwt\cross_section.py:510
+#: guiqwt\cross_section.py:692
 msgid "Export"
 msgstr "Exporter"
 
-#: guiqwt\cross_section.py:496
+#: guiqwt\cross_section.py:494
 msgid "There is no cross section plot to export."
 msgstr "Aucun profil n'est actuellement affiché."
 
-#: guiqwt\cross_section.py:502
+#: guiqwt\cross_section.py:500
 msgid "Please select a cross section plot."
 msgstr "Merci de sélectionner le profil à exporter."
 
-#: guiqwt\cross_section.py:507
+#: guiqwt\cross_section.py:505
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: guiqwt\cross_section.py:513
+#: guiqwt\cross_section.py:511
 msgid "Unable to export cross section data."
 msgstr "Impossible d'exporter les données du profil."
 
-#: guiqwt\cross_section.py:514
+#: guiqwt\cross_section.py:512
 msgid "Error message:"
 msgstr "Message d'erreur :"
 
-#: guiqwt\cross_section.py:593
+#: guiqwt\cross_section.py:591
 msgid "Cross section tool"
 msgstr "Profils d'images"
 
-#: guiqwt\cross_section.py:671
+#: guiqwt\cross_section.py:676
 msgid "Per image cross-section"
 msgstr "Un profil par image"
 
-#: guiqwt\cross_section.py:674
+#: guiqwt\cross_section.py:679
 msgid ""
 "Enable the per-image cross-section mode, which works directly on image rows/"
 "columns.\n"
@@ -195,7 +199,7 @@ msgstr ""
 "C'est la méthode la plus rapide, mais cela ne fonctionne pas sur des images "
 "ayant subies une transformation (rotation, par exemple)."
 
-#: guiqwt\cross_section.py:680
+#: guiqwt\cross_section.py:685
 msgid ""
 "Apply LUT\n"
 "(contrast settings)"
@@ -203,7 +207,7 @@ msgstr ""
 "Appliquer la LUT\n"
 "(réglages de contraste)"
 
-#: guiqwt\cross_section.py:683
+#: guiqwt\cross_section.py:688
 msgid ""
 "Apply LUT (Look-Up Table) contrast settings.\n"
 "This is the easiest way to compare images which have slightly different "
@@ -217,48 +221,48 @@ msgstr ""
 "\n"
 "Note : la LUT est codée sur 1024 niveaux (0...1023)"
 
-#: guiqwt\cross_section.py:690
+#: guiqwt\cross_section.py:695
 msgid "Export cross section data"
 msgstr "Exporter les données d'un profil"
 
-#: guiqwt\cross_section.py:691
+#: guiqwt\cross_section.py:696
 msgid "Auto-scale"
 msgstr "Échelle automatique"
 
-#: guiqwt\cross_section.py:694
+#: guiqwt\cross_section.py:699
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: guiqwt\cross_section.py:830 guiqwt\tools.py:914
+#: guiqwt\cross_section.py:834 guiqwt\cross_section.py:840 guiqwt\tools.py:914
 msgid "Radially-averaged cross section"
 msgstr "Profil radial moyen"
 
-#: guiqwt\cross_section.py:831
+#: guiqwt\cross_section.py:835
 msgid "Activate the radially-averaged cross section tool"
 msgstr "Activer l'outil de profil radial moyen"
 
-#: guiqwt\curve.py:722
+#: guiqwt\curve.py:723
 msgid "Move to back"
 msgstr "Déplacer vers l'arrière-plan"
 
-#: guiqwt\curve.py:725
+#: guiqwt\curve.py:726
 msgid "Move to front"
 msgstr "Déplacer vers le premier plan"
 
-#: guiqwt\curve.py:731 guiqwt\curve.py:880 guiqwt\tools.py:1561
-#: guiqwt\tools.py:1577 guiqwt\tools.py:1598
+#: guiqwt\curve.py:732 guiqwt\curve.py:881 guiqwt\tools.py:1552
+#: guiqwt\tools.py:1568 guiqwt\tools.py:1589
 msgid "Remove"
 msgstr "Supprimer"
 
-#: guiqwt\curve.py:877 guiqwt\tools.py:1574
+#: guiqwt\curve.py:878 guiqwt\tools.py:1565
 msgid "Do you really want to remove this item?"
 msgstr "Souhaitez-vous vraiment supprimer cet objet ?"
 
-#: guiqwt\curve.py:879 guiqwt\tools.py:1576
+#: guiqwt\curve.py:880 guiqwt\tools.py:1567
 msgid "Do you really want to remove selected items?"
 msgstr "Souhaitez-vous vraiment supprimer les objets sélectionnés ?"
 
-#: guiqwt\curve.py:897 guiqwt\tools.py:1248
+#: guiqwt\curve.py:898 guiqwt\tools.py:1239
 msgid "Item list"
 msgstr "Liste des objets"
 
@@ -319,7 +323,7 @@ msgid "Logarithmic"
 msgstr "logarithmique"
 
 #: guiqwt\fit.py:89 guiqwt\styles.py:595 guiqwt\styles.py:606
-#: guiqwt\tools.py:1472
+#: guiqwt\tools.py:1463
 msgid "Scale"
 msgstr "Échelle"
 
@@ -408,7 +412,7 @@ msgstr ""
 "Supprime les bords (pourcentage choisi) de l'histogramme des niveaux de "
 "l'image, puis affiche l'image résultante"
 
-#: guiqwt\image.py:873
+#: guiqwt\image.py:900
 msgid "Quadrilaterals"
 msgstr "Quadrilatères"
 
@@ -625,12 +629,12 @@ msgstr "Style"
 msgid "Size"
 msgstr "Taille"
 
-#: guiqwt\styles.py:379 guiqwt\styles.py:734
+#: guiqwt\styles.py:379 guiqwt\styles.py:733
 msgid "Border"
 msgstr "Bordure"
 
 #: guiqwt\styles.py:380 guiqwt\styles.py:504 guiqwt\styles.py:539
-#: guiqwt\styles.py:741 guiqwt\styles.py:1029
+#: guiqwt\styles.py:740 guiqwt\styles.py:1028
 msgid "Background color"
 msgstr "Couleur du fond"
 
@@ -639,16 +643,16 @@ msgid "Background alpha"
 msgstr "Opacité du fond"
 
 #: guiqwt\styles.py:422 guiqwt\styles.py:458 guiqwt\styles.py:581
-#: guiqwt\styles.py:945
+#: guiqwt\styles.py:944
 msgid "Color"
 msgstr "Couleur"
 
-#: guiqwt\styles.py:423 guiqwt\styles.py:948 guiqwt\tests\simple_dialog.py:29
+#: guiqwt\styles.py:423 guiqwt\styles.py:947 guiqwt\tests\simple_dialog.py:29
 #: guiqwt\tests\simple_window.py:42
 msgid "Width"
 msgstr "Largeur"
 
-#: guiqwt\styles.py:459 guiqwt\styles.py:946
+#: guiqwt\styles.py:459 guiqwt\styles.py:945
 msgid "Alpha"
 msgstr "Alpha"
 
@@ -668,7 +672,7 @@ msgstr "sy"
 msgid "Font"
 msgstr "Police"
 
-#: guiqwt\styles.py:503 guiqwt\styles.py:740
+#: guiqwt\styles.py:503 guiqwt\styles.py:739
 msgid "Text color"
 msgstr "Couleur du texte"
 
@@ -686,10 +690,10 @@ msgstr "Abscisses"
 msgid "Y Axis"
 msgstr "Ordonnées"
 
-#: guiqwt\styles.py:543 guiqwt\styles.py:549 guiqwt\styles.py:683
-#: guiqwt\styles.py:890 guiqwt\styles.py:1276 guiqwt\styles.py:1279
-#: guiqwt\styles.py:1325 guiqwt\styles.py:1328 guiqwt\styles.py:1381
-#: guiqwt\styles.py:1384
+#: guiqwt\styles.py:543 guiqwt\styles.py:549 guiqwt\styles.py:682
+#: guiqwt\styles.py:889 guiqwt\styles.py:1275 guiqwt\styles.py:1278
+#: guiqwt\styles.py:1324 guiqwt\styles.py:1327 guiqwt\styles.py:1380
+#: guiqwt\styles.py:1383
 msgid "Line"
 msgstr "Trait"
 
@@ -697,9 +701,9 @@ msgstr "Trait"
 msgid "Minor grid"
 msgstr "Quadrillage secondaire"
 
-#: guiqwt\styles.py:580 guiqwt\styles.py:719 guiqwt\styles.py:848
-#: guiqwt\styles.py:888 guiqwt\styles.py:1135 guiqwt\styles.py:1246
-#: guiqwt\styles.py:1357 guiqwt\tests\signal_app.py:43
+#: guiqwt\styles.py:580 guiqwt\styles.py:718 guiqwt\styles.py:847
+#: guiqwt\styles.py:887 guiqwt\styles.py:1134 guiqwt\styles.py:1245
+#: guiqwt\styles.py:1356 guiqwt\tests\signal_app.py:43
 #: guiqwt\tests\simple_dialog.py:28 guiqwt\tests\simple_window.py:39
 msgid "Title"
 msgstr "Titre"
@@ -712,8 +716,8 @@ msgstr "Police du titre"
 msgid "Values font"
 msgstr "Police des valeurs"
 
-#: guiqwt\styles.py:591 guiqwt\styles.py:602 guiqwt\styles.py:746
-#: guiqwt\styles.py:794 guiqwt\styles.py:810
+#: guiqwt\styles.py:591 guiqwt\styles.py:602 guiqwt\styles.py:745
+#: guiqwt\styles.py:793 guiqwt\styles.py:809
 msgid "Position"
 msgstr "Position"
 
@@ -733,8 +737,8 @@ msgstr "Position de l'axe des abscisses"
 msgid "linear"
 msgstr "linéaire"
 
-#: guiqwt\styles.py:596 guiqwt\styles.py:607 guiqwt\styles.py:1225
-#: guiqwt\styles.py:1252
+#: guiqwt\styles.py:596 guiqwt\styles.py:607 guiqwt\styles.py:1224
+#: guiqwt\styles.py:1251
 msgid "logarithmic"
 msgstr "logarithmique"
 
@@ -778,500 +782,500 @@ msgstr "Borne inférieure des niveaux"
 msgid "Upper z-axis limit"
 msgstr "Borne supérieure des niveaux"
 
-#: guiqwt\styles.py:681 guiqwt\styles.py:731 guiqwt\styles.py:891
-#: guiqwt\styles.py:1281 guiqwt\styles.py:1284 guiqwt\styles.py:1386
-#: guiqwt\styles.py:1389 guiqwt\tests\styles.py:27 guiqwt\tests\styles.py:33
-#: guiqwt\tests\styles.py:41 guiqwt\tests\styles.py:43
-#: guiqwt\tests\styles.py:49 guiqwt\tests\styles.py:52
+#: guiqwt\styles.py:680 guiqwt\styles.py:730 guiqwt\styles.py:890
+#: guiqwt\styles.py:1280 guiqwt\styles.py:1283 guiqwt\styles.py:1385
+#: guiqwt\styles.py:1388 guiqwt\tests\styles.py:28 guiqwt\tests\styles.py:34
+#: guiqwt\tests\styles.py:42 guiqwt\tests\styles.py:44
+#: guiqwt\tests\styles.py:50 guiqwt\tests\styles.py:53
 msgid "Symbol"
 msgstr "Symbole"
 
-#: guiqwt\styles.py:682 guiqwt\styles.py:738 guiqwt\styles.py:744
+#: guiqwt\styles.py:681 guiqwt\styles.py:737 guiqwt\styles.py:743
 msgid "Text"
 msgstr "Texte"
 
-#: guiqwt\styles.py:684 guiqwt\tests\styles.py:62 guiqwt\tests\styles.py:67
-#: guiqwt\tests\styles.py:74 guiqwt\tests\styles.py:76
-#: guiqwt\tests\styles.py:81 guiqwt\tests\styles.py:84
+#: guiqwt\styles.py:683 guiqwt\tests\styles.py:63 guiqwt\tests\styles.py:68
+#: guiqwt\tests\styles.py:75 guiqwt\tests\styles.py:77
+#: guiqwt\tests\styles.py:82 guiqwt\tests\styles.py:85
 msgid "Line style"
 msgstr "Style de trait"
 
-#: guiqwt\styles.py:685
+#: guiqwt\styles.py:684
 msgid "None"
 msgstr "Aucun"
 
-#: guiqwt\styles.py:686
+#: guiqwt\styles.py:685
 msgid "Horizontal"
 msgstr "Horizontal"
 
-#: guiqwt\styles.py:687
+#: guiqwt\styles.py:686
 msgid "Vertical"
 msgstr "Vertical"
 
-#: guiqwt\styles.py:688
+#: guiqwt\styles.py:687
 msgid "Both"
 msgstr "Les deux"
 
-#: guiqwt\styles.py:690
+#: guiqwt\styles.py:689
 msgid "Spacing"
 msgstr "Espacement"
 
-#: guiqwt\styles.py:724 guiqwt\styles.py:728
+#: guiqwt\styles.py:723 guiqwt\styles.py:727
 msgid "Contents"
 msgstr "Contenu"
 
-#: guiqwt\styles.py:735
+#: guiqwt\styles.py:734
 msgid "set width to 0 to disable"
 msgstr "entrer 0 pour désactiver"
 
-#: guiqwt\styles.py:739
+#: guiqwt\styles.py:738
 msgid "Text font"
 msgstr "Police du texte"
 
-#: guiqwt\styles.py:742
+#: guiqwt\styles.py:741
 msgid "Background transparency"
 msgstr "Opacité du fond"
 
-#: guiqwt\styles.py:747
+#: guiqwt\styles.py:746
 msgid "Position relative to anchor"
 msgstr "Position de l'étiquette par rapport au point d'ancrage"
 
-#: guiqwt\styles.py:749
+#: guiqwt\styles.py:748
 msgid "Corner"
 msgstr "Coin"
 
-#: guiqwt\styles.py:750 guiqwt\styles.py:795
+#: guiqwt\styles.py:749 guiqwt\styles.py:794
 msgid "Top left"
 msgstr "En haut à gauche"
 
-#: guiqwt\styles.py:751 guiqwt\styles.py:796
+#: guiqwt\styles.py:750 guiqwt\styles.py:795
 msgid "Top right"
 msgstr "En haut à droite"
 
-#: guiqwt\styles.py:752 guiqwt\styles.py:797
+#: guiqwt\styles.py:751 guiqwt\styles.py:796
 msgid "Bottom left"
 msgstr "En bas à gauche"
 
-#: guiqwt\styles.py:753 guiqwt\styles.py:798
+#: guiqwt\styles.py:752 guiqwt\styles.py:797
 msgid "Bottom right"
 msgstr "En bas à droite"
 
-#: guiqwt\styles.py:758 guiqwt\styles.py:803
+#: guiqwt\styles.py:757 guiqwt\styles.py:802
 msgid "Center"
 msgstr "Centre"
 
-#: guiqwt\styles.py:759
+#: guiqwt\styles.py:758
 msgid "Label position relative to anchor point"
 msgstr "Position de l'étiquette par rapport au point d'ancrage"
 
-#: guiqwt\styles.py:762
+#: guiqwt\styles.py:761
 msgid "ΔX"
 msgstr "ΔX"
 
-#: guiqwt\styles.py:763
+#: guiqwt\styles.py:762
 msgid "Horizontal offset (pixels) relative to anchor point"
 msgstr "Décalage horizontal (pixels) par rapport au point d'ancrage"
 
-#: guiqwt\styles.py:765
+#: guiqwt\styles.py:764
 msgid "ΔY"
 msgstr "ΔY"
 
-#: guiqwt\styles.py:766
+#: guiqwt\styles.py:765
 msgid "Vertical offset (pixels) relative to anchor point"
 msgstr "Décalage vertical (pixels) par rapport au point d'ancrage"
 
-#: guiqwt\styles.py:769 guiqwt\styles.py:774
+#: guiqwt\styles.py:768 guiqwt\styles.py:773
 msgid "Anchor"
 msgstr "Ancre"
 
-#: guiqwt\styles.py:771 guiqwt\styles.py:808
+#: guiqwt\styles.py:770 guiqwt\styles.py:807
 msgid "Anchor position"
 msgstr "Position du point d'ancrage"
 
-#: guiqwt\styles.py:774
+#: guiqwt\styles.py:773
 msgid "Attach to canvas"
 msgstr "Attacher au canevas"
 
-#: guiqwt\styles.py:778
+#: guiqwt\styles.py:777
 msgid "X"
 msgstr "X"
 
-#: guiqwt\styles.py:779
+#: guiqwt\styles.py:778
 msgid "X-axis position in canvas coordinates"
 msgstr "Abscisse en coordonnées du canevas"
 
-#: guiqwt\styles.py:782
+#: guiqwt\styles.py:781
 msgid "Y"
 msgstr "Y"
 
-#: guiqwt\styles.py:783
+#: guiqwt\styles.py:782
 msgid "Y-axis position in canvas coordinates"
 msgstr "Ordonnée en coordonnées du canevas"
 
-#: guiqwt\styles.py:787
+#: guiqwt\styles.py:786
 msgid "Interact"
 msgstr "Interaction"
 
-#: guiqwt\styles.py:788
+#: guiqwt\styles.py:787
 msgid "moving object changes anchor position"
 msgstr "déplacer l'objet modifie le point d'ancrage"
 
-#: guiqwt\styles.py:789
+#: guiqwt\styles.py:788
 msgid "moving object changes label position"
 msgstr "déplacer l'objet modifie la position de l'étiquette"
 
-#: guiqwt\styles.py:804
+#: guiqwt\styles.py:803
 msgid "Absolute position on canvas"
 msgstr "Position absolue sur le canevas"
 
-#: guiqwt\styles.py:892
+#: guiqwt\styles.py:891
 msgid "Shadow"
 msgstr "Ombre"
 
-#: guiqwt\styles.py:893
+#: guiqwt\styles.py:892
 msgid "Fit curve to data"
 msgstr "Ajuster la courbe aux données"
 
-#: guiqwt\styles.py:893
+#: guiqwt\styles.py:892
 msgid "Fitting"
 msgstr "Ajustement"
 
-#: guiqwt\styles.py:894
+#: guiqwt\styles.py:893
 msgid "Curve style"
 msgstr "Style de courbe"
 
-#: guiqwt\styles.py:896
+#: guiqwt\styles.py:895
 msgid "Curve type"
 msgstr "Type de courbe"
 
-#: guiqwt\styles.py:898
+#: guiqwt\styles.py:897
 msgid "Baseline"
 msgstr "Ligne de base"
 
-#: guiqwt\styles.py:939 guiqwt\styles.py:1226
+#: guiqwt\styles.py:938 guiqwt\styles.py:1225
 msgid "Display"
 msgstr "Affichage"
 
-#: guiqwt\styles.py:940
+#: guiqwt\styles.py:939
 msgid "error bars with caps (x, y)"
 msgstr "barres d'erreurs (x, y)"
 
-#: guiqwt\styles.py:941
+#: guiqwt\styles.py:940
 msgid "error area (y)"
 msgstr "zone d'erreur (y)"
 
-#: guiqwt\styles.py:942
+#: guiqwt\styles.py:941
 msgid ""
 "Note: only y-axis error bars are shown in error area mode\n"
 "(width and cap parameters will also be ignored)"
 msgstr ""
 "Note: seules les erreurs en y sont indiquées dans le mode zone d'erreur"
 
-#: guiqwt\styles.py:947
+#: guiqwt\styles.py:946
 msgid "Error bar transparency"
 msgstr "Transparence de la barre d'erreur"
 
-#: guiqwt\styles.py:949
+#: guiqwt\styles.py:948
 msgid "Cap"
 msgstr "Bordure"
 
-#: guiqwt\styles.py:950
+#: guiqwt\styles.py:949
 msgid "Visibility"
 msgstr "Ordre"
 
-#: guiqwt\styles.py:950
+#: guiqwt\styles.py:949
 msgid "set to foreground"
 msgstr "afficher en premier plan"
 
-#: guiqwt\styles.py:980 guiqwt\tests\simple_dialog.py:72
+#: guiqwt\styles.py:979 guiqwt\tests\simple_dialog.py:72
 msgid "Image title"
 msgstr "Titre de l'image"
 
-#: guiqwt\styles.py:982
+#: guiqwt\styles.py:981
 msgid "Alpha channel"
 msgstr "Canal alpha"
 
-#: guiqwt\styles.py:982
+#: guiqwt\styles.py:981
 msgid "Use image level as alpha"
 msgstr "Utiliser les niveaux de l'image"
 
-#: guiqwt\styles.py:984
+#: guiqwt\styles.py:983
 msgid "Global alpha"
 msgstr "Alpha global"
 
-#: guiqwt\styles.py:985
+#: guiqwt\styles.py:984
 msgid "Global alpha value"
 msgstr "Valeur globale du canal alpha"
 
-#: guiqwt\styles.py:987 guiqwt\tools.py:1623
+#: guiqwt\styles.py:986 guiqwt\tools.py:1614
 msgid "Colormap"
 msgstr "Échelle de couleur"
 
-#: guiqwt\styles.py:991
+#: guiqwt\styles.py:990
 msgid "Interpolation"
 msgstr "Interpolation"
 
-#: guiqwt\styles.py:992
+#: guiqwt\styles.py:991
 msgid "None (nearest pixel)"
 msgstr "Néant (plus proche pixel)"
 
-#: guiqwt\styles.py:993
+#: guiqwt\styles.py:992
 msgid "Linear interpolation"
 msgstr "Interpolation linéaire"
 
-#: guiqwt\styles.py:994
+#: guiqwt\styles.py:993
 msgid "2x2 antialiasing filter"
 msgstr "Filtre anti-repliement 2x2"
 
-#: guiqwt\styles.py:995
+#: guiqwt\styles.py:994
 msgid "3x3 antialiasing filter"
 msgstr "Filtre anti-repliement 3x3"
 
-#: guiqwt\styles.py:996
+#: guiqwt\styles.py:995
 msgid "5x5 antialiasing filter"
 msgstr "Filtre anti-repliement 5x5"
 
-#: guiqwt\styles.py:997
+#: guiqwt\styles.py:996
 msgid "Image interpolation type"
 msgstr "Type d'interpolation"
 
-#: guiqwt\styles.py:1057 guiqwt\styles.py:1060
+#: guiqwt\styles.py:1056 guiqwt\styles.py:1059
 msgid "Image placement along X-axis"
 msgstr "Positionnement de l'image le long de l'axe des X"
 
-#: guiqwt\styles.py:1058 guiqwt\styles.py:1137
+#: guiqwt\styles.py:1057 guiqwt\styles.py:1136
 msgid "x|min"
 msgstr "x|min"
 
-#: guiqwt\styles.py:1059 guiqwt\styles.py:1138
+#: guiqwt\styles.py:1058 guiqwt\styles.py:1137
 msgid "x|max"
 msgstr "x|max"
 
-#: guiqwt\styles.py:1061 guiqwt\styles.py:1064
+#: guiqwt\styles.py:1060 guiqwt\styles.py:1063
 msgid "Image placement along Y-axis"
 msgstr "Positionnement de l'image le long de l'axe des Y"
 
-#: guiqwt\styles.py:1062 guiqwt\styles.py:1139
+#: guiqwt\styles.py:1061 guiqwt\styles.py:1138
 msgid "y|min"
 msgstr "y|min"
 
-#: guiqwt\styles.py:1063 guiqwt\styles.py:1140
+#: guiqwt\styles.py:1062 guiqwt\styles.py:1139
 msgid "y|max"
 msgstr "y|max"
 
-#: guiqwt\styles.py:1115 guiqwt\styles.py:1122 guiqwt\tools.py:1686
+#: guiqwt\styles.py:1114 guiqwt\styles.py:1121 guiqwt\tools.py:1677
 msgid "Mask"
 msgstr "Masque"
 
-#: guiqwt\styles.py:1116
+#: guiqwt\styles.py:1115
 msgid "Filling value"
 msgstr "Valeur de remplissage"
 
-#: guiqwt\styles.py:1117 guiqwt\tools.py:1714
+#: guiqwt\styles.py:1116 guiqwt\tools.py:1705
 msgid "Show image mask"
 msgstr "Afficher le masque"
 
-#: guiqwt\styles.py:1118
+#: guiqwt\styles.py:1117
 msgid "Masked area alpha"
 msgstr "Zone masquée (alpha)"
 
-#: guiqwt\styles.py:1120
+#: guiqwt\styles.py:1119
 msgid "Unmasked area alpha"
 msgstr "Zone non masquée (alpha)"
 
-#: guiqwt\styles.py:1136
+#: guiqwt\styles.py:1135
 msgid "Bounds"
 msgstr "Bornes"
 
-#: guiqwt\styles.py:1142
+#: guiqwt\styles.py:1141
 msgid "Use image colormap and level"
 msgstr "Utiliser l'échelle de couleur de l'image"
 
-#: guiqwt\styles.py:1143
+#: guiqwt\styles.py:1142
 msgid "Color map"
 msgstr "Échelle de couleur"
 
-#: guiqwt\styles.py:1164
+#: guiqwt\styles.py:1163
 msgid "Crop"
 msgstr "Rognage"
 
-#: guiqwt\styles.py:1169
+#: guiqwt\styles.py:1168
 msgid "Cropping"
 msgstr "Rognage"
 
-#: guiqwt\styles.py:1170 guiqwt\styles.py:1173
+#: guiqwt\styles.py:1169 guiqwt\styles.py:1172
 msgid "Pixel size"
 msgstr "Taille des pixels"
 
-#: guiqwt\styles.py:1171
+#: guiqwt\styles.py:1170
 msgid "Width (dx)"
 msgstr "Largeur (dx)"
 
-#: guiqwt\styles.py:1172
+#: guiqwt\styles.py:1171
 msgid "Height (dy)"
 msgstr "Hauteur (dy)"
 
-#: guiqwt\styles.py:1174 guiqwt\styles.py:1180
+#: guiqwt\styles.py:1173 guiqwt\styles.py:1179
 msgid "Translate, rotate and flip"
 msgstr "Translation, rotation et symétrie"
 
-#: guiqwt\styles.py:1175
+#: guiqwt\styles.py:1174
 msgid "x<sub>CENTER</sub>"
 msgstr "x<sub>CENTRE</sub>"
 
-#: guiqwt\styles.py:1176
+#: guiqwt\styles.py:1175
 msgid "Flip horizontally"
 msgstr "Symétrie horizontale"
 
-#: guiqwt\styles.py:1177
+#: guiqwt\styles.py:1176
 msgid "y<sub>CENTER</sub>"
 msgstr "y<sub>CENTRE</sub>"
 
-#: guiqwt\styles.py:1178
+#: guiqwt\styles.py:1177
 msgid "Flip vertically"
 msgstr "Symétrie verticale"
 
-#: guiqwt\styles.py:1179
+#: guiqwt\styles.py:1178
 msgid "θ (°)"
 msgstr "θ (°)"
 
-#: guiqwt\styles.py:1224
+#: guiqwt\styles.py:1223
 msgid "Bins"
 msgstr "Classes"
 
-#: guiqwt\styles.py:1224
+#: guiqwt\styles.py:1223
 msgid "Number of bins"
 msgstr "Nombre de classes"
 
-#: guiqwt\styles.py:1225
+#: guiqwt\styles.py:1224
 msgid "Y-axis scale"
 msgstr "Échelle en y"
 
-#: guiqwt\styles.py:1226
+#: guiqwt\styles.py:1225
 msgid "force first bin to zero"
 msgstr "forcer la première classe à zéro"
 
-#: guiqwt\styles.py:1248
+#: guiqwt\styles.py:1247
 msgid "X-axis bins"
 msgstr "Classes en x"
 
-#: guiqwt\styles.py:1249
+#: guiqwt\styles.py:1248
 msgid "Number of bins along x-axis"
 msgstr "Nombre de classes le long de l'axe des abscisses"
 
-#: guiqwt\styles.py:1250
+#: guiqwt\styles.py:1249
 msgid "Y-axis bins"
 msgstr "Classes en y"
 
-#: guiqwt\styles.py:1251
+#: guiqwt\styles.py:1250
 msgid "Number of bins along y-axis"
 msgstr "Nombre de classes le long de l'axes des ordonnées"
 
-#: guiqwt\styles.py:1252
+#: guiqwt\styles.py:1251
 msgid "Z-axis scale"
 msgstr "Échelle en z"
 
-#: guiqwt\styles.py:1277 guiqwt\styles.py:1382
+#: guiqwt\styles.py:1276 guiqwt\styles.py:1381
 msgid "Line (not selected)"
 msgstr "Trait (hors sélection)"
 
-#: guiqwt\styles.py:1278 guiqwt\styles.py:1383
+#: guiqwt\styles.py:1277 guiqwt\styles.py:1382
 msgid "Line (selected)"
 msgstr "Trait (sélection)"
 
-#: guiqwt\styles.py:1282 guiqwt\styles.py:1387
+#: guiqwt\styles.py:1281 guiqwt\styles.py:1386
 msgid "Symbol (not selected)"
 msgstr "Symbole (hors sélection)"
 
-#: guiqwt\styles.py:1283 guiqwt\styles.py:1388
+#: guiqwt\styles.py:1282 guiqwt\styles.py:1387
 msgid "Symbol (selected)"
 msgstr "Symbole (sélection)"
 
-#: guiqwt\styles.py:1286 guiqwt\styles.py:1290 guiqwt\styles.py:1330
-#: guiqwt\styles.py:1334
+#: guiqwt\styles.py:1285 guiqwt\styles.py:1289 guiqwt\styles.py:1329
+#: guiqwt\styles.py:1333
 msgid "Fill pattern"
 msgstr "Motif de remplissage"
 
-#: guiqwt\styles.py:1288
+#: guiqwt\styles.py:1287
 msgid "Fill pattern (not selected)"
 msgstr "Motif de remplissage (hors sélection)"
 
-#: guiqwt\styles.py:1289
+#: guiqwt\styles.py:1288
 msgid "Fill pattern (selected)"
 msgstr "Motif de remplissage (sélection)"
 
-#: guiqwt\styles.py:1293
+#: guiqwt\styles.py:1292
 msgid "Read-only shape"
 msgstr "Lecture seule"
 
-#: guiqwt\styles.py:1294
+#: guiqwt\styles.py:1293
 msgid "Read-only shapes can't be removed from the item list panel"
 msgstr ""
 "Les formes en lecture seule ne peuvent pas être supprimer du panneau de "
 "liste des objets"
 
-#: guiqwt\styles.py:1296
+#: guiqwt\styles.py:1295
 msgid "Private shape"
 msgstr "Forme privée"
 
-#: guiqwt\styles.py:1297
+#: guiqwt\styles.py:1296
 msgid "Private shapes are not shown in the item list panel"
 msgstr ""
 "Les formes privées ne sont pas affichées dans le panneau de liste des objets"
 
-#: guiqwt\styles.py:1321
+#: guiqwt\styles.py:1320
 msgid "Arrow angle (°)"
 msgstr "Angle de la flèche (°)"
 
-#: guiqwt\styles.py:1322
+#: guiqwt\styles.py:1321
 msgid "Arrow size (%)"
 msgstr "Taille de la flèche (%)"
 
-#: guiqwt\styles.py:1326
+#: guiqwt\styles.py:1325
 msgid "Line (X-Axis)"
 msgstr "Trait (axes des x)"
 
-#: guiqwt\styles.py:1327
+#: guiqwt\styles.py:1326
 msgid "Line (Y-Axis)"
 msgstr "Trait (axes des y)"
 
-#: guiqwt\styles.py:1332
+#: guiqwt\styles.py:1331
 msgid "Fill pattern (X-Axis)"
 msgstr "Motif de remplissage (axes des x)"
 
-#: guiqwt\styles.py:1333
+#: guiqwt\styles.py:1332
 msgid "Fill pattern (Y-Axis)"
 msgstr "Motif de remplissage (axes des y)"
 
-#: guiqwt\styles.py:1355
+#: guiqwt\styles.py:1354
 msgid "Show annotation"
 msgstr "Afficher l'annotation"
 
-#: guiqwt\styles.py:1356
+#: guiqwt\styles.py:1355
 msgid "Show position and size"
 msgstr "Afficher la position et la taille"
 
-#: guiqwt\styles.py:1358
+#: guiqwt\styles.py:1357
 msgid "Subtitle"
 msgstr "Sous-titre"
 
-#: guiqwt\styles.py:1359
+#: guiqwt\styles.py:1358
 msgid "String formatting"
 msgstr "Format"
 
-#: guiqwt\styles.py:1360
+#: guiqwt\styles.py:1359
 msgid "Transform matrix"
 msgstr "Matrice de transformation"
 
-#: guiqwt\styles.py:1391 guiqwt\styles.py:1395
+#: guiqwt\styles.py:1390 guiqwt\styles.py:1394
 msgid "Fill"
 msgstr "Remplissage"
 
-#: guiqwt\styles.py:1393
+#: guiqwt\styles.py:1392
 msgid "Fill color"
 msgstr "Couleur de remplissage"
 
-#: guiqwt\styles.py:1394
+#: guiqwt\styles.py:1393
 msgid "Shade"
 msgstr "Ombre"
 
@@ -1279,7 +1283,7 @@ msgstr "Ombre"
 msgid "Select one point then press OK to accept"
 msgstr "Sélectionnez un point puis appuyer sur OK pour valider"
 
-#: guiqwt\tests\hist2d.py:23 guiqwt\tools.py:1086
+#: guiqwt\tests\hist2d.py:23 guiqwt\tools.py:1077
 msgid "Markers"
 msgstr "Marqueurs"
 
@@ -1338,7 +1342,7 @@ msgid "Create a new signal"
 msgstr "Créer un nouveau signal"
 
 #: guiqwt\tests\signal_app.py:88 guiqwt\tests\simple_window.py:177
-#: guiqwt\tools.py:1414
+#: guiqwt\tools.py:1405
 msgid "Open..."
 msgstr "Ouvrir..."
 
@@ -1391,7 +1395,7 @@ msgid "New gaussian function"
 msgstr "Nouvelle gaussienne"
 
 #: guiqwt\tests\signal_app.py:262 guiqwt\tests\simple_window.py:231
-#: guiqwt\tools.py:1421
+#: guiqwt\tools.py:1412
 msgid "Open"
 msgstr "Ouvrir"
 
@@ -1520,151 +1524,147 @@ msgstr "Segment"
 msgid "Circle"
 msgstr "Cercle"
 
-#: guiqwt\tools.py:865
-msgid "Cross section"
-msgstr "Profil rectiligne"
-
 #: guiqwt\tools.py:907
 msgid "Average cross section"
 msgstr "Profil rectiligne moyen"
 
-#: guiqwt\tools.py:932
+#: guiqwt\tools.py:923
 msgid "Rectangle zoom"
 msgstr "Zoom rectangulaire"
 
-#: guiqwt\tools.py:951
+#: guiqwt\tools.py:942
 msgid "Horizontal selection"
 msgstr "Sélection horizontale"
 
-#: guiqwt\tools.py:1073
+#: guiqwt\tools.py:1064
 msgid "Antialiasing (curves)"
 msgstr "Anticrénelage (courbes)"
 
-#: guiqwt\tools.py:1094
+#: guiqwt\tools.py:1085
 msgid "Free"
 msgstr "Libre"
 
-#: guiqwt\tools.py:1096
+#: guiqwt\tools.py:1087
 msgid "Bound to active item"
 msgstr "Lié à l'objet actif"
 
-#: guiqwt\tools.py:1124
+#: guiqwt\tools.py:1115
 msgid "Reverse Y axis"
 msgstr "Inverser l'axe des ordonnées"
 
-#: guiqwt\tools.py:1137
+#: guiqwt\tools.py:1128
 msgid "Lock aspect ratio"
 msgstr "Verrouiller le rapport hauteur/largeur"
 
-#: guiqwt\tools.py:1138
+#: guiqwt\tools.py:1129
 msgid "Current value"
 msgstr "Valeur actuelle"
 
-#: guiqwt\tools.py:1139
+#: guiqwt\tools.py:1130
 msgid "Lock value"
 msgstr "Valeur imposée"
 
-#: guiqwt\tools.py:1143 guiqwt\tools.py:1149
+#: guiqwt\tools.py:1134 guiqwt\tools.py:1140
 msgid "Aspect ratio"
 msgstr "Rapport hauteur/largeur"
 
-#: guiqwt\tools.py:1151
+#: guiqwt\tools.py:1142
 msgid "Lock"
 msgstr "Verrouiller"
 
-#: guiqwt\tools.py:1153
+#: guiqwt\tools.py:1144
 msgid "1:1"
 msgstr "Rapport unité"
 
-#: guiqwt\tools.py:1155
+#: guiqwt\tools.py:1146
 msgid "Edit..."
 msgstr "Modifier..."
 
-#: guiqwt\tools.py:1227
+#: guiqwt\tools.py:1218
 msgid "Contrast adjustment"
 msgstr "Réglage du contraste"
 
-#: guiqwt\tools.py:1240
+#: guiqwt\tools.py:1231
 msgid "X-axis cross section"
 msgstr "Profil selon l'axe des abscisses"
 
-#: guiqwt\tools.py:1244
+#: guiqwt\tools.py:1235
 msgid "Y-axis cross section"
 msgstr "Profil selon l'axe des ordonnées"
 
-#: guiqwt\tools.py:1263
+#: guiqwt\tools.py:1254
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 
-#: guiqwt\tools.py:1270
+#: guiqwt\tools.py:1261
 msgid "PNG image"
 msgstr "Image PNG"
 
-#: guiqwt\tools.py:1276
+#: guiqwt\tools.py:1267
 msgid "PDF document"
 msgstr "Document PDF"
 
-#: guiqwt\tools.py:1277 guiqwt\tools.py:1330
+#: guiqwt\tools.py:1268 guiqwt\tools.py:1321
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: guiqwt\tools.py:1277 guiqwt\tools.py:1330 guiqwt\tools.py:1439
+#: guiqwt\tools.py:1268 guiqwt\tools.py:1321 guiqwt\tools.py:1430
 msgid "untitled"
 msgstr "sanstitre"
 
-#: guiqwt\tools.py:1297 guiqwt\tools.py:1361
+#: guiqwt\tools.py:1288 guiqwt\tools.py:1352
 msgid "Rectangle snapshot"
 msgstr "Capture rectangulaire"
 
-#: guiqwt\tools.py:1298
+#: guiqwt\tools.py:1289
 msgid "There is no supported image item in current plot."
 msgstr "La figure ne contient aucun objet image pris en charge."
 
-#: guiqwt\tools.py:1311
+#: guiqwt\tools.py:1302
 msgid "Destination size:"
 msgstr "Taille de destination :"
 
-#: guiqwt\tools.py:1325
+#: guiqwt\tools.py:1316
 msgid "16-bits DICOM image"
 msgstr "Image DICOM 16 bits"
 
-#: guiqwt\tools.py:1328
+#: guiqwt\tools.py:1319
 msgid "16-bits TIFF image"
 msgstr "Image TIFF 16 bits"
 
-#: guiqwt\tools.py:1329
+#: guiqwt\tools.py:1320
 msgid "8-bits PNG image"
 msgstr "Image PNG 8 bits"
 
-#: guiqwt\tools.py:1393
+#: guiqwt\tools.py:1384
 msgid "Print..."
 msgstr "Imprimer..."
 
-#: guiqwt\tools.py:1435
+#: guiqwt\tools.py:1426
 msgid "Save items"
 msgstr "Enregistrer les objets guiqwt"
 
-#: guiqwt\tools.py:1439
+#: guiqwt\tools.py:1430
 msgid "Save items as"
 msgstr "Enregistrer les objets guiqwt sous"
 
-#: guiqwt\tools.py:1440
+#: guiqwt\tools.py:1431
 msgid "guiqwt items"
 msgstr "Objets guiqwt"
 
-#: guiqwt\tools.py:1448
+#: guiqwt\tools.py:1439
 msgid "Load items"
 msgstr "Charger les objets guiqwt"
 
-#: guiqwt\tools.py:1466
+#: guiqwt\tools.py:1457
 msgid "DICOM images"
 msgstr "Images DICOM"
 
-#: guiqwt\tools.py:1543 guiqwt\tools.py:1548
+#: guiqwt\tools.py:1534 guiqwt\tools.py:1539
 msgid "Help"
 msgstr "Aide"
 
-#: guiqwt\tools.py:1549
+#: guiqwt\tools.py:1540
 msgid ""
 "Keyboard/mouse shortcuts:\n"
 "  - single left-click: item (curve, image, ...) selection\n"
@@ -1686,51 +1686,51 @@ msgstr ""
 "('pan')\n"
 "  - clique droit + déplacement souris : agrandissement ('zoom')"
 
-#: guiqwt\tools.py:1586
+#: guiqwt\tools.py:1577
 msgid "Duplicate"
 msgstr "Dupliquer"
 
-#: guiqwt\tools.py:1624
+#: guiqwt\tools.py:1615
 msgid "Select colormap for active image"
 msgstr "Sélectionne l'échelle de couleurs de l'image active"
 
-#: guiqwt\tools.py:1695
+#: guiqwt\tools.py:1686
 msgid "Mask rectangular area (inside)"
 msgstr "Masquer l'intérieur d'une zone rectangulaire"
 
-#: guiqwt\tools.py:1700
+#: guiqwt\tools.py:1691
 msgid "Mask rectangular area (outside)"
 msgstr "Masquer l'extérieur d'une zone rectangulaire"
 
-#: guiqwt\tools.py:1705
+#: guiqwt\tools.py:1696
 msgid "Mask circular area (inside)"
 msgstr "Masquer l'intérieur d'une zone circulaire"
 
-#: guiqwt\tools.py:1710
+#: guiqwt\tools.py:1701
 msgid "Mask circular area (outside)"
 msgstr "Masquer l'extérieur d'une zone circulaire"
 
-#: guiqwt\tools.py:1716
+#: guiqwt\tools.py:1707
 msgid "Show masking shapes"
 msgstr "Afficher les formes de masquage"
 
-#: guiqwt\tools.py:1719
+#: guiqwt\tools.py:1710
 msgid "Apply mask"
 msgstr "Appliquer le masque"
 
-#: guiqwt\tools.py:1722 guiqwt\tools.py:1840
+#: guiqwt\tools.py:1713 guiqwt\tools.py:1832
 msgid "Clear mask"
 msgstr "Effacer le masque"
 
-#: guiqwt\tools.py:1725 guiqwt\tools.py:1767
+#: guiqwt\tools.py:1716 guiqwt\tools.py:1759
 msgid "Remove all masking shapes"
 msgstr "Supprimer toutes les formes de masquage"
 
-#: guiqwt\tools.py:1765
+#: guiqwt\tools.py:1757
 msgid "Do you really want to remove all masking shapes?"
 msgstr "Souhaitez-vous vraiment supprimer toutes les formes de masquage ?"
 
-#: guiqwt\tools.py:1838
+#: guiqwt\tools.py:1830
 msgid "Do you really want to clear the mask?"
 msgstr "Souhaitez-vous vraiment effacer le masque ?"
 
