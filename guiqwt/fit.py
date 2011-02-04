@@ -99,15 +99,20 @@ class FitParam(DataSet):
         self.logscale = logscale
         self.steps = steps
         self.format = format
+        self.button = None
+        self.checkbox = None
+        self.slider = None
         self.label = None
         
-    def get_widgets(self, parent):
-        button = QPushButton(get_icon('edit.png'), _('Edit'), parent)
-        button.setToolTip(_("Edit fit parameter '%s' properties") % self.name)
-        QObject.connect(button, SIGNAL('clicked()'), self.edit_param)
+    def create_widgets(self, parent):
+        self.button = QPushButton(get_icon('edit.png'), _('Edit'), parent)
+        self.button.setToolTip(
+                        _("Edit fit parameter '%s' properties") % self.name)
+        QObject.connect(self.button, SIGNAL('clicked()'), self.edit_param)
         self.checkbox = QCheckBox(_('Logarithmic scale'), parent)
         self.update_checkbox_state()
-        QObject.connect(self.checkbox, SIGNAL('stateChanged(int)'), self.set_scale)
+        QObject.connect(self.checkbox, SIGNAL('stateChanged(int)'),
+                        self.set_scale)
         self.label = QLabel(parent)
         self.slider = QSlider(parent)
         self.slider.setOrientation(Qt.Horizontal)
@@ -116,7 +121,10 @@ class FitParam(DataSet):
                         self.slider_value_changed)
         self.set_text()
         self.update()
-        return button, self.checkbox, self.slider, self.label
+        return self.button, self.checkbox, self.slider, self.label
+        
+    def get_widgets(self):
+        return self.button, self.checkbox, self.slider, self.label
         
     def set_scale(self, state):
         self.logscale = state > 0
@@ -167,30 +175,30 @@ class FitParam(DataSet):
 
 
 class FitWidgetMixin(CurveWidgetMixin):
-    def __init__(self, x, y, fitfunc, fitparams,
-                 wintitle="guiqwt plot", icon="guiqwt.png",
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
                  toolbar=False, options=None, panels=None):
         if wintitle is None:
             wintitle = _('Curve fitting')
             
-        self.x = x
-        self.y = y
-        self.fitfunc = fitfunc
-        self.fitparams = fitparams
+        self.x = None
+        self.y = None
+        self.fitfunc = None
+        self.fitparams = None
+        self.autofit_prm = None
         
         self.button_layout = None
+        self.button_list = [] # list of buttons to be disabled at startup
+
+        self.params_layout = None
         
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
                                   toolbar=toolbar, options=options,
                                   panels=panels)
-                
-        self.autofit_prm = AutoFitParam(title=_("Automatic fitting options"))
-        self.autofit_prm.xmin = x.min()
-        self.autofit_prm.xmax = x.max()
-        self.compute_imin_imax()
         
         self.xrange = None
         self.show_xrange = False
+        
+        self.refresh()
         
     # CurveWidgetMixin API -----------------------------------------------------
     def setup_widget_layout(self):
@@ -209,20 +217,54 @@ class FitWidgetMixin(CurveWidgetMixin):
         params_frame = QFrame(self)
         params_frame.setFrameShape(QFrame.Box)
         params_frame.setFrameShadow(QFrame.Sunken)
-        params_layout = QGridLayout()
-        params_frame.setLayout(params_layout)
-        for i, param in enumerate(self.fitparams):
-            button, checkbox, slider, label = param.get_widgets(self)
-            self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
-            self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
-            params_layout.addWidget(button, i, 0)
-
-            params_layout.addWidget(checkbox, i, 1)
-            params_layout.addWidget(slider, i, 2)
-            params_layout.addWidget(label, i, 3)
+        self.params_layout = QGridLayout()
+        params_frame.setLayout(self.params_layout)
         self.plot_layout.addWidget(params_frame, 1, 0)
         
-    # Public API ---------------------------------------------------------------        
+    # Public API ---------------------------------------------------------------  
+    def set_data(self, x, y, fitfunc=None, fitparams=None):
+        if self.fitparams is not None and fitparams is not None:
+            self.clear_params_layout()
+        self.x = x
+        self.y = y
+        if fitfunc is not None:
+            self.fitfunc = fitfunc
+        if fitparams is not None:
+            self.fitparams = fitparams
+        self.autofit_prm = AutoFitParam(title=_("Automatic fitting options"))
+        self.autofit_prm.xmin = x.min()
+        self.autofit_prm.xmax = x.max()
+        self.compute_imin_imax()
+        if self.fitparams is not None and fitparams is not None:
+            self.populate_params_layout()
+        self.refresh()
+        
+    def set_fit_func(self, fitfunc):
+        self.fitfunc = fitfunc
+        self.refresh()
+        
+    def set_fit_params(self, fitparams):
+        if self.fitparams is not None:
+            self.clear_params_layout()
+        self.fitparams = fitparams
+        self.populate_params_layout()
+        self.refresh()
+        
+    def clear_params_layout(self):
+        for i, param in enumerate(self.fitparams):
+            for widget in param.get_widgets():
+                self.params_layout.removeWidget(widget)
+                widget.hide()
+        
+    def populate_params_layout(self):
+        for i, param in enumerate(self.fitparams):
+            button, checkbox, slider, label = param.create_widgets(self)
+            self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
+            self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
+            for widget, row, col in ((button, i, 0), (checkbox, i, 1),
+                                     (slider, i, 2), (label, i, 3)):
+                self.params_layout.addWidget(widget, row, col)
+      
     def create_button_layout(self):        
         btn_layout = QHBoxLayout()
         auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
@@ -238,10 +280,23 @@ class FitWidgetMixin(CurveWidgetMixin):
         btn_layout.addStretch()
         btn_layout.addWidget(autoprm_button)
         btn_layout.addWidget(xrange_button)
+        self.button_list += [auto_button, autoprm_button, xrange_button]
         return btn_layout
         
     def refresh(self):
         """Refresh Fit Tool dialog box"""
+        # Update button states
+        enable = self.x is not None and self.y is not None \
+                 and self.x.size > 0 and self.y.size > 0 \
+                 and self.fitfunc is not None and self.fitparams is not None \
+                 and len(self.fitparams) > 0
+        for btn in self.button_list:
+            btn.setEnabled(enable)
+            
+        if not enable:
+            # Fit widget is not yet configured
+            return
+
         yfit = self.fitfunc(self.x, [p.value for p in self.fitparams])
         self.xrange = make.range(self.autofit_prm.xmin, self.autofit_prm.xmax)
         self.xrange.setVisible(self.show_xrange)
@@ -363,25 +418,19 @@ class FitWidgetMixin(CurveWidgetMixin):
 
 
 class FitWidget(QWidget, FitWidgetMixin):
-    def __init__(self, x, y, fitfunc, fitparams,
-                 wintitle=None, icon="guiqwt.png", toolbar=False,
-                 options=None, parent=None, panels=None):
+    def __init__(self, wintitle=None, icon="guiqwt.png",
+                 toolbar=False, options=None, parent=None, panels=None):
         QWidget.__init__(self, parent)
-        FitWidgetMixin.__init__(self, x, y, fitfunc, fitparams,
-                                wintitle, icon, toolbar, options, panels)
-        self.refresh()
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels)
 
 
 class FitDialog(QDialog, FitWidgetMixin):
-    def __init__(self, x, y, fitfunc, fitparams,
-                 wintitle=None, icon="guiqwt.png", edit=True, toolbar=False,
-                 options=None, parent=None, panels=None):
+    def __init__(self, wintitle=None, icon="guiqwt.png", edit=True,
+                 toolbar=False, options=None, parent=None, panels=None):
         QDialog.__init__(self, parent)
         self.edit = edit
-        FitWidgetMixin.__init__(self, x, y, fitfunc, fitparams,
-                                wintitle, icon, toolbar, options, panels)
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels)
         self.setWindowFlags(Qt.Window)
-        self.refresh()
         
     def setup_widget_layout(self):
         FitWidgetMixin.setup_widget_layout(self)
@@ -394,6 +443,7 @@ class FitDialog(QDialog, FitWidgetMixin):
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
         self.button_layout.addStretch()
         self.button_layout.addWidget(bbox)
+        self.button_list += [bbox.button(QDialogButtonBox.Ok)]
         
 
 def guifit(x, y, fitfunc, fitparams, title=None):
@@ -402,7 +452,9 @@ def guifit(x, y, fitfunc, fitparams, title=None):
 #    widget = FitWidget(x, y, fitfunc, fitparams)
 #    widget.show()
 #    _app.exec_()
-    dlg = FitDialog(x, y, fitfunc, fitparams, edit=True)
+    dlg = FitDialog(edit=True, toolbar=True)
+    dlg.set_data(x, y, fitfunc, fitparams)
+    
     if dlg.exec_():
         return dlg.get_values()
 
