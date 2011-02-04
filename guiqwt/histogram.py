@@ -237,14 +237,6 @@ class LevelsHistogram(CurvePlot):
         self.connect(self, SIG_VOI_CHANGED, plot.notify_colormap_changed)
         self.connect(plot, SIG_ITEM_SELECTION_CHANGED, self.selection_changed)
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
-        
-    def standard_tools(self, manager):
-        manager.add_tool(SelectTool)
-        manager.add_tool(BasePlotMenuTool, "item")
-        manager.add_tool(BasePlotMenuTool, "axes")
-        manager.add_tool(BasePlotMenuTool, "grid")
-        manager.add_tool(AntiAliasingTool)
-        manager.get_default_tool().activate()
 
     def tracked_items_gen(self):
         for plot, items in self._tracked_items.items():
@@ -434,7 +426,16 @@ class ContrastAdjustment(PanelWidget):
         toolbar.setOrientation(Qt.Vertical)
 #        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         hlayout.addWidget(toolbar)
-        self.histogram.standard_tools(self.local_manager)
+        
+        # Add standard plot-related tools to the local manager
+        lman = self.local_manager
+        lman.add_tool(SelectTool)
+        lman.add_tool(BasePlotMenuTool, "item")
+        lman.add_tool(BasePlotMenuTool, "axes")
+        lman.add_tool(BasePlotMenuTool, "grid")
+        lman.add_tool(AntiAliasingTool)
+        lman.get_default_tool().activate()
+        
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         

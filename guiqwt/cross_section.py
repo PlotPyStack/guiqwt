@@ -390,14 +390,6 @@ class CrossSectionPlot(CurvePlot):
                 shapes.pop(shapes.index(shape))
                 break
         
-    def standard_tools(self, manager):
-        manager.add_tool(SelectTool)
-        manager.add_tool(BasePlotMenuTool, "item")
-        manager.add_tool(BasePlotMenuTool, "axes")
-        manager.add_tool(BasePlotMenuTool, "grid")
-        manager.add_tool(AntiAliasingTool)
-        manager.get_default_tool().activate()
-        
     def create_cross_section_item(self):
         raise NotImplementedError
         
@@ -617,9 +609,16 @@ class CrossSectionWidget(PanelWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         
-        self.local_manager.add_plot(self.cs_plot)
+        # Configure the local manager
+        lman = self.local_manager
+        lman.add_plot(self.cs_plot)
+        lman.add_tool(SelectTool)
+        lman.add_tool(BasePlotMenuTool, "item")
+        lman.add_tool(BasePlotMenuTool, "axes")
+        lman.add_tool(BasePlotMenuTool, "grid")
+        lman.add_tool(AntiAliasingTool)
+        lman.get_default_tool().activate()
         
-        self.cs_plot.standard_tools(self.local_manager)
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
