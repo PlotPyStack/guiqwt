@@ -40,8 +40,9 @@ Reference
 """
 
 from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QFrame,
-                         QCheckBox)
-from PyQt4.QtCore import Qt, SIGNAL, QObject
+                         QCheckBox, QDialog, QVBoxLayout, QHBoxLayout, QWidget,
+                         QDialogButtonBox)
+from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
 
 import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)
@@ -55,7 +56,7 @@ from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
 # Local imports
 from guiqwt.config import _
 from guiqwt.builder import make
-from guiqwt.plot import CurveDialog
+from guiqwt.plot import CurveWidgetMixin, CurveDialog
 from guiqwt.signals import SIG_RANGE_CHANGED
 
 class AutoFitParam(DataSet):
@@ -165,16 +166,23 @@ class FitParam(DataSet):
         self.set_text()
 
 
-class FitDialog(CurveDialog):
-    def __init__(self, x, y, fitfunc, fitparams, title=None):
-        if title is None:
-            title = _('Curve fitting')
+class FitWidgetMixin(CurveWidgetMixin):
+    def __init__(self, x, y, fitfunc, fitparams,
+                 wintitle="guiqwt plot", icon="guiqwt.png",
+                 toolbar=False, options=None, panels=None):
+        if wintitle is None:
+            wintitle = _('Curve fitting')
+            
         self.x = x
         self.y = y
         self.fitfunc = fitfunc
         self.fitparams = fitparams
-        super(FitDialog, self).__init__(wintitle=title, icon="guiqwt.png",
-                                        edit=True, toolbar=True, options=None)
+        
+        self.button_layout = None
+        
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                  toolbar=toolbar, options=options,
+                                  panels=panels)
                 
         self.autofit_prm = AutoFitParam(title=_("Automatic fitting options"))
         self.autofit_prm.xmin = x.min()
@@ -183,27 +191,18 @@ class FitDialog(CurveDialog):
         
         self.xrange = None
         self.show_xrange = False
-        self.refresh()
         
-    # CurveDialog API ----------------------------------------------------------
-    def install_button_layout(self):
-        auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
-        self.connect(auto_button, SIGNAL("clicked()"), self.autofit)
-        autoprm_button = QPushButton(get_icon('settings.png'),
-                                     _("Fit parameters..."), self)
-        self.connect(autoprm_button, SIGNAL("clicked()"), self.edit_parameters)
-        xrange_button = QPushButton(get_icon('xrange.png'), _("Fit bounds"),
-                                    self)
-        xrange_button.setCheckable(True)
-        self.connect(xrange_button, SIGNAL("toggled(bool)"), self.toggle_xrange)
+    # CurveWidgetMixin API -----------------------------------------------------
+    def setup_widget_layout(self):
+        vlayout = QVBoxLayout(self)
+        vlayout.addWidget(self.toolbar)
+        vlayout.addLayout(self.plot_layout)
+        self.setLayout(vlayout)
+        self.button_layout = self.create_button_layout()
+        vlayout.addLayout(self.button_layout)
         
-        self.button_layout.addWidget(auto_button)
-        self.button_layout.addWidget(autoprm_button)
-        self.button_layout.addWidget(xrange_button)
-        super(FitDialog, self).install_button_layout()
-
     def create_plot(self, options):
-        super(FitDialog, self).create_plot(options)
+        super(FitWidgetMixin, self).create_plot(options)
         for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
         
@@ -224,6 +223,23 @@ class FitDialog(CurveDialog):
         self.plot_layout.addWidget(params_frame, 1, 0)
         
     # Public API ---------------------------------------------------------------        
+    def create_button_layout(self):        
+        btn_layout = QHBoxLayout()
+        auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
+        self.connect(auto_button, SIGNAL("clicked()"), self.autofit)
+        autoprm_button = QPushButton(get_icon('settings.png'),
+                                     _("Fit parameters..."), self)
+        self.connect(autoprm_button, SIGNAL("clicked()"), self.edit_parameters)
+        xrange_button = QPushButton(get_icon('xrange.png'), _("Fit bounds"),
+                                    self)
+        xrange_button.setCheckable(True)
+        self.connect(xrange_button, SIGNAL("toggled(bool)"), self.toggle_xrange)
+        btn_layout.addWidget(auto_button)
+        btn_layout.addStretch()
+        btn_layout.addWidget(autoprm_button)
+        btn_layout.addWidget(xrange_button)
+        return btn_layout
+        
     def refresh(self):
         """Refresh Fit Tool dialog box"""
         yfit = self.fitfunc(self.x, [p.value for p in self.fitparams])
@@ -344,12 +360,49 @@ class FitDialog(CurveDialog):
     def get_values(self):
         """Convenience method to get fit parameter values"""
         return [param.value for param in self.fitparams]
+
+
+class FitWidget(QWidget, FitWidgetMixin):
+    def __init__(self, x, y, fitfunc, fitparams,
+                 wintitle=None, icon="guiqwt.png", toolbar=False,
+                 options=None, parent=None, panels=None):
+        QWidget.__init__(self, parent)
+        FitWidgetMixin.__init__(self, x, y, fitfunc, fitparams,
+                                wintitle, icon, toolbar, options, panels)
+        self.refresh()
+
+
+class FitDialog(QDialog, FitWidgetMixin):
+    def __init__(self, x, y, fitfunc, fitparams,
+                 wintitle=None, icon="guiqwt.png", edit=True, toolbar=False,
+                 options=None, parent=None, panels=None):
+        QDialog.__init__(self, parent)
+        self.edit = edit
+        FitWidgetMixin.__init__(self, x, y, fitfunc, fitparams,
+                                wintitle, icon, toolbar, options, panels)
+        self.setWindowFlags(Qt.Window)
+        self.refresh()
+        
+    def setup_widget_layout(self):
+        FitWidgetMixin.setup_widget_layout(self)
+        if self.edit:
+            self.install_button_layout()
+        
+    def install_button_layout(self):
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
+        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        self.button_layout.addStretch()
+        self.button_layout.addWidget(bbox)
         
 
 def guifit(x, y, fitfunc, fitparams, title=None):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
-    dlg = FitDialog(x, y, fitfunc, fitparams)
+#    widget = FitWidget(x, y, fitfunc, fitparams)
+#    widget.show()
+#    _app.exec_()
+    dlg = FitDialog(x, y, fitfunc, fitparams, edit=True)
     if dlg.exec_():
         return dlg.get_values()
 
