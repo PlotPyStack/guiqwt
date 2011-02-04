@@ -239,13 +239,10 @@ class FitWidgetMixin(CurveWidgetMixin):
             self.populate_params_layout()
         self.refresh()
         
-    def set_fit_func(self, fitfunc):
-        self.fitfunc = fitfunc
-        self.refresh()
-        
-    def set_fit_params(self, fitparams):
+    def set_fit_data(self, fitfunc, fitparams):
         if self.fitparams is not None:
             self.clear_params_layout()
+        self.fitfunc = fitfunc
         self.fitparams = fitparams
         self.populate_params_layout()
         self.refresh()
