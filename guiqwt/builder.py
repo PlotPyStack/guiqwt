@@ -64,7 +64,7 @@ from guiqwt.histogram import HistogramItem
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
                           Histogram2DItem, RGBImageItem, MaskedImageItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
-                           SegmentShape)
+                           SegmentShape, VerticalCursor, HorizontalCursor)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
                                 AnnotatedSegment)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
@@ -75,7 +75,7 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            LineStyleParam, AnnotationParam,
                            LabelParamWithContents)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
-                          RangeComputation2d, DataInfoLabel,
+                          RangeComputation2d, DataInfoLabel, CursorComputation,
                           SelectedLegendBoxItem)
 from guiqwt.io import imagefile_to_array
 import os.path as osp
@@ -803,6 +803,20 @@ class PlotItemBuilder(object):
     def range(self, xmin, xmax):
         return XRangeSelection(xmin, xmax)
         
+    def vcursor(self, position):
+        """
+        Make a vertical cursor `plot item`
+        (:py:class:`guiqwt.shapes.VerticalCursor` object)
+        """
+        return VerticalCursor(position)
+
+    def hcursor(self, position):
+        """
+        Make an horizontal cursor `plot item`
+        (:py:class:`guiqwt.shapes.HorizontalCursor` object)
+        """
+        return HorizontalCursor(position)
+        
     def __shape(self, shapeclass, x0, y0, x1, y1, title=None):
         shape = shapeclass(x0, y0, x1, y1)
         shape.set_style("plot", "shape/drag")
@@ -929,6 +943,20 @@ class PlotItemBuilder(object):
         c = ANCHOR_OFFSETS[anchor]
         param.xc, param.yc = c
         return DataInfoLabel(param, comps)
+        
+    def info_cursor(self, cursor, anchor, label=None, func=None):
+        if isinstance(cursor, VerticalCursor):
+            if label is None:
+                label = 'x = %s'
+            if func is None:
+                func = lambda x, y: x
+        else:
+            if label is None:
+                label = 'y = %s'
+            if func is None:
+                func = lambda x, y: y
+        comp = CursorComputation(label, cursor, func)
+        return self.info_label(anchor, [comp])
 
     def computation(self, range, anchor, label, curve, function):
         """

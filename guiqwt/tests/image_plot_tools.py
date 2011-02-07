@@ -15,16 +15,17 @@ from guiqwt.plot import ImageDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           MultiLineTool, FreeFormTool, SegmentTool, CircleTool,
                           AnnotatedRectangleTool, AnnotatedEllipseTool,
-                          AnnotatedSegmentTool, AnnotatedCircleTool,
-                          AnnotatedPointTool, LabelTool)
+                          AnnotatedSegmentTool, AnnotatedCircleTool, LabelTool,
+                          AnnotatedPointTool, VCursorTool, HCursorTool)
 from guiqwt.builder import make
 
 def create_window():
     win = ImageDialog(edit=False, toolbar=True,
                       wintitle="All image and plot tools test")
-    for toolklass in (LabelTool, SegmentTool, RectangleTool, CircleTool,
-                      EllipseTool, MultiLineTool, FreeFormTool, PlaceAxesTool,
-                      HRangeTool, AnnotatedRectangleTool, AnnotatedCircleTool,
+    for toolklass in (LabelTool, HRangeTool, VCursorTool, HCursorTool,
+                      SegmentTool, RectangleTool, CircleTool, EllipseTool,
+                      MultiLineTool, FreeFormTool, PlaceAxesTool,
+                      AnnotatedRectangleTool, AnnotatedCircleTool,
                       AnnotatedEllipseTool, AnnotatedSegmentTool,
                       AnnotatedPointTool):
         win.add_tool(toolklass)

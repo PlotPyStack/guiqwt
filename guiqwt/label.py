@@ -436,6 +436,16 @@ class ObjectInfo(object):
     def get_text(self):
         return u""
 
+class CursorComputation(ObjectInfo):
+    def __init__(self, label, cursor, function):
+        self.label = unicode(label)
+        self.cursor = cursor
+        self.func = function
+
+    def get_text(self):
+        x, y = self.cursor.get_handle_pos()
+        return self.label % self.func(x, y)
+
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):
         self.label = unicode(label)

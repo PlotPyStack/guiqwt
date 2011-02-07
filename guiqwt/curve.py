@@ -773,7 +773,8 @@ class ItemListWidget(QListWidget):
                                         AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
-                                   XRangeSelection)
+                                   XRangeSelection, VerticalCursor,
+                                   HorizontalCursor)
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
@@ -798,6 +799,8 @@ class ItemListWidget(QListWidget):
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
                             (XRangeSelection, 'xrange.png'),
+                            (VerticalCursor, 'vcursor.png'),
+                            (HorizontalCursor, 'hcursor.png'),
                             (PolygonShape, 'freeform.png'),
                             (Histogram2DItem, 'histogram2d.png'),
                             (ImageFilterItem, 'funct.png'),

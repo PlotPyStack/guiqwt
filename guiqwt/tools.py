@@ -938,32 +938,35 @@ class RectZoomTool(InteractiveTool):
         return shape, 0, 2
 
 
-class HRangeTool(InteractiveTool):
-    TITLE = _("Horizontal selection")
-    ICON = "xrange.png"
-
+class BaseCursorTool(InteractiveTool):
+    TITLE = None
+    ICON = None
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
                  title=None, icon=None, tip=None):
-        super(HRangeTool, self).__init__(manager, toolbar_id,
-                                         title=title, icon=icon, tip=tip)
+        super(BaseCursorTool, self).__init__(manager, toolbar_id,
+                                             title=title, icon=icon, tip=tip)
         self.shape = None
+
+    def create_shape(self):
+        """Create and return the cursor/range shape"""
+        raise NotImplementedError
     
     def setup_filter(self, baseplot):
         filter = baseplot.filter
         # Initialisation du filtre
         start_state = filter.new_state()
         # Bouton gauche :
-        self.handler = QtDragHandler(filter, Qt.LeftButton, start_state=start_state )
+        self.handler = QtDragHandler(filter, Qt.LeftButton,
+                                     start_state=start_state )
         self.connect(self.handler, SIG_MOVE, self.move)
         self.connect(self.handler, SIG_STOP_NOT_MOVING, self.end_move)
         self.connect(self.handler, SIG_STOP_MOVING, self.end_move)
         return setup_standard_tool_filter(filter, start_state)
 
     def move(self, filter, event):
-        from guiqwt.shapes import XRangeSelection
         plot = filter.plot
         if not self.shape:
-            self.shape = XRangeSelection(0, 0)
+            self.shape = self.create_shape()
             self.shape.attach(plot)
             self.shape.setZ(plot.get_max_z()+1)
             self.shape.move_local_point_to(0, event.pos())
@@ -976,6 +979,27 @@ class HRangeTool(InteractiveTool):
             assert self.shape.plot() == filter.plot
             filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)
             self.shape = None
+
+class HRangeTool(BaseCursorTool):
+    TITLE = _("Horizontal selection")
+    ICON = "xrange.png"
+    def create_shape(self):
+        from guiqwt.shapes import XRangeSelection
+        return XRangeSelection(0, 0)
+
+class VCursorTool(BaseCursorTool):
+    TITLE = _("Vertical cursor")
+    ICON = "vcursor.png"
+    def create_shape(self):
+        from guiqwt.shapes import VerticalCursor
+        return VerticalCursor(0)
+
+class HCursorTool(BaseCursorTool):
+    TITLE = _("Horizontal cursor")
+    ICON = "hcursor.png"
+    def create_shape(self):
+        from guiqwt.shapes import HorizontalCursor
+        return HorizontalCursor(0)
 
 
 class DummySeparatorTool(GuiTool):

@@ -17,6 +17,8 @@ The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.EllipseShape`
     * :py:class:`guiqwt.shapes.Axes`
     * :py:class:`guiqwt.shapes.XRangeSelection`
+    * :py:class:`guiqwt.shapes.VerticalCursor`
+    * :py:class:`guiqwt.shapes.HorizontalCursor`
 
 A shape is a plot item (derived from QwtPlotItem) that may be displayed 
 on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
@@ -68,6 +70,12 @@ Reference
 .. autoclass:: XRangeSelection
    :members:
    :inherited-members:
+.. autoclass:: VerticalCursor
+   :members:
+   :inherited-members:
+.. autoclass:: HorizontalCursor
+   :members:
+   :inherited-members:
 """
 
 import sys, numpy as np
@@ -83,9 +91,9 @@ from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
-                           AxesShapeParam)
+                           AxesShapeParam, CursorShapeParam)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
-                            SIG_AXES_CHANGED, SIG_ITEM_MOVED)
+                            SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
 
 class AbstractShape(QwtPlotItem):
     """Interface pour les objets manipulables
@@ -919,10 +927,10 @@ class Axes(PolygonShape):
         
 assert_interfaces_valid(Axes)
 
-        
+
 class XRangeSelection(AbstractShape):
     def __init__(self, _min, _max):
-        super(XRangeSelection,self).__init__()
+        super(XRangeSelection, self).__init__()
         self._min = _min
         self._max = _max
         self.shapeparam = RangeShapeParam(_("Range"), icon="xrange.png")
@@ -974,12 +982,6 @@ class XRangeSelection(AbstractShape):
         sym.draw(painter, QPoint(x0,y))
         sym.draw(painter, QPoint(x1,y))
         
-    def get_handle_rect(self, xMap, yMap, xpos, ypos):
-        cx = xMap.transform(xpos)
-        cy = yMap.transform(ypos)
-        hs = self._handle_size
-        return QRectF(cx-hs, cy-hs, 2*hs, 2*hs)
-        
     def hit_test(self, pos):
         x, _y = pos.x(), pos.y()
         x0, x1, _yp = self.get_handles_pos()
@@ -1023,7 +1025,6 @@ class XRangeSelection(AbstractShape):
 
     def move_shape(self, old_pos, new_pos):
         dx = new_pos[0]-old_pos[0]
-        _dy = new_pos[1]-old_pos[1]
         self._min += dx
         self._max += dx
         self.plot().emit(SIG_RANGE_CHANGED, self, self._min, self._max)
@@ -1040,3 +1041,150 @@ class XRangeSelection(AbstractShape):
         self.sel_brush = QBrush(self.brush)
         
 assert_interfaces_valid(XRangeSelection)
+
+
+class Cursor(AbstractShape):
+    """Horizontal/Vertical cursor base class"""
+    ICON = None
+    def __init__(self, pos):
+        super(Cursor, self).__init__()
+        self.pos = pos
+        self.shapeparam = CursorShapeParam(_("Cursor"), icon=self.ICON)
+        self.shapeparam.read_config(CONF, "histogram", "range")
+        self.pen = None
+        self.sel_pen = None
+        self.handle = None
+        self.symbol = None
+        self.sel_symbol = None
+        self.shapeparam.update_range(self) # creates all the above QObjects
+        
+    def get_handle_pos(self):
+        raise NotImplementedError
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        raise NotImplementedError
+        
+    def draw(self, painter, xMap, yMap, canvasRect):
+        plot = self.plot()
+        if not plot:
+            return
+        if self.selected:
+            pen = self.sel_pen
+            sym = self.sel_symbol
+        else:
+            pen = self.pen
+            sym = self.symbol
+        painter.setPen(pen)
+        pos1, pos2 = self.get_line(xMap, yMap, plot)
+        painter.drawLine(pos1, pos2)
+        painter.setPen(pen)
+        x, y = self.get_handle_pos()        
+        sym.draw(painter, QPoint(x,y))
+        
+    def get_distance_from_point(self, point):
+        raise NotImplementedError
+        
+    def hit_test(self, pos):
+        dist = self.get_distance_from_point(pos)
+        handle = 0
+        inside = False
+        return dist, handle, inside, None
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        raise NotImplementedError
+        
+    def move_point_to(self, hnd, pos, ctrl=None):
+        val, _ = pos
+        self.pos = val
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+
+    def get_pos(self):
+        return self.pos
+        
+    def set_pos(self, pos, dosignal=True):
+        self.pos = pos
+        if dosignal:
+            self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+
+    def move_shape(self, old_pos, new_pos):
+        raise NotImplementedError
+        
+    def get_item_parameters(self, itemparams):
+        self.shapeparam.update_param(self)
+        itemparams.add("ShapeParam", self, self.shapeparam)
+    
+    def set_item_parameters(self, itemparams):
+        update_dataset(self.shapeparam, itemparams.get("ShapeParam"),
+                       visible_only=True)
+        self.shapeparam.update_range(self)
+        
+assert_interfaces_valid(Cursor)
+
+class VerticalCursor(Cursor):
+    """Vertical cursor"""
+    ICON = 'vcursor.png'
+    def get_handle_pos(self):
+        plot = self.plot()
+        x = plot.transform(self.xAxis(), self.pos)
+        y = plot.canvas().contentsRect().center().y()
+        return x, y
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        rect = QRectF( plot.canvas().contentsRect() )
+        rect.setLeft(xMap.transform(self.pos))
+        return rect.topLeft(), rect.bottomLeft()
+        
+    def get_distance_from_point(self, point):
+        x, y = self.get_handle_pos()
+        return fabs(x-point.x())
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        val = self.plot().invTransform(self.xAxis(), pos.x())
+        self.move_point_to(handle, (val, 0))
+
+    def move_shape(self, old_pos, new_pos):
+        dx = new_pos[0]-old_pos[0]
+        self.pos += dx
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+        self.plot().replot()
+        
+assert_interfaces_valid(VerticalCursor)
+
+class HorizontalCursor(Cursor):
+    """Horizontal cursor"""
+    ICON = 'hcursor.png'
+    def get_handle_pos(self):
+        plot = self.plot()
+        x = plot.canvas().contentsRect().center().x()
+        y = plot.transform(self.yAxis(), self.pos)
+        return x, y
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        rect = QRectF( plot.canvas().contentsRect() )
+        rect.setTop(yMap.transform(self.pos))
+        return rect.topLeft(), rect.topRight()
+        
+    def get_distance_from_point(self, point):
+        x, y = self.get_handle_pos()
+        return fabs(y-point.y())
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        val = self.plot().invTransform(self.yAxis(), pos.y())
+        self.move_point_to(handle, (val, 0))
+
+    def move_shape(self, old_pos, new_pos):
+        dy = new_pos[0]-old_pos[0]
+        self.pos += dy
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+        self.plot().replot()
+        
+assert_interfaces_valid(HorizontalCursor)

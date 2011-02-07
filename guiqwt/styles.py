@@ -1412,3 +1412,33 @@ class RangeShapeParam(DataSet):
         range.symbol = self.symbol.build_symbol()
         range.sel_symbol = self.sel_symbol.build_symbol()
 
+
+# ===================================================
+# Range selection parameters
+# ===================================================
+class CursorShapeParam(DataSet):
+    _styles = BeginTabGroup("Styles")
+    #------------------------------------------------------------------ Line tab
+    ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
+    line = LineStyleItem(_("Line (not selected)"))
+    sel_line = LineStyleItem(_("Line (selected)"))
+    ___eline = EndGroup(_("Line"))
+    #---------------------------------------------------------------- Symbol tab
+    ___symbol = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
+    symbol = SymbolItem(_("Symbol (not selected)"))
+    sel_symbol = SymbolItem(_("Symbol (selected)"))
+    ___esymbol = EndGroup(_("Symbol"))
+    #----------------------------------------------------------------------- End
+    _endstyles = EndTabGroup("Styles")
+    
+    def update_param(self, cursor):
+        self.line.update_param(cursor.pen)
+        self.sel_line.update_param(cursor.sel_pen)
+        self.symbol.update_param(cursor.symbol)
+        self.sel_symbol.update_param(cursor.sel_symbol)
+        
+    def update_range(self, cursor):
+        cursor.pen = self.line.build_pen()
+        cursor.sel_pen = self.sel_line.build_pen()
+        cursor.symbol = self.symbol.build_symbol()
+        cursor.sel_symbol = self.sel_symbol.build_symbol()
