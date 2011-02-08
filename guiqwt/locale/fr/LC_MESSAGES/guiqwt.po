@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-02-08 15:21+Paris, Madrid\n"
+"POT-Creation-Date: 2011-02-08 16:05+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -95,7 +95,7 @@ msgid "Grid"
 msgstr "Grille"
 
 #: guiqwt\builder.py:290 guiqwt\builder.py:364 guiqwt\builder.py:383
-#: guiqwt\builder.py:463 guiqwt\builder.py:489 guiqwt\cross_section.py:342
+#: guiqwt\builder.py:463 guiqwt\builder.py:489 guiqwt\cross_section.py:346
 #: guiqwt\curve.py:289 guiqwt\histogram.py:110 guiqwt\histogram.py:208
 msgid "Curve"
 msgstr "Courbe"
@@ -113,7 +113,7 @@ msgstr "Histogramme"
 #: guiqwt\builder.py:607 guiqwt\builder.py:624 guiqwt\builder.py:666
 #: guiqwt\builder.py:688 guiqwt\image.py:706 guiqwt\image.py:798
 #: guiqwt\image.py:992 guiqwt\image.py:1252 guiqwt\image.py:1370
-#: guiqwt\image.py:1464 guiqwt\image.py:1823 guiqwt\styles.py:979
+#: guiqwt\image.py:1464 guiqwt\image.py:1835 guiqwt\styles.py:979
 msgid "Image"
 msgstr "Image"
 
@@ -145,65 +145,69 @@ msgstr "Pixels"
 msgid "Intensity"
 msgstr "Intensité"
 
-#: guiqwt\cross_section.py:345 guiqwt\tools.py:865
-msgid "Cross section"
-msgstr "Profil rectiligne"
-
-#: guiqwt\cross_section.py:352
-msgid "Enable a marker"
-msgstr "Activer un marqueur"
-
-#: guiqwt\cross_section.py:479
+#: guiqwt\cross_section.py:323
 msgid "LUT scale"
 msgstr "Échelle LUT"
 
-#: guiqwt\cross_section.py:489 guiqwt\cross_section.py:495
-#: guiqwt\cross_section.py:500 guiqwt\cross_section.py:506
-#: guiqwt\cross_section.py:650
+#: guiqwt\cross_section.py:349 guiqwt\tools.py:865
+msgid "Cross section"
+msgstr "Profil rectiligne"
+
+#: guiqwt\cross_section.py:356
+msgid "Enable a marker"
+msgstr "Activer un marqueur"
+
+#: guiqwt\cross_section.py:495 guiqwt\cross_section.py:501
+#: guiqwt\cross_section.py:506 guiqwt\cross_section.py:512
+#: guiqwt\cross_section.py:661
 msgid "Export"
 msgstr "Exporter"
 
-#: guiqwt\cross_section.py:490
+#: guiqwt\cross_section.py:496
 msgid "There is no cross section plot to export."
 msgstr "Aucun profil n'est actuellement affiché."
 
-#: guiqwt\cross_section.py:496
+#: guiqwt\cross_section.py:502
 msgid "Please select a cross section plot."
 msgstr "Merci de sélectionner le profil à exporter."
 
-#: guiqwt\cross_section.py:501
+#: guiqwt\cross_section.py:507
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: guiqwt\cross_section.py:507
+#: guiqwt\cross_section.py:513
 msgid "Unable to export cross section data."
 msgstr "Impossible d'exporter les données du profil."
 
-#: guiqwt\cross_section.py:508
+#: guiqwt\cross_section.py:514
 msgid "Error message:"
 msgstr "Message d'erreur :"
 
-#: guiqwt\cross_section.py:594
+#: guiqwt\cross_section.py:605
 msgid "Cross section tool"
 msgstr "Profils d'images"
 
-#: guiqwt\cross_section.py:653
+#: guiqwt\cross_section.py:664
 msgid "Export cross section data"
 msgstr "Exporter les données d'un profil"
 
-#: guiqwt\cross_section.py:654
+#: guiqwt\cross_section.py:665
 msgid "Auto-scale"
 msgstr "Échelle automatique"
 
-#: guiqwt\cross_section.py:657
+#: guiqwt\cross_section.py:669
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: guiqwt\cross_section.py:729
+#: guiqwt\cross_section.py:672
+msgid "Auto-refresh"
+msgstr "Rafraîchissement automatique"
+
+#: guiqwt\cross_section.py:748
 msgid "Per image cross-section"
 msgstr "Un profil par image"
 
-#: guiqwt\cross_section.py:732
+#: guiqwt\cross_section.py:751
 msgid ""
 "Enable the per-image cross-section mode, which works directly on image rows/"
 "columns.\n"
@@ -215,7 +219,7 @@ msgstr ""
 "C'est la méthode la plus rapide, mais cela ne fonctionne pas sur des images "
 "ayant subies une transformation (rotation, par exemple)."
 
-#: guiqwt\cross_section.py:738
+#: guiqwt\cross_section.py:757
 msgid ""
 "Apply LUT\n"
 "(contrast settings)"
@@ -223,7 +227,7 @@ msgstr ""
 "Appliquer la LUT\n"
 "(réglages de contraste)"
 
-#: guiqwt\cross_section.py:741
+#: guiqwt\cross_section.py:760
 msgid ""
 "Apply LUT (Look-Up Table) contrast settings.\n"
 "This is the easiest way to compare images which have slightly different "
@@ -237,11 +241,11 @@ msgstr ""
 "\n"
 "Note : la LUT est codée sur 1024 niveaux (0...1023)"
 
-#: guiqwt\cross_section.py:863 guiqwt\cross_section.py:869 guiqwt\tools.py:914
+#: guiqwt\cross_section.py:882 guiqwt\cross_section.py:888 guiqwt\tools.py:914
 msgid "Radially-averaged cross section"
 msgstr "Profil radial moyen"
 
-#: guiqwt\cross_section.py:864
+#: guiqwt\cross_section.py:883
 msgid "Activate the radially-averaged cross section tool"
 msgstr "Activer l'outil de profil radial moyen"
 

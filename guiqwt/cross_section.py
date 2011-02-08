@@ -335,6 +335,7 @@ class CrossSectionPlot(CurvePlot):
                                                section="cross_section")
         self.perimage_mode = True
         self.autoscale_mode = True
+        self.autorefresh_mode = True
         self.apply_lut = False
         
         self.last_obj = None
@@ -438,8 +439,9 @@ class CrossSectionPlot(CurvePlot):
             return False
         
     def shape_changed(self, shape):
-        if self.is_shape_known(shape):
-            self.update_plot(shape)
+        if self.autorefresh_mode:
+            if self.is_shape_known(shape):
+                self.update_plot(shape)
             
     def get_last_obj(self):
         if self.last_obj is not None:
@@ -518,6 +520,10 @@ class CrossSectionPlot(CurvePlot):
         self.autoscale_mode = state
         self.update_plot()
         
+    def toggle_autorefresh(self, state):
+        self.autorefresh_mode = state
+        self.update_plot()
+        
     def toggle_apply_lut(self, state):
         self.apply_lut = state
         self.update_plot()
@@ -592,6 +598,7 @@ class CrossSectionWidget(PanelWidget):
         self.export_ac = None
         self.autoscale_ac = None
         self.refresh_ac = None
+        self.autorefresh_ac = None
         
         widget_title = _("Cross section tool")
         widget_icon = "csection.png"
@@ -656,14 +663,18 @@ class CrossSectionWidget(PanelWidget):
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
+        self.autoscale_ac.setChecked(True)
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
                                    triggered=lambda: self.cs_plot.update_plot())
-        self.autoscale_ac.setChecked(True)
+        self.autorefresh_ac = create_action(self, _("Auto-refresh"),
+                                   icon=get_icon('autorefresh.png'),
+                                   toggled=self.cs_plot.toggle_autorefresh)
+        self.autorefresh_ac.setChecked(True)
         
     def add_actions_to_toolbar(self):
         add_actions(self.toolbar, (self.export_ac, self.autoscale_ac, None,
-                                   self.refresh_ac))
+                                   self.refresh_ac, self.autorefresh_ac))
         
     def register_shape(self, shape, final):
         plot = self.get_plot()
@@ -708,11 +719,13 @@ class XCrossSection(CrossSectionWidget):
         if other is None:
             add_actions(self.toolbar,
                         (self.peritem_ac, self.applylut_ac, None,
-                         self.export_ac, self.autoscale_ac, self.refresh_ac))
+                         self.export_ac, self.autoscale_ac,
+                         self.refresh_ac, self.autorefresh_ac))
         else:
             add_actions(self.toolbar,
                         (other.peritem_ac, other.applylut_ac, None,
-                         self.export_ac, other.autoscale_ac, other.refresh_ac))
+                         self.export_ac, other.autoscale_ac,
+                         other.refresh_ac, other.autorefresh_ac))
             self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
                          self.cs_plot.toggle_perimage_mode)
             self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
@@ -721,6 +734,8 @@ class XCrossSection(CrossSectionWidget):
                          self.cs_plot.toggle_autoscale)
             self.connect(other.refresh_ac, SIGNAL("triggered()"),
                          lambda: self.cs_plot.update_plot())
+            self.connect(other.autorefresh_ac, SIGNAL("toggled(bool)"),
+                         self.cs_plot.toggle_autorefresh)
         
     def closeEvent(self, event):
         self.hide()
