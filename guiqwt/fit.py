@@ -56,7 +56,7 @@ from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
 # Local imports
 from guiqwt.config import _
 from guiqwt.builder import make
-from guiqwt.plot import CurveWidgetMixin, CurveDialog
+from guiqwt.plot import CurveWidgetMixin
 from guiqwt.signals import SIG_RANGE_CHANGED
 
 class AutoFitParam(DataSet):
@@ -131,8 +131,11 @@ class FitParam(DataSet):
         self.update_slider_value()
         
     def set_text(self):
-        text = ('<b>%s</b> : '+self.format) % (self.name, self.value)
-        self.label.setText(text)
+        if self.value is None:
+            value_str = '-'
+        else:
+            value_str = self.format % self.value
+        self.label.setText('<b>%s</b> : %s' % (self.name, value_str))
         
     def slider_value_changed(self, int_value):
         if self.logscale:
@@ -155,8 +158,12 @@ class FitParam(DataSet):
                                np.log10(self.max))
         else:
             value, min, max = self.value, self.min, self.max
-        intval = int(self.steps*(value-min)/(max-min))
-        self.slider.setValue(intval)
+        if value is None or min is None or max is None:
+            self.slider.setEnabled(False)
+        else:
+            self.slider.setEnabled(True)
+            intval = int(self.steps*(value-min)/(max-min))
+            self.slider.setValue(intval)
 
     def update_checkbox_state(self):
         state = Qt.Checked if self.logscale else Qt.Unchecked
@@ -207,6 +214,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         vlayout.addLayout(self.plot_layout)
         self.setLayout(vlayout)
         self.button_layout = self.create_button_layout()
+        vlayout.addSpacing(10)
         vlayout.addLayout(self.button_layout)
         
     def create_plot(self, options):
@@ -218,6 +226,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         params_frame.setFrameShape(QFrame.Box)
         params_frame.setFrameShadow(QFrame.Sunken)
         self.params_layout = QGridLayout()
+        self.params_layout.setSizeConstraint(QGridLayout.SetMinAndMaxSize)
         params_frame.setLayout(self.params_layout)
         self.plot_layout.addWidget(params_frame, 1, 0)
         
