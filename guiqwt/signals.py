@@ -47,6 +47,8 @@ Signals available:
         see below)
     :py:data:`guiqwt.signals.SIG_LUT_CHANGED`
         Emitted by plot when LUT has been changed by the user
+    :py:data:`guiqwt.signals.SIG_MASK_CHANGED`
+        Emitted by plot when image mask has changed
     :py:data:`guiqwt.signals.SIG_VISIBILITY_CHANGED`
         Emitted for example by panels when their visibility has changed
     :py:data:`guiqwt.signals.SIG_VALIDATE_TOOL`
@@ -99,6 +101,9 @@ SIG_VOI_CHANGED = SIGNAL("voi_changed()")
 
 # Emitted by plot when LUT has been changed by the user
 SIG_LUT_CHANGED = SIGNAL("lut_changed(PyQt_PyObject)")
+
+# Emitted by plot when image mask has changed
+SIG_MASK_CHANGED = SIGNAL("mask_changed(PyQt_PyObject)")
 
 # Emitted for example by panels when their visibility has changed
 SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")

@@ -59,7 +59,8 @@ from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_LUT_CHANGED, SIG_CS_CURVE_CHANGED)
+                            SIG_LUT_CHANGED, SIG_CS_CURVE_CHANGED,
+                            SIG_MASK_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 
@@ -365,6 +366,7 @@ class CrossSectionPlot(CurvePlot):
             return
         self.connect(plot, SIG_ITEMS_CHANGED, self.items_changed)
         self.connect(plot, SIG_LUT_CHANGED, self.lut_changed)
+        self.connect(plot, SIG_MASK_CHANGED, lambda item: self.update_plot())
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
         self.connect(plot, SIG_MARKER_CHANGED, self.marker_changed)
         self.connect(plot, SIG_ANNOTATION_CHANGED, self.shape_changed)

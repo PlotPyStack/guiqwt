@@ -157,7 +157,7 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RawImageParam)
 from guiqwt.shapes import RectangleShape
 from guiqwt.io import imagefile_to_array
-from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED
+from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 
 stderr = sys.stderr
 try:
@@ -1519,6 +1519,7 @@ class MaskedImageItem(ImageItem):
     def load_mask_data(self):
         data = imagefile_to_array(self.get_mask_filename(), to_grayscale=True)
         self.set_mask(data)
+        self.plot().emit(SIG_MASK_CHANGED, self)
         
     def set_masked_areas(self, areas):
         """Set masked areas (see set_mask_filename)"""
@@ -1537,20 +1538,26 @@ class MaskedImageItem(ImageItem):
     def apply_masked_areas(self):
         for geometry, x0, y0, x1, y1, inside in self._masked_areas:
             if geometry == 'rectangular':
-                self.mask_rectangular_area(x0, y0, x1, y1, inside, trace=False)
+                self.mask_rectangular_area(x0, y0, x1, y1, inside,
+                                           trace=False, do_signal=False)
             else:
-                self.mask_circular_area(x0, y0, x1, y1, inside, trace=False)
+                self.mask_circular_area(x0, y0, x1, y1, inside,
+                                        trace=False, do_signal=False)
+        self.plot().emit(SIG_MASK_CHANGED, self)
                             
     def mask_all(self):
         """Mask all pixels"""
         self.data.mask = True
+        self.plot().emit(SIG_MASK_CHANGED, self)
         
     def unmask_all(self):
         """Unmask all pixels"""
         self.data.mask = np.ma.nomask
         self.set_masked_areas([])
+        self.plot().emit(SIG_MASK_CHANGED, self)
         
-    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True, trace=True):
+    def mask_rectangular_area(self, x0, y0, x1, y1, inside=True,
+                              trace=True, do_signal=True):
         """
         Mask rectangular area
         If inside is True (default), mask the inside of the area
@@ -1565,8 +1572,11 @@ class MaskedImageItem(ImageItem):
             self.data[indexes] = np.ma.masked
         if trace:
             self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
+        if do_signal:
+            self.plot().emit(SIG_MASK_CHANGED, self)
         
-    def mask_circular_area(self, x0, y0, x1, y1, inside=True, trace=True):
+    def mask_circular_area(self, x0, y0, x1, y1, inside=True,
+                           trace=True, do_signal=True):
         """
         Mask circular area, inside the rectangle (x0, y0, x1, y1), i.e. 
         circle with a radius of .5*(x1-x0)
@@ -1589,6 +1599,8 @@ class MaskedImageItem(ImageItem):
             self.mask_rectangular_area(x0, y0, x1, y1, inside, trace=False)
         if trace:
             self.add_masked_areas('circular', x0, y0, x1, y1, inside)
+        if do_signal:
+            self.plot().emit(SIG_MASK_CHANGED, self)
 
     def is_mask_visible(self):
         """Return mask visibility"""
