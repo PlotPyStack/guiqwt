@@ -166,6 +166,11 @@ class BasePlot(QwtPlot):
         axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
         self.update_axis_style(axis_id)
+
+    def get_axis_font(self, axis_id):
+        """Get axis font"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].title_font.build_font()
     
     def set_axis_font(self, axis_id, font):
         """Set axis font"""
@@ -173,6 +178,11 @@ class BasePlot(QwtPlot):
         self.axes_styles[axis_id].title_font.update_param(font)
         self.axes_styles[axis_id].ticks_font.update_param(font)
         self.update_axis_style(axis_id)
+        
+    def get_axis_color(self, axis_id):
+        """Get axis color (color name, i.e. string)"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].color
     
     def set_axis_color(self, axis_id, color):
         """

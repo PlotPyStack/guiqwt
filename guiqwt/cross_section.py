@@ -53,7 +53,7 @@ from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
                                ICurveItemType)
 from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_RACS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
-from guiqwt.image import ImagePlot
+from guiqwt.image import ImagePlot, LUT_MAX
 from guiqwt.styles import CurveParam
 from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
@@ -319,6 +319,8 @@ class YCrossSectionItem(CrossSectionItem):
         plot.replot()
 
 
+LUT_AXIS_TITLE = _("LUT scale")+(" (0-%d)" % LUT_MAX)
+
 class CrossSectionPlot(CurvePlot):
     """Cross section plot"""
     _height = None
@@ -475,6 +477,11 @@ class CrossSectionPlot(CurvePlot):
                 curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
+        if self.apply_lut:
+            self.set_axis_title(self.Z_AXIS, LUT_AXIS_TITLE)
+            self.set_axis_color(self.Z_AXIS, "red")
+        else:
+            self.plot_labels_changed(obj.plot())
                 
     def export(self):
         """Export cross-section plot in a text file"""
@@ -536,6 +543,8 @@ class XCrossSectionPlot(CrossSectionPlot):
         """Plot labels have changed"""
         self.set_axis_title("left", plot.get_axis_title("right"))       
         self.set_axis_title("bottom", plot.get_axis_title("bottom"))
+        self.set_axis_color("left", plot.get_axis_color("right"))       
+        self.set_axis_color("bottom", plot.get_axis_color("bottom"))
         
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
@@ -561,6 +570,8 @@ class YCrossSectionPlot(CrossSectionPlot):
         """Plot labels have changed"""
         self.set_axis_title("bottom", plot.get_axis_title("right"))       
         self.set_axis_title("left", plot.get_axis_title("left"))
+        self.set_axis_color("bottom", plot.get_axis_color("right"))       
+        self.set_axis_color("left", plot.get_axis_color("left"))
         
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
