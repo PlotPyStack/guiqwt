@@ -122,13 +122,11 @@ def get_image_data(plot, p0, p1, apply_lut=False):
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import (ImageItem, XYImageItem, TrImageItem,
-                              get_image_from_plot, get_plot_source_rect)
-                           
-    items = [item for item in plot.items if isinstance(item, ImageItem)
-             and not isinstance(item, XYImageItem)]
+    from guiqwt.image import (TrImageItem, get_image_from_plot,
+                              get_plot_source_rect)                          
+    items = plot.get_items(item_type=ICSImageItemType)
     if not items:
-        return
+        raise TypeError, "no supported image"
     _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
@@ -172,7 +170,7 @@ def get_plot_x_section(obj, apply_lut=False):
     try:
         data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
                               apply_lut=apply_lut)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
     x0, _y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
@@ -196,7 +194,7 @@ def get_plot_y_section(obj, apply_lut=False):
     try:
         data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
                               apply_lut=apply_lut)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
     _x0, y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
@@ -224,7 +222,7 @@ def get_plot_average_x_section(obj, apply_lut=False):
     try:
         data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
                               apply_lut=apply_lut)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
     if invert:
@@ -251,7 +249,7 @@ def get_plot_average_y_section(obj, apply_lut=False):
     try:
         data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
                               apply_lut=apply_lut)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
     x = np.linspace(y0, y1, len(y))

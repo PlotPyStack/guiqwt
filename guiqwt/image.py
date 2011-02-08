@@ -1338,6 +1338,11 @@ class XYImageItem(RawImageItem):
         i, j = self.get_closest_indexes(x, y)
         return self.x[i], self.y[j]
 
+    #---- IBasePlotItem API ----------------------------------------------------
+    def types(self):
+        return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
+                ITrackableItemType, ISerializableType)
+                
     #---- IBaseImageItem API ---------------------------------------------------
     def can_setfullscale(self):
         return True
