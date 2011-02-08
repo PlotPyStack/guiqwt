@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(self, _("Open"), "",
-                           'Images (*.png *.jpg *.gif *.tif)\nDICOM (*.dcm)')
+                      'Images (*.png *.jpg *.gif *.tif *.tiff)\nDICOM (*.dcm)')
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

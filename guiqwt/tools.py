@@ -1340,7 +1340,7 @@ def save_snapshot(plot, p0, p1):
         formats = '%s (*.dcm)' % _("16-bits DICOM image")
     else:
         formats = ''
-    formats += '\n%s (*.tif)' % _('16-bits TIFF image')
+    formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
     formats += '\n%s (*.png)' % _('8-bits PNG image')
     fname = get_save_filename(plot,  _("Save as"), _('untitled'), formats)
     if not fname:
@@ -1476,7 +1476,7 @@ class LoadItemsTool(OpenFileTool):
 
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager):
-        formats = 'Images (*.png *.jpg *.gif *.tif)'
+        formats = 'Images (*.png *.jpg *.gif *.tif *.tiff)'
         if is_module_available('dicom'):
             formats += '\n%s (*.dcm)' % _("DICOM images")
         OpenFileTool.__init__(self, manager, formats=formats)

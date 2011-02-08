@@ -120,7 +120,7 @@ def imagefile_to_array(filename, to_grayscale=False):
     if not isinstance(filename, basestring):
         filename = unicode(filename) # in case *filename* is a QString instance
     _base, ext = osp.splitext(filename)
-    if ext.lower() in (".jpg", ".png", ".gif", ".tif"):
+    if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff", ".jp2"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
         img = PIL.Image.open(filename)
@@ -196,7 +196,7 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     if max_range:
         arr = set_dynamic_range_from_mode(arr, mode)
     _base, ext = osp.splitext(filename)
-    if ext.lower() in (".jpg", ".png", ".gif", ".tif"):
+    if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
         if mode is None:
