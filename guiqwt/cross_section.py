@@ -162,7 +162,7 @@ def get_plot_x_section(obj, apply_lut=False):
     """
     _x0, y0 = get_object_coordinates(obj)
     plot = obj.plot()
-    xmap = plot.canvasMap(plot.BOTTOM_AXIS)
+    xmap = plot.canvasMap(plot.X_BOTTOM)
     xc0, xc1 = xmap.p1(), xmap.p2()
     _xc0, yc0 = obj.axes_to_canvas(0, y0)
     if plot.get_axis_direction("left"):
@@ -187,7 +187,7 @@ def get_plot_y_section(obj, apply_lut=False):
     """
     x0, _y0 = get_object_coordinates(obj)
     plot = obj.plot()
-    ymap = plot.canvasMap(plot.LEFT_AXIS)
+    ymap = plot.canvasMap(plot.Y_LEFT)
     yc0, yc1 = ymap.p1(), ymap.p2()
     if plot.get_axis_direction("left"):
         yc1, yc0 = yc0, yc1
