@@ -226,7 +226,6 @@ class FitWidgetMixin(CurveWidgetMixin):
         params_frame.setFrameShape(QFrame.Box)
         params_frame.setFrameShadow(QFrame.Sunken)
         self.params_layout = QGridLayout()
-        self.params_layout.setSizeConstraint(QGridLayout.SetMinAndMaxSize)
         params_frame.setLayout(self.params_layout)
         self.plot_layout.addWidget(params_frame, 1, 0)
         

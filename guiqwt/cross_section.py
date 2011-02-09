@@ -351,7 +351,7 @@ class CrossSectionPlot(CurvePlot):
         
         if self._height is not None:
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        if self._width is not None:
+        elif self._width is not None:
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
             
         self.label = make.label(_("Enable a marker"), "C", (0,0), "C")
@@ -538,18 +538,10 @@ class CrossSectionPlot(CurvePlot):
             self.update_plot()
 
 
-class XCrossSectionPlot(CrossSectionPlot):
-    """X-axis cross section plot"""
-    _height = 130
+class HorizontalCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.X_BOTTOM
     Z_AXIS = CurvePlot.Y_LEFT
     CURVETYPE = "Yfx"
-    def sizeHint(self):
-        return QSize(self.width(), self._height)
-        
-    def create_cross_section_item(self):
-        return XCrossSectionItem(self.curveparam)
-
     def plot_labels_changed(self, plot):
         """Plot labels have changed"""
         self.set_axis_title("left", plot.get_axis_title("right"))       
@@ -562,21 +554,12 @@ class XCrossSectionPlot(CrossSectionPlot):
         if axis_id == plot.X_BOTTOM:
             self.set_axis_direction("bottom", plot.get_axis_direction("bottom"))
             self.replot()
-        
 
-class YCrossSectionPlot(CrossSectionPlot):
-    """Y-axis cross section plot"""
-    _width = 140
+class VerticalCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.Y_LEFT
     Z_AXIS = CurvePlot.X_BOTTOM
     Z_MAX_MAJOR = 3
     CURVETYPE = "Xfy"
-    def sizeHint(self):
-        return QSize(self._width, self.height())
-    
-    def create_cross_section_item(self):
-        return YCrossSectionItem(self.curveparam)
-
     def plot_labels_changed(self, plot):
         """Plot labels have changed"""
         self.set_axis_title("bottom", plot.get_axis_title("right"))       
@@ -589,6 +572,25 @@ class YCrossSectionPlot(CrossSectionPlot):
         if axis_id == plot.Y_LEFT:
             self.set_axis_direction("left", plot.get_axis_direction("left"))
             self.replot()
+
+
+class XCrossSectionPlot(HorizontalCrossSectionPlot):
+    """X-axis cross section plot"""
+    _height = 130
+    def sizeHint(self):
+        return QSize(self.width(), self._height)
+        
+    def create_cross_section_item(self):
+        return XCrossSectionItem(self.curveparam)
+        
+class YCrossSectionPlot(VerticalCrossSectionPlot):
+    """Y-axis cross section plot"""
+    _width = 140
+    def sizeHint(self):
+        return QSize(self._width, self.height())
+    
+    def create_cross_section_item(self):
+        return YCrossSectionItem(self.curveparam)
 
 
 class CrossSectionWidget(PanelWidget):
@@ -881,12 +883,12 @@ class RACrossSectionItem(CrossSectionItem):
     def update_scale(self):
         pass
 
-class RACrossSectionPlot(XCrossSectionPlot):
+class RACrossSectionPlot(HorizontalCrossSectionPlot):
     """Radially-averaged cross section plot"""
     PLOT_TITLE = _("Radially-averaged cross section")
     LABEL_TEXT = _("Activate the radially-averaged cross section tool")
     def __init__(self, parent=None):
-        XCrossSectionPlot.__init__(self, parent)
+        super(RACrossSectionPlot, self).__init__(parent)
         self.set_title(self.PLOT_TITLE)
         self.label.set_text(self.LABEL_TEXT)
         self.curveparam.label = _("Radially-averaged cross section")
@@ -897,9 +899,6 @@ class RACrossSectionPlot(XCrossSectionPlot):
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
         pass
-
-    def add_cross_section_item(self, source):
-        XCrossSectionPlot.add_cross_section_item(self, source)
 
 class RACrossSection(CrossSectionWidget):
     """Radially-averaged cross section widget"""
