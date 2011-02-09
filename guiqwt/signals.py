@@ -33,7 +33,8 @@ Signals available:
     :py:data:`guiqwt.signals.SIG_ACTIVE_ITEM_CHANGED`
         Emitted by plot when selected item has changed
     :py:data:`guiqwt.signals.SIG_ITEM_REMOVED`
-        Emitted by "itemlist" panel when an item was deleted from the list
+        Emitted by plot when an item was deleted from the itemlist or using 
+        the delete item tool
     :py:data:`guiqwt.signals.SIG_ITEM_SELECTION_CHANGED`
         Emitted by plot when an item is selected
     :py:data:`guiqwt.signals.SIG_PLOT_LABELS_CHANGED`
@@ -81,7 +82,8 @@ SIG_ITEMS_CHANGED = SIGNAL('items_changed(PyQt_PyObject)')
 # Emitted by plot when selected item has changed
 SIG_ACTIVE_ITEM_CHANGED = SIGNAL('active_item_changed(PyQt_PyObject)')
 
-# Emitted by "itemlist" panel when an item was deleted from the list
+# Emitted by plot when an item was deleted from the item list or using the 
+# delete item tool
 SIG_ITEM_REMOVED = SIGNAL('item_removed(PyQt_PyObject)')
 
 # Emitted by plot when an item is selected

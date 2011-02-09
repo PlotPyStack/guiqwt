@@ -259,7 +259,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED)
+                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_RACS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -1593,6 +1593,8 @@ class DeleteItemTool(CommandTool):
                                      QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
             plot.del_items(items)
+            for item in items:
+                plot.emit(SIG_ITEM_REMOVED, item)
             plot.replot()
 
 

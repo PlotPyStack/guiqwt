@@ -888,7 +888,7 @@ class ItemListWidget(QListWidget):
             self.plot.del_items(items)
             self.plot.replot()
             for item in items:
-                self.parent().emit(SIG_ITEM_REMOVED, item)
+                self.plot.emit(SIG_ITEM_REMOVED, item)
         
 
 class PlotItemList(PanelWidget):
