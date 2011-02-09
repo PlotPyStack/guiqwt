@@ -55,7 +55,8 @@ from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_RACS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot, LUT_MAX
 from guiqwt.styles import CurveParam
-from guiqwt.tools import SelectTool, BasePlotMenuTool, AntiAliasingTool
+from guiqwt.tools import (SelectTool, BasePlotMenuTool, AntiAliasingTool,
+                          DeleteItemTool)
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
@@ -354,6 +355,7 @@ class CrossSectionPlot(CurvePlot):
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
             
         self.label = make.label(_("Enable a marker"), "C", (0,0), "C")
+        self.label.set_readonly(True)
         self.add_item(self.label)
         
         self.setAxisMaxMajor(self.Z_AXIS, self.Z_MAX_MAJOR)
@@ -400,6 +402,7 @@ class CrossSectionPlot(CurvePlot):
     def add_cross_section_item(self, source):
         curve = self.create_cross_section_item()
         curve.set_source_image(source)
+        curve.set_readonly(True)
         self.add_item(curve, z=0)
         self.known_items[source] = curve
 
@@ -620,6 +623,7 @@ class CrossSectionWidget(PanelWidget):
         lman.add_tool(BasePlotMenuTool, "axes")
         lman.add_tool(BasePlotMenuTool, "grid")
         lman.add_tool(AntiAliasingTool)
+        lman.add_tool(DeleteItemTool)
         lman.get_default_tool().activate()
         
         self.setWindowIcon(get_icon(widget_icon))
