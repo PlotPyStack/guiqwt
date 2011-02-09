@@ -39,7 +39,7 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QFrame,
+from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
                          QCheckBox, QDialog, QVBoxLayout, QHBoxLayout, QWidget,
                          QDialogButtonBox)
 from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
@@ -48,6 +48,7 @@ import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)
 
 import guidata
+from guidata.qthelpers import create_groupbox
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
@@ -221,13 +222,10 @@ class FitWidgetMixin(CurveWidgetMixin):
         super(FitWidgetMixin, self).create_plot(options)
         for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
-        
-        params_frame = QFrame(self)
-        params_frame.setFrameShape(QFrame.Box)
-        params_frame.setFrameShadow(QFrame.Sunken)
         self.params_layout = QGridLayout()
-        params_frame.setLayout(self.params_layout)
-        self.plot_layout.addWidget(params_frame, 1, 0)
+        params_group = create_groupbox(self, _("Fit parameters"),
+                                       layout=self.params_layout)
+        self.plot_layout.addWidget(params_group, 1, 0)
         
     # Public API ---------------------------------------------------------------  
     def set_data(self, x, y, fitfunc=None, fitparams=None):
