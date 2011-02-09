@@ -708,16 +708,23 @@ class RawImageItem(BaseImageItem):
             
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
-        state = (self.imageparam, self.get_lut_range(),
-                 self.get_filename(), self.z())
+        fname = self.get_filename()
+        if fname is None:
+            fn_or_data = self.data
+        else:
+            fn_or_data = fname
+        state = self.imageparam, self.get_lut_range(), fn_or_data, self.z()
         res = ( self.__class__, (None,), state )
         return res
 
     def __setstate__(self, state):
-        param, lut_range, filename, z = state
+        param, lut_range, fn_or_data, z = state
         self.imageparam = param
-        self.set_filename(filename)
-        self.load_data(lut_range)
+        if isinstance(fn_or_data, basestring):
+            self.set_filename(fn_or_data)
+            self.load_data(lut_range)
+        elif fn_or_data is not None: # should happen only with previous API
+            self.set_data(fn_or_data, lut_range=lut_range)
         self.setZ(z)
         self.imageparam.update_image(self)
         
@@ -873,6 +880,8 @@ class ImageItem(RawImageItem):
         return x0, y0, x1, y1
 
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+        if self.data is None:
+            return
         src2 = self._rescale_srcrect(srcRect)
         dest = _scale_rect(self.data, src2, self._offscreen, dstRect,
                            self.lut, self.interpolate)
@@ -1258,24 +1267,24 @@ class XYImageItem(RawImageItem):
 
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
-        filename = self.get_filename()
-        if filename is None:
-            data = self.data
+        fname = self.get_filename()
+        if fname is None:
+            fn_or_data = self.data
         else:
-            data = None
+            fn_or_data = fname
         state = (self.imageparam, self.get_lut_range(),
-                 self.x, self.y, data, filename, self.z())
+                 self.x, self.y, fn_or_data, self.z())
         res = ( self.__class__, (None, None, None), state )
         return res
 
     def __setstate__(self, state):
-        param, lut_range, x, y, data, filename, z = state
+        param, lut_range, x, y, fn_or_data, z = state
         self.imageparam = param
-        self.set_filename(filename)
-        if filename is None:
-            self.set_data(data, lut_range)
-        else:
+        if isinstance(fn_or_data, basestring):
+            self.set_filename(fn_or_data)
             self.load_data(lut_range)
+        elif fn_or_data is not None: # should happen only with previous API
+            self.set_data(fn_or_data, lut_range=lut_range)
         self.set_xy(x, y)
         self.setZ(z)
         self.imageparam.update_image(self)
@@ -1373,15 +1382,23 @@ class RGBImageItem(ImageItem):
 
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
-        state = (self.imageparam, self.get_filename(), self.z())
+        fname = self.get_filename()
+        if fname is None:
+            fn_or_data = self.data
+        else:
+            fn_or_data = fname
+        state = self.imageparam, fn_or_data, self.z()
         res = ( self.__class__, (None,), state )
         return res
 
     def __setstate__(self, state):
-        param, filename, z = state
+        param, fn_or_data, z = state
         self.imageparam = param
-        self.set_filename(filename)
-        self.load_data()
+        if isinstance(fn_or_data, basestring):
+            self.set_filename(fn_or_data)
+            self.load_data()
+        elif fn_or_data is not None: # should happen only with previous API
+            self.set_data(fn_or_data)
         self.setZ(z)
         self.imageparam.update_image(self)
         
@@ -1469,23 +1486,30 @@ class MaskedImageItem(ImageItem):
         
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
-        state = (self.imageparam, self.get_lut_range(),
-                 self.get_filename(), self.z(),
+        fname = self.get_filename()
+        if fname is None:
+            fn_or_data = self.data
+        else:
+            fn_or_data = fname
+        state = (self.imageparam, self.get_lut_range(), fn_or_data, self.z(),
                  self.get_mask_filename(), self.get_masked_areas())
         res = ( self.__class__, (None,), state )
         return res
 
     def __setstate__(self, state):
-        param, lut_range, filename, z, mask_filename, masked_areas = state
+        param, lut_range, fn_or_data, z, mask_filename, masked_areas = state
         self.imageparam = param
-        self.set_filename(filename)
-        self.load_data(lut_range)
+        if isinstance(fn_or_data, basestring):
+            self.set_filename(fn_or_data)
+            self.load_data(lut_range)
+        elif fn_or_data is not None: # should happen only with previous API
+            self.set_data(fn_or_data, lut_range=lut_range)
         self.setZ(z)
         self.imageparam.update_image(self)
         if mask_filename is not None:
             self.set_mask_filename(mask_filename)
             self.load_mask_data()
-        elif masked_areas:
+        elif masked_areas and self.data is not None:
             self.set_masked_areas(masked_areas)
             self.apply_masked_areas()
         
@@ -1519,7 +1543,7 @@ class MaskedImageItem(ImageItem):
     def load_mask_data(self):
         data = imagefile_to_array(self.get_mask_filename(), to_grayscale=True)
         self.set_mask(data)
-        self.plot().emit(SIG_MASK_CHANGED, self)
+        self._mask_changed()
         
     def set_masked_areas(self, areas):
         """Set masked areas (see set_mask_filename)"""
@@ -1534,6 +1558,12 @@ class MaskedImageItem(ImageItem):
                _x1 == x1 and _y1 == y1 and _i == inside:
                    return
         self._masked_areas.append((geometry, x0, y0, x1, y1, inside))
+
+    def _mask_changed(self):
+        """Emit the SIG_MASK_CHANGED signal (emitter: plot)"""
+        plot = self.plot()
+        if plot is not None:
+            plot.emit(SIG_MASK_CHANGED, self)
         
     def apply_masked_areas(self):
         for geometry, x0, y0, x1, y1, inside in self._masked_areas:
@@ -1543,18 +1573,18 @@ class MaskedImageItem(ImageItem):
             else:
                 self.mask_circular_area(x0, y0, x1, y1, inside,
                                         trace=False, do_signal=False)
-        self.plot().emit(SIG_MASK_CHANGED, self)
+        self._mask_changed()
                             
     def mask_all(self):
         """Mask all pixels"""
         self.data.mask = True
-        self.plot().emit(SIG_MASK_CHANGED, self)
+        self._mask_changed()
         
     def unmask_all(self):
         """Unmask all pixels"""
         self.data.mask = np.ma.nomask
         self.set_masked_areas([])
-        self.plot().emit(SIG_MASK_CHANGED, self)
+        self._mask_changed()
         
     def mask_rectangular_area(self, x0, y0, x1, y1, inside=True,
                               trace=True, do_signal=True):
@@ -1573,7 +1603,7 @@ class MaskedImageItem(ImageItem):
         if trace:
             self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
         if do_signal:
-            self.plot().emit(SIG_MASK_CHANGED, self)
+            self._mask_changed()
         
     def mask_circular_area(self, x0, y0, x1, y1, inside=True,
                            trace=True, do_signal=True):
@@ -1600,7 +1630,7 @@ class MaskedImageItem(ImageItem):
         if trace:
             self.add_masked_areas('circular', x0, y0, x1, y1, inside)
         if do_signal:
-            self.plot().emit(SIG_MASK_CHANGED, self)
+            self._mask_changed()
 
     def is_mask_visible(self):
         """Return mask visibility"""
@@ -1617,6 +1647,8 @@ class MaskedImageItem(ImageItem):
     def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
         super(MaskedImageItem, self).draw_image(painter, canvasRect,
                                                 srcRect, dstRect, xMap, yMap)
+        if self.data is None:
+            return
         if self.is_mask_visible():
             _a, _b, bg, _cmap = self.lut
             alpha_masked = np.uint32(255*self.imageparam.alpha_masked+0.5

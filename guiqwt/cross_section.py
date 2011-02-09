@@ -840,9 +840,9 @@ def compute_radial_section(item, x0, y0, x1, y1, dyfunc=None):
     iradius = int(np.floor(.5*np.sqrt(.5*(ix1-ix0)**2+.5*(iy1-iy0)**2)+.5))
     if iradius == 0:
         return np.array([]), np.array([]), np.array([])
-    data = item.data
     ydata = np.zeros((iradius+1,), dtype=np.float64)
     ycount = np.zeros((iradius+1,), dtype=np.float64)
+    data = item.data
     if isinstance(item.data, np.ma.MaskedArray):
         mask = np.ma.getmaskarray(item.data)
         radialaverage.radavg_mask(ydata, ycount, data, mask, iyc, ixc, iradius)
@@ -868,7 +868,7 @@ class RACrossSectionItem(CrossSectionItem):
     def update_curve_data(self, obj):
         source = self.get_source_image()
         rect = get_rectangular_area(obj)
-        if rect is not None:
+        if rect is not None and source.data is not None:
             sectx, secty, sectdy = compute_radial_section(source, *rect)
             if secty.size == 0 or np.all(np.isnan(secty)):
                 sectx, secty, sectdy = np.array([]), np.array([]), None
