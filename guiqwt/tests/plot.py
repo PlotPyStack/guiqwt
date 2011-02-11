@@ -41,15 +41,15 @@ def test():
     x2 = linspace(-10, 10, 20)
     y2 = sin(sin(sin(x2)))
     plot(make.curve(x, y, color="b"),
-         make.curve(x2, y2, color="g"),
-         make.curve(x, sin(2*y), color="r"),
-         make.merror(x, y/2, dy),
-         make.label("Relative position <b>outside</b>",
-                    (x[0], y[0]), (-10, -10), "BR"),
-         make.label("Relative position <i>inside</i>",
-                    (x[0], y[0]), (10, 10), "TL"),
-         make.label("Absolute position", "R", (0,0), "R"),
-         make.legend("TR"),
+#         make.curve(x2, y2, color="g"),
+#         make.curve(x, sin(2*y), color="r"),
+#         make.merror(x, y/2, dy),
+#         make.label("Relative position <b>outside</b>",
+#                    (x[0], y[0]), (-10, -10), "BR"),
+#         make.label("Relative position <i>inside</i>",
+#                    (x[0], y[0]), (10, 10), "TL"),
+#         make.label("Absolute position", "R", (0,0), "R"),
+#         make.legend("TR"),
          )
 
 if __name__ == "__main__":
