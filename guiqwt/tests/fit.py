@@ -24,7 +24,7 @@ def test():
     a = FitParam("Offset", 1., 0., 2.)
     b = FitParam("Frequency", 2., 1., 10., logscale=True)
     params = [a, b]
-    values = guifit(x, y, fit, params)
+    values = guifit(x, y, fit, params, xlabel="Time (s)", ylabel="Power (a.u.)")
     
     print values
     print [param.value for param in params]

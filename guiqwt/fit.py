@@ -110,7 +110,8 @@ class FitParam(DataSet):
         self.button.setToolTip(
                         _("Edit fit parameter '%s' properties") % self.name)
         QObject.connect(self.button, SIGNAL('clicked()'), self.edit_param)
-        self.checkbox = QCheckBox(_('Logarithmic scale'), parent)
+        self.checkbox = QCheckBox('Log', parent)
+        self.checkbox.setToolTip(_('Logarithmic scale'))
         self.update_checkbox_state()
         QObject.connect(self.checkbox, SIGNAL('stateChanged(int)'),
                         self.set_scale)
@@ -184,16 +185,19 @@ class FitParam(DataSet):
 
 class FitWidgetMixin(CurveWidgetMixin):
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
-                 toolbar=False, options=None, panels=None):
+                 toolbar=False, options=None, panels=None, param_cols=1):
         if wintitle is None:
             wintitle = _('Curve fitting')
             
         self.x = None
         self.y = None
         self.fitfunc = None
+        self.fitargs = None
+        self.fitkwargs = None
         self.fitparams = None
         self.autofit_prm = None
         
+        self.param_cols = param_cols
         self.button_layout = None
         self.button_list = [] # list of buttons to be disabled at startup
 
@@ -228,7 +232,8 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.plot_layout.addWidget(params_group, 1, 0)
         
     # Public API ---------------------------------------------------------------  
-    def set_data(self, x, y, fitfunc=None, fitparams=None):
+    def set_data(self, x, y, fitfunc=None, fitparams=None,
+                 fitargs=None, fitkwargs=None):
         if self.fitparams is not None and fitparams is not None:
             self.clear_params_layout()
         self.x = x
@@ -237,6 +242,10 @@ class FitWidgetMixin(CurveWidgetMixin):
             self.fitfunc = fitfunc
         if fitparams is not None:
             self.fitparams = fitparams
+        if fitargs is not None:
+            self.fitargs = fitargs
+        if fitkwargs is not None:
+            self.fitkwargs = fitkwargs
         self.autofit_prm = AutoFitParam(title=_("Automatic fitting options"))
         self.autofit_prm.xmin = x.min()
         self.autofit_prm.xmax = x.max()
@@ -245,11 +254,13 @@ class FitWidgetMixin(CurveWidgetMixin):
             self.populate_params_layout()
         self.refresh()
         
-    def set_fit_data(self, fitfunc, fitparams):
+    def set_fit_data(self, fitfunc, fitparams, fitargs=None, fitkwargs=None):
         if self.fitparams is not None:
             self.clear_params_layout()
         self.fitfunc = fitfunc
         self.fitparams = fitparams
+        self.fitargs = fitargs
+        self.fitkwargs = fitkwargs
         self.populate_params_layout()
         self.refresh()
         
@@ -260,14 +271,29 @@ class FitWidgetMixin(CurveWidgetMixin):
                 widget.hide()
         
     def populate_params_layout(self):
+        row_contents = []
+        row_nb = 0
+        col_nb = 0
         for i, param in enumerate(self.fitparams):
             button, checkbox, slider, label = param.create_widgets(self)
             self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
             self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
-            for widget, row, col in ((button, i, 0), (checkbox, i, 1),
-                                     (slider, i, 2), (label, i, 3)):
-                self.params_layout.addWidget(widget, row, col)
-      
+            row_contents += [(button,   row_nb, 0+col_nb*5),
+                             (checkbox, row_nb, 1+col_nb*5),
+                             (slider,   row_nb, 2+col_nb*5),
+                             (label,    row_nb, 3+col_nb*5)]
+            col_nb += 1
+            if col_nb == self.param_cols:
+                row_nb += 1
+                col_nb = 0
+                for widget, row, col in row_contents:
+                    self.params_layout.addWidget(widget, row, col)
+        if self.param_cols > 1:
+            for col_nb in range(self.param_cols):
+                self.params_layout.setColumnStretch(2+(col_nb-1)*5, 3)
+                self.params_layout.setColumnStretch(4+(col_nb-1)*5, 1)
+                self.params_layout.setColumnStretch(7+(col_nb-1)*5, 3)
+    
     def create_button_layout(self):        
         btn_layout = QHBoxLayout()
         auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
@@ -286,6 +312,16 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.button_list += [auto_button, autoprm_button, xrange_button]
         return btn_layout
         
+    def get_fitfunc_arguments(self):
+        """Return fitargs and fitkwargs"""
+        fitargs = self.fitargs
+        if self.fitargs is None:
+            fitargs = []
+        fitkwargs = self.fitkwargs
+        if self.fitkwargs is None:
+            fitkwargs = {}
+        return fitargs, fitkwargs
+        
     def refresh(self):
         """Refresh Fit Tool dialog box"""
         # Update button states
@@ -300,7 +336,9 @@ class FitWidgetMixin(CurveWidgetMixin):
             # Fit widget is not yet configured
             return
 
-        yfit = self.fitfunc(self.x, [p.value for p in self.fitparams])
+        fitargs, fitkwargs = self.get_fitfunc_arguments()
+        yfit = self.fitfunc(self.x, [p.value for p in self.fitparams],
+                            *fitargs, **fitkwargs)
         self.xrange = make.range(self.autofit_prm.xmin, self.autofit_prm.xmax)
         self.xrange.setVisible(self.show_xrange)
         items = [make.curve(self.x, self.y, _("Data"), color="b", linewidth=2),
@@ -339,7 +377,8 @@ class FitWidgetMixin(CurveWidgetMixin):
     def errorfunc(self, params):
         x = self.x[self.i_min:self.i_max]
         y = self.y[self.i_min:self.i_max]
-        return y - self.fitfunc(x, params)
+        fitargs, fitkwargs = self.get_fitfunc_arguments()
+        return y - self.fitfunc(x, params, *fitargs, **fitkwargs)
 
     def autofit(self):
         meth = self.autofit_prm.method
@@ -421,18 +460,22 @@ class FitWidgetMixin(CurveWidgetMixin):
 
 
 class FitWidget(QWidget, FitWidgetMixin):
-    def __init__(self, wintitle=None, icon="guiqwt.png",
-                 toolbar=False, options=None, parent=None, panels=None):
+    def __init__(self, wintitle=None, icon="guiqwt.png", toolbar=False,
+                 options=None, parent=None, panels=None,
+                 param_cols=1):
         QWidget.__init__(self, parent)
-        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels)
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
+                                param_cols)
 
 
 class FitDialog(QDialog, FitWidgetMixin):
     def __init__(self, wintitle=None, icon="guiqwt.png", edit=True,
-                 toolbar=False, options=None, parent=None, panels=None):
+                 toolbar=False, options=None, parent=None, panels=None,
+                 param_cols=1):
         QDialog.__init__(self, parent)
         self.edit = edit
-        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels)
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
+                                param_cols)
         self.setWindowFlags(Qt.Window)
         
     def setup_widget_layout(self):
@@ -449,14 +492,16 @@ class FitDialog(QDialog, FitWidgetMixin):
         self.button_list += [bbox.button(QDialogButtonBox.Ok)]
         
 
-def guifit(x, y, fitfunc, fitparams, title=None):
+def guifit(x, y, fitfunc, fitparams, fitargs=None, fitkwargs=None,
+           title=None, xlabel=None, ylabel=None, param_cols=1):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
 #    widget = FitWidget(x, y, fitfunc, fitparams)
 #    widget.show()
 #    _app.exec_()
-    dlg = FitDialog(edit=True, toolbar=True)
-    dlg.set_data(x, y, fitfunc, fitparams)
+    dlg = FitDialog(edit=True, toolbar=True, param_cols=param_cols,
+                    options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
+    dlg.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
     
     if dlg.exec_():
         return dlg.get_values()
@@ -471,6 +516,6 @@ if __name__ == "__main__":
     a = FitParam("Offset", 1., 0., 2.)
     b = FitParam("Frequency", 2., 1., 10., logscale=True)
     params = [a, b]
-    values = guifit(x, y, fit, params)
+    values = guifit(x, y, fit, params, param_cols=2)
     print values
     print [param.value for param in params]
