@@ -360,7 +360,7 @@ class CrossSectionPlot(CurvePlot):
         
         self.setAxisMaxMajor(self.Z_AXIS, self.Z_MAX_MAJOR)
         self.setAxisMaxMinor(self.Z_AXIS, 0)
-
+        
     def connect_plot(self, plot):
         if not isinstance(plot, ImagePlot):
             # Connecting only to image plot widgets (allow mixing image and 
@@ -504,8 +504,18 @@ class CrossSectionPlot(CurvePlot):
             QMessageBox.warning(self, _("Export"),
                                 _("Please select a cross section plot."))
             return
-        x, y = items[0].get_data()
-        data = np.array([x, y]).T
+        item_data = items[0].get_data()
+        if len(item_data) > 2:
+            x, y, dx, dy = item_data
+            array_list = [x, y]
+            if dx is not None:
+                array_list.append(dx)
+            if dy is not None:
+                array_list.append(dy)
+            data = np.array(array_list).T
+        else:
+            x, y = item_data
+            data = np.array([x, y]).T
         fname = QFileDialog.getSaveFileName(self, _("Export"),
                                             "", _("Text file")+" (*.txt)")
         if fname:
@@ -636,6 +646,13 @@ class CrossSectionWidget(PanelWidget):
         
         self.setup_widget()
         
+    def set_options(self, autoscale=None, autorefresh=None):
+        assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
+        if autoscale is not None:
+            self.autoscale_ac.setChecked(autoscale)
+        if autorefresh is not None:
+            self.autorefresh_ac.setChecked(autorefresh)
+        
     def setup_widget(self):
         layout = QHBoxLayout()
         layout.addWidget(self.cs_plot)
@@ -671,14 +688,14 @@ class CrossSectionWidget(PanelWidget):
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
-        self.autoscale_ac.setChecked(True)
+        self.autoscale_ac.setChecked(self.cs_plot.autoscale_mode)
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
                                    triggered=lambda: self.cs_plot.update_plot())
         self.autorefresh_ac = create_action(self, _("Auto-refresh"),
                                    icon=get_icon('autorefresh.png'),
                                    toggled=self.cs_plot.toggle_autorefresh)
-        self.autorefresh_ac.setChecked(True)
+        self.autorefresh_ac.setChecked(self.cs_plot.autorefresh_mode)
         
     def add_actions_to_toolbar(self):
         add_actions(self.toolbar, (self.export_ac, self.autoscale_ac, None,
@@ -713,14 +730,17 @@ class XCrossSection(CrossSectionWidget):
         self.peritem_ac = None
         self.applylut_ac = None
         
-    def set_options(self, peritem=None, applylut=None, autoscale=None):
+    def set_options(self, autoscale=None, autorefresh=None,
+                    peritem=None, applylut=None):
         assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
+        if autoscale is not None:
+            self.autoscale_ac.setChecked(autoscale)
+        if autorefresh is not None:
+            self.autorefresh_ac.setChecked(autorefresh)
         if peritem is not None:
             self.peritem_ac.setChecked(peritem)
         if applylut is not None:
             self.applylut_ac.setChecked(applylut)
-        if autoscale is not None:
-            self.autoscale_ac.setChecked(autoscale)
             
     def add_actions_to_toolbar(self):
         other = self.manager.get_panel(self.OTHER_PANEL_ID)
