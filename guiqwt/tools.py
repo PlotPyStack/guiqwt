@@ -229,9 +229,9 @@ try:
 except ImportError:
     pass
 
-import sys, numpy as np, weakref
+import sys, numpy as np, weakref, os.path as osp
 
-from PyQt4.QtCore import Qt, QObject, SIGNAL
+from PyQt4.QtCore import Qt, QObject, SIGNAL, QRectF
 from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
                          QMessageBox, QPrintDialog, QFont, QAction, QToolButton)
 
@@ -254,7 +254,7 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
                                 AnnotatedPoint)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
-                               IVoiImageItemType)
+                               IVoiImageItemType, IExportROIImageItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
@@ -1299,20 +1299,19 @@ def save_snapshot(plot, p0, p1):
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import (ImageItem, XYImageItem, TrImageItem,
-                              get_image_from_plot, get_plot_source_rect)
+    from guiqwt.image import (TrImageItem, get_image_from_plot,
+                              get_plot_source_rect)
     from guiqwt.io import (array_to_imagefile, array_to_dicomfile,
                            MODE_INTENSITY_U8, MODE_INTENSITY_U16,
                            set_dynamic_range_from_dtype)
-                           
-    items = [item for item in plot.items
-             if isinstance(item, ImageItem)
-             and not isinstance(item, XYImageItem)]
+    items = plot.get_items(item_type=IExportROIImageItemType)
+    src_x, src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
+    src_qrect = QRectF(src_x, src_y, src_w, src_h)
+    items = [it for it in items if src_qrect.intersects(it.boundingRect())]
     if not items:
         QMessageBox.critical(plot, _("Rectangle snapshot"),
-                     _("There is no supported image item in current plot."))
+                 _("There is no supported image item in current selection."))
         return
-    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
     original_size = (src_w, src_h)
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
@@ -1321,15 +1320,46 @@ def save_snapshot(plot, p0, p1):
         dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
         original_size = (src_w/dx_max, src_h/dy_max)
     screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
+    
     from guiqwt.resizedialog import ResizeDialog
     dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
                        text=_("Destination size:"))
-    if dlg.exec_():
-        data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height,
-                                   apply_lut=True)
-    else:
+    if not dlg.exec_():
         return
+        
+    from guidata.dataset.datatypes import DataSet, BeginGroup, EndGroup
+    from guidata.dataset.dataitems import BoolItem, ChoiceItem
+    class SnapshotParam(DataSet):
+        _levels = BeginGroup(_("Image levels adjustments"))
+        apply_contrast = BoolItem(_("Apply contrast settings"),
+                                  default=False)
+        norm_range = BoolItem(_("Scale levels to maximum range"),
+                              default=False)
+        _end_levels = EndGroup(_("Image levels adjustments"))
+        _multiple = BeginGroup(_("Superimposed images"))
+        add_images = ChoiceItem(_(u"If image B is behind image A, "
+                                 u"replace A∩B by"),
+                               [(False, _(u"A")), (True, _(u"A+B"))],
+                               default=None)
+        _end_multiple = EndGroup(_("Superimposed images"))
+    
+    param = SnapshotParam(_("Rectangle snapshot"))
+    if not param.edit(parent=plot):
+        return
+        
+    data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height,
+                               apply_lut=param.apply_contrast,
+                               add_images=param.add_images)
 
+    dtype = None
+    for item in items:
+        if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
+            dtype = item.data.dtype
+    if param.norm_range:
+        data = set_dynamic_range_from_dtype(data, dtype=dtype)
+    else:
+        data = np.array(data, dtype=dtype)
+            
     for model_item in items:
         model_fname = model_item.get_filename()
         if model_fname is not None and model_fname.lower().endswith(".dcm"):
@@ -1343,14 +1373,14 @@ def save_snapshot(plot, p0, p1):
     formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
     formats += '\n%s (*.png)' % _('8-bits PNG image')
     fname = get_save_filename(plot,  _("Save as"), _('untitled'), formats)
+    _base, ext = osp.splitext(fname)
     if not fname:
         return
-    elif fname.lower().endswith('.png'):
+    elif ext.lower() == ".png":
         array_to_imagefile(data, fname, MODE_INTENSITY_U8, max_range=True)
-    elif fname.lower().endswith('.tif'):
-        array_to_imagefile(data, fname, MODE_INTENSITY_U16, max_range=True)
-    elif fname.lower().endswith('.dcm'):
-        data = set_dynamic_range_from_dtype(data, np.uint16)
+    elif ext.lower() in (".tif", ".tiff"):
+        array_to_imagefile(data, fname)
+    elif ext.lower() == ".dcm":
         import dicom
         model_dcm = dicom.read_file(model_fname)
         try:

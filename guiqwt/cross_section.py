@@ -128,7 +128,7 @@ def get_image_data(plot, p0, p1, apply_lut=False):
                               get_plot_source_rect)                          
     items = plot.get_items(item_type=ICSImageItemType)
     if not items:
-        raise TypeError, "no supported image"
+        raise TypeError, _("There is no supported image item in current plot.")
     _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]

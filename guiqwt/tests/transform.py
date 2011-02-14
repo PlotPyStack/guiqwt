@@ -124,18 +124,17 @@ def build_image(items):
     r = get_bbox(items)
     x,y,w,h = r.getRect()
     print "Assemble test1:", w,"x", h
-    dest = assemble_imageitems(items, r.getRect(), w, h, align=4, sampling=(0,))
+    dest = assemble_imageitems(items, r.getRect(), w, h, align=4)
     print "saving..."
     save_image("test1.png", dest)
     
-    msk = np.ones( (11,11), float)
     print "Assemble test2:", w/4,"x", h/4
-    dest = assemble_imageitems(items, r.getRect(), w/4, h/4, align=4, sampling=(1,msk))
+    dest = assemble_imageitems(items, r.getRect(), w/4, h/4, align=4)
     save_image("test2.png", dest)
 
 def test():
     """Test"""
-    N = 3000
+    N = 300
     data = compute_image(N, N)
     m = data.min()
     M = data.max()

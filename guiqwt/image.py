@@ -149,7 +149,8 @@ from guiqwt.config import _
 from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
                                IColormapImageItemType, IVoiImageItemType,
-                               ISerializableType, ICSImageItemType)
+                               ISerializableType, ICSImageItemType,
+                               IExportROIImageItemType)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
@@ -196,7 +197,8 @@ def pixelround(x, corner=None):
 #===============================================================================
 class BaseImageItem(QwtPlotItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
-                      IVoiImageItemType, ICSImageItemType)
+                      IVoiImageItemType, ICSImageItemType,
+                      IExportROIImageItemType)
     _can_select = True
     _can_resize = False
     _can_move = False
@@ -488,6 +490,15 @@ class BaseImageItem(QwtPlotItem):
                            self.lut, self.interpolate)
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
+        
+    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+        """Export Region Of Interest to array"""
+        if apply_lut:
+            a, b, _bg, _cmap = self.lut
+        else:
+            a, b = 1., 0.
+        _scale_rect(self.data, srcrect, dstimage, dstrect, (a, b, None),
+                    self.interpolate)
 
     #---- QwtPlotItem API ------------------------------------------------------
     def draw(self, painter, xMap, yMap, canvasRect):
@@ -528,7 +539,7 @@ class BaseImageItem(QwtPlotItem):
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
-                ITrackableItemType, ICSImageItemType)
+                ITrackableItemType, ICSImageItemType, IExportROIImageItemType)
 
     def set_readonly(self, state):
         """Set object readonly state"""
@@ -762,7 +773,8 @@ class RawImageItem(BaseImageItem):
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
-                ITrackableItemType, ICSImageItemType, ISerializableType)
+                ITrackableItemType, ICSImageItemType, ISerializableType,
+                IExportROIImageItemType)
 
     def get_item_parameters(self, itemparams):
         super(RawImageItem, self).get_item_parameters(itemparams)
@@ -795,7 +807,7 @@ class ImageItem(RawImageItem):
           (:py:class:`guiqwt.styles.ImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
-                      IVoiImageItemType)
+                      IVoiImageItemType, IExportROIImageItemType)
     def __init__(self, data, param=None):
         self.xmin = None
         self.xmax = None
@@ -887,6 +899,15 @@ class ImageItem(RawImageItem):
                            self.lut, self.interpolate)
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
+
+    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+        """Export Region Of Interest to array"""
+        if apply_lut:
+            a, b, _bg, _cmap = self.lut
+        else:
+            a, b = 1., 0.
+        _scale_rect(self.data, self._rescale_srcrect(srcrect),
+                    dstimage, dstrect, (a, b, None), self.interpolate)
 
 assert_interfaces_valid(ImageItem)
 
@@ -986,7 +1007,7 @@ class TrImageItem(RawImageItem):
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.TrImageParam` instance)
     """
-    __implements__ = (IBasePlotItem, IBaseImageItem)
+    __implements__ = (IBasePlotItem, IBaseImageItem, IExportROIImageItemType)
     _can_select = True
     _can_resize = True
     _can_rotate = True
@@ -1135,6 +1156,18 @@ class TrImageItem(RawImageItem):
         srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(srcrect, self._image, srcrect)
         
+    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+        """Export Region Of Interest to array"""
+        if apply_lut:
+            a, b, _bg, _cmap = self.lut
+        else:
+            a, b = 1., 0.
+        x, y, w, h = srcrect
+        _x, _y, dstw, dsth = dstrect
+        mat = self.tr*( translate(x, y)*scale(w/float(dstw), h/float(dsth)) )
+        _scale_tr(self.data, mat, dstimage, dstrect,
+                  (a, b, None), self.interpolate)
+                    
     #---- IBasePlotItem API ----------------------------------------------------
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
@@ -1179,33 +1212,31 @@ class TrImageItem(RawImageItem):
 
 assert_interfaces_valid(TrImageItem)
 
-def assemble_imageitems(items, srcrect, destw, desth, align=1, sampling=(0,),
-                        apply_lut=False):
+
+def assemble_imageitems(items, srcrect, destw, desth, align=1,
+                        apply_lut=False, add_images=False):
     """
     Assemble together image items and return resulting pixel data
     <!> Does not support XYImageItem objects
     """
     x, y, w, h = srcrect
+    qrect = QRectF(x, y, w, h)
     # align width to 'align' bytes
     aligned_destw = align*((int(destw)+align-1)/align)
     aligned_desth = int(desth*aligned_destw/destw)
-    dest_image = np.zeros((aligned_desth, aligned_destw), np.float32)
-    tr = translate(x, y)*scale(w/float(aligned_destw), h/float(aligned_desth))
-    destrect = (0, 0, int(aligned_destw), int(aligned_desth))
+    output = np.zeros((aligned_desth, aligned_destw), np.float32)
+    if not add_images:
+        dstimage = output
+    dstrect = (0, 0, int(aligned_destw), int(aligned_desth))
     for it in items:
-        if apply_lut:
-            a, b, bg, cmap = it.lut
-            lut = a, b, None
-        else:
-            lut = 1., 0., None
-        if isinstance(it, TrImageItem):
-            mat = it.tr*tr
-            # The mask needs to be of the same type as the source
-            _scale_tr(it.data, mat, dest_image, destrect, lut, it.interpolate)
-        elif not isinstance(it, XYImageItem):
-            _scale_rect(it.data, (x, y, x+w-1, y+h-1), dest_image, destrect,
-                        lut, it.interpolate)
-    return dest_image
+        if it.isVisible() and qrect.intersects(it.boundingRect()):
+            if add_images:
+                dstimage = np.zeros_like(output)
+            it.export_roi(srcrect=srcrect, dstrect=dstrect,
+                          dstimage=dstimage, apply_lut=apply_lut)
+            if add_images:
+                output += dstimage
+    return output
     
 def get_plot_source_rect(plot, p0, p1):
     """
@@ -1214,25 +1245,29 @@ def get_plot_source_rect(plot, p0, p1):
     """
     ax, ay = plot.X_BOTTOM, plot.Y_LEFT
     p0x, p0y = plot.invTransform(ax, p0.x()), plot.invTransform(ay, p0.y())
-    p1x, p1y = plot.invTransform(ax, p1.x()), plot.invTransform(ay, p1.y())
-    w, h = (p1x-p0x+1), (p1y-p0y+1)
-    return p0x, p0y, w, h
+    p1x, p1y = plot.invTransform(ax, p1.x()+1), plot.invTransform(ay, p1.y()+1)
+    return p0x, p0y, p1x-p0x, p1y-p0y
     
-def get_image_from_plot(plot, p0, p1, destw=None, desth=None, apply_lut=False):
+def get_image_from_plot(plot, p0, p1, destw=None, desth=None,
+                        apply_lut=False, add_images=False):
     """
     Return pixel data of a rectangular plot area (image items only)
     p0, p1: resp. top-left and bottom-right points (QPoint objects)
-    <!> Does not support XYImageItem objects
+    apply_lut: apply contrast settings
+    add_images: add superimposed images (instead of replace by the foreground)
+    
+    Support only the image items implementing the IExportROIImageItemType
+    interface, i.e. this does *not* support XYImageItem objects
     """
     if destw is None:
         destw = p1.x()-p0.x()+1
     if desth is None:
         desth = p1.y()-p0.y()+1
-    items = [itm for itm in plot.items
-             if isinstance(itm, (ImageItem, TrImageItem))]
+    items = plot.get_items(item_type=IExportROIImageItemType)
     srcrect = get_plot_source_rect(plot, p0, p1)
     return assemble_imageitems(items, srcrect, destw, desth,
-                               align=4, sampling=(0,), apply_lut=apply_lut)
+                               align=4, apply_lut=apply_lut,
+                               add_images=add_images)
 
 
 #===============================================================================

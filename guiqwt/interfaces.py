@@ -45,7 +45,7 @@ class IImageItemType(IItemType):
     pass
 
 class IVoiImageItemType(IItemType):
-    """An image with with set_lut_range, get_lut_range"""
+    """An image with set_lut_range, get_lut_range"""
     def set_lut_range(self, lut_range):
         pass
 
@@ -64,6 +64,11 @@ class IVoiImageItemType(IItemType):
 class IColormapImageItemType(IItemType):
     """An image with an associated colormap"""
     pass
+
+class IExportROIImageItemType(IItemType):
+    """An image with export_roi"""
+    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+        pass
 
 class ICSImageItemType(IItemType):
     """An image supporting X/Y cross sections"""

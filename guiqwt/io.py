@@ -194,6 +194,7 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     Warning: option 'max_range' changes data in place
     """
     if max_range:
+        assert mode is not None
         arr = set_dynamic_range_from_mode(arr, mode)
     _base, ext = osp.splitext(filename)
     if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff"):
@@ -210,11 +211,14 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     else:
         raise RuntimeError("%s: unsupported image file type" % ext)
 
-def array_to_dicomfile(arr, dcmstruct, filename):
+def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     """
     Save a numpy array *arr* into a DICOM image file *filename*
     based on DICOM structure *dcmstruct*
     """
+    if max_range:
+        assert dtype is not None
+        arr = set_dynamic_range_from_dtype(arr, dtype)
 #    import dicom
 #    uid = make_uid(dicom.UID.root+"1")
     rows, columns = arr.shape
