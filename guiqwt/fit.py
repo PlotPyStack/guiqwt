@@ -493,13 +493,14 @@ class FitDialog(QDialog, FitWidgetMixin):
         
 
 def guifit(x, y, fitfunc, fitparams, fitargs=None, fitkwargs=None,
-           title=None, xlabel=None, ylabel=None, param_cols=1):
+           wintitle=None, title=None, xlabel=None, ylabel=None, param_cols=1):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
 #    widget = FitWidget(x, y, fitfunc, fitparams)
 #    widget.show()
 #    _app.exec_()
-    dlg = FitDialog(edit=True, toolbar=True, param_cols=param_cols,
+    dlg = FitDialog(edit=True, wintitle=wintitle, toolbar=True,
+                    param_cols=param_cols,
                     options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
     dlg.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
     
