@@ -45,6 +45,42 @@ def test():
     plot = win.get_plot()
     plot.add_item(image)
     win.exec_()
+    
+def benchmark():
+    """Fortran vs. Python/NumPy comparative benchmark"""
+    from guiqwt._ext import radialaverage
+    fortran_func = radialaverage.radavg
+    from guiqwt.cross_section import radial_average as python_func
+    
+    from guiqwt.tests.image import compute_image
+    N = 1000
+    data = compute_image(N, grid=False)
+    
+    ix0, iy0 = 100, 100
+    ix1, iy1 = N-100, N-100
+    ixc, iyc = N/2, N/2
+    iradius = (N-100*2)/2
+    
+    import time
+    t0 = time.time()
+    y_python = python_func(data, ix0, iy0, ix1, iy1, ixc, iyc, iradius)
+    t1 = time.time()
+    print "Python/NumPy: %05d ms" % round((t1-t0)*1e3)
+
+    y_fortran = np.zeros((iradius+1,), dtype=np.float64)
+    ycount = np.zeros((iradius+1,), dtype=np.float64)
+    fortran_func(y_fortran, ycount, data, iyc, ixc, iradius)
+    t2 = time.time()
+    print "     Fortran: %05d ms" % round((t2-t1)*1e3)
+    
+    import guiqwt.pyplot as plt
+    plt.figure("Test image")
+    plt.imshow(data)
+    plt.figure("Radially-averaged cross section")
+    plt.plot(y_python)
+    plt.plot(y_fortran)
+    plt.show()
 
 if __name__ == "__main__":
     test()
+#    benchmark()
