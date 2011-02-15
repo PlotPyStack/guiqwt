@@ -1299,14 +1299,12 @@ def save_snapshot(plot, p0, p1):
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import (TrImageItem, get_image_from_plot,
-                              get_plot_source_rect)
+    from guiqwt.image import TrImageItem, get_image_from_plot, get_plot_qrect
     from guiqwt.io import (array_to_imagefile, array_to_dicomfile,
-                           MODE_INTENSITY_U8, MODE_INTENSITY_U16,
-                           set_dynamic_range_from_dtype)
+                           MODE_INTENSITY_U8, set_dynamic_range_from_dtype)
     items = plot.get_items(item_type=IExportROIImageItemType)
-    src_x, src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
-    src_qrect = QRectF(src_x, src_y, src_w, src_h)
+    src_qrect = get_plot_qrect(plot, p0, p1)
+    src_x, src_y, src_w, src_h = src_qrect.getRect()
     items = [it for it in items if src_qrect.intersects(it.boundingRect())]
     if not items:
         QMessageBox.critical(plot, _("Rectangle snapshot"),

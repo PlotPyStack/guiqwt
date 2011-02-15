@@ -485,19 +485,23 @@ class BaseImageItem(QwtPlotItem):
         """Draw image border rectangle"""
         self.border_rect.draw(painter, xMap, yMap, canvasRect)
 
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        dest = _scale_rect(self.data, srcRect, self._offscreen, dstRect,
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
+        """
+        Draw image with painter on canvasRect
+        <!> src_rect and dst_rect are coord tuples (xleft, ytop, xright, ybottom)
+        """
+        dest = _scale_rect(self.data, src_rect, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
         
-    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
         else:
             a, b = 1., 0.
-        _scale_rect(self.data, srcrect, dstimage, dstrect, (a, b, None),
+        _scale_rect(self.data, src_rect, dst_image, dst_rect, (a, b, None),
                     self.interpolate)
 
     #---- QwtPlotItem API ------------------------------------------------------
@@ -881,8 +885,8 @@ class ImageItem(RawImageItem):
         ypix = np.linspace(ymin, ymax, self.data.shape[0]+1)
         return xpix[i], ypix[j]
         
-    def _rescale_srcrect(self, srcRect):
-        sxl, syt, sxr, syb = srcRect
+    def _rescale_src_rect(self, src_rect):
+        sxl, syt, sxr, syb = src_rect
         xl, yt, xr, yb = self.boundingRect().getCoords()
         H, W = self.data.shape[:2]
         x0 = W*(sxl-xl)/(xr-xl)
@@ -891,23 +895,23 @@ class ImageItem(RawImageItem):
         y1 = H*(syb-yt)/(yb-yt)
         return x0, y0, x1, y1
 
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         if self.data is None:
             return
-        src2 = self._rescale_srcrect(srcRect)
-        dest = _scale_rect(self.data, src2, self._offscreen, dstRect,
+        src2 = self._rescale_src_rect(src_rect)
+        dest = _scale_rect(self.data, src2, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
 
-    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
         else:
             a, b = 1., 0.
-        _scale_rect(self.data, self._rescale_srcrect(srcrect),
-                    dstimage, dstrect, (a, b, None), self.interpolate)
+        _scale_rect(self.data, self._rescale_src_rect(src_rect),
+                    dst_image, dst_rect, (a, b, None), self.interpolate)
 
 assert_interfaces_valid(ImageItem)
 
@@ -967,12 +971,12 @@ class QuadGridItem(RawImageItem):
         self.update_border()
         self.set_lut_range([_min, _max])
 
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        dest = _scale_quads(self.X, self.Y, self.data, srcRect,
-                            self._offscreen, dstRect,
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
+        dest = _scale_quads(self.X, self.Y, self.data, src_rect,
+                            self._offscreen, dst_rect,
                             self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
         xl, yt, xr, yb = dest
         self._offscreen[yt:yb,xl:xr] = 0
 
@@ -1134,13 +1138,13 @@ class TrImageItem(RawImageItem):
     def draw_border(self, painter, xMap, yMap, canvasRect):
         self.border_rect.draw(painter, xMap, yMap, canvasRect)
 
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         W = canvasRect.width()
         H = canvasRect.height()
         if W <= 1 or H <= 1:
             return
 
-        x0, y0, x1, y1 = srcRect
+        x0, y0, x1, y1 = src_rect
         cx = canvasRect.left()
         cy = canvasRect.top()
         sx = (x1-x0)/(W-1)
@@ -1151,21 +1155,32 @@ class TrImageItem(RawImageItem):
                          [ 0,  0, 1]], float)
         mat = self.tr*tr
 
-        dest = _scale_tr(self.data, mat, self._offscreen, dstRect,
+        dest = _scale_tr(self.data, mat, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
         
-    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
         else:
             a, b = 1., 0.
-        x, y, w, h = srcrect
-        _x, _y, dstw, dsth = dstrect
-        mat = self.tr*( translate(x, y)*scale(w/float(dstw), h/float(dsth)) )
-        _scale_tr(self.data, mat, dstimage, dstrect,
+
+        xs0, ys0, xs1, ys1 = src_rect
+        xd0, yd0, xd1, yd1 = dst_rect
+        
+        xscale, yscale = (xs1-xs0)/float(xd1-xd0), (ys1-ys0)/float(yd1-yd0)
+        mat = self.tr*( translate(xs0, ys0)*scale(xscale, yscale) )
+        
+        x0, y0, x1, y1 = self.get_crop_coordinates()
+        xd0 = max([xd0, xd0+int((x0-xs0)/xscale)])
+        yd0 = max([yd0, yd0+int((y0-ys0)/xscale)])
+        xd1 = min([xd1, xd1+int((x1-xs1)/xscale)])
+        yd1 = min([yd1, yd1+int((y1-ys1)/xscale)])
+        dst_rect = xd0, yd0, xd1, yd1
+        
+        _scale_tr(self.data, mat, dst_image, dst_rect,
                   (a, b, None), self.interpolate)
                     
     #---- IBasePlotItem API ----------------------------------------------------
@@ -1213,40 +1228,41 @@ class TrImageItem(RawImageItem):
 assert_interfaces_valid(TrImageItem)
 
 
-def assemble_imageitems(items, srcrect, destw, desth, align=1,
+def assemble_imageitems(items, qrect, destw, desth, align=1,
                         apply_lut=False, add_images=False):
     """
-    Assemble together image items and return resulting pixel data
+    Assemble together image items in qrect (QRectF object) 
+    and return resulting pixel data
     <!> Does not support XYImageItem objects
+    <!> src_rect: (xtop, yleft, xbottom, yright)
     """
-    x, y, w, h = srcrect
-    qrect = QRectF(x, y, w, h)
     # align width to 'align' bytes
     aligned_destw = align*((int(destw)+align-1)/align)
     aligned_desth = int(desth*aligned_destw/destw)
     output = np.zeros((aligned_desth, aligned_destw), np.float32)
     if not add_images:
-        dstimage = output
-    dstrect = (0, 0, int(aligned_destw), int(aligned_desth))
+        dst_image = output
+    src_rect = qrect.getCoords()
+    dst_rect = (0, 0, int(aligned_destw), int(aligned_desth))
     for it in items:
         if it.isVisible() and qrect.intersects(it.boundingRect()):
             if add_images:
-                dstimage = np.zeros_like(output)
-            it.export_roi(srcrect=srcrect, dstrect=dstrect,
-                          dstimage=dstimage, apply_lut=apply_lut)
+                dst_image = np.zeros_like(output)
+            it.export_roi(src_rect=src_rect, dst_rect=dst_rect,
+                          dst_image=dst_image, apply_lut=apply_lut)
             if add_images:
-                output += dstimage
+                output += dst_image
     return output
     
-def get_plot_source_rect(plot, p0, p1):
+def get_plot_qrect(plot, p0, p1):
     """
-    Return source rect in plot coordinates
+    Return QRectF rectangle object in plot coordinates
     from top-left and bottom-right QPoint objects in canvas coordinates
     """
     ax, ay = plot.X_BOTTOM, plot.Y_LEFT
     p0x, p0y = plot.invTransform(ax, p0.x()), plot.invTransform(ay, p0.y())
     p1x, p1y = plot.invTransform(ax, p1.x()+1), plot.invTransform(ay, p1.y()+1)
-    return p0x, p0y, p1x-p0x, p1y-p0y
+    return QRectF(p0x, p0y, p1x-p0x, p1y-p0y)
     
 def get_image_from_plot(plot, p0, p1, destw=None, desth=None,
                         apply_lut=False, add_images=False):
@@ -1264,8 +1280,8 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None,
     if desth is None:
         desth = p1.y()-p0.y()+1
     items = plot.get_items(item_type=IExportROIImageItemType)
-    srcrect = get_plot_source_rect(plot, p0, p1)
-    return assemble_imageitems(items, srcrect, destw, desth,
+    qrect = get_plot_qrect(plot, p0, p1)
+    return assemble_imageitems(items, qrect, destw, desth,
                                align=4, apply_lut=apply_lut,
                                add_images=add_images)
 
@@ -1356,12 +1372,12 @@ class XYImageItem(RawImageItem):
         """Provides a filter object over this image's content"""
         return XYImageFilterItem(self, filterobj, filterparam)
 
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
-        xytr = (self.x, self.y, srcRect)
-        dest = _scale_xy(self.data, xytr, self._offscreen, dstRect,
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
+        xytr = (self.x, self.y, src_rect)
+        dest = _scale_xy(self.data, xytr, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
 
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
@@ -1679,9 +1695,9 @@ class MaskedImageItem(ImageItem):
             plot.replot()
             
     #---- BaseImageItem API ----------------------------------------------------
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         super(MaskedImageItem, self).draw_image(painter, canvasRect,
-                                                srcRect, dstRect, xMap, yMap)
+                                                src_rect, dst_rect, xMap, yMap)
         if self.data is None:
             return
         if self.is_mask_visible():
@@ -1695,12 +1711,11 @@ class MaskedImageItem(ImageItem):
                             dtype=np.uint32)
             lut = (1, 0, bg, cmap)
             shown_data = np.ma.getmaskarray(self.data)
-            src2 = self._rescale_srcrect(srcRect)
-            dest = _scale_rect(shown_data, src2, self._offscreen, dstRect,
+            src2 = self._rescale_src_rect(src_rect)
+            dest = _scale_rect(shown_data, src2, self._offscreen, dst_rect,
                                lut, (INTERP_NEAREST,))
-            srcrect = QRectF(QPointF(dest[0], dest[1]),
-                             QPointF(dest[2], dest[3]))
-            painter.drawImage(srcrect, self._image, srcrect)
+            qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+            painter.drawImage(qrect, self._image, qrect)
             
     #---- RawImageItem API -----------------------------------------------------
     def set_data(self, data, lut_range=None):
@@ -1857,7 +1872,7 @@ class XYImageFilterItem(ImageFilterItem):
         """
         ImageFilterItem.set_image(self, image)
     
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         bounds = self.boundingRect()
         
         filt_qrect = bounds & self.image.boundingRect()
@@ -1876,11 +1891,11 @@ class XYImageFilterItem(ImageFilterItem):
             lut = self.image.lut
         else:
             lut = self.lut
-        dest = _scale_xy(new_data, (x,y,srcRect),
+        dest = _scale_xy(new_data, (x, y, src_rect),
                          self._offscreen, dstRect.getCoords(),
                          lut, self.interpolate)
-        srcrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
-        painter.drawImage(srcrect, self._image, srcrect)
+        qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
+        painter.drawImage(qrect, self._image, qrect)
 
 assert_interfaces_valid(ImageFilterItem)
 
@@ -1938,20 +1953,20 @@ class Histogram2DItem(BaseImageItem):
     
     #---- QwtPlotItem API ------------------------------------------------------
     fill_canvas = True
-    def draw_image(self, painter, canvasRect, srcRect, dstRect, xMap, yMap):
+    def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         self.data[:, :] = 0.0
-        i1, j1, i2, j2 = srcRect
+        i1, j1, i2, j2 = src_rect
         _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
                          self.data, self.logscale)
         self.set_lut_range([0, nmax])
         self.plot().update_colormap_axis(self)
-        srcRect = (0, 0, self.nx_bins, self.ny_bins)
+        src_rect = (0, 0, self.nx_bins, self.ny_bins)
         drawfunc = super(Histogram2DItem, self).draw_image
         if self.fill_canvas:
             x1, y1, x2, y2 = canvasRect.getCoords()
-            drawfunc(painter, canvasRect, srcRect, (x1, y1, x2, y2), xMap, yMap)
+            drawfunc(painter, canvasRect, src_rect, (x1, y1, x2, y2), xMap, yMap)
         else:
-            drawfunc(painter, canvasRect, srcRect, dstRect, xMap, yMap)
+            drawfunc(painter, canvasRect, src_rect, dst_rect, xMap, yMap)
     
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):

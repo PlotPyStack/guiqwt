@@ -124,17 +124,17 @@ def build_image(items):
     r = get_bbox(items)
     x,y,w,h = r.getRect()
     print "Assemble test1:", w,"x", h
-    dest = assemble_imageitems(items, r.getRect(), w, h, align=4)
+    dest = assemble_imageitems(items, r, w, h, align=4)
     print "saving..."
     save_image("test1.png", dest)
     
     print "Assemble test2:", w/4,"x", h/4
-    dest = assemble_imageitems(items, r.getRect(), w/4, h/4, align=4)
+    dest = assemble_imageitems(items, r, w/4, h/4, align=4)
     save_image("test2.png", dest)
 
 def test():
     """Test"""
-    N = 300
+    N = 500
     data = compute_image(N, N)
     m = data.min()
     M = data.max()

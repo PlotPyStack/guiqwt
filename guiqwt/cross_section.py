@@ -124,12 +124,11 @@ def get_image_data(plot, p0, p1, apply_lut=False):
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import (TrImageItem, get_image_from_plot,
-                              get_plot_source_rect)                          
+    from guiqwt.image import TrImageItem, get_image_from_plot, get_plot_qrect
     items = plot.get_items(item_type=ICSImageItemType)
     if not items:
         raise TypeError, _("There is no supported image item in current plot.")
-    _src_x, _src_y, src_w, src_h = get_plot_source_rect(plot, p0, p1)
+    _src_x, _src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
     if trparams:

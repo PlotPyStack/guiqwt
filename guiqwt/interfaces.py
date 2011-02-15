@@ -67,7 +67,7 @@ class IColormapImageItemType(IItemType):
 
 class IExportROIImageItemType(IItemType):
     """An image with export_roi"""
-    def export_roi(self, srcrect, dstrect, dstimage, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
         pass
 
 class ICSImageItemType(IItemType):
