@@ -231,7 +231,7 @@ except ImportError:
 
 import sys, numpy as np, weakref, os.path as osp
 
-from PyQt4.QtCore import Qt, QObject, SIGNAL, QRectF
+from PyQt4.QtCore import Qt, QObject, SIGNAL
 from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
                          QMessageBox, QPrintDialog, QFont, QAction, QToolButton)
 
@@ -1336,7 +1336,7 @@ def save_snapshot(plot, p0, p1):
         _end_levels = EndGroup(_("Image levels adjustments"))
         _multiple = BeginGroup(_("Superimposed images"))
         add_images = ChoiceItem(_(u"If image B is behind image A, "
-                                 u"replace A∩B by"),
+                                  u"replace intersection by"),
                                [(False, _(u"A")), (True, _(u"A+B"))],
                                default=None)
         _end_multiple = EndGroup(_("Superimposed images"))

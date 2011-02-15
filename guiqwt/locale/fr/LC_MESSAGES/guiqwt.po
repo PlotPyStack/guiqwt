@@ -1672,8 +1672,8 @@ msgid "Superimposed images"
 msgstr "Images superposées"
 
 #: guiqwt\tools.py:1338
-msgid "If image B is behind image A, replace A∩B by"
-msgstr "Si l'image B est derrière l'image A, remplacer A∩B par"
+msgid "If image B is behind image A, replace intersection by"
+msgstr "Si l'image B est derrière l'image A, remplacer l'intersection par"
 
 #: guiqwt\tools.py:1340
 msgid "A"
