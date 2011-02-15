@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2010 CEA
+# Copyright © 2010-2011 CEA
 # Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
 """
-Sifia (SIgnal FIltering Application)
-Simple signal processing application based on guiqwt and guidata
+SIFT, the Signal and Image Filtering Tool
+Simple signal and image processing application based on guiqwt and guidata
 """
 
 SHOW = True # Show test in GUI-based test launcher
@@ -31,10 +31,10 @@ from guiqwt.config import _
 from guiqwt.plot import CurveWidget
 from guiqwt.builder import make
 
-APP_NAME = _("Sifia")
-APP_DESC = _("""SIgnal FIltering Application<br>
-Simple signal processing application based on guiqwt and guidata""")
-VERSION = '0.1'
+APP_NAME = _("Sift")
+APP_DESC = _("""Signal and Image Filtering Tool<br>
+Simple signal and image processing application based on guiqwt and guidata""")
+VERSION = '0.2.0'
 
 
 class SignalParam(DataSet):
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        self.setWindowIcon(get_icon('guiqwt.png'))
+        self.setWindowIcon(get_icon('sift.svg'))
         self.setWindowTitle(APP_NAME)
         self.resize(QSize(600, 800))
         
@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
         
         # Welcome message in statusbar:
         status = self.statusBar()
-        status.showMessage(_("Welcome to guiqwt application example!"), 5000)
+        status.showMessage(_("Welcome to %s!") % APP_NAME, 5000)
         
         # Signal selection dependent actions
         self.actlist_1more = []
