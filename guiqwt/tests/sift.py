@@ -527,7 +527,7 @@ class ImageFT(ObjectFT):
                                    tip=_("Create a new image"),
                                    triggered=self.new_image)
         open_action = create_action(self, _("Open image..."),
-                                    tip=_("Open a image"),
+                                    tip=_("Open an image"),
                                     triggered=self.open_image)
         save_action = create_action(self, _("Save image..."),
                                     tip=_("Save selected image"),
