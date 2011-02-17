@@ -1457,14 +1457,18 @@ class OpenFileTool(CommandTool):
         CommandTool.__init__(self, manager, _("Open..."),
                              get_std_icon("DialogOpenButton", 16))
         self.formats = formats
+        self.directory = ""
         
     def get_filename(self, plot):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(plot, _("Open"),
-                                               "", self.formats)
+                                               self.directory, self.formats)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        return unicode(filename)
+        filename = unicode(filename)
+        if filename:
+            self.directory = osp.dirname(filename)
+        return filename
         
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1473,7 +1477,7 @@ class OpenFileTool(CommandTool):
             self.emit(SIGNAL("openfile(QString*)"), filename)
 
 
-class SaveItemsTool(SaveAsTool):
+class SaveItemsTool(CommandTool):
     def __init__(self, manager):
         CommandTool.__init__(self, manager, _("Save items"),
                              get_std_icon("DialogSaveButton", 16))
