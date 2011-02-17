@@ -1222,18 +1222,14 @@ ItemParameters.register_multiselection(TrImageParam, ImageParam_MS)
 class HistogramParam(DataSet):
     n_bins = IntItem(_("Bins"), default=100, min=1, help=_("Number of bins"))
     logscale = BoolItem(_("logarithmic"), _("Y-axis scale"), default=False)
-    remove_first_bin = BoolItem(_("force first bin to zero"), _("Display"),
-                                default=False)
 
     def update_param(self, obj):
         self.n_bins = obj.get_bins()
         self.logscale = obj.get_logscale()
-        self.remove_first_bin = obj.get_remove_first_bin()
 
     def update_hist(self, hist):
         hist.set_bins(self.n_bins)
         hist.set_logscale(self.logscale)
-        hist.set_remove_first_bin(self.remove_first_bin)
 
 
 # ===================================================

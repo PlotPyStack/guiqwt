@@ -104,7 +104,6 @@ class HistogramItem(CurveItem):
         self.old_bins = None
         self.source = None
         self.logscale = None
-        self.remove_first_bin = None
         self.old_logscale = None
         if curveparam is None:
             curveparam = CurveParam(_("Curve"), icon='curve.png')
@@ -139,13 +138,6 @@ class HistogramItem(CurveItem):
     def get_logscale(self):
         """Returns the status of the scale"""
         return self.logscale
-        
-    def set_remove_first_bin(self, state):
-        self.remove_first_bin = state
-        self.update_histogram()
-        
-    def get_remove_first_bin(self):
-        return self.remove_first_bin
 
     def set_bins(self, n_bins):
         self.bins = n_bins
@@ -162,8 +154,6 @@ class HistogramItem(CurveItem):
             return
         hist, bin_edges = self.compute_histogram()
         hist = np.concatenate((hist, [0]))
-        if self.remove_first_bin:
-            hist[0] = 0
         if self.logscale:
             hist = np.log(hist+1)
 
@@ -210,7 +200,6 @@ class LevelsHistogram(CurvePlot):
         
         self.histparam = HistogramParam(_("Histogram"), icon="histogram.png")
         self.histparam.logscale = False
-        self.histparam.remove_first_bin = True
         self.histparam.n_bins = 256
 
         self.range = XRangeSelection(0, 1)
@@ -289,6 +278,19 @@ class LevelsHistogram(CurvePlot):
             self.histparam.update_hist(curve)
 
         self.active_item_changed(plot)
+
+        # Rescaling histogram plot axes for better visibility
+        ymax = None
+        for item in known_items:
+            curve = known_items[item]
+            _x, y = curve.get_data()
+            ymax0 = y.mean()+3*y.std()
+            if ymax is None or ymax0 > ymax:
+                ymax = ymax0
+        ymin, _ymax = self.get_axis_limits("left")
+        if ymax is not None:
+            self.set_axis_limits("left", ymin, ymax)
+            self.replot()
 
     def active_item_changed(self, plot):
         items = plot.get_selected_items(IVoiImageItemType)

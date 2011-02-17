@@ -475,7 +475,7 @@ class PlotItemBuilder(object):
         return self.perror(x, y, dx, dy, curveparam, errorbarparam,
                            xaxis, yaxis)
     
-    def histogram(self, data, bins=None, logscale=None, remove_first_bin=None,
+    def histogram(self, data, bins=None, logscale=None,
                   title=u"", color=None, xaxis="bottom", yaxis="left"):
         """
         Make 1D Histogram `plot item` 
@@ -499,8 +499,6 @@ class PlotItemBuilder(object):
             histparam.n_bins = bins
         if logscale is not None:
             histparam.logscale = logscale
-        if remove_first_bin is not None:
-            histparam.remove_first_bin = remove_first_bin
         return self.phistogram(data, curveparam, histparam, xaxis, yaxis)
         
     def phistogram(self, data, curveparam, histparam,
