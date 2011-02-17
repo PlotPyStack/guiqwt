@@ -449,20 +449,24 @@ class PlotManager(object):
         """
         return self.toolbars.get(toolbar_id, None)
 
-    def get_context_menu(self, plot):
+    def get_context_menu(self, plot=None):
         """
         Return widget context menu -- built using active tools
         """
+        if plot is None:
+            plot = self.get_plot()
         menu = QMenu(plot)
         self.update_tools_status(plot)
         for tool in self.tools:
             tool.setup_context_menu(menu, plot)
         return menu
         
-    def update_tools_status(self, plot):
+    def update_tools_status(self, plot=None):
         """
         Update tools for current plot
         """
+        if plot is None:
+            plot = self.get_plot()
         for tool in self.tools:
             tool.update_status(plot)
 
