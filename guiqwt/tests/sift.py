@@ -13,8 +13,9 @@ Simple signal and image processing application based on guiqwt and guidata
 SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                         QFileDialog, QVBoxLayout, QWidget, QTabWidget, QMenu)
-from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+                         QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
+                         QTabWidget)
+from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp
 import numpy as np
@@ -88,7 +89,7 @@ class ObjectFT(QSplitter):
     PARAMCLASS = None
     PREFIX = None
     def __init__(self, parent, plot):
-        super(ObjectFT, self).__init__(parent)
+        super(ObjectFT, self).__init__(Qt.Vertical, parent)
         self.plot = plot
         self.objects = [] # signals or images
         self.items = [] # associated plot items
@@ -109,10 +110,8 @@ class ObjectFT(QSplitter):
         self.actlist_1 = []
         self.actlist_2 = []
         
-        self.setup()
-        
     #------Setup widget, menus, actions
-    def setup(self):
+    def setup(self, toolbar):
         self.listwidget = QListWidget()
         self.listwidget.setSelectionMode(QListWidget.ExtendedSelection)
         self.properties = DataSetEditGroupBox(_("Properties"), self.PARAMCLASS)
@@ -126,8 +125,11 @@ class ObjectFT(QSplitter):
                      self.properties_changed)
         
         properties_stretched = QWidget()
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(self.properties)
+        hlayout.addStretch()
         vlayout = QVBoxLayout()
-        vlayout.addWidget(self.properties)
+        vlayout.addLayout(hlayout)
         vlayout.addStretch()
         properties_stretched.setLayout(vlayout)
         
@@ -349,17 +351,20 @@ class SignalFT(ObjectFT):
     PARAMCLASS = SignalParam
     PREFIX = "s"
     #------ObjectFT API
-    def setup(self):
-        super(SignalFT, self).setup()
+    def setup(self, toolbar):
+        super(SignalFT, self).setup(toolbar)
         
         # File actions
         new_action = create_action(self, _("New signal..."),
+                                   icon=get_icon('filenew.png'),
                                    tip=_("Create a new signal"),
                                    triggered=self.new_signal)
         open_action = create_action(self, _("Open signal..."),
+                                    icon=get_icon('fileopen.png'),
                                     tip=_("Open a signal"),
                                     triggered=self.open_signal)
         save_action = create_action(self, _("Save signal..."),
+                                    icon=get_icon('filesave.png'),
                                     tip=_("Save selected signal"),
                                     triggered=self.save_signal)
         self.actlist_1more += [save_action]
@@ -380,6 +385,8 @@ class SignalFT(ObjectFT):
                                fft_action, ifft_action]
         self.processing_actions = [gaussian_action, wiener_action, fft_action,
                                    ifft_action]
+                                   
+        add_actions(toolbar, [new_action, open_action, save_action])
 
     def make_item(self, row):
         signal = self.objects[row]
@@ -519,17 +526,20 @@ class ImageFT(ObjectFT):
     PARAMCLASS = ImageParam
     PREFIX = "i"
     #------ObjectFT API
-    def setup(self):
-        super(ImageFT, self).setup()
+    def setup(self, toolbar):
+        super(ImageFT, self).setup(toolbar)
         
         # File actions
         new_action = create_action(self, _("New image..."),
+                                   icon=get_icon('filenew.png'),
                                    tip=_("Create a new image"),
                                    triggered=self.new_image)
         open_action = create_action(self, _("Open image..."),
+                                    icon=get_icon('fileopen.png'),
                                     tip=_("Open an image"),
                                     triggered=self.open_image)
         save_action = create_action(self, _("Save image..."),
+                                    icon=get_icon('filesave.png'),
                                     tip=_("Save selected image"),
                                     triggered=self.save_image)
         self.actlist_1more += [save_action]
@@ -550,6 +560,8 @@ class ImageFT(ObjectFT):
                                fft_action, ifft_action]
         self.processing_actions = [gaussian_action, wiener_action, fft_action,
                                    ifft_action]
+                                   
+        add_actions(toolbar, [new_action, open_action, save_action])
         
     def make_item(self, row):
         image = self.objects[row]
@@ -652,6 +664,7 @@ class ImageFT(ObjectFT):
         
 
 class DockablePlotWidget(DockableWidget):
+    LOCATION = Qt.RightDockWidgetArea
     def __init__(self, parent, plotwidgetclass, title, toolbar):
         super(DockablePlotWidget, self).__init__(parent)
         self.title = title
@@ -689,29 +702,31 @@ class MainWindow(QMainWindow):
 
         self.setWindowIcon(get_icon('sift.svg'))
         self.setWindowTitle(APP_NAME)
-        self.resize(QSize(600, 800))
-        
-        main_toolbar = self.addToolBar(_("Main Toolbar"))
-        
+                
         # Welcome message in statusbar:
         status = self.statusBar()
         status.showMessage(_("Welcome to %s!") % APP_NAME, 5000)
 
+        self.signal_toolbar = self.addToolBar(_("Signal Toolbar"))
+        self.image_toolbar = self.addToolBar(_("Image Toolbar"))
+
         # Signals
-        signal_toolbar = self.addToolBar(_("Curve Plotting Toolbar"))
+        curveplot_toolbar = self.addToolBar(_("Curve Plotting Toolbar"))
         self.curvewidget = DockablePlotWidget(self, CurveWidget,
                                               _("Curve plotting panel"),
-                                              signal_toolbar)
+                                              curveplot_toolbar)
         curveplot = self.curvewidget.get_plot()
         curveplot.add_item(make.legend("TR"))
         self.signalft = SignalFT(self, plot=curveplot)
+        self.signalft.setup(self.signal_toolbar)
         
         # Images
-        image_toolbar = self.addToolBar(_("Image Visualization Toolbar"))
+        imagevis_toolbar = self.addToolBar(_("Image Visualization Toolbar"))
         self.imagewidget = DockablePlotWidget(self, ImageWidget,
                                               _("Image visualization panel"),
-                                              image_toolbar)
+                                              imagevis_toolbar)
         self.imageft = ImageFT(self, self.imagewidget.get_plot())
+        self.imageft.setup(self.image_toolbar)
         
         # Main window widgets
         self.tabwidget = QTabWidget()
@@ -783,10 +798,14 @@ class MainWindow(QMainWindow):
     def update_actions(self):
         self.signalft.selection_changed()
         self.imageft.selection_changed()
+        is_signal = self.tabwidget.currentWidget() is self.signalft
+        self.signal_toolbar.setVisible(is_signal)
+        self.image_toolbar.setVisible(not is_signal)
         
     def tab_index_changed(self, index):
         dock = (self.curve_dock, self.image_dock)[index]
         dock.raise_()
+        self.update_actions()
 
     def update_file_menu(self):        
         self.file_menu.clear()
