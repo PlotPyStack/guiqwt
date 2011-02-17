@@ -15,7 +15,7 @@ SHOW = True # Show test in GUI-based test launcher
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
                          QTabWidget)
-from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp
 import numpy as np
@@ -103,6 +103,8 @@ class ObjectFT(QSplitter):
         self.processing_actions = None
         
         self.number = 0
+        
+        self.directory = "" # last browsed directory
 
         # Object selection dependent actions
         self.actlist_1more = []
@@ -467,11 +469,12 @@ class SignalFT(ObjectFT):
         """Open signal file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"), "",
-                           'Text files (*.txt *.csv)\nNumPy files (*.npy)')
+        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+                self.directory, 'Text files (*.txt *.csv)\nNumPy files (*.npy)')
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             filename = unicode(filename)
+            self.directory = osp.dirname(filename)
             signal = SignalParam()
             signal.title = filename
             try:
@@ -507,10 +510,11 @@ class SignalFT(ObjectFT):
         rows = self._get_selected_rows()
         for row in rows:
             filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                                               '', _(u"CSV files")+" (*.csv)")
+                                   self.directory, _(u"CSV files")+" (*.csv)")
             if not filename:
                 return
             filename = unicode(filename)
+            self.directory = osp.dirname(filename)
             obj = self.objects[row]
             try:
                 np.savetxt(filename, obj.xydata, delimiter=',')
@@ -565,7 +569,7 @@ class ImageFT(ObjectFT):
         
     def make_item(self, row):
         image = self.objects[row]
-        item = make.image(image.data.real, title=image.title)
+        item = make.image(image.data.real, title=image.title, colormap='gray')
         self.items[row] = item
         return item
         
@@ -622,11 +626,12 @@ class ImageFT(ObjectFT):
         """Open image file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"), "",
-                              'Images (*.png *.jpg *.gif *.tif *.tiff *.dcm)')
+        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+            self.directory, 'Images (*.png *.jpg *.gif *.tif *.tiff *.dcm)')
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             filename = unicode(filename)
+            self.directory = osp.dirname(filename)
             image = ImageParam()
             image.title = filename
             from guiqwt.io import imagefile_to_array
@@ -646,10 +651,11 @@ class ImageFT(ObjectFT):
         rows = self._get_selected_rows()
         for row in rows:
             filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                                 '', 'Images (*.png *.jpg *.gif *.tif *.tiff)')
+                     self.directory, 'Images (*.png *.jpg *.gif *.tif *.tiff)')
             if not filename:
                 return
             filename = unicode(filename)
+            self.directory = osp.dirname(filename)
             obj = self.objects[row]
             try:
                 from guiqwt.io import array_to_imagefile
