@@ -418,7 +418,8 @@ class CrossSectionPlot(CurvePlot):
             
         self.curveparam.shade = self.SHADE/len(items)
         for item in items:
-            self.add_cross_section_item(source=item)
+            if item.isVisible():
+                self.add_cross_section_item(source=item)
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
