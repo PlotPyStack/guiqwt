@@ -29,7 +29,8 @@ def build_items():
     y = sin(sin(sin(x)))
     filename = osp.join(osp.dirname(__file__), "brain.png")
     items = [ make.curve(x, y, color="b"),
-              make.image(filename=filename, colormap="bone"),
+              make.image(filename=filename),
+              make.trimage(filename=filename),
               make.label("Relative position <b>outside</b>",
                          (x[0], y[0]), (-10, -10), "BR"),
               make.label("Relative position <i>inside</i>",
@@ -57,17 +58,22 @@ def test():
 
     if os.access(FNAME, os.R_OK):
         f = file(FNAME, "rb")
+        print "Restoring items...",
         plot.restore_items(f)
+        print "OK"
     else:
         for item in build_items():
             plot.add_item(item)
+        print "Building items and add them to plotting canvas",
     plot.set_axis_font("left", QFont("Courier"))
     win.get_itemlist_panel().show()
     plot.set_items_readonly(False)
     win.show()
     win.exec_()
     f = file(FNAME, "wb")
+    print "Saving items...",
     plot.save_items(f)
+    print "OK"
 
 if __name__ == "__main__":
     test()

@@ -44,7 +44,6 @@ Reference
 import numpy as np
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
-from PyQt4.Qwt5 import QwtPlotCurve
 
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem
@@ -53,6 +52,7 @@ from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import add_actions, create_action
 
 # Local imports
+from guiqwt.transitional import QwtPlotCurve
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IHistDataSource,
                                IVoiImageItemType, IPanel)
@@ -104,7 +104,6 @@ class HistogramItem(CurveItem):
         self.old_bins = None
         self.source = None
         self.logscale = None
-        self.remove_first_bin = None
         self.old_logscale = None
         if curveparam is None:
             curveparam = CurveParam(_("Curve"), icon='curve.png')
@@ -139,13 +138,6 @@ class HistogramItem(CurveItem):
     def get_logscale(self):
         """Returns the status of the scale"""
         return self.logscale
-        
-    def set_remove_first_bin(self, state):
-        self.remove_first_bin = state
-        self.update_histogram()
-        
-    def get_remove_first_bin(self):
-        return self.remove_first_bin
 
     def set_bins(self, n_bins):
         self.bins = n_bins
@@ -162,8 +154,6 @@ class HistogramItem(CurveItem):
             return
         hist, bin_edges = self.compute_histogram()
         hist = np.concatenate((hist, [0]))
-        if self.remove_first_bin:
-            hist[0] = 0
         if self.logscale:
             hist = np.log(hist+1)
 
@@ -210,7 +200,6 @@ class LevelsHistogram(CurvePlot):
         
         self.histparam = HistogramParam(_("Histogram"), icon="histogram.png")
         self.histparam.logscale = False
-        self.histparam.remove_first_bin = True
         self.histparam.n_bins = 256
 
         self.range = XRangeSelection(0, 1)
@@ -223,8 +212,8 @@ class LevelsHistogram(CurvePlot):
         self.set_active_item(self.range)
 
         self.setMinimumHeight(80)
-        self.setAxisMaxMajor(self.yLeft, 5)
-        self.setAxisMaxMinor(self.yLeft, 0)
+        self.setAxisMaxMajor(self.Y_LEFT, 5)
+        self.setAxisMaxMinor(self.Y_LEFT, 0)
 
         if parent is None:
             self.set_axis_title('bottom', 'Levels')
@@ -237,14 +226,6 @@ class LevelsHistogram(CurvePlot):
         self.connect(self, SIG_VOI_CHANGED, plot.notify_colormap_changed)
         self.connect(plot, SIG_ITEM_SELECTION_CHANGED, self.selection_changed)
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
-        
-    def standard_tools(self, manager):
-        manager.add_tool(SelectTool)
-        manager.add_tool(BasePlotMenuTool, "item")
-        manager.add_tool(BasePlotMenuTool, "axes")
-        manager.add_tool(BasePlotMenuTool, "grid")
-        manager.add_tool(AntiAliasingTool)
-        manager.get_default_tool().activate()
 
     def tracked_items_gen(self):
         for plot, items in self._tracked_items.items():
@@ -297,6 +278,19 @@ class LevelsHistogram(CurvePlot):
             self.histparam.update_hist(curve)
 
         self.active_item_changed(plot)
+
+        # Rescaling histogram plot axes for better visibility
+        ymax = None
+        for item in known_items:
+            curve = known_items[item]
+            _x, y = curve.get_data()
+            ymax0 = y.mean()+3*y.std()
+            if ymax is None or ymax0 > ymax:
+                ymax = ymax0
+        ymin, _ymax = self.get_axis_limits("left")
+        if ymax is not None:
+            self.set_axis_limits("left", ymin, ymax)
+            self.replot()
 
     def active_item_changed(self, plot):
         items = plot.get_selected_items(IVoiImageItemType)
@@ -434,7 +428,16 @@ class ContrastAdjustment(PanelWidget):
         toolbar.setOrientation(Qt.Vertical)
 #        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         hlayout.addWidget(toolbar)
-        self.histogram.standard_tools(self.local_manager)
+        
+        # Add standard plot-related tools to the local manager
+        lman = self.local_manager
+        lman.add_tool(SelectTool)
+        lman.add_tool(BasePlotMenuTool, "item")
+        lman.add_tool(BasePlotMenuTool, "axes")
+        lman.add_tool(BasePlotMenuTool, "grid")
+        lman.add_tool(AntiAliasingTool)
+        lman.get_default_tool().activate()
+        
         self.setWindowIcon(get_icon(widget_icon))
         self.setWindowTitle(widget_title)
         
@@ -449,6 +452,21 @@ class ContrastAdjustment(PanelWidget):
         self.setup_actions()
         for plot in manager.get_plots():
             self.histogram.connect_plot(plot)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        self.min_select_tool = self.manager.add_tool(SelectPointTool,
+                                       title=_("Minimum level"),
+                                       on_active_item=True,mode="create",
+                                       tip=_("Select minimum level on image"),
+                                       toolbar_id="contrast",
+                                       end_callback=self.apply_min_selection)
+        self.max_select_tool = self.manager.add_tool(SelectPointTool,
+                                       title=_("Maximum level"),
+                                       on_active_item=True,mode="create",
+                                       tip=_("Select maximum level on image"),
+                                       toolbar_id="contrast",
+                                       end_callback=self.apply_max_selection)        
 
     def get_plot(self):
         return self.manager.get_active_plot()
@@ -470,18 +488,6 @@ class ContrastAdjustment(PanelWidget):
                                            "outliers and scale the image's "
                                            "display range accordingly") )
         add_actions(self.toolbar,[fullrange_ac, autorange_ac])
-        self.min_select_tool = self.manager.add_tool(SelectPointTool,
-                                       title=_("Minimum level"),
-                                       on_active_item=True,mode="create",
-                                       tip=_("Select minimum level on image"),
-                                       toolbar_id="contrast",
-                                       end_callback=self.apply_min_selection)
-        self.max_select_tool = self.manager.add_tool(SelectPointTool,
-                                       title=_("Maximum level"),
-                                       on_active_item=True,mode="create",
-                                       tip=_("Select maximum level on image"),
-                                       toolbar_id="contrast",
-                                       end_callback=self.apply_max_selection)        
     
     def eliminate_outliers(self):
         def apply(param):

@@ -9,9 +9,6 @@
 guiqwt
 ======
 
-Extension to PyQt4.Qwt5:
-set of tools for curve and image plotting
-
 Copyright © 2009-2010 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License
@@ -106,9 +103,10 @@ setup(name=LIBNAME, version=version,
                                                   LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=PACKAGES, package_data=PACKAGE_DATA,
-      requires=["PyQt4 (>4.3)", "NumPy", "guidata"],
+      requires=["PyQt4 (>4.3)", "NumPy", "guidata (>=1.3.0)"],
       scripts=SCRIPTS,
-      ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f')]),
+      ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),
+                                               join("src", 'radavg.f90')]),
                    Extension(LIBNAME+'._mandel', [join("src", 'mandel.f90')]),
                    Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp")],
                              extra_compile_args=["-msse2 -Wall -Werror",],

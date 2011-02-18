@@ -10,7 +10,7 @@ guiqwt.baseplot
 ---------------
 
 The `baseplot` module provides the `guiqwt` plotting widget base class: 
-:py:class:`guiqwt.baseplot.EnhancedQwtPlot`. This is an enhanced version of 
+:py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
 `PyQwt`'s QwtPlot plotting widget which supports the following features:
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
     * item selection and multiple selection
@@ -18,7 +18,7 @@ The `baseplot` module provides the `guiqwt` plotting widget base class:
     * plot parameters editing
 
 .. warning::
-    :py:class:`guiqwt.baseplot.EnhancedQwtPlot` is rather an internal class 
+    :py:class:`guiqwt.baseplot.BasePlot` is rather an internal class 
     than a ready-to-use plotting widget. The end user should prefer using 
     :py:class:`guiqwt.plot.CurvePlot` or :py:class:`guiqwt.plot.ImagePlot`.
 
@@ -37,7 +37,7 @@ The `baseplot` module provides the `guiqwt` plotting widget base class:
 Reference
 ~~~~~~~~~
 
-.. autoclass:: EnhancedQwtPlot
+.. autoclass:: BasePlot
    :members:
    :inherited-members:
 """
@@ -47,12 +47,12 @@ import numpy as np
 
 from PyQt4.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
 from PyQt4.QtCore import QSize, Qt
-from PyQt4.Qwt5 import (QwtPlot, QwtLinearScaleEngine, QwtLog10ScaleEngine,
-                        QwtText, QwtPlotCanvas)
 
 from guidata.configtools import get_font
 
 # Local imports
+from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
+                                 QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
@@ -68,7 +68,7 @@ PARAMETERS_TITLE_ICON = {
                          }
     
 
-class EnhancedQwtPlot(QwtPlot):
+class BasePlot(QwtPlot):
     """
     An enhanced QwtPlot class that provides
     methods for handling plotitems and axes better
@@ -81,21 +81,19 @@ class EnhancedQwtPlot(QwtPlot):
     Signals:
     SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED
     """
-    # Gestion des axes
-    AXES = {
-            'bottom': QwtPlot.xBottom,
-            'left': QwtPlot.yLeft,
-            'top': QwtPlot.xTop,
-            'right': QwtPlot.yRight,
-            }
-    
+    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = (QwtPlot.yLeft, QwtPlot.yRight,
+                                        QwtPlot.xBottom, QwtPlot.xTop)
+#    # To be replaced by (in the near future):
+#    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = range(4)
+    AXIS_IDS = (Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP)
+    AXIS_NAMES = {'left': Y_LEFT, 'right': Y_RIGHT,
+                  'bottom': X_BOTTOM, 'top': X_TOP}
     AXIS_TYPES = {"lin" : QwtLinearScaleEngine,
                   "log" : QwtLog10ScaleEngine }
-
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
 
     def __init__(self, parent=None, section="plot"):
-        super(EnhancedQwtPlot, self).__init__(parent)
+        super(BasePlot, self).__init__(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
         self.plot_id = None # id assigned by it's manager
@@ -107,8 +105,8 @@ class EnhancedQwtPlot(QwtPlot):
                             AxeStyleParam(_(u"Right")),
                             AxeStyleParam(_(u"Bottom")),
                             AxeStyleParam(_(u"Top"))]
-        self._active_xaxis = QwtPlot.xBottom
-        self._active_yaxis = QwtPlot.yLeft
+        self._active_xaxis = self.X_BOTTOM
+        self._active_yaxis = self.Y_LEFT
         self.read_axes_styles(section, self.AXIS_CONF_OPTIONS)
         self.font_title = get_font(CONF, section, "title")
         canvas = self.canvas()
@@ -142,11 +140,16 @@ class EnhancedQwtPlot(QwtPlot):
         self.setTitle(text)
         self.emit(SIG_PLOT_LABELS_CHANGED, self)
 
+    def get_axis_id(self, axis_name):
+        """Return axis ID from axis name
+        If axis ID is passed directly, check the ID"""
+        assert axis_name in self.AXIS_NAMES or axis_name in self.AXIS_IDS
+        return self.AXIS_NAMES.get(axis_name, axis_name)
+
     def read_axes_styles(self, section, options):
         """Read axes styles from section and options (one option
         for each axis in the order left,right,bottom,top).
-        skip axis if option is None
-        """
+        skip axis if option is None"""
         for prm, option in zip(self.axes_styles, options):
             if option is None:
                 continue
@@ -155,24 +158,38 @@ class EnhancedQwtPlot(QwtPlot):
         
     def get_axis_title(self, axis_id):
         """Get axis title"""
+        axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].title
         
     def set_axis_title(self, axis_id, text):
         """Set axis title"""
+        axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
         self.update_axis_style(axis_id)
+
+    def get_axis_font(self, axis_id):
+        """Get axis font"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].title_font.build_font()
     
     def set_axis_font(self, axis_id, font):
         """Set axis font"""
+        axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title_font.update_param(font)
         self.axes_styles[axis_id].ticks_font.update_param(font)
         self.update_axis_style(axis_id)
+        
+    def get_axis_color(self, axis_id):
+        """Get axis color (color name, i.e. string)"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].color
     
     def set_axis_color(self, axis_id, color):
         """
         Set axis color
         color: color name (string) or QColor instance
         """
+        axis_id = self.get_axis_id(axis_id)
         if isinstance(color, basestring):
             color = QColor(color)
         self.axes_styles[axis_id].color = str(color.name())
@@ -180,6 +197,7 @@ class EnhancedQwtPlot(QwtPlot):
 
     def update_axis_style(self, axis_id):
         """Update axis style"""
+        axis_id = self.get_axis_id(axis_id)
         style = self.axes_styles[axis_id]
         
         title_font = style.title_font.build_font()
@@ -195,11 +213,73 @@ class EnhancedQwtPlot(QwtPlot):
 
     def update_all_axes_styles(self):
         """Update all axes styles"""
-        for axis_id in self.AXES.itervalues():
+        for axis_id in self.AXIS_IDS:
             self.update_axis_style(axis_id)
 
+    def get_axis_limits(self, axis_id):
+        """Return axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        sdiv = self.axisScaleDiv(axis_id)
+        return sdiv.lowerBound(), sdiv.upperBound()
+            
+    def set_axis_limits(self, axis_id, vmin, vmax):
+        """Set axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        self.setAxisScale(axis_id, vmin, vmax)
+
+    def set_axis_ticks(self, axis_id, stepsize=0.0, nmajor=None, nminor=None):
+        """Set axis major tick step size or maximum number of major ticks
+        and maximum of minor ticks"""
+        axis_id = self.get_axis_id(axis_id)
+        vmin, vmax = self.get_axis_limits(axis_id)
+        self.setAxisScale(axis_id, vmin, vmax, stepsize)
+        if nmajor is not None:
+            self.setAxisMaxMajor(axis_id, nmajor)
+        if nminor is not None:
+            self.setAxisMaxMinor(axis_id, nminor)
+
+    def get_axis_scale(self, axis):
+        """Return the name ('lin' or 'log') of the scale used by axis"""
+        engine = self.axisScaleEngine(axis)
+        for axis_label, axis_type in self.AXIS_TYPES.items():
+            if isinstance(engine, axis_type):
+                return axis_label
+        return "lin"  # unknown default to linear
+
+    def set_axis_scale(self, axis, scale):
+        """Set axis scale
+        Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
+        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
+
+    def set_scales(self, xscale, yscale):
+        """Set active curve scales
+        Example: self.set_scales('lin', 'lin')"""
+        ax, ay = self.get_active_axes()
+        self.set_axis_scale(ax, xscale)
+        self.set_axis_scale(ay, yscale)
+        self.replot()
+
+    def enable_used_axes(self):
+        """
+        Enable only used axes
+        For now, this is needed only by the pyplot interface
+        """
+        for axis in self.AXIS_IDS:
+            self.enableAxis(axis, True)
+        self.disable_unused_axes()
+
+    def disable_unused_axes(self):
+        """Disable unused axes"""
+        used_axes = set()
+        for item in self.get_items():
+            used_axes.add(item.xAxis())
+            used_axes.add(item.yAxis())
+        unused_axes = set(self.AXIS_IDS) - set(used_axes)
+        for axis in unused_axes:
+            self.enableAxis(axis, False)
+
     def get_items(self, z_sorted=False, item_type=None):
-        """Return widget item list
+        """Return widget's item list
         (items are based on IBasePlotItem's interface)"""
         if z_sorted:
             items = sorted(self.items, reverse=True, key=lambda x:x.z())
@@ -210,6 +290,20 @@ class EnhancedQwtPlot(QwtPlot):
         else:
             assert issubclass(item_type, IItemType)
             return [item for item in items if item_type in item.types()]
+            
+    def get_public_items(self, z_sorted=False, item_type=None):
+        """Return widget's public item list
+        (items are based on IBasePlotItem's interface)"""
+        return [item for item in self.get_items(z_sorted=z_sorted,
+                                                item_type=item_type)
+                if not item.is_private()]
+            
+    def get_private_items(self, z_sorted=False, item_type=None):
+        """Return widget's private item list
+        (items are based on IBasePlotItem's interface)"""
+        return [item for item in self.get_items(z_sorted=z_sorted,
+                                                item_type=item_type)
+                if item.is_private()]
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""
@@ -229,12 +323,8 @@ class EnhancedQwtPlot(QwtPlot):
         
     def get_selected_items(self, item_type=None):
         """Return selected items"""
-        if item_type is None:
-            return [item for item in self.items if item.selected]
-        else:
-            assert issubclass(item_type, IItemType)
-            return [item for item in self.items
-                    if item.selected and item_type in item.types()]
+        return [item for item in self.get_items(item_type=item_type)
+                if item.selected]
             
     def get_max_z(self):
         """
@@ -333,7 +423,7 @@ class EnhancedQwtPlot(QwtPlot):
             * iofile: file object or filename
             * selected=False: if True, will save only selected items
             
-        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.restore_items`
+        See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items`
         """
         if selected:
             items = self.get_selected_items()
@@ -348,7 +438,7 @@ class EnhancedQwtPlot(QwtPlot):
         Restore items from file using the :py:mod:`pickle` protocol
             * iofile: file object or filename
             
-        See also :py:meth:`guiqwt.baseplot.EnhancedQwtPlot.save_items`
+        See also :py:meth:`guiqwt.baseplot.BasePlot.save_items`
         """
         import pickle
         items = pickle.load(iofile)
@@ -552,46 +642,6 @@ class EnhancedQwtPlot(QwtPlot):
                 selobj, distance, handle, inside = obj, d, _handle, _inside
                 break
         return selobj, distance, handle, inside
-
-    def get_axis_scale(self, axis):
-        """Return the name ('lin' or 'log') of the scale used by axis"""
-        engine = self.axisScaleEngine(axis)
-        for axis_label, axis_type in self.AXIS_TYPES.items():
-            if isinstance(engine, axis_type):
-                return axis_label
-        return "lin"  # unknown default to linear
-
-    def set_axis_scale(self, axis, scale):
-        """Set axis scale
-        Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
-        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
-
-    def set_scales(self, xscale, yscale):
-        """Set active curve scales
-        Example: self.set_scales('lin', 'lin')"""
-        ax, ay = self.get_active_axes()
-        self.set_axis_scale(ax, xscale)
-        self.set_axis_scale(ay, yscale)
-        self.replot()
-
-    def enable_used_axes(self):
-        """
-        Enable only used axes
-        For now, this is needed only by the pyplot interface
-        """
-        for axis in self.AXES.itervalues():
-            self.enableAxis(axis, True)
-        self.disable_unused_axes()
-
-    def disable_unused_axes(self):
-        """Disable unused axes"""
-        used_axes = set()
-        for item in self.get_items():
-            used_axes.add(item.xAxis())
-            used_axes.add(item.yAxis())
-        unused_axes = set(self.AXES.itervalues()) - set(used_axes)
-        for axis in unused_axes:
-            self.enableAxis(axis, False)
         
     def get_context_menu(self):
         """Return widget context menu"""
@@ -662,7 +712,7 @@ class EnhancedQwtPlot(QwtPlot):
         
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        for axis_id in self.AXES.itervalues():
+        for axis_id in self.AXIS_IDS:
             self.setAxisAutoScale(axis_id)
         if replot:
             self.replot()
@@ -670,31 +720,9 @@ class EnhancedQwtPlot(QwtPlot):
     def disable_autoscale(self):
         """Re-apply the axis scales so as to disable autoscaling
         without changing the view"""
-        for axis_id in self.AXES.itervalues():
-            axis = self.axisScaleDiv(axis_id)
-            lb = axis.lowerBound()
-            hb = axis.upperBound()
-            self.setAxisScale(axis_id, lb, hb)
-
-
-    def _set_axis_range(self, axis, low, high, stepsize, nmajor, nminor):
-        self.setAxisScale(axis, low, high, stepsize)
-        if nmajor is not None:
-            self.setAxisMaxMajor(axis, nmajor)
-        if nminor is not None:
-            self.setAxisMaxMinor(axis, nminor)
-
-    def set_range_top(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['top'], low, high, stepsize, nmajor, nminor)
-
-    def set_range_left(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['left'], low, high, stepsize, nmajor, nminor)
-
-    def set_range_right(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['right'], low, high, stepsize, nmajor, nminor)
-
-    def set_range_bottom(self, low, high, stepsize=0.0, nmajor=None, nminor=None):
-        self._set_axis_range(self.AXES['bottom'], low, high, stepsize, nmajor, nminor)
+        for axis_id in self.AXIS_IDS:
+            vmin, vmax = self.get_axis_limits(axis_id)
+            self.set_axis_limits(axis_id, vmin, vmax)
 
     def invalidate(self):
         """Invalidate paint cache and schedule redraw

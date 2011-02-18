@@ -102,7 +102,6 @@ import numpy as np
 
 from PyQt4.QtGui import QPen, QBrush, QColor, QFont, QFontDialog, QTransform
 from PyQt4.QtCore import Qt, QSize, QPointF
-from PyQt4.Qwt5 import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,
@@ -116,6 +115,7 @@ from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 from guiqwt.signals import SIG_ITEMS_CHANGED
@@ -332,9 +332,9 @@ BRUSHSTYLE_NAME = build_reverse_map(BRUSHSTYLE_CHOICES, Qt)
 # ===================================================
 # Common font parameters
 # ===================================================
-def _font_selection(param, item, value):
+def _font_selection(param, item, value, parent):
     font = param.build_font()
-    result, valid = QFontDialog.getFont( font )
+    result, valid = QFontDialog.getFont(font, parent)
     if valid:
         param.update_param( result )
     
@@ -600,7 +600,7 @@ class AxesParam(DataSet):
     _xparams = EndGroup("end X")
     yparams = BeginGroup(_("Y Axis") )
     yaxis = ChoiceItem(_("Position"),
-                       [(QwtPlot.yLeft, _("left")),
+                       [(QwtPlot.yLeft,  _("left")),
                         (QwtPlot.yRight, _("right"))],
                        default=QwtPlot.yLeft, help=_("Y-axis position"))
     yscale = ChoiceItem(_("Scale"),
@@ -611,33 +611,33 @@ class AxesParam(DataSet):
     _yparams = EndGroup("end Y")
 
     def update_param(self, item):
-        sw = item.plot()
+        plot = item.plot()
         self.xaxis = item.xAxis()
-        self.xscale = sw.get_axis_scale(self.xaxis)
-        xaxis = sw.axisScaleDiv(self.xaxis)
+        self.xscale = plot.get_axis_scale(self.xaxis)
+        xaxis = plot.axisScaleDiv(self.xaxis)
         self.xmin = xaxis.lowerBound()
         self.xmax = xaxis.upperBound()
         self.yaxis = item.yAxis()
-        self.yscale = sw.get_axis_scale(self.yaxis)
-        yaxis = sw.axisScaleDiv(self.yaxis)
+        self.yscale = plot.get_axis_scale(self.yaxis)
+        yaxis = plot.axisScaleDiv(self.yaxis)
         self.ymin = yaxis.lowerBound()
         self.ymax = yaxis.upperBound()
 
     def update_axes(self, item):
-        sw = item.plot()
-        sw.grid.setAxis(self.xaxis, self.yaxis)
+        plot = item.plot()
+        plot.grid.setAxis(self.xaxis, self.yaxis)
         # x
         item.setXAxis(self.xaxis)
-        sw.enableAxis(self.xaxis, True)
-        sw.set_axis_scale(self.xaxis, self.xscale)
-        sw.setAxisScale(self.xaxis, self.xmin, self.xmax)
+        plot.enableAxis(self.xaxis, True)
+        plot.set_axis_scale(self.xaxis, self.xscale)
+        plot.setAxisScale(self.xaxis, self.xmin, self.xmax)
         # y
         item.setYAxis(self.yaxis)
-        sw.enableAxis(self.yaxis, True)
-        sw.set_axis_scale(self.yaxis, self.yscale)
-        sw.setAxisScale(self.yaxis, self.ymin, self.ymax)
+        plot.enableAxis(self.yaxis, True)
+        plot.set_axis_scale(self.yaxis, self.yscale)
+        plot.setAxisScale(self.yaxis, self.ymin, self.ymax)
         
-        sw.disable_unused_axes()
+        plot.disable_unused_axes()
 
 class ImageAxesParam(DataSet):
     xparams = BeginGroup(_("X Axis") )
@@ -654,21 +654,20 @@ class ImageAxesParam(DataSet):
     _zparams = EndGroup("end Z")
 
     def update_param(self, item):
-        sw = item.plot()
-        xaxis = sw.axisScaleDiv(item.xAxis())
+        plot = item.plot()
+        xaxis = plot.axisScaleDiv(item.xAxis())
         self.xmin = xaxis.lowerBound()
         self.xmax = xaxis.upperBound()
-        yaxis = sw.axisScaleDiv(item.yAxis())
+        yaxis = plot.axisScaleDiv(item.yAxis())
         self.ymin = yaxis.lowerBound()
         self.ymax = yaxis.upperBound()
         self.zmin, self.zmax = item.min, item.max
 
     def update_axes(self, item):
-        sw = item.plot()
-        sw.setAxisScale(item.xAxis(), self.xmin, self.xmax)
-        sw.setAxisScale(item.yAxis(), self.ymin, self.ymax)
+        plot = item.plot()
+        plot.set_plot_limits(self.xmin, self.xmax, self.ymin, self.ymax)
         item.set_lut_range([self.zmin, self.zmax])
-        sw.update_colormap_axis(item)
+        plot.update_colormap_axis(item)
 
 # ===================================================
 # Marker parameters
@@ -975,61 +974,18 @@ def _create_choices():
         choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
     return choices
 
-class RGBImageParam(DataSet):
+class BaseImageParam(DataSet):
     _multiselection = False
     label = StringItem(_("Image title"), default=_("Image")) \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
     alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
                           default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0,
+    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
                       help=_("Global alpha value"))
-    interpolation = ChoiceItem(_("Interpolation"),
-                               [(0, _("None (nearest pixel)")),
-                                (1, _("Linear interpolation")),
-                                (2, _("2x2 antialiasing filter")),
-                                (3, _("3x3 antialiasing filter")),
-                                (5, _("5x5 antialiasing filter"))],
-                               default=0, help=_("Image interpolation type"))
-
-    def update_param(self, image):
-        self.label = unicode(image.title().text())
-        interpolation = image.get_interpolation()
-        mode = interpolation[0]
-        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR
-        if mode == INTERP_NEAREST:
-            self.interpolation = 0
-        elif mode == INTERP_LINEAR:
-            self.interpolation = 1
-        else:
-            size = interpolation[1].shape[0]
-            self.interpolation = size
-
-    def update_image(self, image):
-        image.setTitle(self.label)
-        size = self.interpolation
-        from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
-        if size == 0:
-            mode = INTERP_NEAREST
-        elif size == 1:
-            mode = INTERP_LINEAR
-        else:
-            mode = INTERP_AA
-        image.set_interpolation(mode, size)
-        image.recompute_alpha_channel()
-
-class ImageParam(DataSet):
-    _multiselection = False
-    label = StringItem(_("Image title"), default=_("Image")) \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-    _hide_background = False
-    background = ColorItem(_("Background color"), default="#000000"
-                           ).set_prop("display",
-                                      hide=GetAttrProp("_hide_background"))
-    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
-                          default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0,
-                      help=_("Global alpha value"))
-    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet")
+    _hide_colormap = False
+    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
+                               ).set_prop("display",
+                                      hide=GetAttrProp("_hide_colormap"))
     
     interpolation = ChoiceItem(_("Interpolation"),
                                [(0, _("None (nearest pixel)")),
@@ -1041,7 +997,6 @@ class ImageParam(DataSet):
                                
     def update_param(self, image):
         self.label = unicode(image.title().text())
-        self.background = QColor(image.bg_qcolor).name()
         self.colormap = image.get_color_map_name()
         interpolation = image.get_interpolation()
         mode = interpolation[0]
@@ -1056,7 +1011,6 @@ class ImageParam(DataSet):
 
     def update_image(self, image):
         image.setTitle(self.label)
-        image.set_background_color(self.background)
         image.set_color_map(self.colormap)
         size = self.interpolation
         from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
@@ -1068,13 +1022,115 @@ class ImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
 
+
+class RawImageParam(BaseImageParam):
+    _hide_background = False
+    background = ColorItem(_("Background color"), default="#000000"
+                           ).set_prop("display",
+                                      hide=GetAttrProp("_hide_background"))
+    
+    def update_param(self, image):
+        super(RawImageParam, self).update_param(image)
+        self.background = QColor(image.bg_qcolor).name()
+
+    def update_image(self, image):
+        super(RawImageParam, self).update_image(image)
+        image.set_background_color(self.background)
+
+class RawImageParam_MS(RawImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(RawImageParam, RawImageParam_MS)
+
+
+class XYImageParam(RawImageParam):
+    pass
+
+class XYImageParam_MS(XYImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(XYImageParam, XYImageParam_MS)
+
+
+class ImageParam(RawImageParam):
+    _xdata = BeginGroup(_("Image placement along X-axis"))
+    xmin = FloatItem(_("x|min"), default=None)
+    xmax = FloatItem(_("x|max"), default=None)
+    _end_xdata = EndGroup(_("Image placement along X-axis"))
+    _ydata = BeginGroup(_("Image placement along Y-axis"))
+    ymin = FloatItem(_("y|min"), default=None)
+    ymax = FloatItem(_("y|max"), default=None)
+    _end_ydata = EndGroup(_("Image placement along Y-axis"))
+    
+    def update_param(self, image):
+        super(ImageParam, self).update_param(image)
+        self.xmin = image.xmin
+        if self.xmin is None:
+            self.xmin = 0.
+        self.ymin = image.ymin
+        if self.ymin is None:
+            self.ymin = 0.
+        if image.is_empty():
+            shape = (0, 0)
+        else:
+            shape = image.data.shape
+        self.xmax = image.xmax
+        if self.xmax is None:
+            self.xmax = float(shape[1])
+        self.ymax = image.ymax
+        if self.ymax is None:
+            self.ymax = float(shape[0])
+
+    def update_image(self, image):
+        super(ImageParam, self).update_image(image)
+        image.xmin = self.xmin
+        image.xmax = self.xmax
+        image.ymin = self.ymin
+        image.ymax = self.ymax
+        image.update_bounds()
+        image.update_border()
+
 class ImageParam_MS(ImageParam):
     _multiselection = True
     
 ItemParameters.register_multiselection(ImageParam, ImageParam_MS)
 
 
-class ImageFilterParam(ImageParam):
+class RGBImageParam(ImageParam):
+    _hide_background = True
+    _hide_colormap = True
+
+    def update_image(self, image):
+        super(RGBImageParam, self).update_image(image)
+        image.recompute_alpha_channel()
+
+class RGBImageParam_MS(RGBImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
+
+
+class MaskedImageParam(ImageParam):
+    g_mask = BeginGroup(_("Mask"))
+    filling_value = FloatItem(_("Filling value"))
+    show_mask = BoolItem(_("Show image mask"), default=False)
+    alpha_masked = FloatItem(_("Masked area alpha"),
+                             default=.7, min=0, max=1)
+    alpha_unmasked = FloatItem(_("Unmasked area alpha"),
+                               default=0., min=0, max=1)
+    _g_mask = EndGroup(_("Mask"))
+    
+    def update_image(self, image):
+        super(MaskedImageParam, self).update_image(image)
+        image.update_mask()
+                         
+class MaskedImageParam_MS(MaskedImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(MaskedImageParam, MaskedImageParam_MS)
+
+
+class ImageFilterParam(BaseImageParam):
     label = StringItem(_("Title"), default=_("Filter"))
     g1 = BeginGroup(_("Bounds"))
     xmin = FloatItem(_("x|min"))
@@ -1103,7 +1159,7 @@ class ImageFilterParam(ImageParam):
                                          self.xmax, self.ymax)
 
 
-class TrImageParam(ImageParam):
+class TrImageParam(RawImageParam):
     _crop = BeginGroup(_("Crop"))
     crop_left = IntItem(_("Left"), default=0)
     crop_right = IntItem(_("Right"), default=0)
@@ -1111,8 +1167,8 @@ class TrImageParam(ImageParam):
     crop_bottom = IntItem(_("Bottom"), default=0)
     _end_crop = EndGroup(_("Cropping"))
     _ps = BeginGroup(_("Pixel size"))
-    dx = FloatItem(_("Width (δx)"), default=1.0)
-    dy = FloatItem(_("Height (δy)"), default=1.0)
+    dx = FloatItem(_("Width (dx)"), default=1.0)
+    dy = FloatItem(_("Height (dy)"), default=1.0)
     _end_ps = EndGroup(_("Pixel size"))
     _pos = BeginGroup(_("Translate, rotate and flip"))
     pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0)
@@ -1130,7 +1186,7 @@ class TrImageParam(ImageParam):
         # directly in this DataSet
 
     def update_image(self, image):
-        ImageParam.update_image(self, image)
+        RawImageParam.update_image(self, image)
         image.set_transform(*self.get_transform())
 
     def get_transform(self):
@@ -1166,27 +1222,22 @@ ItemParameters.register_multiselection(TrImageParam, ImageParam_MS)
 class HistogramParam(DataSet):
     n_bins = IntItem(_("Bins"), default=100, min=1, help=_("Number of bins"))
     logscale = BoolItem(_("logarithmic"), _("Y-axis scale"), default=False)
-    remove_first_bin = BoolItem(_("force first bin to zero"), _("Display"),
-                                default=False)
 
     def update_param(self, obj):
         self.n_bins = obj.get_bins()
         self.logscale = obj.get_logscale()
-        self.remove_first_bin = obj.get_remove_first_bin()
 
     def update_hist(self, hist):
         hist.set_bins(self.n_bins)
         hist.set_logscale(self.logscale)
-        hist.set_remove_first_bin(self.remove_first_bin)
 
 
 # ===================================================
 # Histogram 2D parameters
 # ===================================================
-class Histogram2DParam(ImageParam):
+class Histogram2DParam(BaseImageParam):
     """Histogram"""
     _multiselection = False
-    _hide_background = True
     label = StringItem(_("Title"), default=_("Histogram")) \
             .set_prop("display", hide=GetAttrProp("_multiselection"))
     nx_bins = IntItem(_("X-axis bins"), default=100, min=1,
@@ -1234,6 +1285,12 @@ class ShapeParam(DataSet):
     ___efill = EndGroup(_("Fill pattern"))
     #----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
+    readonly = BoolItem(_("Read-only shape"), default=False,
+                        help=_("Read-only shapes can't be removed from "
+                               "the item list panel"))
+    private = BoolItem(_("Private shape"), default=False,
+                        help=_("Private shapes are not shown in "
+                               "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
         self.line.update_param(obj.pen)
@@ -1242,6 +1299,8 @@ class ShapeParam(DataSet):
         self.sel_line.update_param(obj.sel_pen)
         self.sel_symbol.update_param(obj.sel_symbol)
         self.sel_fill.update_param(obj.sel_brush)
+        self.readonly = obj.is_readonly()
+        self.private = obj.is_private()
         
     def update_shape(self, obj):
         obj.pen = self.line.build_pen()
@@ -1250,6 +1309,8 @@ class ShapeParam(DataSet):
         obj.sel_pen = self.sel_line.build_pen()
         obj.sel_symbol = self.sel_symbol.build_symbol()
         obj.sel_brush = self.sel_fill.build_brush()
+        obj.set_readonly(self.readonly)
+        obj.set_private(self.private)
 
 class AxesShapeParam(DataSet):
     arrow_angle = FloatItem(_("Arrow angle (°)"), min=0, max=90, nonzero=True)
@@ -1347,3 +1408,33 @@ class RangeShapeParam(DataSet):
         range.symbol = self.symbol.build_symbol()
         range.sel_symbol = self.sel_symbol.build_symbol()
 
+
+# ===================================================
+# Range selection parameters
+# ===================================================
+class CursorShapeParam(DataSet):
+    _styles = BeginTabGroup("Styles")
+    #------------------------------------------------------------------ Line tab
+    ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
+    line = LineStyleItem(_("Line (not selected)"))
+    sel_line = LineStyleItem(_("Line (selected)"))
+    ___eline = EndGroup(_("Line"))
+    #---------------------------------------------------------------- Symbol tab
+    ___symbol = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
+    symbol = SymbolItem(_("Symbol (not selected)"))
+    sel_symbol = SymbolItem(_("Symbol (selected)"))
+    ___esymbol = EndGroup(_("Symbol"))
+    #----------------------------------------------------------------------- End
+    _endstyles = EndTabGroup("Styles")
+    
+    def update_param(self, cursor):
+        self.line.update_param(cursor.pen)
+        self.sel_line.update_param(cursor.sel_pen)
+        self.symbol.update_param(cursor.symbol)
+        self.sel_symbol.update_param(cursor.sel_symbol)
+        
+    def update_range(self, cursor):
+        cursor.pen = self.line.build_pen()
+        cursor.sel_pen = self.sel_line.build_pen()
+        cursor.symbol = self.symbol.build_symbol()
+        cursor.sel_symbol = self.sel_symbol.build_symbol()

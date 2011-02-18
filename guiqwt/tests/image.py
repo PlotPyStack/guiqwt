@@ -7,6 +7,9 @@
 
 """ImageDialog test"""
 
+#FIXME: unexpected behavior when changing the xmin/xmax/ymin/ymax values in 
+#       the image parameters (2nd tab: "Axes")
+
 SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
@@ -22,7 +25,7 @@ def imshow( data ):
     win.show()
     win.exec_()
 
-def compute_image(N=2000):
+def compute_image(N=2000, grid=True):
     T = np.float32
     x = np.array(np.linspace(-5, 5, N), T)
     img = np.zeros( (N, N), T )
@@ -31,6 +34,8 @@ def compute_image(N=2000):
     x.shape = (N, 1)
     img += x**2
     np.cos(img, img) # inplace cosine
+    if not grid:
+        return img
     x.shape = (N,)
     for k in range( -5, 5 ):
         i = x.searchsorted(k)

@@ -131,11 +131,11 @@ Simple application
 
 .. image:: images/screenshots/simple_window.png
 
-More complex signal processing application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+More complex signal/image processing application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../guiqwt/tests/signal_app.py
+.. literalinclude:: ../guiqwt/tests/sift.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
-.. image:: images/screenshots/signal_app.png
+.. image:: images/screenshots/sift.png

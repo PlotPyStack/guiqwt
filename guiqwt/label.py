@@ -46,11 +46,11 @@ Reference
 
 from PyQt4.QtGui import QPen, QColor, QTextDocument
 from PyQt4.QtCore import QRectF
-from PyQt4.Qwt5 import QwtPlotItem
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlotItem
 from guiqwt.config import CONF
 from guiqwt.curve import CurveItem
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType
@@ -78,6 +78,7 @@ class AbstractLabelItem(QwtPlotItem):
     the label will keep a fixed position wrt the canvas rect
     """
     _readonly = False
+    _private = False
     
     def __init__(self, labelparam):
         super(AbstractLabelItem, self).__init__()
@@ -145,6 +146,14 @@ class AbstractLabelItem(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()
@@ -197,8 +206,9 @@ class AbstractLabelItem(QwtPlotItem):
         if self.selected:
             self.select()
     
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         if handle != -1:
             return
     
@@ -416,7 +426,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
         return (self.__class__, (self.labelparam, []))
 
     def include_item(self, item):
-        return LegendBoxItem.include_item(self) and item in self.itemlist
+        return LegendBoxItem.include_item(self, item) and item in self.itemlist
         
     def add_item(self, item):
         self.itemlist.append(item)
@@ -425,6 +435,16 @@ class SelectedLegendBoxItem(LegendBoxItem):
 class ObjectInfo(object):
     def get_text(self):
         return u""
+
+class CursorComputation(ObjectInfo):
+    def __init__(self, label, cursor, function):
+        self.label = unicode(label)
+        self.cursor = cursor
+        self.func = function
+
+    def get_text(self):
+        x, y = self.cursor.get_handle_pos()
+        return self.label % self.func(x, y)
 
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):

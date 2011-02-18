@@ -45,7 +45,7 @@ class IImageItemType(IItemType):
     pass
 
 class IVoiImageItemType(IItemType):
-    """An image with with set_lut_range, get_lut_range"""
+    """An image with set_lut_range, get_lut_range"""
     def set_lut_range(self, lut_range):
         pass
 
@@ -61,8 +61,17 @@ class IVoiImageItemType(IItemType):
         """Get maximum range for this dataset"""
         return 0.,255.
 
+class IColormapImageItemType(IItemType):
+    """An image with an associated colormap"""
+    pass
+
+class IExportROIImageItemType(IItemType):
+    """An image with export_roi"""
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+        pass
+
 class ICSImageItemType(IItemType):
-    """An image with cross section methods implemented"""
+    """An image supporting X/Y cross sections"""
     def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
         assert isinstance(y0, (float, int))
@@ -81,10 +90,6 @@ class ICSImageItemType(IItemType):
         """Return average cross section along y-axis"""
         return np.array([])
 
-class IColormapImageItemType(IItemType):
-    """An image with an associated colormap"""
-    pass
-
 class IShapeItemType(IItemType):
     """A shape (annotation)"""
     pass
@@ -101,10 +106,11 @@ class ISerializableType(IItemType):
 class IBasePlotItem(object):
     """
     This is the interface that QwtPlotItem objects must implement
-    to be handled by *EnhancedQwtPlot* widgets
+    to be handled by *BasePlot* widgets
     """
     selected = False # True if this item is selected
     _readonly = False
+    _private = False
     _can_select = True # Indicate this item can be selected
     _can_move = True
     _can_resize = True
@@ -133,6 +139,14 @@ class IBasePlotItem(object):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def select(self):
         """
@@ -181,8 +195,9 @@ class IBasePlotItem(object):
         """
         pass
     
-    def move_local_point_to(self, handle, pos ):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -222,11 +237,11 @@ class IHistDataSource(object):
         
 class IPlotManager(object):
     """A 'controller' that organizes relations between
-    plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
+    plots (BasePlot), panels, tools (GuiTool) and toolbar
     """
     def add_plot(self, plot, plot_id="default"):
         assert id not in self.plots
-        assert isinstance(plot, EnhancedQwtPlot)
+        assert isinstance(plot, BasePlot)
 
     def add_panel(self, panel):
         assert id not in self.panels
@@ -250,4 +265,8 @@ class IPanel(object):
     
     def register_panel(self, manager):
         """Register panel to plot manager"""
+        pass
+    
+    def configure_panel(self):
+        """Configure panel"""
         pass

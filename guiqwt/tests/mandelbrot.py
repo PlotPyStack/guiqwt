@@ -15,7 +15,7 @@ from PyQt4.QtCore import QRectF, QPointF
 
 from guiqwt.config import _
 from guiqwt.plot import ImageDialog
-from guiqwt.image import ImageItem
+from guiqwt.image import RawImageItem
 from guiqwt.tools import ToggleTool
 
 from guiqwt._mandel import mandel
@@ -39,7 +39,7 @@ class FullScale(ToggleTool):
     def update_status(self, plot):
         self.action.setChecked(self.image.IMAX == self.maxprec)
 
-class MandelItem(ImageItem):
+class MandelItem(RawImageItem):
     def __init__(self, xmin, xmax, ymin, ymax):
         super(MandelItem, self).__init__(np.zeros((1, 1), np.int16, order='F'))
         self.bounds = QRectF(QPointF(xmin, ymin),

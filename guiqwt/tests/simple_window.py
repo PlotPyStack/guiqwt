@@ -148,7 +148,7 @@ class CentralWidget(QSplitter):
     def add_image_from_file(self, filename):
         image = ImageParam()
         image.title = unicode(filename)
-        image.data = imagefile_to_array(filename)
+        image.data = imagefile_to_array(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)
 
@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(self, _("Open"), "",
-                           'Images (*.png *.jpg *.gif *.tif)\nDICOM (*.dcm)')
+                      'Images (*.png *.jpg *.gif *.tif *.tiff)\nDICOM (*.dcm)')
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

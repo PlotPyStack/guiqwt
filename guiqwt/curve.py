@@ -103,19 +103,20 @@ import sys, numpy as np
 from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
                          QToolBar, QMessageBox, QBrush)
 from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF, QLine
-from PyQt4.Qwt5 import QwtPlotCurve, QwtPlotGrid, QwtPlotItem, QwtScaleMap
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import create_action, add_actions
 
 # Local imports
+from guiqwt.transitional import (QwtPlotCurve, QwtPlotGrid, QwtPlotItem,
+                                 QwtScaleMap)
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
                                ITrackableItemType, IPanel)
 from guiqwt.panels import PanelWidget, ID_ITEMLIST
-from guiqwt.baseplot import EnhancedQwtPlot
+from guiqwt.baseplot import BasePlot
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
@@ -193,6 +194,7 @@ class GridItem(QwtPlotGrid):
     __implements__ = (IBasePlotItem,)
     
     _readonly = True
+    _private = False
     
     def __init__(self, gridparam=None):
         super(GridItem, self).__init__()
@@ -220,6 +222,14 @@ class GridItem(QwtPlotGrid):
     def is_readonly(self):
         """Return object read-only state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def can_select(self):
         return False
@@ -241,7 +251,7 @@ class GridItem(QwtPlotGrid):
     def hit_test(self, pos):
         return sys.maxint, 0, False, None
 
-    def move_local_point_to(self, handle, pos ):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -271,6 +281,7 @@ class CurveItem(QwtPlotCurve):
     __implements__ = (IBasePlotItem,)
     
     _readonly = False
+    _private = False
     
     def __init__(self, curveparam=None):
         super(CurveItem, self).__init__()
@@ -315,6 +326,14 @@ class CurveItem(QwtPlotCurve):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()
@@ -420,7 +439,7 @@ class CurveItem(QwtPlotCurve):
         ay = self.yAxis()
         return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
 
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return
         if handle < 0 or handle > self._x.shape[0]:
@@ -500,7 +519,7 @@ class ErrorBarCurveItem(CurveItem):
         """
         return self._x, self._y, self._dx, self._dy
 
-    def set_data(self, x, y, dx, dy):
+    def set_data(self, x, y, dx=None, dy=None):
         """
         Set error-bar curve data:
             * x: NumPy array
@@ -564,11 +583,15 @@ class ErrorBarCurveItem(CurveItem):
     def boundingRect(self):
         """Return the bounding rectangle of the data, error bars included"""
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        if xmin is None or xmin.size == 0:
+            return super(ErrorBarCurveItem, self).boundingRect()
         return QRectF( xmin.min(), ymin.min(),
                        xmax.max()-xmin.min(), ymax.max()-ymin.min() )
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
+        if x is None:
+            return
         y = self._y
         tx = vmap(xMap, x)
         ty = vmap(yMap, y)
@@ -750,7 +773,8 @@ class ItemListWidget(QListWidget):
                                         AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
-                                   XRangeSelection)
+                                   XRangeSelection, VerticalCursor,
+                                   HorizontalCursor)
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
@@ -775,6 +799,8 @@ class ItemListWidget(QListWidget):
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
                             (XRangeSelection, 'xrange.png'),
+                            (VerticalCursor, 'vcursor.png'),
+                            (HorizontalCursor, 'hcursor.png'),
                             (PolygonShape, 'freeform.png'),
                             (Histogram2DItem, 'histogram2d.png'),
                             (ImageFilterItem, 'funct.png'),
@@ -792,7 +818,7 @@ class ItemListWidget(QListWidget):
         self.plot = plot
         _block = self.blockSignals(True)
         active = plot.get_active_item()
-        self.items = plot.get_items(z_sorted=True)
+        self.items = plot.get_public_items(z_sorted=True)
         self.clear()
         for item in self.items:
             title = item.title().text()
@@ -862,7 +888,7 @@ class ItemListWidget(QListWidget):
             self.plot.del_items(items)
             self.plot.replot()
             for item in items:
-                self.parent().emit(SIG_ITEM_REMOVED, item)
+                self.plot.emit(SIG_ITEM_REMOVED, item)
         
 
 class PlotItemList(PanelWidget):
@@ -897,14 +923,18 @@ class PlotItemList(PanelWidget):
         """Register panel to plot manager"""
         self.manager = manager
         self.listwidget.register_panel(manager)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        pass
 
 assert_interfaces_valid(PlotItemList)
 
 
-class CurvePlot(EnhancedQwtPlot):
+class CurvePlot(BasePlot):
     """
     Construct a 2D curve plotting widget 
-    (this class inherits :py:class:`guiqwt.baseplot.EnhancedQwtPlot`)
+    (this class inherits :py:class:`guiqwt.baseplot.BasePlot`)
         * parent: parent widget
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
@@ -1091,54 +1121,7 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, o1, o2)
         self.replot()
 
-    #---- EnhancedQwtPlot API --------------------------------------------------
-    def get_axis_title(self, axis):
-        """
-        Reimplement EnhancedQwtPlot method
-        
-        Return axis title
-            * axis: 'bottom', 'left', 'top' or 'right'
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        return super(CurvePlot, self).get_axis_title(axis)
-        
-    def set_axis_title(self, axis, title):
-        """
-        Reimplement EnhancedQwtPlot method
-        
-        Set axis title
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * title: string
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_title(axis, title)
-
-    def set_axis_font(self, axis, font):
-        """
-        Reimplement EnhancedQwtPlot method
-        
-        Set axis font
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * font: QFont instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_font(axis, font)
-    
-    def set_axis_color(self, axis, color):
-        """
-        Reimplement EnhancedQwtPlot method
-        
-        Set axis color
-            * axis: 'bottom', 'left', 'top' or 'right'
-            * color: color name (string) or QColor instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_color(axis, color)
-
+    #---- BasePlot API ---------------------------------------------------------
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
@@ -1181,42 +1164,63 @@ class CurvePlot(EnhancedQwtPlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        rect = None
-        for item in self.get_items():
-            if isinstance(item, self.AUTOSCALE_TYPES) and not item.is_empty() \
-               and item.isVisible():
-                bounds = item.boundingRect()
-                if rect is None:
-                    rect = bounds
-                else:
-                    rect = rect.united(bounds)
-        if rect is not None:
-            x0, x1 = rect.left(), rect.right()
-            y0, y1 = rect.top(), rect.bottom()
-            if x0 == x1: # same behavior as MATLAB
-                x0 -= 1
-                x1 += 1
-            if y0 == y1: # same behavior as MATLAB
-                y0 -= 1
-                y1 += 1
-            self.set_plot_limits(x0, x1, y0, y1)
-            if replot:
-                self.replot()
+        for axis_id in self.AXIS_IDS:
+            vmin, vmax = None, None
+            if not self.axisEnabled(axis_id):
+                continue
+            for item in self.get_items():
+                if isinstance(item, self.AUTOSCALE_TYPES) \
+                   and not item.is_empty() and item.isVisible():
+                    bounds = item.boundingRect()
+                    if axis_id == item.xAxis():
+                        xmin, xmax = bounds.left(), bounds.right()
+                        if vmin is None or xmin < vmin:
+                            vmin = xmin
+                        if vmax is None or xmax > vmax:
+                            vmax = xmax
+                    elif axis_id == item.yAxis():
+                        ymin, ymax = bounds.top(), bounds.bottom()
+                        if vmin is None or ymin < vmin:
+                            vmin = ymin
+                        if vmax is None or ymax > vmax:
+                            vmax = ymax
+            if vmin is None or vmax is None:
+                continue
+            if vmin == vmax: # same behavior as MATLAB
+                vmin -= 1
+                vmax += 1
+            else:
+                dv = vmax-vmin
+                vmin -= .002*dv
+                vmax += .002*dv
+            self.set_axis_limits(axis_id, vmin, vmax)
+        if replot:
+            self.replot()
+
+    def set_axis_limits(self, axis_id, vmin, vmax):
+        """Set axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        vmin, vmax = sorted([vmin, vmax])
+        dv = vmax-vmin
+        if self.get_axis_direction(axis_id):
+            self.setAxisScale(axis_id, vmin+dv, vmin)
+        else:
+            self.setAxisScale(axis_id, vmin, vmin+dv)
             
     #---- Public API -----------------------------------------------------------    
-    def get_axis_direction(self, axis):
+    def get_axis_direction(self, axis_id):
         """
         Return axis direction of increasing values
-            * axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         return self.axes_reverse[axis_id]
             
-    def set_axis_direction(self, axis, reverse=False):
+    def set_axis_direction(self, axis_id, reverse=False):
         """
         Set axis direction of increasing values
-            * axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
             * reverse: False (default)
                 - x-axis values increase from left to right
@@ -1225,7 +1229,7 @@ class CurvePlot(EnhancedQwtPlot):
                 - x-axis values increase from right to left
                 - y-axis values increase from top to bottom
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         if reverse != self.axes_reverse[axis_id]:
             self.replot()
             self.axes_reverse[axis_id] = reverse
@@ -1281,19 +1285,17 @@ class CurvePlot(EnhancedQwtPlot):
                 curve.setRenderHint(QwtPlotItem.RenderAntialiased,
                                     self.antialiased)
 
-    def set_plot_limits(self, x0, x1, y0, y1):
+    def set_plot_limits(self, x0, x1, y0, y1, xaxis="bottom", yaxis="left"):
         """Set plot scale limits"""
-        dy = y1-y0
-        if self.get_axis_direction(self.yLeft):
-            self.setAxisScale(self.yLeft, y0+dy, y0)
-        else:
-            self.setAxisScale(self.yLeft, y0, y0+dy)
-        dx = x1-x0
-        if self.get_axis_direction(self.xBottom):
-            self.setAxisScale(self.xBottom, x0+dx, x0)
-        else:
-            self.setAxisScale(self.xBottom, x0, x0+dx)
+        self.set_axis_limits(yaxis, y0, y1)
+        self.set_axis_limits(xaxis, x0, x1)
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.yLeft)
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.xBottom)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
+        
+    def get_plot_limits(self, xaxis="bottom", yaxis="left"):
+        """Return plot scale limits"""
+        x0, x1 = self.get_axis_limits(xaxis)
+        y0, y1 = self.get_axis_limits(yaxis)
+        return x0, x1, y0, y1
         

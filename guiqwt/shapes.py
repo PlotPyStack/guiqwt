@@ -17,6 +17,8 @@ The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.EllipseShape`
     * :py:class:`guiqwt.shapes.Axes`
     * :py:class:`guiqwt.shapes.XRangeSelection`
+    * :py:class:`guiqwt.shapes.VerticalCursor`
+    * :py:class:`guiqwt.shapes.HorizontalCursor`
 
 A shape is a plot item (derived from QwtPlotItem) that may be displayed 
 on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
@@ -68,6 +70,12 @@ Reference
 .. autoclass:: XRangeSelection
    :members:
    :inherited-members:
+.. autoclass:: VerticalCursor
+   :members:
+   :inherited-members:
+.. autoclass:: HorizontalCursor
+   :members:
+   :inherited-members:
 """
 
 import sys, numpy as np
@@ -75,17 +83,17 @@ from math import fabs, sqrt, sin, cos, pi
 
 from PyQt4.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
 from PyQt4.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
-from PyQt4.Qwt5 import QwtPlotItem, QwtSymbol, QwtPlotMarker
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
-                           AxesShapeParam)
+                           AxesShapeParam, CursorShapeParam)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
-                            SIG_AXES_CHANGED, SIG_ITEM_MOVED)
+                            SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
 
 class AbstractShape(QwtPlotItem):
     """Interface pour les objets manipulables
@@ -97,6 +105,7 @@ class AbstractShape(QwtPlotItem):
     __implements__ = (IBasePlotItem,)
 
     _readonly = False
+    _private = False
     _can_select = True
     _can_resize = True
     _can_rotate = False #TODO: implement shape rotation?
@@ -124,6 +133,14 @@ class AbstractShape(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def hit_test(self, pos):
         """return (dist,handle,inside)"""
@@ -139,12 +156,14 @@ class AbstractShape(QwtPlotItem):
         plot = self.plot()
         return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         pass
     
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pt = self.canvas_to_axes(pos)
-        self.move_point_to(handle, pt)
+        self.move_point_to(handle, pt, ctrl)
         
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
@@ -202,6 +221,7 @@ class Marker(QwtPlotMarker):
     """
     __implements__ = (IBasePlotItem,)
     _readonly = True
+    _private = False
 
     def __init__(self, label_cb=None, constraint_cb=None):
         super(Marker, self).__init__()
@@ -233,6 +253,14 @@ class Marker(QwtPlotMarker):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def hit_test(self, pos):
         """return (dist,handle,inside)"""
@@ -263,7 +291,7 @@ class Marker(QwtPlotMarker):
         plot = self.plot()
         return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         x, y = pos
         if self.constraint_cb:
             x, y = self.constraint_cb(self, x, y)
@@ -272,7 +300,9 @@ class Marker(QwtPlotMarker):
         if self.plot():
             self.plot().emit(SIG_MARKER_CHANGED, self)
     
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pt = self.canvas_to_axes(pos)
         self.move_point_to(handle, pt)
         
@@ -497,7 +527,7 @@ class PolygonShape(AbstractShape):
         else:
             return self.points.shape[0]-1
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         self.points[handle, :] = pos
         
     def move_shape(self, old_pos, new_pos):
@@ -530,7 +560,7 @@ class PointShape(PolygonShape):
         """Return the point coordinates"""
         return tuple(self.points[0])
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         self.points[0] = (nx, ny)
 
@@ -560,7 +590,7 @@ class SegmentShape(PolygonShape):
         self.points[1] = (self.points[0]+self.points[2])/2.
         super(SegmentShape, self).draw(painter, xMap, yMap, canvasRect)
     
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         if handle == 0:
             self.points[0] = (nx, ny)
@@ -592,7 +622,7 @@ class RectangleShape(PolygonShape):
     def get_rect(self):
         return tuple(self.points[0])+tuple(self.points[2])
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         x1, y1 = self.points[0]
         x2, y2 = self.points[2]
@@ -616,21 +646,58 @@ assert_interfaces_valid(RectangleShape)
 
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1
-class EllipseShape(RectangleShape):
+class EllipseShape(PolygonShape):
     def __init__(self, x1, y1, x2, y2, ratio=None):
-        self.is_ellipse = False
         self.ratio = ratio
-        super(EllipseShape, self).__init__(x1, y1, x2, y2)
+        super(EllipseShape, self).__init__([], closed=True)
+        self.is_ellipse = False
+        self.set_xdiameter(x1, y1, x2, y2)
         
     def switch_to_ellipse(self):
         self.is_ellipse = True
 
-    def set_rect(self, x1, y1, x2, y2):
-        """
-        Set the start point of the ellipse's X-axis diameter to (x1, y1) 
-        and its end point to (x2, y2)
-        """
-        self.set_xdiameter(x1, y1, x2, y2)
+    def set_xdiameter(self, x0, y0, x1, y1):
+        """Set the coordinates of the ellipse's X-axis diameter"""
+        xline = QLineF(x0, y0, x1, y1)
+        yline = xline.normalVector()
+        yline.translate(xline.pointAt(.5)-xline.p1())
+        if self.is_ellipse:
+            yline.setLength(self.get_yline().length())
+        elif self.ratio is not None:
+            yline.setLength(xline.length()*self.ratio)
+        yline.translate(yline.pointAt(.5)-yline.p2())
+        self.set_points([(x0, y0), (x1, y1),
+                         (yline.x1(), yline.y1()), (yline.x2(), yline.y2())])
+                         
+    def get_xdiameter(self):
+        """Return the coordinates of the ellipse's X-axis diameter"""
+        return tuple(self.points[0])+tuple(self.points[1])
+                         
+    def set_ydiameter(self, x2, y2, x3, y3):
+        """Set the coordinates of the ellipse's Y-axis diameter"""
+        yline = QLineF(x2, y2, x3, y3)
+        xline = yline.normalVector()
+        xline.translate(yline.pointAt(.5)-yline.p1())
+        if self.is_ellipse:
+            xline.setLength(self.get_xline().length())
+        xline.translate(xline.pointAt(.5)-xline.p2())
+        self.set_points([(xline.x1(), xline.y1()), (xline.x2(), xline.y2()),
+                         (x2, y2), (x3, y3)])
+                         
+    def get_ydiameter(self):
+        """Return the coordinates of the ellipse's Y-axis diameter"""
+        return tuple(self.points[2])+tuple(self.points[3])
+        
+    def get_rect(self):
+        """Circle only!"""
+        (x0, y0), (x1, y1) = self.points[0], self.points[1]
+        xc, yc = .5*(x0+x1), .5*(y0+y1)
+        radius = .5*np.sqrt((x1-x0)**2+(y1-y0)**2)
+        return xc-radius, yc-radius, xc+radius, yc+radius
+    
+    def set_rect(self, x0, y0, x1, y1):
+        """Circle only!"""
+        self.set_xdiameter(x0, .5*(y0+y1), x1, .5*(y0+y1))
 
     def compute_elements(self, xMap, yMap):
         """Return points, lines and ellipse rect"""
@@ -680,48 +747,43 @@ class EllipseShape(RectangleShape):
     def get_yline(self):
         return QLineF(*(tuple(self.points[2])+tuple(self.points[3])))
 
-    def set_xdiameter(self, x0, y0, x1, y1):
-        xline = QLineF(x0, y0, x1, y1)
-        yline = xline.normalVector()
-        yline.translate(xline.pointAt(.5)-xline.p1())
-        if self.is_ellipse:
-            yline.setLength(self.get_yline().length())
-        elif self.ratio is not None:
-            yline.setLength(xline.length()*self.ratio)
-        yline.translate(yline.pointAt(.5)-yline.p2())
-        self.set_points([(x0, y0), (x1, y1),
-                         (yline.x1(), yline.y1()), (yline.x2(), yline.y2())])
-                         
-    def set_ydiameter(self, x2, y2, x3, y3):
-        yline = QLineF(x2, y2, x3, y3)
-        xline = yline.normalVector()
-        xline.translate(yline.pointAt(.5)-yline.p1())
-        if self.is_ellipse:
-            xline.setLength(self.get_xline().length())
-        xline.translate(xline.pointAt(.5)-xline.p2())
-        self.set_points([(xline.x1(), xline.y1()), (xline.x2(), xline.y2()),
-                         (x2, y2), (x3, y3)])
-
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
         if handle == 0:
             x1, y1 = self.points[1]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x0, y0 = self.points[0]
+                x1, y1 = x1+x0-nx, y1+y0-ny
             self.set_xdiameter(nx, ny, x1, y1)
         elif handle == 1:
             x0, y0 = self.points[0]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x1, y1 = self.points[1]
+                x0, y0 = x0+x1-nx, y0+y1-ny
             self.set_xdiameter(x0, y0, nx, ny)
-        elif handle == 2 and self.is_ellipse:
+        elif handle == 2:
             x3, y3 = self.points[3]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x2, y2 = self.points[2]
+                x3, y3 = x3+x2-nx, y3+y2-ny
             self.set_ydiameter(nx, ny, x3, y3)
-        elif handle == 3 and self.is_ellipse:
+        elif handle == 3:
             x2, y2 = self.points[2]
+            if ctrl:
+                # When <Ctrl> is pressed, the center position is unchanged
+                x3, y3 = self.points[3]
+                x2, y2 = x2+x3-nx, y2+y3-ny
             self.set_ydiameter(x2, y2, nx, ny)
-        elif handle in (2, 3):
-            delta = (nx, ny)-self.points[handle]
-            self.points += delta
         elif handle == -1:
             delta = (nx, ny)-self.points.mean(axis=0)
             self.points += delta
+
+    def __reduce__(self):
+        state = (self.shapeparam, self.points, self.z())
+        return (self.__class__, (0,0,0,0), state)
 
 assert_interfaces_valid(EllipseShape)
 
@@ -769,7 +831,7 @@ class Axes(PolygonShape):
         self.axesparam.read_config(CONF, section, option)
         self.axesparam.update_axes(self)
 
-    def move_point_to(self, handle, pos):
+    def move_point_to(self, handle, pos, ctrl=None):
         _nx, _ny = pos
         p0, p1, _p3, p2 = list(self.points)
         d1x = p1[0]-p0[0]
@@ -865,10 +927,10 @@ class Axes(PolygonShape):
         
 assert_interfaces_valid(Axes)
 
-        
+
 class XRangeSelection(AbstractShape):
     def __init__(self, _min, _max):
-        super(XRangeSelection,self).__init__()
+        super(XRangeSelection, self).__init__()
         self._min = _min
         self._max = _max
         self.shapeparam = RangeShapeParam(_("Range"), icon="xrange.png")
@@ -920,12 +982,6 @@ class XRangeSelection(AbstractShape):
         sym.draw(painter, QPoint(x0,y))
         sym.draw(painter, QPoint(x1,y))
         
-    def get_handle_rect(self, xMap, yMap, xpos, ypos):
-        cx = xMap.transform(xpos)
-        cy = yMap.transform(ypos)
-        hs = self._handle_size
-        return QRectF(cx-hs, cy-hs, 2*hs, 2*hs)
-        
     def hit_test(self, pos):
         x, _y = pos.x(), pos.y()
         x0, x1, _yp = self.get_handles_pos()
@@ -938,11 +994,13 @@ class XRangeSelection(AbstractShape):
         inside = bool(x0<x<x1)
         return dist, handle, inside, None
         
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         val = self.plot().invTransform(self.xAxis(), pos.x())
         self.move_point_to(handle, (val, 0))
         
-    def move_point_to(self, hnd, pos):
+    def move_point_to(self, hnd, pos, ctrl=None):
         val, _ = pos
         if hnd == 0:
             self._min = val
@@ -967,7 +1025,6 @@ class XRangeSelection(AbstractShape):
 
     def move_shape(self, old_pos, new_pos):
         dx = new_pos[0]-old_pos[0]
-        _dy = new_pos[1]-old_pos[1]
         self._min += dx
         self._max += dx
         self.plot().emit(SIG_RANGE_CHANGED, self, self._min, self._max)
@@ -984,3 +1041,150 @@ class XRangeSelection(AbstractShape):
         self.sel_brush = QBrush(self.brush)
         
 assert_interfaces_valid(XRangeSelection)
+
+
+class Cursor(AbstractShape):
+    """Horizontal/Vertical cursor base class"""
+    ICON = None
+    def __init__(self, pos):
+        super(Cursor, self).__init__()
+        self.pos = pos
+        self.shapeparam = CursorShapeParam(_("Cursor"), icon=self.ICON)
+        self.shapeparam.read_config(CONF, "histogram", "range")
+        self.pen = None
+        self.sel_pen = None
+        self.handle = None
+        self.symbol = None
+        self.sel_symbol = None
+        self.shapeparam.update_range(self) # creates all the above QObjects
+        
+    def get_handle_pos(self):
+        raise NotImplementedError
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        raise NotImplementedError
+        
+    def draw(self, painter, xMap, yMap, canvasRect):
+        plot = self.plot()
+        if not plot:
+            return
+        if self.selected:
+            pen = self.sel_pen
+            sym = self.sel_symbol
+        else:
+            pen = self.pen
+            sym = self.symbol
+        painter.setPen(pen)
+        pos1, pos2 = self.get_line(xMap, yMap, plot)
+        painter.drawLine(pos1, pos2)
+        painter.setPen(pen)
+        x, y = self.get_handle_pos()        
+        sym.draw(painter, QPoint(x,y))
+        
+    def get_distance_from_point(self, point):
+        raise NotImplementedError
+        
+    def hit_test(self, pos):
+        dist = self.get_distance_from_point(pos)
+        handle = 0
+        inside = False
+        return dist, handle, inside, None
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        raise NotImplementedError
+        
+    def move_point_to(self, hnd, pos, ctrl=None):
+        val, _ = pos
+        self.pos = val
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+
+    def get_pos(self):
+        return self.pos
+        
+    def set_pos(self, pos, dosignal=True):
+        self.pos = pos
+        if dosignal:
+            self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+
+    def move_shape(self, old_pos, new_pos):
+        raise NotImplementedError
+        
+    def get_item_parameters(self, itemparams):
+        self.shapeparam.update_param(self)
+        itemparams.add("ShapeParam", self, self.shapeparam)
+    
+    def set_item_parameters(self, itemparams):
+        update_dataset(self.shapeparam, itemparams.get("ShapeParam"),
+                       visible_only=True)
+        self.shapeparam.update_range(self)
+        
+assert_interfaces_valid(Cursor)
+
+class VerticalCursor(Cursor):
+    """Vertical cursor"""
+    ICON = 'vcursor.png'
+    def get_handle_pos(self):
+        plot = self.plot()
+        x = plot.transform(self.xAxis(), self.pos)
+        y = plot.canvas().contentsRect().center().y()
+        return x, y
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        rect = QRectF( plot.canvas().contentsRect() )
+        rect.setLeft(xMap.transform(self.pos))
+        return rect.topLeft(), rect.bottomLeft()
+        
+    def get_distance_from_point(self, point):
+        x, y = self.get_handle_pos()
+        return fabs(x-point.x())
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        val = self.plot().invTransform(self.xAxis(), pos.x())
+        self.move_point_to(handle, (val, 0))
+
+    def move_shape(self, old_pos, new_pos):
+        dx = new_pos[0]-old_pos[0]
+        self.pos += dx
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+        self.plot().replot()
+        
+assert_interfaces_valid(VerticalCursor)
+
+class HorizontalCursor(Cursor):
+    """Horizontal cursor"""
+    ICON = 'hcursor.png'
+    def get_handle_pos(self):
+        plot = self.plot()
+        x = plot.canvas().contentsRect().center().x()
+        y = plot.transform(self.yAxis(), self.pos)
+        return x, y
+        
+    def get_line(self, xMap, yMap, plot):
+        """Return line to be drawn (QLineF object)"""
+        rect = QRectF( plot.canvas().contentsRect() )
+        rect.setTop(yMap.transform(self.pos))
+        return rect.topLeft(), rect.topRight()
+        
+    def get_distance_from_point(self, point):
+        x, y = self.get_handle_pos()
+        return fabs(y-point.y())
+        
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
+        val = self.plot().invTransform(self.yAxis(), pos.y())
+        self.move_point_to(handle, (val, 0))
+
+    def move_shape(self, old_pos, new_pos):
+        dy = new_pos[0]-old_pos[0]
+        self.pos += dy
+        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+        self.plot().replot()
+        
+assert_interfaces_valid(HorizontalCursor)

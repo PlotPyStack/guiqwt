@@ -13,7 +13,8 @@ import unittest
 
 from PyQt4.QtCore import Qt, QSize
 from PyQt4.QtGui import QPen, QBrush
-from PyQt4.Qwt5 import QwtSymbol
+
+from guiqwt.transitional import QwtSymbol
 
 from guidata.config import UserConfig, _
 from guiqwt.styles import SymbolParam, LineStyleParam

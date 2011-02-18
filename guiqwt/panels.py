@@ -36,7 +36,7 @@ of panel:
         Module providing the `plot tools`
 """
 
-from PyQt4.QtGui import QWidget
+from guidata.qtwidgets import DockableWidget
 
 # Local imports
 from guiqwt.signals import SIG_VISIBILITY_CHANGED
@@ -58,21 +58,33 @@ ID_XCS = "x_cross_section"
 # Y-cross section panel
 ID_YCS = "y_cross_section"
 
+# Radially-averaged cross section panel
+ID_RACS = "ra_cross_section"
+
 
 #===============================================================================
 # Base Panel Widget class
 #===============================================================================
-class PanelWidget(QWidget):
+class PanelWidget(DockableWidget):
     PANEL_ID = None # string
     
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super(PanelWidget, self).__init__(parent)
         assert self.PANEL_ID is not None
     
     def showEvent(self, event):
-        QWidget.showEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, True)
+        super(PanelWidget, self).showEvent(event)
+        if self.dockwidget is None:
+            self.emit(SIG_VISIBILITY_CHANGED, True)
         
     def hideEvent(self, event):
-        QWidget.hideEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, False)
+        super(PanelWidget, self).hideEvent(event)
+        if self.dockwidget is None:
+            self.emit(SIG_VISIBILITY_CHANGED, False)
+        
+    def visibility_changed(self, enable):
+        """DockWidget visibility has changed"""
+        super(PanelWidget, self).visibility_changed(enable)
+        # For compatibility with the guiqwt.panels.PanelWidget interface:
+        self.emit(SIG_VISIBILITY_CHANGED, self._isvisible)
+

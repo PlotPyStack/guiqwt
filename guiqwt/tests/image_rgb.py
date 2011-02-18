@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2009-2010 CEA
-# Pierre Raybaut <pierre.raybaut@cea.fr>
+# Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guidata/__init__.py for details)
 
-"""ImagePlotDialog test"""
+"""RGB Image test, creating the RGBImageItem object via make.rgbimage"""
+
+SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
 
@@ -20,7 +22,7 @@ IMGFILE = osp.join(TESTDIR, "..", "images", "items", "image.png")
 
 def imshow( data ):
     win = ImageDialog(edit=False, toolbar=True, wintitle="RGB image item test")
-    item = make.rgb_image(data, scale=(-1,-1,1,1))
+    item = make.rgbimage(data, x0=-1, y0=-1, dx=.1, dy=.1)
     plot = win.get_plot()
     plot.add_item(item)
     win.show()
