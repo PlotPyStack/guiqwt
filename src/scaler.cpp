@@ -809,6 +809,9 @@ struct QuadHelper {
 	v3 = Z.value(j+1,i+1);
 	v4 = Z.value(j,i+1);
 
+	if (isnan(v1) || isnan(v2) || isnan(v3) || isnan(v4)) {
+	    return ;
+	}
 	for(l=i1;l<i2;l+=1) {
 	    for(k=j1;k<j2;k+=1) {
 		x = x1+k*m_dx;
