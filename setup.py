@@ -64,7 +64,7 @@ try:
 except ImportError:
     sphinx = None
     
-from distutils.command.build import build as dftbuild
+from numpy.distutils.command.build import build as dftbuild
 
 class build(dftbuild):
     def has_doc(self):
