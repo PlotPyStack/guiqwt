@@ -713,8 +713,8 @@ class MainWindow(QMainWindow):
         status = self.statusBar()
         status.showMessage(_("Welcome to %s!") % APP_NAME, 5000)
 
-        self.signal_toolbar = self.addToolBar(_("Signal Toolbar"))
-        self.image_toolbar = self.addToolBar(_("Image Toolbar"))
+        self.signal_toolbar = self.addToolBar(_("Signal Processing Toolbar"))
+        self.image_toolbar = self.addToolBar(_("Image Processing Toolbar"))
 
         # Signals
         curveplot_toolbar = self.addToolBar(_("Curve Plotting Toolbar"))

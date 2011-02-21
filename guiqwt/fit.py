@@ -86,12 +86,12 @@ class FitParam(DataSet):
     value = FloatItem(_("Value"), default=0.0)
     min = FloatItem(_("Min"), default=-1.0)
     max = FloatItem(_("Max"), default=1.0).set_pos(col=1)
-    steps = IntItem(_("Steps"), default=500)
+    steps = IntItem(_("Steps"), default=5000)
     format = StringItem(_("Format"), default="%.3f").set_pos(col=1)
     logscale = BoolItem(_("Logarithmic"), _("Scale"))
 
     def __init__(self, name, value, min, max, logscale=False,
-                 steps=500, format='%.3f'):
+                 steps=5000, format='%.3f'):
         DataSet.__init__(self, title=_("Curve fitting parameter"))
         self.name = name
         self.value = value
@@ -106,9 +106,9 @@ class FitParam(DataSet):
         self.label = None
         
     def create_widgets(self, parent):
-        self.button = QPushButton(get_icon('edit.png'), _('Edit'), parent)
+        self.button = QPushButton(get_icon('edit.png'), '', parent)
         self.button.setToolTip(
-                        _("Edit fit parameter '%s' properties") % self.name)
+                        _("Edit '%s' fit parameter properties") % self.name)
         QObject.connect(self.button, SIGNAL('clicked()'), self.edit_param)
         self.checkbox = QCheckBox('Log', parent)
         self.checkbox.setToolTip(_('Logarithmic scale'))
@@ -165,7 +165,9 @@ class FitParam(DataSet):
         else:
             self.slider.setEnabled(True)
             intval = int(self.steps*(value-min)/(max-min))
+            self.slider.blockSignals(True)
             self.slider.setValue(intval)
+            self.slider.blockSignals(False)
 
     def update_checkbox_state(self):
         state = Qt.Checked if self.logscale else Qt.Unchecked
@@ -515,7 +517,7 @@ if __name__ == "__main__":
         a, b = params
         return np.cos(b*x)+a
     a = FitParam("Offset", 1., 0., 2.)
-    b = FitParam("Frequency", 2., 1., 10., logscale=True)
+    b = FitParam("Frequency", 2.001, 1., 10., logscale=True)
     params = [a, b]
     values = guifit(x, y, fit, params, param_cols=2)
     print values
