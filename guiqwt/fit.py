@@ -39,8 +39,8 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
-                         QCheckBox, QDialog, QVBoxLayout, QHBoxLayout, QWidget,
+from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QLineEdit,
+                         QDialog, QVBoxLayout, QHBoxLayout, QWidget,
                          QDialogButtonBox)
 from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
 
@@ -91,7 +91,7 @@ class FitParam(DataSet):
     logscale = BoolItem(_("Logarithmic"), _("Scale"))
 
     def __init__(self, name, value, min, max, logscale=False,
-                 steps=5000, format='%.3f'):
+                 steps=5000, format='%.3f', size_offset=0):
         DataSet.__init__(self, title=_("Curve fitting parameter"))
         self.name = name
         self.value = value
@@ -100,22 +100,25 @@ class FitParam(DataSet):
         self.logscale = logscale
         self.steps = steps
         self.format = format
-        self.button = None
-        self.checkbox = None
-        self.slider = None
         self.label = None
+        self.lineedit = None
+        self.slider = None
+        self.button = None
+        self._size_offset = size_offset
         
     def create_widgets(self, parent):
-        self.button = QPushButton(get_icon('edit.png'), '', parent)
+        self.label = QLabel()
+        font = self.label.font()
+        font.setPointSize(font.pointSize()+self._size_offset)
+        self.label.setFont(font)
+        self.button = QPushButton()
+        self.button.setIcon(get_icon('settings.png'))
         self.button.setToolTip(
                         _("Edit '%s' fit parameter properties") % self.name)
         QObject.connect(self.button, SIGNAL('clicked()'), self.edit_param)
-        self.checkbox = QCheckBox('Log', parent)
-        self.checkbox.setToolTip(_('Logarithmic scale'))
-        self.update_checkbox_state()
-        QObject.connect(self.checkbox, SIGNAL('stateChanged(int)'),
-                        self.set_scale)
-        self.label = QLabel(parent)
+        self.lineedit = QLineEdit()
+        QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
+                        self.line_editing_finished)
         self.slider = QSlider(parent)
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setRange(0, self.steps-1)
@@ -123,21 +126,28 @@ class FitParam(DataSet):
                         self.slider_value_changed)
         self.set_text()
         self.update()
-        return self.button, self.checkbox, self.slider, self.label
+        return self.get_widgets()
         
     def get_widgets(self):
-        return self.button, self.checkbox, self.slider, self.label
+        return self.label, self.lineedit, self.slider, self.button
         
     def set_scale(self, state):
         self.logscale = state > 0
         self.update_slider_value()
         
     def set_text(self):
+        style = "<span style=\'color: #444444\'><b>%s</b></span>"
+        self.label.setText(style % self.name)
         if self.value is None:
-            value_str = '-'
+            value_str = ''
         else:
             value_str = self.format % self.value
-        self.label.setText('<b>%s</b> : %s' % (self.name, value_str))
+        self.lineedit.setText(value_str)
+        
+    def line_editing_finished(self):
+        self.value = float(self.lineedit.text())
+        self.set_text()
+        self.update_slider_value()
         
     def slider_value_changed(self, int_value):
         if self.logscale:
@@ -169,14 +179,9 @@ class FitParam(DataSet):
             self.slider.setValue(intval)
             self.slider.blockSignals(False)
 
-    def update_checkbox_state(self):
-        state = Qt.Checked if self.logscale else Qt.Unchecked
-        self.checkbox.setCheckState(state)
-
     def edit_param(self):
         res = self.edit()
         if res:
-            self.update_checkbox_state()
             self.update()
 
     def update(self):
@@ -277,24 +282,26 @@ class FitWidgetMixin(CurveWidgetMixin):
         row_nb = 0
         col_nb = 0
         for i, param in enumerate(self.fitparams):
-            button, checkbox, slider, label = param.create_widgets(self)
+            widgets = param.create_widgets(self)
+            w_colums = len(widgets)+1
+            label, lineedit, slider, button = widgets
             self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
-            self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
-            row_contents += [(button,   row_nb, 0+col_nb*5),
-                             (checkbox, row_nb, 1+col_nb*5),
-                             (slider,   row_nb, 2+col_nb*5),
-                             (label,    row_nb, 3+col_nb*5)]
+            self.connect(lineedit, SIGNAL("editingFinished()"), self.refresh)
+            row_contents += [(label,    row_nb, 0+col_nb*w_colums),
+                             (slider,   row_nb, 1+col_nb*w_colums),
+                             (lineedit, row_nb, 2+col_nb*w_colums),
+                             (button,   row_nb, 3+col_nb*w_colums),
+                             ]
             col_nb += 1
             if col_nb == self.param_cols:
                 row_nb += 1
                 col_nb = 0
                 for widget, row, col in row_contents:
                     self.params_layout.addWidget(widget, row, col)
-        if self.param_cols > 1:
-            for col_nb in range(self.param_cols):
-                self.params_layout.setColumnStretch(2+(col_nb-1)*5, 3)
-                self.params_layout.setColumnStretch(4+(col_nb-1)*5, 1)
-                self.params_layout.setColumnStretch(7+(col_nb-1)*5, 3)
+        for col_nb in range(self.param_cols):
+            self.params_layout.setColumnStretch(1+col_nb*w_colums, 3)
+            if col_nb > 0:
+                self.params_layout.setColumnStretch(col_nb*w_colums-1, 1)
     
     def create_button_layout(self):        
         btn_layout = QHBoxLayout()
