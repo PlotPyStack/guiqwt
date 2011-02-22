@@ -106,7 +106,7 @@ class FitParam(DataSet):
         self.button = None
         self._size_offset = size_offset
         
-    def create_widgets(self, parent):
+    def create_widgets(self):
         self.label = QLabel()
         font = self.label.font()
         font.setPointSize(font.pointSize()+self._size_offset)
@@ -119,7 +119,7 @@ class FitParam(DataSet):
         self.lineedit = QLineEdit()
         QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
                         self.line_editing_finished)
-        self.slider = QSlider(parent)
+        self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setRange(0, self.steps-1)
         QObject.connect(self.slider, SIGNAL("valueChanged(int)"),
@@ -180,15 +180,42 @@ class FitParam(DataSet):
             self.slider.blockSignals(False)
 
     def edit_param(self):
-        res = self.edit()
-        if res:
+        if self.edit():
             self.update()
 
     def update(self):
         self.slider.setRange(0, self.steps-1)
         self.update_slider_value()
         self.set_text()
+        # Force the QLineEdit to emit the editingFinished() signal
+        self.lineedit.emit(SIGNAL('editingFinished()'))
 
+
+def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
+    row_contents = []
+    row_nb = 0
+    col_nb = 0
+    for i, param in enumerate(fitparams):
+        widgets = param.create_widgets()
+        w_colums = len(widgets)+1
+        label, lineedit, slider, button = widgets
+        QObject.connect(slider, SIGNAL("valueChanged(int)"), refresh_callback)
+        QObject.connect(lineedit, SIGNAL("editingFinished()"), refresh_callback)
+        row_contents += [(label,    row_nb, 0+col_nb*w_colums),
+                         (slider,   row_nb, 1+col_nb*w_colums),
+                         (lineedit, row_nb, 2+col_nb*w_colums),
+                         (button,   row_nb, 3+col_nb*w_colums),]
+        col_nb += 1
+        if col_nb == param_cols:
+            row_nb += 1
+            col_nb = 0
+            for widget, row, col in row_contents:
+                layout.addWidget(widget, row, col)
+    if fitparams:
+        for col_nb in range(param_cols):
+            layout.setColumnStretch(1+col_nb*w_colums, 3)
+            if col_nb > 0:
+                layout.setColumnStretch(col_nb*w_colums-1, 1)
 
 class FitWidgetMixin(CurveWidgetMixin):
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
@@ -278,30 +305,8 @@ class FitWidgetMixin(CurveWidgetMixin):
                 widget.hide()
         
     def populate_params_layout(self):
-        row_contents = []
-        row_nb = 0
-        col_nb = 0
-        for i, param in enumerate(self.fitparams):
-            widgets = param.create_widgets(self)
-            w_colums = len(widgets)+1
-            label, lineedit, slider, button = widgets
-            self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
-            self.connect(lineedit, SIGNAL("editingFinished()"), self.refresh)
-            row_contents += [(label,    row_nb, 0+col_nb*w_colums),
-                             (slider,   row_nb, 1+col_nb*w_colums),
-                             (lineedit, row_nb, 2+col_nb*w_colums),
-                             (button,   row_nb, 3+col_nb*w_colums),
-                             ]
-            col_nb += 1
-            if col_nb == self.param_cols:
-                row_nb += 1
-                col_nb = 0
-                for widget, row, col in row_contents:
-                    self.params_layout.addWidget(widget, row, col)
-        for col_nb in range(self.param_cols):
-            self.params_layout.setColumnStretch(1+col_nb*w_colums, 3)
-            if col_nb > 0:
-                self.params_layout.setColumnStretch(col_nb*w_colums-1, 1)
+        add_fitparam_widgets_to(self.params_layout, self.fitparams,
+                                self.refresh, param_cols=self.param_cols)
     
     def create_button_layout(self):        
         btn_layout = QHBoxLayout()
@@ -331,7 +336,7 @@ class FitWidgetMixin(CurveWidgetMixin):
             fitkwargs = {}
         return fitargs, fitkwargs
         
-    def refresh(self):
+    def refresh(self, slider_value=None):
         """Refresh Fit Tool dialog box"""
         # Update button states
         enable = self.x is not None and self.y is not None \
