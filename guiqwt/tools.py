@@ -34,13 +34,15 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.ReverseYAxisTool`
     * :py:class:`guiqwt.tools.AspectRatioTool`
     * :py:class:`guiqwt.tools.PanelTool`
-    * :py:class:`guiqwt.tools.ContrastTool`
+    * :py:class:`guiqwt.tools.ItemListPanelTool`
+    * :py:class:`guiqwt.tools.ContrastPanelTool`
     * :py:class:`guiqwt.tools.ColormapTool`
-    * :py:class:`guiqwt.tools.XCrossSectionTool`
-    * :py:class:`guiqwt.tools.YCrossSectionTool`
+    * :py:class:`guiqwt.tools.XCSPanelTool`
+    * :py:class:`guiqwt.tools.YCSPanelTool`
+    * :py:class:`guiqwt.tools.RACSPanelTool`
     * :py:class:`guiqwt.tools.CrossSectionTool`
     * :py:class:`guiqwt.tools.AverageCrossSectionTool`
-    * :py:class:`guiqwt.tools.ItemListTool`
+    * :py:class:`guiqwt.tools.RACrossSectionTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
     * :py:class:`guiqwt.tools.OpenFileTool`
     * :py:class:`guiqwt.tools.OpenImageTool`
@@ -164,25 +166,28 @@ Reference
 .. autoclass:: PanelTool
    :members:
    :inherited-members:
-.. autoclass:: ContrastTool
+.. autoclass:: ItemListPanelTool
+   :members:
+   :inherited-members:
+.. autoclass:: ContrastPanelTool
    :members:
    :inherited-members:
 .. autoclass:: ColormapTool
    :members:
    :inherited-members:
-.. autoclass:: XCrossSectionTool
+.. autoclass:: XCSPanelTool
    :members:
    :inherited-members:
-.. autoclass:: YCrossSectionTool
+.. autoclass:: YCSPanelTool
+   :members:
+   :inherited-members:
+.. autoclass:: RACSPanelTool
    :members:
    :inherited-members:
 .. autoclass:: CrossSectionTool
    :members:
    :inherited-members:
 .. autoclass:: AverageCrossSectionTool
-   :members:
-   :inherited-members:
-.. autoclass:: ItemListTool
    :members:
    :inherited-members:
 .. autoclass:: SaveAsTool
@@ -1238,12 +1243,12 @@ class PanelTool(ToggleTool):
         panel = self.manager.get_panel(self.panel_id)
         self.action.setChecked(panel.isVisible())
 
-class ContrastTool(PanelTool):
+class ContrastPanelTool(PanelTool):
     panel_name = _("Contrast adjustment")
     panel_id = ID_CONTRAST
     
     def update_status(self, plot):
-        super(ContrastTool, self).update_status(plot)
+        super(ContrastPanelTool, self).update_status(plot)
         update_image_tool_status(self, plot)
         item = plot.get_last_active_item(IVoiImageItemType)
         panel = self.manager.get_panel(self.panel_id)
@@ -1251,15 +1256,19 @@ class ContrastTool(PanelTool):
             if isinstance(action, QAction):
                 action.setEnabled(item is not None)
 
-class XCrossSectionTool(PanelTool):
+class XCSPanelTool(PanelTool):
     panel_name = _("X-axis cross section")
     panel_id = ID_XCS
 
-class YCrossSectionTool(PanelTool):
+class YCSPanelTool(PanelTool):
     panel_name = _("Y-axis cross section")
     panel_id = ID_YCS
 
-class ItemListTool(PanelTool):
+class RACSPanelTool(PanelTool):
+    panel_name = _("Radially-averaged cross section")
+    panel_id = ID_RACS
+
+class ItemListPanelTool(PanelTool):
     panel_name = _("Item list")
     panel_id = ID_ITEMLIST
         

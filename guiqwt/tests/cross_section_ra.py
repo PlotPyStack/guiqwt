@@ -14,13 +14,21 @@ import numpy as np
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.cross_section import RACrossSection
-from guiqwt.tools import RACrossSectionTool, ImageMaskTool
+from guiqwt.tools import RACrossSectionTool, RACSPanelTool, ImageMaskTool
 
-class TestImageDialog(ImageDialog):
+class RACSImageDialog(ImageDialog):
+    def register_image_tools(self):
+        ImageDialog.register_image_tools(self)
+        for tool in (RACrossSectionTool, RACSPanelTool, ImageMaskTool):
+            self.add_tool(tool)
+        
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
         ImageDialog.create_plot(self, options, row, column, rowspan, columnspan)
         ra_panel = RACrossSection(self)
-        self.plot_layout.addWidget(ra_panel, 1, 0)
+        splitter = self.plot_widget.xcsw_splitter
+        splitter.addWidget(ra_panel)
+        splitter.setStretchFactor(splitter.count()-1, 1)
+        splitter.setSizes(list(splitter.sizes())+[2])
         self.add_panel(ra_panel)
 
 def test():
@@ -29,10 +37,8 @@ def test():
     import guidata
     guidata.qapplication()
     # --
-    win = TestImageDialog(toolbar=True,
+    win = RACSImageDialog(toolbar=True,
                           wintitle="Radially-averaged cross section test")
-    win.add_tool(RACrossSectionTool)
-    win.add_tool(ImageMaskTool)
     win.resize(600, 600)
     
     from guiqwt.tests.image import compute_image
@@ -41,7 +47,7 @@ def test():
     data = data[:2000, :2000]
     print data.dtype
 
-    image = make.maskedimage(data, colormap="bone")
+    image = make.maskedimage(data, colormap="bone", show_mask=True)
     plot = win.get_plot()
     plot.add_item(image)
     win.exec_()

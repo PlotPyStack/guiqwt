@@ -120,10 +120,10 @@ from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.image import ImagePlot
 from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           ReverseYAxisTool, BasePlotMenuTool, DeleteItemTool,
-                          ItemListTool, AntiAliasingTool, PrintTool,
+                          ItemListPanelTool, AntiAliasingTool, PrintTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
-                          AspectRatioTool, ContrastTool, DummySeparatorTool,
-                          XCrossSectionTool, YCrossSectionTool, SnapshotTool,
+                          AspectRatioTool, ContrastPanelTool, XCSPanelTool,
+                          YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
@@ -493,7 +493,7 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
         if self.get_itemlist_panel():
-            self.add_tool(ItemListTool)
+            self.add_tool(ItemListPanelTool)
 
     def register_curve_tools(self):
         """
@@ -522,13 +522,13 @@ class PlotManager(object):
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
         if self.get_contrast_panel():
-            self.add_tool(ContrastTool)
+            self.add_tool(ContrastPanelTool)
+        self.add_tool(SnapshotTool)
         if self.get_xcs_panel() and self.get_ycs_panel():
-            self.add_tool(XCrossSectionTool)
-            self.add_tool(YCrossSectionTool)
+            self.add_tool(XCSPanelTool)
+            self.add_tool(YCSPanelTool)
             self.add_tool(CrossSectionTool)
             self.add_tool(AverageCrossSectionTool)
-        self.add_tool(SnapshotTool)
         
     def register_other_tools(self):
         """
@@ -713,6 +713,7 @@ class CurveWidgetMixin(PlotManager):
         
         if options is None:
             options = {}
+        self.plot_widget = None
         self.create_plot(options)
         
         if panels is not None:
@@ -763,12 +764,12 @@ class CurveWidgetMixin(PlotManager):
         May be overriden to customize the plot layout 
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        widget = BaseCurveWidget(self, **options)
-        self.plot_layout.addWidget(widget, 0, 0)
+        self.plot_widget = BaseCurveWidget(self, **options)
+        self.plot_layout.addWidget(self.plot_widget, 0, 0)
         
         # Configuring plot manager
-        self.add_plot(widget.plot)
-        self.add_panel(widget.itemlist)
+        self.add_plot(self.plot_widget.plot)
+        self.add_panel(self.plot_widget.itemlist)
 
 class CurveDialog(QDialog, CurveWidgetMixin):
     """
@@ -893,32 +894,32 @@ class BaseImageWidget(QSplitter):
         
         self.connect(self.xcsw, SIG_VISIBILITY_CHANGED, self.xcsw_is_visible)
         
-        xcsw_splitter = QSplitter(Qt.Vertical, self)
+        self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
             self.ycsw_spacer = self.ycsw.spacer1
-            xcsw_splitter.addWidget(self.xcsw)
-            xcsw_splitter.addWidget(self.plot)
+            self.xcsw_splitter.addWidget(self.xcsw)
+            self.xcsw_splitter.addWidget(self.plot)
         else:
             self.ycsw_spacer = self.ycsw.spacer2
-            xcsw_splitter.addWidget(self.plot)
-            xcsw_splitter.addWidget(self.xcsw)
-        self.connect(xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
+            self.xcsw_splitter.addWidget(self.plot)
+            self.xcsw_splitter.addWidget(self.xcsw)
+        self.connect(self.xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
                      lambda pos, index: self.adjust_ycsw_height())
         
-        ycsw_splitter = QSplitter(Qt.Horizontal, self)
+        self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
         if ysection_pos == "left":
-            ycsw_splitter.addWidget(self.ycsw)
-            ycsw_splitter.addWidget(xcsw_splitter)
+            self.ycsw_splitter.addWidget(self.ycsw)
+            self.ycsw_splitter.addWidget(self.xcsw_splitter)
         else:
-            ycsw_splitter.addWidget(xcsw_splitter)
-            ycsw_splitter.addWidget(self.ycsw)
+            self.ycsw_splitter.addWidget(self.xcsw_splitter)
+            self.ycsw_splitter.addWidget(self.ycsw)
             
-        configure_plot_splitter(xcsw_splitter,
+        configure_plot_splitter(self.xcsw_splitter,
                                 decreasing_size=xsection_pos == "bottom")
-        configure_plot_splitter(ycsw_splitter,
+        configure_plot_splitter(self.ycsw_splitter,
                                 decreasing_size=ysection_pos == "right")
         
-        self.sub_splitter.addWidget(ycsw_splitter)
+        self.sub_splitter.addWidget(self.ycsw_splitter)
         
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
@@ -1014,15 +1015,16 @@ class ImageWidgetMixin(CurveWidgetMixin):
         May be overriden to customize the plot layout 
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
-        widget = BaseImageWidget(self, **options)
-        self.plot_layout.addWidget(widget, row, column, rowspan, columnspan)
+        self.plot_widget = BaseImageWidget(self, **options)
+        self.plot_layout.addWidget(self.plot_widget,
+                                   row, column, rowspan, columnspan)
         
         # Configuring plot manager
-        self.add_plot(widget.plot)
-        self.add_panel(widget.itemlist)
-        self.add_panel(widget.xcsw)
-        self.add_panel(widget.ycsw)
-        self.add_panel(widget.contrast)
+        self.add_plot(self.plot_widget.plot)
+        self.add_panel(self.plot_widget.itemlist)
+        self.add_panel(self.plot_widget.xcsw)
+        self.add_panel(self.plot_widget.ycsw)
+        self.add_panel(self.plot_widget.contrast)
 
 class ImageDialog(CurveDialog, ImageWidgetMixin):
     """
