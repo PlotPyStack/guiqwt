@@ -277,9 +277,9 @@ class LabelItem(AbstractLabelItem):
         return unicode(self.text.toPlainText())
         
     def set_text(self, text=None):
-        if text is None:
-            text = self.text_string
-        self.text.setHtml("<div>%s</div>" % text)
+        if text is not None:
+            self.text_string = text
+        self.text.setHtml("<div>%s</div>" % self.text_string)
         
     def set_text_style(self, font, color):
         self.text.setDefaultFont(font)
