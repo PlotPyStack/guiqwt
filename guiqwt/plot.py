@@ -788,6 +788,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
                  toolbar=False, options=None, parent=None, panels=None):
         QDialog.__init__(self, parent)
         self.edit = edit
+        self.button_box = None
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
                                   toolbar=toolbar, options=options,
                                   panels=panels)
@@ -814,6 +815,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
         self.button_layout.addWidget(bbox)
+        self.button_box = bbox
         
 class CurveWindow(QMainWindow, CurveWidgetMixin):
     """
