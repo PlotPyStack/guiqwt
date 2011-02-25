@@ -174,15 +174,16 @@ class FitParam(DataSet):
     def update_slider_value(self):
         if self.logscale:
             self._logscale_check()
-            value, min, max = (np.log10(self.value), np.log10(self.min),
+            value, _min, _max = (max([np.log10(self.value), 0.]),
+                               max([np.log10(self.min), 0.]),
                                np.log10(self.max))
         else:
-            value, min, max = self.value, self.min, self.max
-        if value is None or min is None or max is None:
+            value, _min, _max = self.value, self.min, self.max
+        if value is None or _min is None or _max is None:
             self.slider.setEnabled(False)
         else:
             self.slider.setEnabled(True)
-            intval = int(self.steps*(value-min)/(max-min))
+            intval = int(self.steps*(value-_min)/(_max-_min))
             self.slider.blockSignals(True)
             self.slider.setValue(intval)
             self.slider.blockSignals(False)
