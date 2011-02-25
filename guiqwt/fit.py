@@ -106,6 +106,12 @@ class FitParam(DataSet):
         self.button = None
         self._size_offset = size_offset
         
+    def copy(self):
+        """Return a copy of this fitparam"""
+        return FitParam(self.name, self.value, self.min, self.max,
+                        self.logscale, self.steps, self.format,
+                        self._size_offset)
+        
     def create_widgets(self):
         self.label = QLabel()
         font = self.label.font()
@@ -145,9 +151,11 @@ class FitParam(DataSet):
         self.lineedit.setText(value_str)
         
     def line_editing_finished(self):
-        self.value = float(self.lineedit.text())
-        self.set_text()
-        self.update_slider_value()
+        try:
+            self.value = float(self.lineedit.text())
+        except ValueError:
+            self.set_text()
+            self.update_slider_value()
         
     def slider_value_changed(self, int_value):
         if self.logscale:
@@ -213,16 +221,17 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
                 layout.addWidget(widget, row, col)
     if fitparams:
         for col_nb in range(param_cols):
-            layout.setColumnStretch(1+col_nb*w_colums, 3)
+            layout.setColumnStretch(1+col_nb*w_colums, 5)
             if col_nb > 0:
                 layout.setColumnStretch(col_nb*w_colums-1, 1)
 
 class FitWidgetMixin(CurveWidgetMixin):
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
-                 toolbar=False, options=None, panels=None, param_cols=1):
+                 toolbar=False, options=None, panels=None, param_cols=1,
+                 legend_anchor='TR', auto_fit=True):
         if wintitle is None:
             wintitle = _('Curve fitting')
-            
+
         self.x = None
         self.y = None
         self.fitfunc = None
@@ -231,39 +240,47 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.fitparams = None
         self.autofit_prm = None
         
+        self.data_curve = None
+        self.fit_curve = None
+        self.legend = None
+        self.legend_anchor = legend_anchor
+        self.xrange = None
+        self.show_xrange = False
+        
         self.param_cols = param_cols
-        self.button_layout = None
+        self.auto_fit_enabled = auto_fit      
         self.button_list = [] # list of buttons to be disabled at startup
 
+        self.fit_layout = None
         self.params_layout = None
         
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
                                   toolbar=toolbar, options=options,
                                   panels=panels)
         
-        self.xrange = None
-        self.show_xrange = False
-        
         self.refresh()
         
     # CurveWidgetMixin API -----------------------------------------------------
     def setup_widget_layout(self):
+        self.fit_layout = QHBoxLayout()
+        self.params_layout = QGridLayout()
+        params_group = create_groupbox(self, _("Fit parameters"),
+                                       layout=self.params_layout)
+        if self.auto_fit_enabled:
+            auto_group = self.create_autofit_group()
+            self.fit_layout.addWidget(auto_group)
+        self.fit_layout.addWidget(params_group)
+        self.plot_layout.addLayout(self.fit_layout, 1, 0)
+        
         vlayout = QVBoxLayout(self)
         vlayout.addWidget(self.toolbar)
         vlayout.addLayout(self.plot_layout)
         self.setLayout(vlayout)
-        self.button_layout = self.create_button_layout()
-        vlayout.addSpacing(10)
-        vlayout.addLayout(self.button_layout)
         
     def create_plot(self, options):
         super(FitWidgetMixin, self).create_plot(options)
         for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
-        self.params_layout = QGridLayout()
-        params_group = create_groupbox(self, _("Fit parameters"),
-                                       layout=self.params_layout)
-        self.plot_layout.addWidget(params_group, 1, 0)
         
     # Public API ---------------------------------------------------------------  
     def set_data(self, x, y, fitfunc=None, fitparams=None,
@@ -301,30 +318,29 @@ class FitWidgetMixin(CurveWidgetMixin):
     def clear_params_layout(self):
         for i, param in enumerate(self.fitparams):
             for widget in param.get_widgets():
-                self.params_layout.removeWidget(widget)
-                widget.hide()
+                if widget is not None:
+                    self.params_layout.removeWidget(widget)
+                    widget.hide()
         
     def populate_params_layout(self):
         add_fitparam_widgets_to(self.params_layout, self.fitparams,
                                 self.refresh, param_cols=self.param_cols)
     
-    def create_button_layout(self):        
-        btn_layout = QHBoxLayout()
-        auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
+    def create_autofit_group(self):        
+        auto_button = QPushButton(get_icon('apply.png'), _("Run"), self)
         self.connect(auto_button, SIGNAL("clicked()"), self.autofit)
-        autoprm_button = QPushButton(get_icon('settings.png'),
-                                     _("Fit parameters..."), self)
+        autoprm_button = QPushButton(get_icon('settings.png'), _("Settings"),
+                                     self)
         self.connect(autoprm_button, SIGNAL("clicked()"), self.edit_parameters)
-        xrange_button = QPushButton(get_icon('xrange.png'), _("Fit bounds"),
-                                    self)
+        xrange_button = QPushButton(get_icon('xrange.png'), _("Bounds"), self)
         xrange_button.setCheckable(True)
         self.connect(xrange_button, SIGNAL("toggled(bool)"), self.toggle_xrange)
-        btn_layout.addWidget(auto_button)
-        btn_layout.addStretch()
-        btn_layout.addWidget(autoprm_button)
-        btn_layout.addWidget(xrange_button)
+        auto_layout = QVBoxLayout()
+        auto_layout.addWidget(auto_button)
+        auto_layout.addWidget(autoprm_button)
+        auto_layout.addWidget(xrange_button)
         self.button_list += [auto_button, autoprm_button, xrange_button]
-        return btn_layout
+        return create_groupbox(self, _("Automatic fit"), layout=auto_layout)
         
     def get_fitfunc_arguments(self):
         """Return fitargs and fitkwargs"""
@@ -353,15 +369,31 @@ class FitWidgetMixin(CurveWidgetMixin):
         fitargs, fitkwargs = self.get_fitfunc_arguments()
         yfit = self.fitfunc(self.x, [p.value for p in self.fitparams],
                             *fitargs, **fitkwargs)
-        self.xrange = make.range(self.autofit_prm.xmin, self.autofit_prm.xmax)
-        self.xrange.setVisible(self.show_xrange)
-        items = [make.curve(self.x, self.y, _("Data"), color="b", linewidth=2),
-                 make.curve(self.x, yfit, _("Fit"), color="r", linewidth=2),
-                 make.legend(), self.xrange]
+                            
         plot = self.get_plot()
-        plot.del_all_items()
-        for item in items:
-            plot.add_item(item)
+        
+        if self.legend is None:
+            self.legend = make.legend(anchor=self.legend_anchor)
+            plot.add_item(self.legend)
+        
+        if self.xrange is None:
+            self.xrange = make.range(0., 1.)
+            plot.add_item(self.xrange)
+        self.xrange.set_range(self.autofit_prm.xmin, self.autofit_prm.xmax)
+        self.xrange.setVisible(self.show_xrange)
+        
+        if self.data_curve is None:
+            self.data_curve = make.curve([], [],
+                                         _("Data"), color="b", linewidth=2)
+            plot.add_item(self.data_curve)
+        self.data_curve.set_data(self.x, self.y)
+        
+        if self.fit_curve is None:
+            self.fit_curve = make.curve([], [],
+                                        _("Fit"), color="r", linewidth=2)
+            plot.add_item(self.fit_curve)
+        self.fit_curve.set_data(self.x, yfit)
+        
         plot.replot()
         plot.disable_autoscale()
         
@@ -378,7 +410,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.show_xrange = state
         
     def edit_parameters(self):
-        if self.autofit_prm.edit():
+        if self.autofit_prm.edit(parent=self):
             self.xrange.set_range(self.autofit_prm.xmin, self.autofit_prm.xmax)
             plot = self.get_plot()
             plot.replot()
@@ -476,20 +508,21 @@ class FitWidgetMixin(CurveWidgetMixin):
 class FitWidget(QWidget, FitWidgetMixin):
     def __init__(self, wintitle=None, icon="guiqwt.png", toolbar=False,
                  options=None, parent=None, panels=None,
-                 param_cols=1):
+                 param_cols=1, legend_anchor='TR', auto_fit=False):
         QWidget.__init__(self, parent)
         FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
-                                param_cols)
+                                param_cols, legend_anchor, auto_fit)
 
 
 class FitDialog(QDialog, FitWidgetMixin):
     def __init__(self, wintitle=None, icon="guiqwt.png", edit=True,
                  toolbar=False, options=None, parent=None, panels=None,
-                 param_cols=1):
+                 param_cols=1, legend_anchor='TR', auto_fit=False):
         QDialog.__init__(self, parent)
         self.edit = edit
+        self.button_layout = None
         FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
-                                param_cols)
+                                param_cols, legend_anchor, auto_fit)
         self.setWindowFlags(Qt.Window)
         
     def setup_widget_layout(self):
@@ -497,29 +530,42 @@ class FitDialog(QDialog, FitWidgetMixin):
         if self.edit:
             self.install_button_layout()
         
-    def install_button_layout(self):
+    def install_button_layout(self):        
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        self.button_list += [bbox.button(QDialogButtonBox.Ok)]
+
+        self.button_layout = QHBoxLayout()
         self.button_layout.addStretch()
         self.button_layout.addWidget(bbox)
-        self.button_list += [bbox.button(QDialogButtonBox.Ok)]
+        
+        vlayout = self.layout()
+        vlayout.addSpacing(10)
+        vlayout.addLayout(self.button_layout)
         
 
 def guifit(x, y, fitfunc, fitparams, fitargs=None, fitkwargs=None,
-           wintitle=None, title=None, xlabel=None, ylabel=None, param_cols=1):
+           wintitle=None, title=None, xlabel=None, ylabel=None,
+           param_cols=1, auto_fit=False, winsize=None, winpos=None):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
-#    widget = FitWidget(x, y, fitfunc, fitparams)
-#    widget.show()
-#    _app.exec_()
-    dlg = FitDialog(edit=True, wintitle=wintitle, toolbar=True,
-                    param_cols=param_cols,
+#    win = FitWidget(wintitle=wintitle, toolbar=True,
+#                    param_cols=param_cols, auto_fit=auto_fit,
+#                    options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
+    win = FitDialog(edit=True, wintitle=wintitle, toolbar=True,
+                    param_cols=param_cols, auto_fit=auto_fit,
                     options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
-    dlg.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
-    
-    if dlg.exec_():
-        return dlg.get_values()
+    win.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
+    if winsize is not None:
+        win.resize(*winsize)
+    if winpos is not None:
+        win.move(*winpos)
+    if win.exec_():
+        return win.get_values()
+#    win.show()
+#    _app.exec_()
+#    return win.get_values()
 
 
 if __name__ == "__main__":
@@ -531,6 +577,6 @@ if __name__ == "__main__":
     a = FitParam("Offset", 1., 0., 2.)
     b = FitParam("Frequency", 2.001, 1., 10., logscale=True)
     params = [a, b]
-    values = guifit(x, y, fit, params, param_cols=2)
+    values = guifit(x, y, fit, params, auto_fit=True)
     print values
     print [param.value for param in params]
