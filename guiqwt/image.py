@@ -164,7 +164,7 @@ stderr = sys.stderr
 try:
     from guiqwt._ext import hist2d
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
-                                _scale_quads,
+                                _scale_quads, _scale_quads2,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
 except ImportError:
     print >>sys.stderr, ("Module 'guiqwt.image':"
@@ -173,6 +173,7 @@ except ImportError:
                          "python setup.py build_ext --inplace -c mingw32" )
     raise
 
+_scale_quads=_scale_quads2
 LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
 
@@ -972,9 +973,11 @@ class QuadGridItem(RawImageItem):
         self.set_lut_range([_min, _max])
 
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
+        self._offscreen[...] = np.uint32(0)
         dest = _scale_quads(self.X, self.Y, self.data, src_rect,
                             self._offscreen, dst_rect,
-                            self.lut, self.interpolate)
+                            self.lut, self.interpolate,0)
+        print dest
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
         xl, yt, xr, yb = dest

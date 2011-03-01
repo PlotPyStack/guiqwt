@@ -6,29 +6,29 @@
   (see guiqwt/__init__.py for details)
 */
 #include <Python.h>
+#undef NO_IMPORT_ARRAY
+#define PY_ARRAY_UNIQUE_SYMBOL PyScalerArray
 #include <numpy/arrayobject.h>
 #include <fenv.h>
 #include <math.h>
 #include <stdio.h>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 #include "points.hpp"
 #include "arrays.hpp"
+#include "scaler.hpp"
 
+using std::vector;
+using std::min;
+using std::max;
+using std::swap;
 
 enum {
     INTERP_NEAREST=0,
     INTERP_LINEAR=1,
     INTERP_AA=2
 };
-
-template <class T>
-void swap(T& a, T&b)
-{
-    T x=a;
-    a = b;
-    b = x;
-}
 
 typedef union {
     npy_uint32 v;
@@ -59,85 +59,6 @@ struct params {
     int dx1, dx2, dy1, dy2;
 };
 
-/* Scaler evaluates int(a*x+b) */
-template<class T, bool is_int=num_trait<T>::is_integer>
-struct Scaler {
-    typedef num_trait<T> trait;
-
-    Scaler(double _a, double _b):a(trait::fromdouble(_a)), b(trait::fromdouble(_b)) {}
-    int scale(T x) const { return trait::toint(a*x+b); }
-    typename trait::value_type a,b;
-};
-template<class T>
-struct Scaler<T,true> {
-    typedef num_trait<fixed> trait;
-
-    Scaler(double _a, double _b):a(trait::fromdouble(_a)), b(trait::fromdouble(_b)) {}
-    int scale(T x) const { return trait::toint(a*x+b); }
-    typename trait::value_type a,b;
-};
-
-template<class T, class D>
-class LinearScale {
-public:
-    typedef T source_type;
-    typedef D dest_type;
-    LinearScale(double _a, double _b, D _bg, bool apply_bg):s(_a, _b),bg(_bg), has_bg(apply_bg) {}
-
-    D eval(T x) const {
-	return s.scale(x);
-    }
-    void set_bg(D& dest) const {
-	if (has_bg) dest = bg;
-    }
-protected:
-    Scaler<T> s;
-    D bg;
-    bool has_bg;
-};
-
-template<class T, class D>
-class LutScale
-{
-public:
-    typedef T source_type;
-    typedef D dest_type;
-    LutScale(double _a, double _b, Array1D<D>& _lut,
-	     D _bg, bool apply_bg):s(_a, _b),lut(_lut), bg(_bg), has_bg(apply_bg) {}
-
-    D eval(T x) const {
-	int val = s.scale(x);
-	if (val<0) {
-	    return lut.value(0);
-	} else if (val>=lut.ni) {
-	    return lut.value(lut.ni-1);
-	}
-	return lut.value(val);
-    }
-    void set_bg(D& dest) const {
-	if (has_bg) dest = bg;
-    }
-protected:
-    Scaler<T>  s;
-    Array1D<D>& lut;
-    D bg;
-    bool has_bg;
-};
-
-template<class T, class D>
-class NoScale
-{
-public:
-    typedef T source_type;
-    typedef D dest_type;
-    NoScale(dest_type _bg, bool apply_bg):bg(_bg), has_bg(apply_bg) {}
-
-    dest_type eval(source_type x) const { return x; }
-    void set_bg(dest_type& dest) const { if (has_bg) dest = bg; }
-protected:
-    dest_type bg;
-    bool has_bg;
-};
 
 template<class T, class TR>
 struct NearestInterpolation {
@@ -233,7 +154,7 @@ struct QuadInterpolation {
 	if (nx==0||nx==src.nj-1) return src.value(nx,ny);
 	if (ny==0||ny==src.ni-1) return src.value(nx,ny);
 
-	v0 = interp(src.value(nx-1,ny-1);
+	v0 = interp(src.value(nx-1,ny-1));
 	if (nx<src.nj-1) {
 	    a = p.x()-nx;
 	    v = (1-a)*v+a*src.value(nx+1,ny);
@@ -315,7 +236,7 @@ struct SubSampleInterpolation
 	    tr.incy(p1,ki);
 	}
 	//printf("%d/%d\n", (int)value, (int)count);
-	if (count) 
+	if (count)
 	    return value/count;
 	else
 	    return value;
@@ -324,7 +245,6 @@ struct SubSampleInterpolation
     const Array2D<T>& mask;
 };
 
- 
 template<class DEST, class ST, class Scale, class Trans, class Interpolation>
 void _scale_rgb(DEST& dest,
 		Array2D<ST>& src, const Scale& scale, const Trans& tr,
@@ -398,7 +318,7 @@ static bool check_array_2d(const char* name, PyArrayObject *arr, int dtype)
     return true;
 }
 
-static bool check_arrays(PyArrayObject* p_src, PyArrayObject *p_dest)
+bool check_arrays(PyArrayObject* p_src, PyArrayObject *p_dest)
 {
     if (!PyArray_Check(p_src) || !PyArray_Check(p_dest)) {
 	PyErr_SetString(PyExc_TypeError,"src and dst must be ndarrays");
@@ -417,7 +337,7 @@ static bool check_arrays(PyArrayObject* p_src, PyArrayObject *p_dest)
     return check_dispatch_type("src", p_src);
 }
 
-static bool check_lut(PyArrayObject *p_lut)
+bool check_lut(PyArrayObject *p_lut)
 {
     if (!PyArray_Check(p_lut)) {
 	PyErr_SetString(PyExc_TypeError,"lut must be an ndarray");
@@ -754,255 +674,6 @@ static PyObject *py_scale_rect(PyObject *self, PyObject *args)
 }
 
 
-/** return min(max(a,b,c,d),bound) */
-static int max4(int a, int b, int c, int d, int bound)
-{
-    int x, y, z;
-    x = (a>b ? a : b);
-    y = (c>d ? c : d);
-    z = (x>y ? x : y);
-    return (z>bound ? bound : z);
-}
-
-/** return max(min(a,b,c,d),bound) */
-    static int min4(int a, int b, int c, int d, int bound)
-{
-    int x, y, z;
-    x = (a<b ? a : b);
-    y = (c<d ? c : d);
-    z = (x<y ? x : y);
-    return (z<bound ? bound : z);
-}
-
-template<class T>
-struct QuadHelper {
-    QuadHelper( const Array2D<T>& X_,
-		const Array2D<T>& Y_,
-		const Array2D<T>& Z_,
-		Array2D<npy_uint32>& D_,
-		LutScale<T,npy_uint32>& scale_,
-		double x1_, double x2_, double y1_, double y2_
-	):X(X_), Y(Y_), Z(Z_), D(D_), scale(scale_),
-	  x1(x1_), x2(x2_), y1(y1_), y2(y2_)
-	{
-	    m_dx = (x2-x1)/D.nj;
-	    m_dy = (y2-y1)/D.ni;
-	}
-
-    void draw(int i, int j,
-	      int i1, int i2, int j1, int j2) {
-	int k, l;
-	double x, y, u, v;
-	double v0, v1, v2, v3, v4;
-	double ax = X.value(j+0,i+0), ay=Y.value(j+0,i+0);
-	double bx = X.value(j+0,i+1)-ax, by=Y.value(j+0,i+1)-ay;
-	double cx = X.value(j+1,i+1)-ax, cy=Y.value(j+1,i+1)-ay;
-	double dx = X.value(j+1,i+0)-ax, dy=Y.value(j+1,i+0)-ay;
-	double ex = cx-dx-bx, ey=cy-dy-by;
-	double n = 1./sqrt(cx*cx+cy*cy);
-	if (n>1e2) n = 1.0;
-	// Normalize vectors with ||AC||
-	ax *= n; ay *= n;
-	bx *= n; by *= n;
-	cx *= n; cy *= n;
-	dx *= n; dy *= n;
-	ex *= n; ey *= n;
-
-	v1 = Z.value(j,i);
-	v2 = Z.value(j+1,i);
-	v3 = Z.value(j+1,i+1);
-	v4 = Z.value(j,i+1);
-
-	if (isnan(v1) || isnan(v2) || isnan(v3) || isnan(v4)) {
-	    return ;
-	}
-	for(l=i1;l<i2;l+=1) {
-	    for(k=j1;k<j2;k+=1) {
-		x = x1+k*m_dx;
-		y = y1+l*m_dy;
-		params(x*n,y*n, ax,ay, bx,by, cx,cy, dx,dy, ex,ey, u,v);
-		if (u>=0 && u<=1 && v>=0 && v<=1) {
-		    v0 = v1*(1-v)*(1-u) +
-			 v2*  v  *(1-u) +
-			 v3*  v  *  u   +
-			 v4*(1-v)*  u   ;
-		    D.value(k,l) = scale.eval(v0);
-		}
-	    }
-	}
-    }
-    void params(double x, double y,
-		double ax, double ay,
-		double bx, double by,
-		double cx, double cy,
-		double dx, double dy,
-		double ex, double ey,
-		double& u, double&v) {
-	/* solves AM=u.AB+v.AD+uv.AE with A,B,C,D quad, AE=DC+BA
-	   M = (x,y)
-	   with u^2.(AB^AE) +u.(AB^AD+AE^AM)+AD^AM=0
-	   v = (AM-u.AB)/(AD+u.AE)
-	*/
-
-	double mx = x-ax, my = y-ay;
-	double a1, a2, b, c, delta;
-
-	a1 = bx*ey-ex*by;
-	a2 = dx*ey-ex*dy;
-	if (a1>a2) {
-	    b = bx*dy-dx*by + ex*my-mx*ey;
-	    c = dx*my-mx*dy;
-	    if (fabs(a1)>1e-8) {
-		delta = b*b-4*a1*c;
-		u = (-b+sqrt(delta))/(2*a1);
-	    } else {
-		u = -c/b;
-	    }
-	    double den = (dx+u*ex);
-	    if (den!=0.0) {
-		v = (mx - u*bx)/den;
-	    } else {
-		den = (dy+u*ey);
-		v = (my - u*by)/den;
-	    }
-	} else {
-	    b = dx*by-bx*dy + ex*my-mx*ey;
-	    c = bx*my-mx*by;
-	    if (fabs(a2)>1e-8) {
-		delta = b*b-4*a2*c;
-		v = (-b+sqrt(delta))/(2*a2);
-	    } else {
-		v = -c/b;
-	    }
-	    double den = (bx+v*ex);
-	    if (den!=0.0) {
-		u = (mx - v*dx)/den;
-	    } else {
-		den = (by+v*ey);
-		u = (my - v*dy)/den;
-	    }
-	}
-#if 0
-	if (isnan(u)) {
-	    printf("AM=(%g,%g)\n", mx, my);
-	    printf("AB=(%g,%g)\n", bx, by);
-	    printf("AC=(%g,%g)\n", cx, cy);
-	    printf("AD=(%g,%g)\n", dx, dy);
-	    printf("AE=(%g,%g)\n", ex, ey);
-	    printf("a1=%g, a2=%g, b=%g, c=%g\n", a1, a2, b, c);
-	    printf("u=%g v=%g\n", u, v);
-	}
-#endif
-    }
-    const Array2D<T>& X;
-    const Array2D<T>& Y;
-    const Array2D<T>& Z;
-    Array2D<npy_uint32>& D;
-    LutScale<T,npy_uint32>& scale;
-    double x1, x2, y1, y2, m_dx, m_dy;
-};
-
-/**
-   Draw a structured grid composed of quads (xy[i,j],xy[i+1,j],xy[i+1,j+1],xy[i,j+1] )
-*/
-static PyObject *py_scale_quads(PyObject *self, PyObject *args)
-{
-    PyArrayObject *p_src_x=0, *p_src_y=0, *p_src_z=0, *p_dst=0;
-    PyObject *p_lut_data, *p_dst_data, *p_interp_data, *p_src_data;
-    double x1,x2,y1,y2;
-
-    if (!PyArg_ParseTuple(args, "OOOOOOOO:_scale_quads",
-			  &p_src_x, &p_src_y, &p_src_z, &p_src_data,
-			  &p_dst, &p_dst_data,
-			  &p_lut_data, &p_interp_data)) {
-	return NULL;
-    }
-    if (!check_arrays(p_src_x, p_dst)) {
-	return NULL;
-    }
-    if (!PyArg_ParseTuple(p_src_data, "dddd:_scale_quads",
-			  &x1, &y1, &x2, &y2)) {
-	return NULL;
-    }
-    if (PyArray_TYPE(p_src_x)!=NPY_FLOAT64 ||
-	PyArray_TYPE(p_src_y)!=NPY_FLOAT64 ||
-	PyArray_TYPE(p_src_z)!=NPY_FLOAT64) {
-	PyErr_SetString(PyExc_TypeError, "Only support float X,Y,Z");
-	return NULL;
-    }
-    if (PyArray_TYPE(p_dst)!=NPY_UINT32) {
-	PyErr_SetString(PyExc_TypeError, "Only support RGB dest for now");
-	return NULL;
-    }
-
-    double a=1.0, b=0.0;
-    PyObject* p_bg;
-    PyArrayObject* p_cmap;
-    bool apply_bg=true;
-    if (!PyArg_ParseTuple(p_lut_data, "ddO|O", &a, &b, &p_bg, &p_cmap)) {
-	PyErr_SetString(PyExc_ValueError, "Can't interpret pixel transformation tuple");
-	return NULL;
-    }
-    if (p_bg==Py_None) apply_bg=false;
-
-    Array2D<double> X(p_src_x), Y(p_src_y), Z(p_src_z);
-    /* Destination is RGB */
-    unsigned long bg=0;
-    Array2D<npy_uint32> dest(p_dst);
-    if (apply_bg) {
-	bg=PyInt_AsUnsignedLongMask(p_bg);
-	if (PyErr_Occurred()) return NULL;
-    }
-    if (!check_lut(p_cmap)) {
-	return NULL;
-    }
-    Array1D<npy_uint32> cmap(p_cmap);
-    LutScale<npy_float64,npy_uint32>  scale(a, b, cmap, bg, apply_bg);
-    int ni = PyArray_DIM(p_src_x, 0);
-    int nj = PyArray_DIM(p_src_x, 1);
-    int dni = PyArray_DIM(p_dst,0);
-    int dnj = PyArray_DIM(p_dst,1);
-    double dx = dnj/(x2-x1);
-    double dy = dni/(y2-y1);
-    int dx1=dnj, dx2=-1, dy1=dni, dy2=-1;
-    int i,j, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
-    int i1, j1, i2, j2;
-    QuadHelper<double> quad(X,Y,Z,dest,scale, x1, x2, y1, y2);
-
-    for(i=0;i<ni-1;++i) {
-	p1x = (int)((X.value(0,i+0)-x1)*dx+.5);
-	p1y = (int)((Y.value(0,i+0)-y1)*dy+.5);
-	p2x = (int)((X.value(0,i+1)-x1)*dx+.5);
-	p2y = (int)((Y.value(0,i+1)-y1)*dy+.5);
-	for(j=0;j<nj-1;++j) {
-	    p3x = (int)((X.value(j+1,i+1)-x1)*dx+.5);
-	    p3y = (int)((Y.value(j+1,i+1)-y1)*dy+.5);
-	    p4x = (int)((X.value(j+1,i+0)-x1)*dx+.5);
-	    p4y = (int)((Y.value(j+1,i+0)-y1)*dy+.5);
-
-	    j1 = min4(p1x-1, p2x-1, p3x-1, p4x-1, 0);
-	    j2 = max4(p1x+1, p2x+1, p3x+1, p4x+1, dnj);
-	    i1 = min4(p1y-1, p2y-1, p3y-1, p4y-1, 0);
-	    i2 = max4(p1y+1, p2y+1, p3y+1, p4y+1, dni);
-
-	    quad.draw(i,j,i1,i2,j1,j2);
-
-	    if (j1<dx1) dx1=j1;
-	    if (j2>dx2) dx2=j2;
-	    if (i1<dy1) dy1=i1;
-	    if (i2>dy2) dy2=i2;
-	    p1x = p4x;
-	    p1y = p4y;
-	    p2x = p3x;
-	    p2y = p3y;
-	}
-    }
-
-
-    // examine source type
-    return Py_BuildValue("iiii", dx1, dy1, dx2, dy2);
-}
-
 
 class Histogram {
 public:
@@ -1054,6 +725,10 @@ static PyObject *py_histogram(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *py_scale_quads2(PyObject *self, PyObject *args);
+PyObject *py_vert_line(PyObject *self, PyObject *args);
+PyObject *py_scale_quads(PyObject *self, PyObject *args);
+
 static PyMethodDef _meths[] = {
     {"_scale_xy",  py_scale_xy, METH_VARARGS,
      "transform source to destination with arbitrary X and Y scale"},
@@ -1063,8 +738,12 @@ static PyMethodDef _meths[] = {
      "Linear rescale of source to destination parallel to axes"},
     {"_scale_quads",  py_scale_quads, METH_VARARGS,
      "Linear rescale of a structured grid to destination parallel to axes"},
+    {"_scale_quads2",  py_scale_quads2, METH_VARARGS,
+     "Linear rescale of a structured grid to destination parallel to axes"},
     {"_histogram", py_histogram, METH_VARARGS,
      "Compute histogram of 1d data"},
+    {"_line_test", py_vert_line, METH_VARARGS,
+     "Rasterize lines"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
