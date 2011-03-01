@@ -39,7 +39,7 @@ from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 
 
 class SignalParam(DataSet):

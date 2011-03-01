@@ -222,6 +222,11 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
         assert mode is not None
         arr = set_dynamic_range_from_mode(arr, mode)
     _base, ext = osp.splitext(filename)
+    if arr.dtype in (np.int8, np.uint8, np.int16, np.uint16,
+                     np.int32, np.uint32):
+        fmt = '%d'
+    else:
+        fmt = '%.18e'
     if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
@@ -236,9 +241,9 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     elif ext.lower() == ".npy":
         np.save(filename, arr)
     elif ext.lower() in (".txt", ".asc", ""):
-        np.savetxt(filename, arr)
+        np.savetxt(filename, arr, fmt=fmt)
     elif ext.lower() == ".csv":
-        np.savetxt(filename, arr, delimiter=',')
+        np.savetxt(filename, arr, fmt=fmt, delimiter=',')
     else:
         raise RuntimeError("%s: unsupported image file type" % ext)
 
