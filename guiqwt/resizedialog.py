@@ -100,6 +100,12 @@ class ResizeDialog(QDialog):
             self.w_edit.setText(str(self.width))
             self.w_edit.blockSignals(False)
         self.update_widgets()
+        
+    def get_zoom(self):
+        if self.width > self.height:
+            return self.width/self.old_width
+        else:
+            return self.height/self.old_height
 
     
 if __name__ == '__main__':

@@ -14,24 +14,27 @@ SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QTabWidget)
+                         QTabWidget, QMenu)
 from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp
 import numpy as np
 
-from guidata.dataset.datatypes import DataSet
+from guidata.dataset.datatypes import DataSet, ValueProp
 from guidata.dataset.dataitems import (IntItem, FloatArrayItem, StringItem,
-                                       ChoiceItem, FloatItem)
+                                       ChoiceItem, FloatItem, DictItem,
+                                       BoolItem)
 from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
-from guidata.qtwidgets import DockableWidget
+from guidata.qtwidgets import DockableWidget, create_dockable_widget_class
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
 from guiqwt.builder import make
+from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
+                       array_to_imagefile, IMAGE_SAVE_FILTERS)
 
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
@@ -65,6 +68,7 @@ class SignalParamNew(DataSet):
 class ImageParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
+    metadata = DictItem(_("Informations and metadata"), default=None)
     def copy_data_from(self, other):
         self.data = np.array(other.data, copy=True)
 
@@ -115,6 +119,7 @@ class ObjectFT(QSplitter):
     #------Setup widget, menus, actions
     def setup(self, toolbar):
         self.listwidget = QListWidget()
+        self.listwidget.setAlternatingRowColors(True)
         self.listwidget.setSelectionMode(QListWidget.ExtendedSelection)
         self.properties = DataSetEditGroupBox(_("Properties"), self.PARAMCLASS)
         self.properties.setEnabled(False)
@@ -129,7 +134,7 @@ class ObjectFT(QSplitter):
         properties_stretched = QWidget()
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.properties)
-        hlayout.addStretch()
+#        hlayout.addStretch()
         vlayout = QVBoxLayout()
         vlayout.addLayout(hlayout)
         vlayout.addStretch()
@@ -329,18 +334,30 @@ class ObjectFT(QSplitter):
         self.add_object(diffobj)
             
     #------Data Processing
-    def apply_11_func(self, obj, orig, func):
-        obj.data = func(orig.data)
+    def apply_11_func(self, obj, orig, func, param):
+        if param is None:
+            obj.data = func(orig.data)
+        else:
+            obj.data = func(orig.data, param)
     
-    def compute_11(self, name, func):
+    def compute_11(self, name, func, param=None, one_param_for_all=True,
+                   suffix=None):
+        if param is not None and one_param_for_all:
+            if not param.edit(parent=self.parent()):
+                return
         rows = self._get_selected_rows()
         for row in rows:
+            if param is not None and not one_param_for_all:
+                if not param.edit(parent=self.parent()):
+                    return
             orig = self.objects[row]
             obj = self.PARAMCLASS()
-            obj.title = "%s(s%03d)" % (name, row)
+            obj.title = "%s(%s%03d)" % (name, self.PREFIX, row)
+            if suffix is not None:
+                obj.title += "|"+suffix(param)
             obj.copy_data_from(orig)
             try:
-                self.apply_11_func(obj, orig, func)
+                self.apply_11_func(obj, orig, func, param)
             except Exception, msg:
                 import traceback
                 traceback.print_exc()
@@ -405,9 +422,12 @@ class SignalFT(ObjectFT):
         item.curveparam.label = signal.title
         
     #------Signal Processing
-    def apply_11_func(self, obj, orig, func):
+    def apply_11_func(self, obj, orig, func, param):
         xor, yor = orig.xydata
-        obj.xydata = func(xor, yor)
+        if param is None:
+            obj.xydata = func(xor, yor)
+        else:
+            obj.xydata = func(xor, yor, param)
     
     def compute_wiener(self):
         import scipy.signal as sps
@@ -416,10 +436,14 @@ class SignalFT(ObjectFT):
         self.compute_11("WienerFilter", func)
     
     def compute_gaussian(self):
+        class GaussianParam(DataSet):
+            sigma = FloatItem(u"σ", default=1.)
+        param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
-        def func(x, y):
-            return x, spi.gaussian_filter1d(y, 1.)
-        self.compute_11("GaussianFilter", func)
+        def func(x, y, p):
+            return x, spi.gaussian_filter1d(y, p.sigma)
+        self.compute_11("GaussianFilter", func, param,
+                        suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
         def func(x, y):
@@ -469,8 +493,10 @@ class SignalFT(ObjectFT):
         """Open signal file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
+        filters = '%s (*.txt *.csv)\n%s (*.npy)'\
+                  % (_(u"Text files"), _(u"NumPy arrays"))
         filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
-                self.directory, 'Text files (*.txt *.csv)\nNumPy files (*.npy)')
+                                               self.directory, filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             filename = unicode(filename)
@@ -525,7 +551,7 @@ class SignalFT(ObjectFT):
                      (_(u"%s could not be written:") % osp.basename(filename))+\
                      "\n"+str(msg))
                 return
-        
+
 class ImageFT(ObjectFT):
     PARAMCLASS = ImageParam
     PREFIX = "i"
@@ -548,6 +574,28 @@ class ImageFT(ObjectFT):
                                     triggered=self.save_image)
         self.actlist_1more += [save_action]
         self.file_actions = [new_action, open_action, save_action]
+
+        # Operation actions
+        rotate_menu = QMenu(_("Rotation"), self)
+        hflip_action = create_action(self, _("Flip horizontally"),
+                                     triggered=self.flip_horizontally)
+        vflip_action = create_action(self, _("Flip vertically"),
+                                     triggered=self.flip_vertically)
+        rot90_action = create_action(self, _("Rotate 90° right"),
+                                     triggered=self.rotate_270)
+        rot270_action = create_action(self, _("Rotate 90° left"),
+                                      triggered=self.rotate_90)
+        rotate_action = create_action(self, _("Rotate arbitrarily..."),
+                                      triggered=self.rotate_arbitrarily)
+        self.actlist_1more += [hflip_action, vflip_action,
+                               rot90_action, rot270_action, rotate_action]
+        resize_action = create_action(self, _("Resize"),
+                                      triggered=self.resize_image)
+        self.actlist_1 += [resize_action]
+        add_actions(rotate_menu, [hflip_action, vflip_action,
+                                  rot90_action, rot270_action, rotate_action])
+        self.operation_actions += [None, rotate_menu, None,
+                                   resize_action]
         
         # Processing actions
         gaussian_action = create_action(self, _("Gaussian filter"),
@@ -579,15 +627,90 @@ class ImageFT(ObjectFT):
         item.set_data(image.data.real)
         item.imageparam.label = image.title
         
-    #------Signal Processing
+    #------Image operations
+    def rotate_arbitrarily(self):
+        boundaries = ('constant', 'nearest', 'reflect', 'wrap')
+        prop = ValueProp(False)
+        class RotateParam(DataSet):
+            angle = FloatItem(u"%s (°)" % _(u"Angle"))
+            mode = ChoiceItem(_(u"Mode"), zip(boundaries, boundaries),
+                              default=boundaries[0])
+            cval = FloatItem(_("cval"), default=0.,
+                             help=_(u"Value used for points outside the "
+                                    u"boundaries of the input if mode is "
+                                    u"'constant'"))
+            prefilter = BoolItem(_(u"Prefilter the input image"),
+                                 default=True).set_prop("display", store=prop)
+            order = IntItem(_(u"Order"), default=3, min=0, max=5,
+                            help=_("Spline interpolation order")
+                            ).set_prop("display", active=prop)
+        param = RotateParam(_("Rotation"))
+        import scipy.ndimage as spi
+        self.compute_11("Rotate",
+                        lambda x, p:
+                        spi.rotate(x, p.angle, order=p.order, mode=p.mode,
+                                   cval=p.cval, prefilter=p.prefilter),
+                        param, suffix=lambda p: u"α=%.3f°, mode='%s'"\
+                                                % (p.angle, p.mode))
+    
+    def rotate_90(self):
+        self.compute_11("Rotate90", lambda x: np.rot90(x))
+        
+    def rotate_270(self):
+        self.compute_11("Rotate270", lambda x: np.rot90(x, 3))
+        
+    def flip_horizontally(self):
+        self.compute_11("HFlip", lambda x: np.fliplr(x))
+        
+    def flip_vertically(self):
+        self.compute_11("VFlip", lambda x: np.flipud(x))
+        
+    def resize_image(self):
+        rows = self._get_selected_rows()
+        obj = self.objects[rows[0]]
+        original_size = obj.data.shape[1], obj.data.shape[0]
+        from guiqwt.resizedialog import ResizeDialog
+        dlg = ResizeDialog(self.plot, new_size=original_size,
+                           old_size=original_size,
+                           text=_("Destination size:"))
+        if not dlg.exec_():
+            return
+        boundaries = ('constant', 'nearest', 'reflect', 'wrap')
+        prop = ValueProp(False)
+        class ResizeParam(DataSet):
+            zoom = FloatItem(_(u"Zoom"), default=dlg.get_zoom())
+            mode = ChoiceItem(_(u"Mode"), zip(boundaries, boundaries),
+                              default=boundaries[0])
+            cval = FloatItem(_("cval"), default=0.,
+                             help=_(u"Value used for points outside the "
+                                    u"boundaries of the input if mode is "
+                                    u"'constant'"))
+            prefilter = BoolItem(_(u"Prefilter the input image"),
+                                 default=True).set_prop("display", store=prop)
+            order = IntItem(_(u"Order"), default=3, min=0, max=5,
+                            help=_("Spline interpolation order")
+                            ).set_prop("display", active=prop)
+        param = ResizeParam(_("Gaussian filter"))
+        import scipy.ndimage as spi
+        self.compute_11("Zoom", lambda x, p:
+                        spi.interpolation.zoom(x, p.zoom, order=p.order,
+                                               mode=p.mode, cval=p.cval,
+                                               prefilter=p.prefilter),
+                        param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
+        
+    #------Image Processing
     def compute_wiener(self):
         import scipy.signal as sps
         self.compute_11("WienerFilter", sps.wiener)
     
     def compute_gaussian(self):
+        class GaussianParam(DataSet):
+            sigma = FloatItem(u"σ", default=1.)
+        param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
         self.compute_11("GaussianFilter",
-                         lambda x: spi.gaussian_filter(x, 1.))
+                        lambda x, p: spi.gaussian_filter(x, p.sigma), param,
+                        suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
         self.compute_11("FFT", np.fft.fft2)
@@ -627,14 +750,13 @@ class ImageFT(ObjectFT):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
-            self.directory, 'Images (*.png *.jpg *.gif *.tif *.tiff *.dcm)')
+                                           self.directory, IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             image = ImageParam()
             image.title = filename
-            from guiqwt.io import imagefile_to_array
             try:
                 image.data = imagefile_to_array(filename, to_grayscale=True)
             except Exception, msg:
@@ -651,14 +773,13 @@ class ImageFT(ObjectFT):
         rows = self._get_selected_rows()
         for row in rows:
             filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                     self.directory, 'Images (*.png *.jpg *.gif *.tif *.tiff)')
+                                           self.directory, IMAGE_SAVE_FILTERS)
             if not filename:
                 return
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             obj = self.objects[row]
             try:
-                from guiqwt.io import array_to_imagefile
                 array_to_imagefile(obj.data, filename)
             except Exception, msg:
                 import traceback
@@ -671,9 +792,8 @@ class ImageFT(ObjectFT):
 
 class DockablePlotWidget(DockableWidget):
     LOCATION = Qt.RightDockWidgetArea
-    def __init__(self, parent, plotwidgetclass, title, toolbar):
+    def __init__(self, parent, plotwidgetclass, toolbar):
         super(DockablePlotWidget, self).__init__(parent)
-        self.title = title
         self.toolbar = toolbar
         layout = QVBoxLayout()
         self.plotwidget = plotwidgetclass()
@@ -693,14 +813,11 @@ class DockablePlotWidget(DockableWidget):
             self.plotwidget.register_all_curve_tools()
         
     #------DockableWidget API
-    def get_widget_title(self):
-        """Return widget title"""
-        return self.title
-        
     def visibility_changed(self, enable):
         """DockWidget visibility has changed"""
+        super(DockablePlotWidget, self).visibility_changed(enable)
         self.toolbar.setVisible(enable)
-        
+            
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -719,7 +836,6 @@ class MainWindow(QMainWindow):
         # Signals
         curveplot_toolbar = self.addToolBar(_("Curve Plotting Toolbar"))
         self.curvewidget = DockablePlotWidget(self, CurveWidget,
-                                              _("Curve plotting panel"),
                                               curveplot_toolbar)
         curveplot = self.curvewidget.get_plot()
         curveplot.add_item(make.legend("TR"))
@@ -729,20 +845,24 @@ class MainWindow(QMainWindow):
         # Images
         imagevis_toolbar = self.addToolBar(_("Image Visualization Toolbar"))
         self.imagewidget = DockablePlotWidget(self, ImageWidget,
-                                              _("Image visualization panel"),
                                               imagevis_toolbar)
         self.imageft = ImageFT(self, self.imagewidget.get_plot())
         self.imageft.setup(self.image_toolbar)
         
         # Main window widgets
-        self.tabwidget = QTabWidget()
+        DockableTabWidget = create_dockable_widget_class(QTabWidget)
+        DockableTabWidget.LOCATION = Qt.LeftDockWidgetArea
+        self.tabwidget = DockableTabWidget(self)
+        self.tabwidget.setMaximumWidth(500)
         self.tabwidget.addTab(self.signalft, get_icon('curve.png'),
                               _("Signals"))
         self.tabwidget.addTab(self.imageft, get_icon('image.png'),
                               _("Images"))
-        self.setCentralWidget(self.tabwidget)
-        self.curve_dock = self.add_dockwidget(self.curvewidget)
-        self.image_dock = self.add_dockwidget(self.imagewidget)
+        self.add_dockwidget(self.tabwidget, _(u"Main panel"))
+        self.curve_dock = self.add_dockwidget(self.curvewidget,
+                                              title=_("Curve plotting panel"))
+        self.image_dock = self.add_dockwidget(self.imagewidget,
+                                          title=_("Image visualization panel"))
         self.tabifyDockWidget(self.curve_dock, self.image_dock)
         self.connect(self.tabwidget, SIGNAL('currentChanged(int)'),
                      self.tab_index_changed)
@@ -795,9 +915,9 @@ class MainWindow(QMainWindow):
         self.curve_dock.raise_()
                 
     #------GUI refresh/setup
-    def add_dockwidget(self, child):
+    def add_dockwidget(self, child, title):
         """Add QDockWidget and toggleViewAction"""
-        dockwidget, location = child.create_dockwidget()
+        dockwidget, location = child.create_dockwidget(title)
         self.addDockWidget(location, dockwidget)
         return dockwidget
         
