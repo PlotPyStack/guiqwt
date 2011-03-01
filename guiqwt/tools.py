@@ -1517,10 +1517,8 @@ class LoadItemsTool(OpenFileTool):
 
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager):
-        formats = 'Images (*.png *.jpg *.gif *.tif *.tiff)'
-        if is_module_available('dicom'):
-            formats += '\n%s (*.dcm)' % _("DICOM images")
-        OpenFileTool.__init__(self, manager, formats=formats)
+        from guiqwt.io import IMAGE_LOAD_FILTERS
+        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS)
     
 
 class AxisScaleTool(CommandTool):

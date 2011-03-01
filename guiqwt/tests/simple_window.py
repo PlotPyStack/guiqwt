@@ -28,7 +28,7 @@ from guiqwt.config import _
 from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
 from guiqwt.signals import SIG_LUT_CHANGED
-from guiqwt.io import imagefile_to_array
+from guiqwt.io import imagefile_to_array, IMAGE_LOAD_FILTERS
 
 APP_NAME = _("Application example")
 VERSION = '1.0.0'
@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(self, _("Open"), "",
-                      'Images (*.png *.jpg *.gif *.tif *.tiff)\nDICOM (*.dcm)')
+                                               IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

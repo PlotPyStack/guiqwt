@@ -26,6 +26,10 @@ Reference
 
 import sys, os.path as osp, numpy as np, os, time
 
+# Local imports
+from guiqwt.config import _
+
+
 if sys.byteorder == 'little':
     _ENDIAN = '<'
 else:
@@ -112,6 +116,16 @@ def set_dynamic_range_from_mode(data, mode):
     return set_dynamic_range_from_dtype(data, dtypes[mode])
 
 
+IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
+                     '%s (*.npy)\n%s (*.txt *.csv)'\
+                     % (_(u"Images"), _(u"NumPy arrays"), _(u"Text files"))
+IMAGE_SAVE_FILTERS = IMAGE_LOAD_FILTERS
+try:
+    import dicom
+    IMAGE_LOAD_FILTERS += ('\n%s (*.dcm)' % _(u"DICOM images"))
+except ImportError:
+    pass
+
 def imagefile_to_array(filename, to_grayscale=False):
     """
     Return a NumPy array from an image file *filename*
@@ -140,8 +154,18 @@ def imagefile_to_array(filename, to_grayscale=False):
         arr = np.array(img.getdata(), dtype=np.dtype(dtype)).reshape(shape)
         if img.mode in ("RGB", "RGBA", "RGBX"):
             arr = np.flipud(arr)
+    elif ext.lower() == ".npy":
+        arr = np.load(filename)
+    elif ext.lower() in (".txt", ".asc", ""):
+        for delimiter in ('\t', ',', ' ', ';'):
+            try:
+                arr = np.loadtxt(filename, delimiter=delimiter)
+                break
+            except ValueError:
+                continue
+        else:
+            raise
     elif ext.lower() in (".dcm",):
-        import dicom
         dcm = dicom.ReadFile(filename)
         # **********************************************************************
         # The following is necessary until pydicom numpy support is improved:
@@ -208,6 +232,12 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
                 raise RuntimeError("Cannot determine PIL data type")
         img = PIL.Image.fromarray(arr, mode)
         img.save(filename)
+    elif ext.lower() == ".npy":
+        np.save(filename, arr)
+    elif ext.lower() in (".txt", ".asc", ""):
+        np.savetxt(filename, arr)
+    elif ext.lower() == ".csv":
+        np.savetxt(filename, arr, delimiter=',')
     else:
         raise RuntimeError("%s: unsupported image file type" % ext)
 
@@ -219,7 +249,6 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     if max_range:
         assert dtype is not None
         arr = set_dynamic_range_from_dtype(arr, dtype)
-#    import dicom
 #    uid = make_uid(dicom.UID.root+"1")
     rows, columns = arr.shape
     infos = np.iinfo(arr.dtype)
