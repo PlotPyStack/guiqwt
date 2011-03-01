@@ -57,6 +57,7 @@ if os.name == 'nt':
     SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
 else:
     SCRIPTS = ['guiqwt-tests', 'sift']
+SCRIPTS = [join('scripts', fname) for fname in SCRIPTS]
 
 
 try:
