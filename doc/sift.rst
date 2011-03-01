@@ -6,8 +6,8 @@ and ``guidata``.
 
 Even if it could be extended with powerful features like its closed-source 
 counterpart, `Sift` is quite limited in its current implementation. For now, 
-its main purpose is only to demonstrate some of the application development 
-features provided by ``guidata`` and ``guiqwt``.
+its main purpose is to show how to create easily and rapidly your own 
+signal/image processing application using ``guidata`` and ``guiqwt``.
 
 .. image:: images/screenshots/sift.png
 

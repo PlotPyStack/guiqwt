@@ -130,7 +130,7 @@ Reference
    :inherited-members:
 
 .. autofunction:: assemble_imageitems
-.. autofunction:: get_plot_source_rect
+.. autofunction:: get_plot_qrect
 .. autofunction:: get_image_from_plot
 """
 
