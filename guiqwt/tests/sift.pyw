@@ -27,7 +27,7 @@ from guidata.dataset.dataitems import (IntItem, FloatArrayItem, StringItem,
 from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
-from guidata.qtwidgets import DockableWidget, create_dockable_widget_class
+from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
@@ -68,7 +68,7 @@ class SignalParamNew(DataSet):
 class ImageParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
-    metadata = DictItem(_("Informations and metadata"), default=None)
+#    metadata = DictItem(_("Informations and metadata"), default=None)
     def copy_data_from(self, other):
         self.data = np.array(other.data, copy=True)
 
@@ -826,6 +826,13 @@ class DockablePlotWidget(DockableWidget):
         self.toolbar.setVisible(enable)
             
 
+class DockableTabWidget(QTabWidget, DockableWidgetMixin):
+    LOCATION = Qt.LeftDockWidgetArea
+    def __init__(self, parent):
+        QTabWidget.__init__(self, parent)
+        DockableWidgetMixin.__init__(self, parent)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -861,8 +868,6 @@ class MainWindow(QMainWindow):
                          status.showMessage)
         
         # Main window widgets
-        DockableTabWidget = create_dockable_widget_class(QTabWidget)
-        DockableTabWidget.LOCATION = Qt.LeftDockWidgetArea
         self.tabwidget = DockableTabWidget(self)
         self.tabwidget.setMaximumWidth(500)
         self.tabwidget.addTab(self.signalft, get_icon('curve.png'),
@@ -870,6 +875,7 @@ class MainWindow(QMainWindow):
         self.tabwidget.addTab(self.imageft, get_icon('image.png'),
                               _("Images"))
         self.add_dockwidget(self.tabwidget, _(u"Main panel"))
+#        self.setCentralWidget(self.tabwidget)
         self.curve_dock = self.add_dockwidget(self.curvewidget,
                                               title=_("Curve plotting panel"))
         self.image_dock = self.add_dockwidget(self.imagewidget,

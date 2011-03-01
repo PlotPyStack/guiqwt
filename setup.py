@@ -54,9 +54,9 @@ PACKAGES = [LIBNAME+p for p in ['', '.tests']]
 PACKAGE_DATA = {LIBNAME: get_package_data(LIBNAME, ('.png', '.mo', '.dcm'))}
 
 if os.name == 'nt':
-    SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat']
+    SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
 else:
-    SCRIPTS = ['guiqwt-tests']
+    SCRIPTS = ['guiqwt-tests', 'sift']
 
 
 try:
