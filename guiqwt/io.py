@@ -41,6 +41,7 @@ DTYPES = {
           "I": ('%si4' % _ENDIAN, None),
           "F": ('%sf4' % _ENDIAN, None),
           "I;16": ('%su2' % _ENDIAN, None),
+          "I;16B": ('%su2' % _ENDIAN, None),
           "I;16S": ('%si2' % _ENDIAN, None),
           "P": ('|u1', None),
           "RGB": ('|u1', 3),
