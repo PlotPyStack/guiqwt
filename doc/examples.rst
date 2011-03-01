@@ -130,12 +130,3 @@ Simple application
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 .. image:: images/screenshots/simple_window.png
-
-More complex signal/image processing application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. literalinclude:: ../guiqwt/tests/sift.pyw
-   :start-after: SHOW
-   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
-
-.. image:: images/screenshots/sift.png
