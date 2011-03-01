@@ -14,7 +14,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QTabWidget, QMenu)
+                         QTabWidget, QMenu, QApplication, QCursor)
 from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp
@@ -356,6 +356,10 @@ class ObjectFT(QSplitter):
             if suffix is not None:
                 obj.title += "|"+suffix(param)
             obj.copy_data_from(orig)
+            self.emit(SIGNAL("status_message(QString)"),
+                      _("Computing:")+" "+obj.title)
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+            self.repaint()
             try:
                 self.apply_11_func(obj, orig, func, param)
             except Exception, msg:
@@ -364,6 +368,9 @@ class ObjectFT(QSplitter):
                 QMessageBox.critical(self.parent(), APP_NAME,
                                      _(u"Error:")+"\n%s" % str(msg))
                 return
+            finally:
+                self.emit(SIGNAL("status_message(QString)"), "")
+                QApplication.restoreOverrideCursor()
             self.add_object(obj)
         
 class SignalFT(ObjectFT):
@@ -848,6 +855,10 @@ class MainWindow(QMainWindow):
                                               imagevis_toolbar)
         self.imageft = ImageFT(self, self.imagewidget.get_plot())
         self.imageft.setup(self.image_toolbar)
+
+        for objectft in (self.signalft, self.imageft):
+            self.connect(objectft, SIGNAL("status_message(QString)"),
+                         status.showMessage)
         
         # Main window widgets
         DockableTabWidget = create_dockable_widget_class(QTabWidget)
@@ -963,11 +974,15 @@ class MainWindow(QMainWindow):
               (APP_NAME, VERSION, APP_DESC, _("Developped by"),
                platform.python_version(),
                QT_VERSION_STR, PYQT_VERSION_STR, _("on"), platform.system()) )
-        
-        
-if __name__ == '__main__':
+
+
+def run():
     from guidata import qapplication
     app = qapplication()
     window = MainWindow()
     window.show()
     app.exec_()
+
+
+if __name__ == '__main__':
+    run()
