@@ -164,7 +164,7 @@ stderr = sys.stderr
 try:
     from guiqwt._ext import hist2d
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
-                                _scale_quads, _scale_quads2,
+                                _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
 except ImportError:
     print >>sys.stderr, ("Module 'guiqwt.image':"
@@ -173,7 +173,6 @@ except ImportError:
                          "python setup.py build_ext --inplace -c mingw32" )
     raise
 
-_scale_quads=_scale_quads2
 LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
 
@@ -932,7 +931,7 @@ class QuadGridItem(RawImageItem):
                       IVoiImageItemType)
     def __init__(self, X, Y, Z, param=None):
         if param is None:
-            param = ImageParam(_("Quadrilaterals"))
+            param = QuadGridParam(_("Quadrilaterals"))
         assert X is not None
         assert Y is not None
         assert Z is not None
@@ -942,6 +941,8 @@ class QuadGridItem(RawImageItem):
         assert Z.shape == X.shape
         super(QuadGridItem, self).__init__(Z, param)
         self.set_data(Z)
+        self.grid = 1
+        self.interpolate = (0, 0.5, 0.5)
         self.imageparam.update_image(self)
 
     def types(self):
@@ -976,8 +977,8 @@ class QuadGridItem(RawImageItem):
         self._offscreen[...] = np.uint32(0)
         dest = _scale_quads(self.X, self.Y, self.data, src_rect,
                             self._offscreen, dst_rect,
-                            self.lut, self.interpolate,1)
-        print dest
+                            self.lut, self.interpolate,
+                            self.grid)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
         xl, yt, xr, yb = dest

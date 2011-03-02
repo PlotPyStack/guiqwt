@@ -72,7 +72,7 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
-                           LineStyleParam, AnnotationParam,
+                           LineStyleParam, AnnotationParam, QuadGridParam,
                            LabelParamWithContents)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
                           RangeComputation2d, DataInfoLabel, CursorComputation,
@@ -641,9 +641,9 @@ class PlotItemBuilder(object):
         Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
-        param = ImageParam(title=_("Image"), icon='image.png')
+        param = QuadGridParam(title=_("Image"), icon='image.png')
         self.__set_image_param(param, title, alpha_mask, alpha,
-                               background=background_color, colormap=colormap)
+                               colormap=colormap)
         image = QuadGridItem(X, Y, Z, param)
         return image
 

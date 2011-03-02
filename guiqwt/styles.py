@@ -1022,6 +1022,45 @@ class BaseImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
 
+class QuadGridParam(DataSet):
+    _multiselection = False
+    label = StringItem(_("Image title"), default=_("Image")) \
+            .set_prop("display", hide=GetAttrProp("_multiselection"))
+    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
+                          default=False)
+    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
+                      help=_("Global alpha value"))
+    _hide_colormap = False
+    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
+                               ).set_prop("display",
+                                      hide=GetAttrProp("_hide_colormap"))
+    
+    interpolation = ChoiceItem(_("Interpolation"),
+                               [ (0, _("Quadrangle interpolation")),
+                                 (1, _("Flat")),
+                                 ],
+                               default=0,
+                               help=_("Image interpolation type, Flat mode use fixed u,v interpolation parameters"))
+    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1.)
+    vflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1.)
+    grid = BoolItem(_("Show grid"), default=False)
+    gridcolor = ColorItem(_("Grid lines color"), default="black")
+                               
+    def update_param(self, image):
+        self.label = unicode(image.title().text())
+        self.colormap = image.get_color_map_name()
+        interp, uflat, vflat = image.interpolate
+        self.interpolation = interp
+        self.uflat = uflat
+        self.vflat = vflat
+        self.grid = image.grid
+
+    def update_image(self, image):
+        image.setTitle(self.label)
+        image.set_color_map(self.colormap)
+        image.interpolate = (self.interpolation,self.uflat,self.vflat)
+        image.grid = self.grid
+        # TODO : gridcolor
 
 class RawImageParam(BaseImageParam):
     _hide_background = False

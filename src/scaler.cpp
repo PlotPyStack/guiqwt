@@ -725,7 +725,6 @@ static PyObject *py_histogram(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-PyObject *py_scale_quads2(PyObject *self, PyObject *args);
 PyObject *py_vert_line(PyObject *self, PyObject *args);
 PyObject *py_scale_quads(PyObject *self, PyObject *args);
 
@@ -737,8 +736,6 @@ static PyMethodDef _meths[] = {
     {"_scale_rect",  py_scale_rect, METH_VARARGS,
      "Linear rescale of source to destination parallel to axes"},
     {"_scale_quads",  py_scale_quads, METH_VARARGS,
-     "Linear rescale of a structured grid to destination parallel to axes"},
-    {"_scale_quads2",  py_scale_quads2, METH_VARARGS,
      "Linear rescale of a structured grid to destination parallel to axes"},
     {"_histogram", py_histogram, METH_VARARGS,
      "Compute histogram of 1d data"},

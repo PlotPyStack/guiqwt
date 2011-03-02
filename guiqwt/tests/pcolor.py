@@ -23,7 +23,7 @@ def imshow( items ):
     win.show()
     win.exec_()
 
-def compute_quads(N=300):
+def polar_demo(N=300):
     r = np.linspace(1., 16, N)
     th= np.linspace(0., np.pi, N)
 
@@ -34,6 +34,10 @@ def compute_quads(N=300):
     ix = np.random.randint(N,size=(N/20,))
     iy = np.random.randint(N,size=(N/20,))
     Z[ix,iy] = np.nan
+    return X,Y,Z
+
+def compute_quads(N=300):
+    X,Y,Z = polar_demo(N)
     item = make.pcolor(X,Y,Z)
     return [item]
 
@@ -65,8 +69,32 @@ def test():
     # -- Create QApplication
     import guidata
     guidata.qapplication()
-    # --    
-    imshow(compute_quads()+compute_quads3())
+    # --
+    items = compute_quads()+compute_quads3()
+    imshow(items)
+
+def valgrind_test(K=200):
+    from guiqwt._scaler import _scale_quads
+    from time import time
+    X,Y,Z = polar_demo()
+    lut = (1.0, 0.0, None, np.zeros((1024, ), np.uint32))
+    offscreen = np.zeros((1200, 1920), np.uint32)
+    border = 1
+    flat = 0
+    uflat = 0.5
+    vflat = 0.5
+    interpolate = (flat, uflat, vflat)
+    src_rect = (X.min(),Y.min(),X.max(),Y.max())
+    dst_rect = (0,0,1920,1200)
+    t0 = time()
+    for count in range(K):
+        dest = _scale_quads(X, Y, Z, src_rect,
+                            offscreen, dst_rect,
+                            lut, interpolate,
+                            border)
+    print (time()-t0)/K, " secs per loop"
+
 
 if __name__ == "__main__":
     test()
+    #valgrind_test()
