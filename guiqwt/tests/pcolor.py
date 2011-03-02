@@ -23,14 +23,17 @@ def imshow( items ):
     win.show()
     win.exec_()
 
-def compute_quads(N=100):
+def compute_quads(N=300):
     r = np.linspace(1., 16, N)
     th= np.linspace(0., np.pi, N)
 
     R,TH=np.meshgrid(r,th)
     X = R*np.cos(TH)
     Y = R*np.sin(TH)
-    Z = 4*TH+R
+    Z = 4*TH+R + np.random.randint(-8,8,size=(N,N))
+    ix = np.random.randint(N,size=(N/20,))
+    iy = np.random.randint(N,size=(N/20,))
+    Z[ix,iy] = np.nan
     item = make.pcolor(X,Y,Z)
     return [item]
 
