@@ -466,7 +466,7 @@ class BaseImageItem(QwtPlotItem):
 
     def get_lut_range_full(self):
         """Return full dynamic range"""
-        return self.data.min(), self.data.max()
+        return np.nanmin(self.data), np.nanmax(self.data)
 
     def get_lut_range_max(self):
         """Get maximum range for this dataset"""
@@ -652,13 +652,13 @@ class BaseImageItem(QwtPlotItem):
                 #TODO: _histogram is faster, but caching is buggy
                 # in this version
                 #tic("histo2")
+                _min = np.nanmin(self.data)
+                _max = np.nanmax(self.data)
                 if self.data.dtype in (np.float64, np.float32):
-                    bins = np.unique(np.array(np.linspace(self.data.min(),
-                                                          self.data.max(),
-                                                          nbins+1),
+                    bins = np.unique(np.array(np.linspace(_min, _max, nbins+1),
                                               dtype=self.data.dtype))
                 else:
-                    bins = np.arange(self.data.min(), self.data.max()+2,
+                    bins = np.arange(_min, _max+2,
                                      dtype=self.data.dtype)
                 res2 = np.zeros((bins.size+1,), np.uint32)
                 _histogram(self.data.flatten(), bins, res2)
@@ -762,7 +762,7 @@ class RawImageItem(BaseImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = data.min(), data.max()
+            _min, _max = np.nanmin(data), np.nanmax(data)
             
         self.data = data
         self.histogram_cache = None
@@ -964,7 +964,7 @@ class QuadGridItem(RawImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = data.min(), data.max()
+            _min, _max = np.nanmin(data), np.nanmax(data)
 
         self.data = data
         self.histogram_cache = None
@@ -976,7 +976,7 @@ class QuadGridItem(RawImageItem):
         self._offscreen[...] = np.uint32(0)
         dest = _scale_quads(self.X, self.Y, self.data, src_rect,
                             self._offscreen, dst_rect,
-                            self.lut, self.interpolate,0)
+                            self.lut, self.interpolate,1)
         print dest
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
