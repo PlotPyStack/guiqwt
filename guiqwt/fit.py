@@ -39,6 +39,8 @@ Reference
    :inherited-members:
 """
 
+from __future__ import division
+
 from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QLineEdit,
                          QDialog, QVBoxLayout, QHBoxLayout, QWidget,
                          QDialogButtonBox)
@@ -159,31 +161,25 @@ class FitParam(DataSet):
         
     def slider_value_changed(self, int_value):
         if self.logscale:
-            min, max = np.log10(self.min), np.log10(self.max)
-            self.value = 10**(min+(max-min)*int_value/self.steps)
+            total_delta = np.log10(1+self.max-self.min)
+            self.value = self.min+10**(total_delta*int_value/(self.steps-1))-1
         else:
-            self.value = self.min+(self.max-self.min)*int_value/self.steps
+            total_delta = self.max-self.min
+            self.value = self.min+total_delta*int_value/(self.steps-1)
         self.set_text()
     
-    def _logscale_check(self):
-        if self.min == 0:
-            self.min = self.max/10
-        if self.max == 0:
-            self.max = self.mix*10
-    
     def update_slider_value(self):
-        if self.logscale:
-            self._logscale_check()
-            value, _min, _max = (max([np.log10(self.value), 0.]),
-                               max([np.log10(self.min), 0.]),
-                               np.log10(self.max))
-        else:
-            value, _min, _max = self.value, self.min, self.max
-        if value is None or _min is None or _max is None:
+        if self.value is None or self.min is None or self.max is None:
             self.slider.setEnabled(False)
         else:
             self.slider.setEnabled(True)
-            intval = int(self.steps*(value-_min)/(_max-_min))
+            if self.logscale:
+                value_delta = max([np.log10(1+self.value-self.min), 0.])
+                total_delta = np.log10(1+self.max-self.min)
+            else:
+                value_delta = self.value-self.min
+                total_delta = self.max-self.min
+            intval = int(self.steps*value_delta/total_delta)
             self.slider.blockSignals(True)
             self.slider.setValue(intval)
             self.slider.blockSignals(False)
@@ -548,7 +544,7 @@ class FitDialog(QDialog, FitWidgetMixin):
 
 def guifit(x, y, fitfunc, fitparams, fitargs=None, fitkwargs=None,
            wintitle=None, title=None, xlabel=None, ylabel=None,
-           param_cols=1, auto_fit=False, winsize=None, winpos=None):
+           param_cols=1, auto_fit=True, winsize=None, winpos=None):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
 #    win = FitWidget(wintitle=wintitle, toolbar=True,
@@ -576,7 +572,7 @@ if __name__ == "__main__":
         a, b = params
         return np.cos(b*x)+a
     a = FitParam("Offset", 1., 0., 2.)
-    b = FitParam("Frequency", 2.001, 1., 10., logscale=True)
+    b = FitParam("Frequency", 1.05, 0., 10., logscale=True)
     params = [a, b]
     values = guifit(x, y, fit, params, auto_fit=True)
     print values
