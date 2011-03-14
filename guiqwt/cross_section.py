@@ -331,6 +331,8 @@ LUT_AXIS_TITLE = _("LUT scale")+(" (0-%d)" % LUT_MAX)
 
 class CrossSectionPlot(CurvePlot):
     """Cross section plot"""
+    CURVE_LABEL = _("Cross section")
+    LABEL_TEXT = _("Enable a marker")
     _height = None
     _width = None
     CS_AXIS = None
@@ -351,21 +353,24 @@ class CrossSectionPlot(CurvePlot):
         self._shapes = {}
         
         self.curveparam = CurveParam(_("Curve"), icon="curve.png")
-        self.curveparam.read_config(CONF, "cross_section", "curve")
-        self.curveparam.curvetype = self.CURVETYPE
-        self.curveparam.label = _("Cross section")
+        self.set_curve_style("cross_section", "curve")
         
         if self._height is not None:
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         elif self._width is not None:
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
             
-        self.label = make.label(_("Enable a marker"), "C", (0,0), "C")
+        self.label = make.label(self.LABEL_TEXT, "C", (0,0), "C")
         self.label.set_readonly(True)
         self.add_item(self.label)
         
         self.setAxisMaxMajor(self.Z_AXIS, self.Z_MAX_MAJOR)
         self.setAxisMaxMinor(self.Z_AXIS, 0)
+
+    def set_curve_style(self, section, option):
+        self.curveparam.read_config(CONF, section, option)
+        self.curveparam.curvetype = self.CURVETYPE
+        self.curveparam.label = self.CURVE_LABEL
         
     def connect_plot(self, plot):
         if not isinstance(plot, ImagePlot):
@@ -411,6 +416,9 @@ class CrossSectionPlot(CurvePlot):
         curve.set_readonly(True)
         self.add_item(curve, z=0)
         self.known_items[source] = curve
+        
+    def get_cross_section_curves(self):
+        return self.known_items.values()
 
     def items_changed(self, plot):
         self.known_items = {}
@@ -708,6 +716,9 @@ class CrossSectionWidget(PanelWidget):
         plot = self.get_plot()
         self.cs_plot.register_shape(plot, shape, final)
         
+    def unregister_shape(self, shape):
+        self.cs_plot.unregister_shape(shape)
+        
     def update_plot(self, obj=None):
         """
         Update cross section curve(s) associated to object *obj*
@@ -909,12 +920,11 @@ class RACrossSectionItem(CrossSectionItem):
 class RACrossSectionPlot(HorizontalCrossSectionPlot):
     """Radially-averaged cross section plot"""
     PLOT_TITLE = _("Radially-averaged cross section")
+    CURVE_LABEL = _("Radially-averaged cross section")
     LABEL_TEXT = _("Activate the radially-averaged cross section tool")
     def __init__(self, parent=None):
         super(RACrossSectionPlot, self).__init__(parent)
         self.set_title(self.PLOT_TITLE)
-        self.label.set_text(self.LABEL_TEXT)
-        self.curveparam.label = _("Radially-averaged cross section")
         
     def create_cross_section_item(self):
         return RACrossSectionItem(self.curveparam)
