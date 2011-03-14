@@ -225,7 +225,8 @@ struct QuadHelper {
 	    for(j=jmin;j<=jmax;++j) {
 		if (!flat) {
 		    params(j*n,i*n, ax,ay, bx,by, cx,cy, dx,dy, ex,ey, u,v);
-		    /* u, v can be slightly out of [0,1] but we don't care */
+		    if (u<0) u=0.; else if (u>1.) u=1.;
+		    if (v<0) v=0.; else if (v>1.) v=1.;
 		    /* v0 = v1*(1-v)*(1-u) + v2*v*(1-u) + v3*v*u + v4*(1-v)*u; */
 		    v0 = u*( v*(v1-v2+v3-v4)+v4-v1 ) + v*(v2-v1) + v1;
 		    col = scale.eval(v0);
