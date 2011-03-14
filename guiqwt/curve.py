@@ -895,18 +895,19 @@ class PlotItemList(PanelWidget):
     """Construct the `plot item list panel`"""
     __implements__ = (IPanel,)
     PANEL_ID = ID_ITEMLIST
+    PANEL_TITLE = _("Item list")
+    PANEL_ICON = "item_list.png"
     
     def __init__(self, parent):
         super(PlotItemList, self).__init__(parent)
-        widget_title = _("Item list")
-        widget_icon = "item_list.png"
         self.manager = None
         
         vlayout = QVBoxLayout()
         self.setLayout(vlayout)
         
         style = "<span style=\'color: #444444\'><b>%s</b></span>"
-        layout, _label = get_image_layout(widget_icon, style % widget_title,
+        layout, _label = get_image_layout(self.PANEL_ICON,
+                                          style % self.PANEL_TITLE,
                                           alignment=Qt.AlignCenter)
         vlayout.addLayout(layout)
         self.listwidget = ItemListWidget(self)
@@ -915,9 +916,6 @@ class PlotItemList(PanelWidget):
         toolbar = QToolBar(self)
         vlayout.addWidget(toolbar)
         add_actions(toolbar, self.listwidget.menu_actions)
-        
-        self.setWindowIcon(get_icon(widget_icon))
-        self.setWindowTitle(widget_title)
 
     def register_panel(self, manager):
         """Register panel to plot manager"""

@@ -605,6 +605,8 @@ class YCrossSectionPlot(VerticalCrossSectionPlot):
 
 class CrossSectionWidget(PanelWidget):
     PANEL_ID = None
+    PANEL_TITLE = _("Cross section tool")
+    PANEL_ICON = "csection.png"
     CrossSectionPlotKlass = None
         
     __implements__ = (IPanel,)
@@ -616,9 +618,6 @@ class CrossSectionWidget(PanelWidget):
         self.autoscale_ac = None
         self.refresh_ac = None
         self.autorefresh_ac = None
-        
-        widget_title = _("Cross section tool")
-        widget_icon = "csection.png"
         
         self.manager = None # manager for the associated image plot
         
@@ -637,9 +636,6 @@ class CrossSectionWidget(PanelWidget):
         lman.add_tool(AntiAliasingTool)
         lman.add_tool(DeleteItemTool)
         lman.get_default_tool().activate()
-        
-        self.setWindowIcon(get_icon(widget_icon))
-        self.setWindowTitle(widget_title)
         
         self.toolbar = QToolBar(self)
         self.toolbar.setOrientation(Qt.Vertical)

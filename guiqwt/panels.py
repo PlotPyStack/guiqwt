@@ -67,10 +67,17 @@ ID_RACS = "ra_cross_section"
 #===============================================================================
 class PanelWidget(DockableWidget):
     PANEL_ID = None # string
+    PANEL_TITLE = None # string
+    PANEL_ICON = None # string
     
     def __init__(self, parent=None):
         super(PanelWidget, self).__init__(parent)
         assert self.PANEL_ID is not None
+        if self.PANEL_TITLE is not None:
+            self.setWindowTitle(self.PANEL_TITLE)
+        if self.PANEL_ICON is not None:
+            from guidata.configtools import get_icon
+            self.setWindowIcon(get_icon(self.PANEL_ICON))
     
     def showEvent(self, event):
         super(PanelWidget, self).showEvent(event)

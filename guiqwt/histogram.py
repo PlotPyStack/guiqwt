@@ -392,11 +392,11 @@ class ContrastAdjustment(PanelWidget):
     """Contrast adjustment tool"""
     __implements__ = (IPanel,)
     PANEL_ID = ID_CONTRAST
+    PANEL_TITLE = _("Contrast adjustment tool")
+    PANEL_ICON = "contrast.png"
 
     def __init__(self, parent=None):
         super(ContrastAdjustment, self).__init__(parent)
-        widget_title = _("Contrast adjustment tool")
-        widget_icon = "contrast.png"
         
         self.local_manager = None # local manager for the histogram plot
         self.manager = None # manager for the associated image plot
@@ -410,8 +410,8 @@ class ContrastAdjustment(PanelWidget):
         self.max_select_tool = None
         
         style = "<span style=\'color: #444444\'><b>%s</b></span>"
-        layout, _label = get_image_layout(widget_icon,
-                                          style % widget_title,
+        layout, _label = get_image_layout(self.PANEL_ICON,
+                                          style % self.PANEL_TITLE,
                                           alignment=Qt.AlignCenter)
         layout.setAlignment(Qt.AlignCenter)
         vlayout = QVBoxLayout()
@@ -438,10 +438,7 @@ class ContrastAdjustment(PanelWidget):
         lman.add_tool(AntiAliasingTool)
         lman.get_default_tool().activate()
         
-        self.setWindowIcon(get_icon(widget_icon))
-        self.setWindowTitle(widget_title)
-        
-        self.outliers_param = EliminateOutliersParam(widget_title)
+        self.outliers_param = EliminateOutliersParam(self.PANEL_TITLE)
         
     def register_panel(self, manager):
         """Register panel to plot manager"""
