@@ -19,7 +19,7 @@ Licensed under the terms of the CECILL License
 # python setup.py build_ext -c mingw32 --inplace
 
 from numpy.distutils.core import setup, Extension
-import os, os.path as osp
+import sys, os, os.path as osp
 join = osp.join
 
 #TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
@@ -96,6 +96,14 @@ if sphinx:
     cmdclass['build_doc'] = build_doc
 
 
+CFLAGS = ["-Wall", "-Werror"]
+for arg, compile_arg in (("--sse2", "-msse2"),
+                         ("--sse3", "-msse3"),):
+    if arg in sys.argv:
+        sys.argv.pop(sys.argv.index(arg))
+        CFLAGS.insert(0, compile_arg)
+
+
 setup(name=LIBNAME, version=version,
       download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
                                                   LIBNAME, LIBNAME, version),
@@ -107,7 +115,7 @@ setup(name=LIBNAME, version=version,
                                                join("src", 'radavg.f90')]),
                    Extension(LIBNAME+'._mandel', [join("src", 'mandel.f90')]),
                    Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp")],
-                             extra_compile_args=["-msse2 -Wall -Werror",],
+                             extra_compile_args=CFLAGS,
                              depends=[join("src", "traits.hpp"),
                                       join("src", "points.hpp"),
                                       join("src", "arrays.hpp"),
