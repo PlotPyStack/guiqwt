@@ -114,7 +114,7 @@ class FitParam(DataSet):
                         self.logscale, self.steps, self.format,
                         self._size_offset)
         
-    def create_widgets(self):
+    def create_widgets(self, parent):
         self.label = QLabel()
         font = self.label.font()
         font.setPointSize(font.pointSize()+self._size_offset)
@@ -123,7 +123,8 @@ class FitParam(DataSet):
         self.button.setIcon(get_icon('settings.png'))
         self.button.setToolTip(
                         _("Edit '%s' fit parameter properties") % self.name)
-        QObject.connect(self.button, SIGNAL('clicked()'), self.edit_param)
+        QObject.connect(self.button, SIGNAL('clicked()'),
+                        lambda: self.edit_param(parent))
         self.lineedit = QLineEdit()
         QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
                         self.line_editing_finished)
@@ -184,8 +185,8 @@ class FitParam(DataSet):
             self.slider.setValue(intval)
             self.slider.blockSignals(False)
 
-    def edit_param(self):
-        if self.edit():
+    def edit_param(self, parent):
+        if self.edit(parent=parent):
             self.update()
 
     def update(self):
@@ -201,7 +202,7 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
     row_nb = 0
     col_nb = 0
     for i, param in enumerate(fitparams):
-        widgets = param.create_widgets()
+        widgets = param.create_widgets(layout.parent())
         w_colums = len(widgets)+1
         label, lineedit, slider, button = widgets
         QObject.connect(slider, SIGNAL("valueChanged(int)"), refresh_callback)
