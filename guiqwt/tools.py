@@ -891,7 +891,8 @@ class CrossSectionTool(RectangularShapeTool):
             plot.set_active_item(shape)
         for panel_id in self.PANEL_IDS:
             panel = self.manager.get_panel(panel_id)
-            panel.register_shape(shape, final=final)
+            if panel is not None:
+                panel.register_shape(shape, final=final)
 
     def activate(self):
         """Activate tool"""
@@ -1283,9 +1284,10 @@ def get_save_filename(plot, title, defaultname, types):
     return unicode(fname)
 
 class SaveAsTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(SaveAsTool,self).__init__(manager, _("Save as..."),
-                                        get_std_icon("DialogSaveButton", 16))
+                                        get_std_icon("DialogSaveButton", 16),
+                                        toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         #FIXME: Qt's PDF printer is unable to print plots including images
@@ -1441,9 +1443,10 @@ class PrintFilter(QwtPlotPrintFilter):
         return result
 
 class PrintTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(PrintTool,self).__init__(manager, _("Print..."),
-                                       get_icon("print.png"))
+                                       get_icon("print.png"),
+                                       toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         printer = QPrinter()
@@ -1462,9 +1465,10 @@ class PrintTool(CommandTool):
 
 
 class OpenFileTool(CommandTool):
-    def __init__(self, manager, formats='*.*'):
+    def __init__(self, manager, formats='*.*', toolbar_id=None):
         CommandTool.__init__(self, manager, _("Open..."),
-                             get_std_icon("DialogOpenButton", 16))
+                             get_std_icon("DialogOpenButton", 16),
+                             toolbar_id=toolbar_id)
         self.formats = formats
         self.directory = ""
         
@@ -1487,9 +1491,10 @@ class OpenFileTool(CommandTool):
 
 
 class SaveItemsTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         CommandTool.__init__(self, manager, _("Save items"),
-                             get_std_icon("DialogSaveButton", 16))
+                             get_std_icon("DialogSaveButton", 16),
+                             toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         fname = get_save_filename(plot, _("Save items as"), _('untitled'),
@@ -1500,9 +1505,10 @@ class SaveItemsTool(CommandTool):
         plot.save_items(itemfile, selected=True)
 
 class LoadItemsTool(OpenFileTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         CommandTool.__init__(self, manager, _("Load items"),
-                             get_std_icon("DialogOpenButton", 16))
+                             get_std_icon("DialogOpenButton", 16),
+                             toolbar_id=toolbar_id)
         self.formats = '*.gui'
 
     def activate_command(self, plot, checked):
@@ -1516,9 +1522,10 @@ class LoadItemsTool(OpenFileTool):
 
 
 class OpenImageTool(OpenFileTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         from guiqwt.io import IMAGE_LOAD_FILTERS
-        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS)
+        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS,
+                              toolbar_id=toolbar_id)
     
 
 class AxisScaleTool(CommandTool):
@@ -1593,9 +1600,10 @@ class AxisScaleTool(CommandTool):
 
 
 class HelpTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(HelpTool,self).__init__(manager, _("Help"),
-                                      get_std_icon("DialogHelpButton", 16))
+                                      get_std_icon("DialogHelpButton", 16),
+                                      toolbar_id=toolbar_id)
                                       
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1611,8 +1619,9 @@ class HelpTool(CommandTool):
 
 
 class DeleteItemTool(CommandTool):
-    def __init__(self, manager):
-        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png")
+    def __init__(self, manager, toolbar_id=None):
+        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png",
+                                            toolbar_id=toolbar_id)
         
     def get_removable_items(self, plot):
         return [item for item in plot.get_selected_items()
@@ -1638,9 +1647,10 @@ class DeleteItemTool(CommandTool):
 
 
 class DuplicateCurveTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(DuplicateCurveTool,self).__init__(manager, _("Duplicate"),
-                                                "copy.png")
+                                                "copy.png",
+                                                toolbar_id=toolbar_id)
     def update_status(self, plot):
         self.set_status_active_item()
             
@@ -1650,8 +1660,10 @@ class DuplicateCurveTool(CommandTool):
 
 
 class DeleteCurveTool(CommandTool):
-    def __init__(self, manager):
-        super(DeleteCurveTool,self).__init__(manager, _("Remove"), "delete.png")
+    def __init__(self, manager, toolbar_id=None):
+        super(DeleteCurveTool,self).__init__(manager, _("Remove"),
+                                             "delete.png",
+                                             toolbar_id=toolbar_id)
 
     def update_status(self, plot):
         self.set_status_active_item()
@@ -1662,8 +1674,9 @@ class DeleteCurveTool(CommandTool):
         
         
 class FilterTool(CommandTool):
-    def __init__(self, manager, filter):
-        super(FilterTool, self).__init__(manager, unicode(filter.name))
+    def __init__(self, manager, filter, toolbar_id=None):
+        super(FilterTool, self).__init__(manager, unicode(filter.name),
+                                         toolbar_id=toolbar_id)
         self.filter = filter
 
     def update_status(self, plot):
@@ -1675,10 +1688,11 @@ class FilterTool(CommandTool):
 
 
 class ColormapTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(ColormapTool, self).__init__(manager, _("Colormap"),
                                            tip=_("Select colormap for active "
-                                                 "image"))
+                                                 "image"),
+                                           toolbar_id=toolbar_id)
         self.action.setEnabled(False)
         self.action.setIconText("")
         self.default_icon = build_icon_from_cmap(get_cmap("jet"),
@@ -1736,11 +1750,13 @@ class ColormapTool(CommandTool):
 
 
 class ImageMaskTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         self._mask_shapes = {}
         self._mask_already_restored = {}
         super(ImageMaskTool, self).__init__(manager, _("Mask"),
-                                            icon="mask_tool.png")
+                                            icon="mask_tool.png",
+                                            tip=_("Manage image masking areas"),
+                                            toolbar_id=toolbar_id)
         self.masked_image = None # associated masked image item
 
     def create_action_menu(self, manager):
