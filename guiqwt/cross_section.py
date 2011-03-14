@@ -99,9 +99,16 @@ class CrossSectionItem(ErrorBarCurveItem):
         if secty.size == 0 or np.all(np.isnan(secty)):
             sectx, secty = np.array([]), np.array([])
         if self._inverted:
-            self.set_data(secty, sectx)
+            self.process_curve_data(secty, sectx)
         else:
-            self.set_data(sectx, secty)
+            self.process_curve_data(sectx, secty)
+            
+    def process_curve_data(self, x, y, dx=None, dy=None):
+        """
+        Override this method to process data 
+        before updating the displayed curve
+        """
+        self.set_data(x, y, dx, dy)
 
     def update_item(self, obj):
         plot = self.plot()
@@ -894,7 +901,7 @@ class RACrossSectionItem(CrossSectionItem):
             sectx, secty, sectdy = compute_radial_section(source, *rect)
             if secty.size == 0 or np.all(np.isnan(secty)):
                 sectx, secty, sectdy = np.array([]), np.array([]), None
-            self.set_data(sectx, secty, None, sectdy)
+            self.process_curve_data(sectx, secty, None, sectdy)
             
     def update_scale(self):
         pass
