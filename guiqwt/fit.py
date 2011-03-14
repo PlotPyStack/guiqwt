@@ -419,7 +419,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         
     def compute_imin_imax(self):
         self.i_min = self.x.searchsorted(self.autofit_prm.xmin)
-        self.i_max = self.x.searchsorted(self.autofit_prm.xmax)
+        self.i_max = self.x.searchsorted(self.autofit_prm.xmax, side='right')
         
     def errorfunc(self, params):
         x = self.x[self.i_min:self.i_max]
