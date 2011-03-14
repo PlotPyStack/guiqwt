@@ -162,7 +162,7 @@ from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 
 stderr = sys.stderr
 try:
-    from guiqwt._ext import hist2d
+    from guiqwt._ext import hist2d, hist2d_func
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
                                 _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
@@ -1916,9 +1916,10 @@ class Histogram2DItem(BaseImageItem):
           (:py:class:`guiqwt.styles.Histogram2DParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem)    
-    def __init__(self, X, Y, param=None):
+    def __init__(self, X, Y, param=None, Z=None):
         if param is None:
             param = ImageParam(_("Image"))
+        self._z = Z # allows set_bins to
         super(Histogram2DItem, self).__init__(param=param)
         
         # Set by parameters
@@ -1935,7 +1936,7 @@ class Histogram2DItem(BaseImageItem):
         self.histparam.update_histogram(self)
         
         self.set_lut_range([0, 10.])
-        self.set_data(X, Y)
+        self.set_data(X, Y, Z)
 
     #---- Public API -----------------------------------------------------------
     def set_bins(self, NX, NY):
@@ -1946,11 +1947,14 @@ class Histogram2DItem(BaseImageItem):
         # Thus, in order to get the result in the correct order we
         # have to swap X and Y axes _before_ computing the histogram
         self.data = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
+        if self._z is not None:
+            self.data_tmp = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
         
-    def set_data(self, X, Y):
+    def set_data(self, X, Y, Z=None):
         """Set histogram data"""
         self._x = X
         self._y = Y
+        self._z = Z
         self.bounds = QRectF(QPointF(X.min(), Y.min()),
                              QPointF(X.max(), Y.max()))
         self.update_border()
@@ -1958,10 +1962,26 @@ class Histogram2DItem(BaseImageItem):
     #---- QwtPlotItem API ------------------------------------------------------
     fill_canvas = True
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
-        self.data[:, :] = 0.0
+        computation = self.histparam.computation
         i1, j1, i2, j2 = src_rect
-        _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
-                         self.data, self.logscale)
+        if computation == -1 or self._z is None:
+            self.data[:, :] = 0.0
+            _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
+                             self.data, self.logscale)
+        else:
+            self.data_tmp[:,:] = 0.0
+            if computation in (0,2,4):
+                self.data[:,:] = 0.0
+            elif computation==1:
+                self.data[:,:] = np.inf
+            elif computation==3:
+                self.data[:,:] = 1.
+            r = hist2d_func(self._y, self._x, self._z, j1, j2, i1, i2,
+                            self.data_tmp, self.data, computation)
+            _,_,nmax=r
+            if computation==1:
+                self.data[self.data==np.inf] = 0.0
+                nmax = self.data.max()
         self.set_lut_range([0, nmax])
         self.plot().update_colormap_axis(self)
         src_rect = (0, 0, self.nx_bins, self.ny_bins)

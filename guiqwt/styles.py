@@ -1285,6 +1285,17 @@ class Histogram2DParam(BaseImageParam):
                       help=_("Number of bins along y-axis"))
     logscale = BoolItem(_("logarithmic"), _("Z-axis scale"), default=False)
     
+    computation = ChoiceItem(_("Computation"),
+                             [(-1, _("Bin count")),
+                              (0, _("Max value")),
+                              (1, _("Min value")),
+                              (2, _("Sum")),
+                              (3, _("Product")),
+                              (4, _("Average")),
+                              ],
+                       default=-1, help=_("Bin count : counts the number of points per bin,\n"
+                                          "For max, min, sum, product, average, compute the function of a third parameter (one by default)"))
+
     def update_param(self, obj):
         super(Histogram2DParam, self).update_param(obj)
         self.logscale = obj.logscale

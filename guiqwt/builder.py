@@ -729,7 +729,8 @@ class PlotItemBuilder(object):
         return filt
     
     def histogram2D(self, X, Y, NX=None, NY=None, logscale=None,
-                    title=None, transparent=None):
+                    title=None, transparent=None, Z=None,
+                    computation=-1,interpolation=0):
         """
         Make a 2D Histogram `plot item` 
         (:py:class:`guiqwt.image.Histogram2DItem` object)
@@ -757,7 +758,9 @@ class PlotItemBuilder(object):
             param.label = make_title(basename, HISTOGRAM2D_COUNT)
         if transparent is not None:
             param.transparent = transparent
-        return Histogram2DItem(X, Y, param)
+        param.computation = computation
+        param.interpolation = interpolation
+        return Histogram2DItem(X, Y, param, Z=Z)
 
     def label(self, text, g, c, anchor, title=""):
         """
