@@ -43,10 +43,10 @@ setup(
                 "icon_resources": [(0, "sift.ico")],
                 "dest_base": "sift",
                 "version": sift.VERSION,
-                "company_name": u"CEA",
+                "company_name": u"Commissariat à l'Energie Atomique et aux Energies Alternatives",
                 "copyright": u"Copyright © 2010 CEA - Pierre Raybaut",
                 "name": "Sift",
-                "description": "Sift",
+                "description": "Signal and Image Filtering Tool",
                 },],
       zipfile = None,
       )
