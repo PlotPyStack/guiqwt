@@ -1816,7 +1816,8 @@ class ImageMaskTool(CommandTool):
                      self.item_selection_changed)
 
     def show_mask(self, state):
-        self.masked_image.set_mask_visible(state)
+        if self.masked_image is not None:
+            self.masked_image.set_mask_visible(state)
 
     def apply_mask(self):
         mask = self.masked_image.get_mask()
