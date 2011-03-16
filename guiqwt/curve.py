@@ -161,7 +161,7 @@ def seg_dist_v(P, X0, Y0, X1, Y1):
     V[:, 0] = X1-X0
     V[:, 1] = Y1-Y0
     dP = np.array(P).reshape(1, 2) - PP
-    nV = np.sqrt(norm2(V))
+    nV = np.sqrt(norm2(V)).clip(1e-12) # clip: avoid division by zero
     w2 = V/nV[:, np.newaxis]
     w = np.array([ -w2[:,1], w2[:,0] ]).T
     distances = np.fabs((dP*w).sum(axis=1))
