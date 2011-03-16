@@ -1284,7 +1284,7 @@ def get_save_filename(plot, title, defaultname, types):
     return unicode(fname)
 
 class SaveAsTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(SaveAsTool,self).__init__(manager, _("Save as..."),
                                         get_std_icon("DialogSaveButton", 16),
                                         toolbar_id=toolbar_id)
@@ -1443,7 +1443,7 @@ class PrintFilter(QwtPlotPrintFilter):
         return result
 
 class PrintTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(PrintTool,self).__init__(manager, _("Print..."),
                                        get_icon("print.png"),
                                        toolbar_id=toolbar_id)
@@ -1465,7 +1465,7 @@ class PrintTool(CommandTool):
 
 
 class OpenFileTool(CommandTool):
-    def __init__(self, manager, formats='*.*', toolbar_id=None):
+    def __init__(self, manager, formats='*.*', toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Open..."),
                              get_std_icon("DialogOpenButton", 16),
                              toolbar_id=toolbar_id)
@@ -1491,7 +1491,7 @@ class OpenFileTool(CommandTool):
 
 
 class SaveItemsTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Save items"),
                              get_std_icon("DialogSaveButton", 16),
                              toolbar_id=toolbar_id)
@@ -1505,7 +1505,7 @@ class SaveItemsTool(CommandTool):
         plot.save_items(itemfile, selected=True)
 
 class LoadItemsTool(OpenFileTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Load items"),
                              get_std_icon("DialogOpenButton", 16),
                              toolbar_id=toolbar_id)
@@ -1522,7 +1522,7 @@ class LoadItemsTool(OpenFileTool):
 
 
 class OpenImageTool(OpenFileTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         from guiqwt.io import IMAGE_LOAD_FILTERS
         OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS,
                               toolbar_id=toolbar_id)
@@ -1600,7 +1600,7 @@ class AxisScaleTool(CommandTool):
 
 
 class HelpTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(HelpTool,self).__init__(manager, _("Help"),
                                       get_std_icon("DialogHelpButton", 16),
                                       toolbar_id=toolbar_id)
@@ -1688,7 +1688,7 @@ class FilterTool(CommandTool):
 
 
 class ColormapTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(ColormapTool, self).__init__(manager, _("Colormap"),
                                            tip=_("Select colormap for active "
                                                  "image"),
@@ -1750,7 +1750,7 @@ class ColormapTool(CommandTool):
 
 
 class ImageMaskTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         self._mask_shapes = {}
         self._mask_already_restored = {}
         super(ImageMaskTool, self).__init__(manager, _("Mask"),
