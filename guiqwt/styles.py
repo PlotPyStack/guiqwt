@@ -1348,7 +1348,8 @@ class AxesShapeParam(DataSet):
 
 class AnnotationParam(DataSet):
     show_label = BoolItem(_("Show annotation"), default=True)
-    show_position = BoolItem(_("Show position and size"), default=True)
+    show_computations = BoolItem(_("Show informations or computations on area "
+                                   "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
     format = StringItem(_("String formatting"), default="%d pixels")
@@ -1357,13 +1358,13 @@ class AnnotationParam(DataSet):
     
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
-        self.show_position = obj.position_and_size_visible
+        self.show_computations = obj.area_computations_visible
         self.title = obj.title().text()
         
     def update_annotation(self, obj):
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
-        obj.position_and_size_visible = self.show_position
+        obj.area_computations_visible = self.show_computations
         obj.update_label()
 
 

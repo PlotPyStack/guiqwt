@@ -89,7 +89,7 @@ class AnnotatedShape(AbstractShape):
         assert self.LABEL_ANCHOR is not None
         self.shape = self.get_shape()
         self.label = self.get_label()
-        self.position_and_size_visible = True
+        self.area_computations_visible = True
         if annotationparam is None:
             self.annotationparam = AnnotationParam(_("Annotation"),
                                                    icon="annotation.png")
@@ -160,30 +160,21 @@ class AnnotatedShape(AbstractShape):
             if text:
                 text += "<br>"
             text += "<i>%s</i>" % subtitle
-        if self.position_and_size_visible:
-            if text:
-                text += "<br>"
-            text += self.get_position_and_size_text()
+        if self.area_computations_visible:
+            infos = self.get_infos()
+            if infos:
+                if text:
+                    text += "<br>"
+                text += infos
         return text
         
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        raise NotImplementedError
+    def get_infos(self):
+        """Return formatted string with informations on current shape"""
+        pass
         
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         raise NotImplementedError
-
-    def get_string_dict(self):
-        sdict = {}
-        for s_value, (name, format, value) in self.get_infos().iteritems():
-            sdict[s_value+'_n'] = name
-            sdict[s_value] = format % value
-        return sdict
-        
-    def get_infos(self):
-        """Return dictionary with measured data on shape"""
-        return {}
     
     def apply_transform_matrix(self, x, y):
         V = np.array([x, y, 1.])
@@ -290,18 +281,13 @@ class AnnotatedPoint(AnnotatedShape):
         """Set label position, for instance based on shape position"""
         x, y = self.shape.points[0]
         self.label.set_position(x, y)
-    
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        tdict = self.get_string_dict()
-        return u"( %(position)s )" % tdict
         
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
-        """Return dictionary with measured data on shape"""
+        """Return formatted string with informations on current shape"""
         f = self.annotationparam.format
         xt, yt = self.apply_transform_matrix(*self.shape.points[0])
-        return {'position': ( "", f+u" ; "+f, (xt, yt) )}
+        return ("( "+f+u" ; "+f+" )") % (xt, yt)
         
 
 class AnnotatedSegment(AnnotatedShape):
@@ -330,6 +316,10 @@ class AnnotatedSegment(AnnotatedShape):
         Return the coordinates of the shape's top-left and bottom-right corners
         """
         return self.shape.get_rect()
+        
+    def get_length(self):
+        """Return segment length"""
+        return compute_distance(*self.get_transformed_coords(0, 2))
     
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
@@ -337,17 +327,11 @@ class AnnotatedSegment(AnnotatedShape):
         x2, y2 = self.shape.points[2]
         self.label.set_position(*compute_center(x0, y0, x2, y2))
         
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        tdict = self.get_string_dict()
-        return u"%(distance_n)s %(distance)s" % tdict
-        
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
-        """Return dictionary with measured data on shape"""
+        """Return formatted string with informations on current shape"""
         f = self.annotationparam.format
-        distance = compute_distance(*self.get_transformed_coords(0, 2))
-        return {'distance':   ( _("Distance:"), f, distance )}
+        return _("Distance:") + (" "+f) % self.get_length()
 
 
 class AnnotatedRectangle(AnnotatedShape):
@@ -377,28 +361,33 @@ class AnnotatedRectangle(AnnotatedShape):
         """
         return self.shape.get_rect()
         
+    def get_center(self):
+        """Return center coordinates: (xc, yc)"""
+        return compute_center(*self.get_transformed_coords(0, 2))
+        
+    def get_size(self):
+        """Return rectangle size: (width, height)"""
+        return compute_rect_size(*self.get_transformed_coords(0, 2))
+        
     #----AnnotatedShape API-----------------------------------------------------
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.min(axis=0)
         self.label.set_position(x_label, y_label)
     
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
+    def get_computations_text(self):
+        """Return formatted string with informations on current shape"""
         tdict = self.get_string_dict()
         return u"%(center_n)s ( %(center)s )<br>%(size_n)s %(size)s" % tdict
         
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
-        """Return dictionary with measured data on shape"""
+        """Return formatted string with informations on current shape"""
         f = self.annotationparam.format
-        coords = self.get_transformed_coords(0, 2)
-        xc, yc = compute_center(*coords)
-        dx, dy = compute_rect_size(*coords)
-        return {
-                'center': ( _("Center:"), f+u" ; "+f, (xc, yc) ),
-                'size':   ( _("Size:"), f+u" x "+f, (dx, dy) )
-                }
+        return "<br>".join([
+                    _("Center:") + (" ( "+f+u" ; "+f+" )") % self.get_center(),
+                    _("Size:") + (" "+f+u" x "+f) % self.get_size(),
+                            ])
 
 
 class AnnotatedEllipse(AnnotatedShape):
@@ -440,6 +429,27 @@ class AnnotatedEllipse(AnnotatedShape):
     def set_rect(self, x0, y0, x1, y1):
         raise NotImplementedError
         
+    def get_center(self):
+        """Return center coordinates: (xc, yc)"""
+        return compute_center(*self.get_transformed_coords(0, 1))
+        
+    def get_size(self):
+        """Return ellipse size: (width, height)"""
+        xcoords = self.get_transformed_coords(0, 1)
+        ycoords = self.get_transformed_coords(2, 3)
+        dx = compute_distance(*xcoords)
+        dy = compute_distance(*ycoords)
+        if fabs(self.get_angle()) > 45:
+            dx, dy = dy, dx
+        return dx, dy
+        
+    def get_angle(self):
+        """Return X-diameter angle with horizontal direction"""
+        xcoords = self.get_transformed_coords(0, 1)
+        _x, yr1 = self.apply_transform_matrix(1., 1.)
+        _x, yr2 = self.apply_transform_matrix(1., 2.)
+        return (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
+        
     #----AnnotatedShape API-----------------------------------------------------
     def get_shape(self):
         """Return the shape object associated to this annotated shape object"""
@@ -452,32 +462,15 @@ class AnnotatedEllipse(AnnotatedShape):
         x_label, y_label = self.shape.points.mean(axis=0)
         self.label.set_position(x_label, y_label)
         
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        tdict = self.get_string_dict()
-        return u"%(center_n)s ( %(center)s )<br>" \
-               u"%(size_n)s %(size)s<br>" \
-               u"%(angle_n)s %(angle)s" % tdict
-        
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
-        """Return dictionary with measured data on shape"""
+        """Return formatted string with informations on current shape"""
         f = self.annotationparam.format
-        xcoords = self.get_transformed_coords(0, 1)
-        ycoords = self.get_transformed_coords(2, 3)
-        xc, yc = compute_center(*xcoords)
-        dx = compute_distance(*xcoords)
-        dy = compute_distance(*ycoords)
-        _x, yr1 = self.apply_transform_matrix(1., 1.)
-        _x, yr2 = self.apply_transform_matrix(1., 2.)
-        angle = (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
-        if fabs(angle) > 45:
-            dx, dy = dy, dx
-        return {
-                'center': ( _("Center:"), f+u" ; "+f, (xc, yc) ),
-                'size':   ( _("Size:"), f+u" x "+f, (dx, dy) ),
-                'angle':  ( _("Angle:"), u"%.1f°", angle ),
-                }
+        return "<br>".join([
+                    _("Center:") + (" ( "+f+u" ; "+f+" )") % self.get_center(),
+                    _("Size:") + (" "+f+u" x "+f) % self.get_size(),
+                    _("Angle:") + " %.1f°" % self.get_angle(),
+                            ])
         
 
 class AnnotatedCircle(AnnotatedEllipse):
@@ -489,24 +482,18 @@ class AnnotatedCircle(AnnotatedEllipse):
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedEllipse.__init__(self, x1, y1, x2, y2, 1., annotationparam)
         
-    #----AnnotatedShape API-----------------------------------------------------
-    def get_position_and_size_text(self):
-        """Return formatted string with position and size of current shape"""
-        tdict = self.get_string_dict()
-        return u"%(center_n)s ( %(center)s )<br>" \
-               u"%(diameter_n)s %(diameter)s" % tdict
+    def get_diameter(self):
+        """Return circle diameter"""
+        return compute_distance(*self.get_transformed_coords(0, 1))
         
     #----AnnotatedShape API-------------------------------------------------
     def get_infos(self):
-        """Return dictionary with measured data on shape"""
+        """Return formatted string with informations on current shape"""
         f = self.annotationparam.format
-        coords = self.get_transformed_coords(0, 1)
-        xc, yc = compute_center(*coords)
-        diameter = compute_distance(*coords)
-        return {
-                'center':   ( _("Center:"), f+u" ; "+f, (xc, yc) ),
-                'diameter': ( _("Diameter:"), f, diameter )
-                }
+        return "<br>".join([
+                    _("Center:") + (" ( "+f+u" ; "+f+" )") % self.get_center(),
+                    _("Diameter:") + (" "+f) % self.get_diameter(),
+                            ])
 
     #----AnnotatedEllipse API---------------------------------------------------
     def set_rect(self, x0, y0, x1, y1):

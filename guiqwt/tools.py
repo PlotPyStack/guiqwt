@@ -881,7 +881,7 @@ class CrossSectionTool(RectangularShapeTool):
     def setup_shape_appearance(self, shape):        
         self.set_shape_style(shape)
         param = shape.annotationparam
-        param.show_position = False
+        param.show_computations = False
         param.update_annotation(shape)
         
     def register_shape(self, shape, final=False):
