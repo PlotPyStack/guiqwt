@@ -38,7 +38,7 @@ Reference
 import weakref
 
 from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem, QFileDialog, QMessageBox)
+                         QSpacerItem, QFileDialog, QMessageBox, QApplication)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
@@ -814,9 +814,9 @@ class YCrossSection(XCrossSection):
     PANEL_ID = ID_YCS
     OTHER_PANEL_ID = ID_XCS
     CrossSectionPlotKlass = YCrossSectionPlot
-    def __init__(self, parent=None, position="right"):
-        self.spacer1 = QSpacerItem(0, 0)
-        self.spacer2 = QSpacerItem(0, 0)
+    def __init__(self, parent=None, position="right", xsection_pos="top"):
+        self.xsection_pos = xsection_pos
+        self.spacer = QSpacerItem(0, 0)
         super(YCrossSection, self).__init__(parent)
         self.cs_plot.set_axis_direction("bottom", reverse=position == "left")
         
@@ -824,12 +824,18 @@ class YCrossSection(XCrossSection):
         toolbar = self.toolbar
         toolbar.setOrientation(Qt.Horizontal)
         layout = QVBoxLayout()
-        layout.addSpacerItem(self.spacer1)
+        if self.xsection_pos == "top":
+            layout.addSpacerItem(self.spacer)
         layout.addWidget(toolbar)
         layout.addWidget(self.cs_plot)
-        layout.addSpacerItem(self.spacer2)
+        if self.xsection_pos == "bottom":
+            layout.addSpacerItem(self.spacer)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
+        
+    def adjust_height(self, height):
+        self.spacer.changeSize(0, height, QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.layout().invalidate()
 
 
 #===============================================================================

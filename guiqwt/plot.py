@@ -887,7 +887,8 @@ class BaseImageWidget(QSplitter):
                               gridparam=gridparam)
 
         from guiqwt.cross_section import YCrossSection
-        self.ycsw = YCrossSection(self, position=ysection_pos)
+        self.ycsw = YCrossSection(self, position=ysection_pos,
+                                  xsection_pos=xsection_pos)
         self.ycsw.setVisible(show_ysection)
         
         from guiqwt.cross_section import XCrossSection
@@ -898,11 +899,9 @@ class BaseImageWidget(QSplitter):
         
         self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
-            self.ycsw_spacer = self.ycsw.spacer1
             self.xcsw_splitter.addWidget(self.xcsw)
             self.xcsw_splitter.addWidget(self.plot)
         else:
-            self.ycsw_spacer = self.ycsw.spacer2
             self.xcsw_splitter.addWidget(self.plot)
             self.xcsw_splitter.addWidget(self.xcsw)
         self.connect(self.xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
@@ -939,9 +938,7 @@ class BaseImageWidget(QSplitter):
     def adjust_ycsw_height(self, height=None):
         if height is None:
             height = self.xcsw.height()-self.ycsw.toolbar.height()
-        self.ycsw_spacer.changeSize(0, height,
-                                    QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.ycsw.layout().invalidate()
+        self.ycsw.adjust_height(height)
         if height:
             QApplication.processEvents()
         
