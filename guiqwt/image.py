@@ -676,11 +676,14 @@ class BaseImageItem(QwtPlotItem):
         else:
             return ydata
             
-    def get_stats(self, x0, y0, x1, y1, xfmt="%.1f", yfmt="%.1f", zfmt="%.1f"):
+    def get_stats(self, x0, y0, x1, y1):
         """Return formatted string with stats on image rectangular area
         (output should be compatible with AnnotatedShape.get_infos)"""
         ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
         data = self.data[iy0:iy1, ix0:ix1]
+        xfmt = self.imageparam.xformat
+        yfmt = self.imageparam.yformat
+        zfmt = self.imageparam.zformat
         return "<br>".join([
                             u"%sx%s %s" % (self.data.shape[1],
                                            self.data.shape[0],

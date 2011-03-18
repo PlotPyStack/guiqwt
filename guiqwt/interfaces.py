@@ -72,7 +72,7 @@ class IExportROIImageItemType(IItemType):
 
 class IStatsImageItemType(IItemType):
     """An image supporting stats computations"""
-    def get_stats(self, x0, y0, x1, y1, xfmt="%.1f", yfmt="%.1f", zfmt="%.1f"):
+    def get_stats(self, x0, y0, x1, y1):
         """Return formatted string with stats on image rectangular area
         (output should be compatible with AnnotatedShape.get_infos)"""
         return dict()

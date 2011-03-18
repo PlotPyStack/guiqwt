@@ -554,7 +554,8 @@ class PlotItemBuilder(object):
         
     def image(self, data=None, filename=None, title=None, alpha_mask=None,
               alpha=None, background_color=None, colormap=None,
-              xdata=[None, None], ydata=[None, None], pixel_size=None):
+              xdata=[None, None], ydata=[None, None], pixel_size=None,
+              xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make an image `plot item` from data
         (:py:class:`guiqwt.image.ImageItem` object or 
@@ -577,7 +578,9 @@ class PlotItemBuilder(object):
         self.__set_image_param(param, title, alpha_mask, alpha,
                                background=background_color,
                                colormap=colormap,
-                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         image = ImageItem(data, param)
         image.set_filename(filename)
         return image
@@ -586,7 +589,8 @@ class PlotItemBuilder(object):
                     alpha_mask=False, alpha=1.0,
                     xdata=[None, None], ydata=[None, None], pixel_size=None,
                     background_color=None, colormap=None,
-                    show_mask=False, fill_value=None):
+                    show_mask=False, fill_value=None,
+                    xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make a masked image `plot item` from data
         (:py:class:`guiqwt.image.MaskedImageItem` object)
@@ -606,7 +610,9 @@ class PlotItemBuilder(object):
                                background=background_color,
                                colormap=colormap,
                                xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                               show_mask=show_mask, fill_value=fill_value)
+                               show_mask=show_mask, fill_value=fill_value,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         image = MaskedImageItem(data, mask, param)
         image.set_filename(filename)
         return image
@@ -670,7 +676,8 @@ class PlotItemBuilder(object):
     def trimage(self, data=None, filename=None, title=None, alpha_mask=None,
                 alpha=None, background_color=None, colormap=None,
                 x0=0.0, y0=0.0, angle=0.0, dx=1.0, dy=1.0,
-                interpolation='linear'):
+                interpolation='linear',
+                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make a transformable image `plot item` (image with an arbitrary 
         affine transform)
@@ -688,7 +695,9 @@ class PlotItemBuilder(object):
                                                      to_grayscale=True)
         self.__set_image_param(param, title, alpha_mask, alpha,
                                background=background_color, colormap=colormap,
-                               x0=x0, y0=y0, angle=angle, dx=dx, dy=dy)
+                               x0=x0, y0=y0, angle=angle, dx=dx, dy=dy,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
         param.interpolation = interp_methods[interpolation]
         image = TrImageItem(data, param)
@@ -696,7 +705,8 @@ class PlotItemBuilder(object):
         return image
 
     def xyimage(self, x, y, data, title=None, alpha_mask=None, alpha=None,
-                background_color=None, colormap=None):
+                background_color=None, colormap=None,
+                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
@@ -707,7 +717,9 @@ class PlotItemBuilder(object):
         """
         param = XYImageParam(title=_("Image"), icon='image.png')
         self.__set_image_param(param, title, alpha_mask, alpha,
-                               background=background_color, colormap=colormap)
+                               background=background_color, colormap=colormap,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         return XYImageItem(x, y, data, param)
     
     def imagefilter(self, xmin, xmax, ymin, ymax,

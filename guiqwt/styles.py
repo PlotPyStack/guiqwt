@@ -994,6 +994,12 @@ class BaseImageParam(DataSet):
                                 (3, _("3x3 antialiasing filter")),
                                 (5, _("5x5 antialiasing filter"))],
                                default=0, help=_("Image interpolation type"))
+
+    _formats = BeginGroup(_("Statistics string formatting"))
+    xformat = StringItem(_("X-Axis"), default=r'%.1f')
+    yformat = StringItem(_("Y-Axis"), default=r'%.1f')
+    zformat = StringItem(_("Z-Axis"), default=r'%.1f')
+    _end_formats = EndGroup(_("Statistics string formatting"))
                                
     def update_param(self, image):
         self.label = unicode(image.title().text())
