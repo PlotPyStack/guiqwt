@@ -259,7 +259,8 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
                                 AnnotatedPoint)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
-                               IVoiImageItemType, IExportROIImageItemType)
+                               IVoiImageItemType, IExportROIImageItemType,
+                               IStatsImageItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
@@ -865,6 +866,83 @@ class AnnotatedSegmentTool(SegmentTool):
     def create_shape(self):
         return AnnotatedSegment(0, 0, 1, 1), 0, 2
 
+
+class ImageStatsRectangle(AnnotatedRectangle):
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
+        super(ImageStatsRectangle, self).__init__(x1, y1, x2, y2,
+                                                  annotationparam)
+        self.image_item = None
+        
+    def set_image_item(self, image_item):
+        self.image_item = image_item
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def get_infos(self):
+        """Return formatted string with informations on current shape"""
+        if self.image_item is not None:
+            return self.image_item.get_stats(*self.get_rect())
+
+def update_image_tool_status(tool, plot):
+    from guiqwt.image import ImagePlot
+    enabled = isinstance(plot, ImagePlot)
+    tool.action.setEnabled(enabled)
+    return enabled
+
+class ImageStatsTool(RectangularShapeTool):
+    TITLE = _("Image statistics")
+    ICON = "imagestats.png"
+    SHAPE_STYLE_KEY = "shape/image_stats"
+    def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
+                 shape_style=None, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        super(ImageStatsTool, self).__init__(manager, setup_shape_cb,
+                                handle_final_shape_cb, shape_style, toolbar_id,
+                                title, icon, tip)
+        self._last_item = None
+        
+    def create_shape(self):
+        return ImageStatsRectangle(0, 0, 1, 1), 0, 2
+        
+    def setup_shape(self, shape):
+        self.setup_shape_appearance(shape)
+        self.register_shape(shape, final=False)
+        
+    def setup_shape_appearance(self, shape):        
+        self.set_shape_style(shape)
+        param = shape.annotationparam
+        if self._last_item is not None:
+            title = self._last_item.imageparam.label
+            if title:
+                param.title = title
+        param.update_annotation(shape)
+        
+    def register_shape(self, shape, final=False):
+        plot = shape.plot()
+        if plot is not None:
+            plot.unselect_all()
+            plot.set_active_item(shape)
+            shape.set_image_item(self._last_item)
+
+#    def activate(self):
+#        """Activate tool"""
+#        super(ImageStatsTool, self).activate()
+#    
+    def handle_final_shape(self, shape):
+        super(ImageStatsTool, self).handle_final_shape(shape)
+        self.setup_shape_appearance(shape)
+        self.register_shape(shape, final=True)
+        
+    def get_associated_item(self, plot):
+        items = plot.get_selected_items(IStatsImageItemType)
+        if len(items) == 1:
+            self._last_item = items[0]
+        return self._last_item
+        
+    def update_status(self, plot):
+        if update_image_tool_status(self, plot):
+            item = self.get_associated_item(plot)
+            self.action.setEnabled(item is not None)
+    
         
 class CrossSectionTool(RectangularShapeTool):
     TITLE = _("Cross section")
@@ -1133,12 +1211,6 @@ class DisplayCoordsTool(CommandTool):
         self.canvas_act.setChecked(plot.canvas_pointer)
         self.curve_act.setChecked(plot.curve_pointer)
 
-
-def update_image_tool_status(tool, plot):
-    from guiqwt.image import ImagePlot
-    enabled = isinstance(plot, ImagePlot)
-    tool.action.setEnabled(enabled)
-    return enabled
 
 class ReverseYAxisTool(ToggleTool):
     def __init__(self, manager):

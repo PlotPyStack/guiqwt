@@ -1348,7 +1348,7 @@ class AxesShapeParam(DataSet):
 
 class AnnotationParam(DataSet):
     show_label = BoolItem(_("Show annotation"), default=True)
-    show_computations = BoolItem(_("Show informations or computations on area "
+    show_computations = BoolItem(_("Show informations on area "
                                    "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")

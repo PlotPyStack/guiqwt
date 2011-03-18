@@ -150,7 +150,7 @@ from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
                                IColormapImageItemType, IVoiImageItemType,
                                ISerializableType, ICSImageItemType,
-                               IExportROIImageItemType)
+                               IExportROIImageItemType, IStatsImageItemType)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
@@ -197,7 +197,7 @@ def pixelround(x, corner=None):
 #===============================================================================
 class BaseImageItem(QwtPlotItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
-                      IVoiImageItemType, ICSImageItemType,
+                      IVoiImageItemType, ICSImageItemType, IStatsImageItemType,
                       IExportROIImageItemType)
     _can_select = True
     _can_resize = False
@@ -543,7 +543,8 @@ class BaseImageItem(QwtPlotItem):
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
-                ITrackableItemType, ICSImageItemType, IExportROIImageItemType)
+                ITrackableItemType, ICSImageItemType, IExportROIImageItemType,
+                IStatsImageItemType, IStatsImageItemType)
 
     def set_readonly(self, state):
         """Set object readonly state"""
@@ -674,6 +675,24 @@ class BaseImageItem(QwtPlotItem):
             return (ydata*a+b).clip(0, LUT_MAX)
         else:
             return ydata
+            
+    def get_stats(self, x0, y0, x1, y1, xfmt="%.1f", yfmt="%.1f", zfmt="%.1f"):
+        """Return formatted string with stats on image rectangular area
+        (output should be compatible with AnnotatedShape.get_infos)"""
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
+        data = self.data[iy0:iy1, ix0:ix1]
+        return "<br>".join([
+                            u"%sx%s %s" % (self.data.shape[1],
+                                           self.data.shape[0],
+                                           str(self.data.dtype)),
+                            u"",
+                            u"%s ≤ x ≤ %s" % (xfmt % x0, xfmt % x1),
+                            u"%s ≤ y ≤ %s" % (yfmt % y0, yfmt % y1),
+                            u"%s ≤ z ≤ %s" % (zfmt % data.min(),
+                                              zfmt % data.max()),
+                            u"‹z› = " + zfmt % data.mean(),
+                            u"σ(z) = " + zfmt % data.std(),
+                            ])
 
     def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
@@ -778,7 +797,7 @@ class RawImageItem(BaseImageItem):
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType, ICSImageItemType, ISerializableType,
-                IExportROIImageItemType)
+                IExportROIImageItemType, IStatsImageItemType)
 
     def get_item_parameters(self, itemparams):
         super(RawImageItem, self).get_item_parameters(itemparams)
