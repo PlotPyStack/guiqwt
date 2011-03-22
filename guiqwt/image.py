@@ -176,6 +176,18 @@ except ImportError:
 LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
 
+def _nanmin(data):
+    if data.dtype.name in ("float32","float64", "float128"):
+        return np.nanmin(data)
+    else:
+        return data.min()
+
+def _nanmax(data):
+    if data.dtype.name in ("float32","float64", "float128"):
+        return _nanmax(data)
+    else:
+        return data.max()
+
 
 def pixelround(x, corner=None):
     """
@@ -465,7 +477,7 @@ class BaseImageItem(QwtPlotItem):
 
     def get_lut_range_full(self):
         """Return full dynamic range"""
-        return np.nanmin(self.data), np.nanmax(self.data)
+        return _nanmin(self.data), _nanmax(self.data)
 
     def get_lut_range_max(self):
         """Get maximum range for this dataset"""
@@ -651,8 +663,8 @@ class BaseImageItem(QwtPlotItem):
                 #TODO: _histogram is faster, but caching is buggy
                 # in this version
                 #tic("histo2")
-                _min = np.nanmin(self.data)
-                _max = np.nanmax(self.data)
+                _min = _nanmin(self.data)
+                _max = _nanmax(self.data)
                 if self.data.dtype in (np.float64, np.float32):
                     bins = np.unique(np.array(np.linspace(_min, _max, nbins+1),
                                               dtype=self.data.dtype))
@@ -761,7 +773,7 @@ class RawImageItem(BaseImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = np.nanmin(data), np.nanmax(data)
+            _min, _max = _nanmin(data), _nanmax(data)
             
         self.data = data
         self.histogram_cache = None
@@ -965,7 +977,7 @@ class QuadGridItem(RawImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = np.nanmin(data), np.nanmax(data)
+            _min, _max = _nanmin(data), _nanmax(data)
 
         self.data = data
         self.histogram_cache = None
