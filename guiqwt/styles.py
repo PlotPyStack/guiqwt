@@ -1295,6 +1295,8 @@ class Histogram2DParam(BaseImageParam):
                               ],
                        default=-1, help=_("Bin count : counts the number of points per bin,\n"
                                           "For max, min, sum, product, average, compute the function of a third parameter (one by default)"))
+    auto_lut = BoolItem(_("Automatic LUT range"), default=True, help=_("Automatically adapt color scale when panning, zooming"))
+    background = ColorItem(_("Background color when no data is present"), default="transparent")
 
     def update_param(self, obj):
         super(Histogram2DParam, self).update_param(obj)
@@ -1303,6 +1305,7 @@ class Histogram2DParam(BaseImageParam):
 
     def update_histogram(self, histogram):
         histogram.logscale = int(self.logscale)
+        histogram.set_background_color(self.background)
         histogram.set_bins(self.nx_bins, self.ny_bins)
         self.update_image(histogram)
 

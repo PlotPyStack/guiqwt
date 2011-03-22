@@ -1927,7 +1927,8 @@ class Histogram2DItem(BaseImageItem):
         * param (optional): style parameters
           (:py:class:`guiqwt.styles.Histogram2DParam` instance)
     """
-    __implements__ = (IBasePlotItem, IBaseImageItem)    
+    __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
+                      IVoiImageItemType,)
     def __init__(self, X, Y, param=None, Z=None):
         if param is None:
             param = ImageParam(_("Image"))
@@ -1992,10 +1993,13 @@ class Histogram2DItem(BaseImageItem):
                             self.data_tmp, self.data, computation)
             _,_,nmax=r
             if computation==1:
-                self.data[self.data==np.inf] = 0.0
                 nmax = self.data.max()
-        self.set_lut_range([0, nmax])
-        self.plot().update_colormap_axis(self)
+                self.data[self.data==np.inf] = np.nan
+            else:
+                self.data[self.data_tmp==0.0] = np.nan
+        if self.histparam.auto_lut:
+            self.set_lut_range([0, nmax])
+            self.plot().update_colormap_axis(self)
         src_rect = (0, 0, self.nx_bins, self.ny_bins)
         drawfunc = super(Histogram2DItem, self).draw_image
         if self.fill_canvas:
@@ -2006,7 +2010,8 @@ class Histogram2DItem(BaseImageItem):
     
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
-        return (IColormapImageItemType, IImageItemType, ITrackableItemType,)
+        return (IColormapImageItemType, IImageItemType, ITrackableItemType,
+                IVoiImageItemType, IColormapImageItemType, ICSImageItemType)
 
     def get_item_parameters(self, itemparams):
         super(Histogram2DItem, self).get_item_parameters(itemparams)
@@ -2023,7 +2028,26 @@ class Histogram2DItem(BaseImageItem):
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
-        return False
+        return True
+
+    def get_histogram(self, nbins):
+        """interface de IHistDataSource"""
+        if self.data is None:
+            return [0,], [0,1]
+        _min = _nanmin(self.data)
+        _max = _nanmax(self.data)
+        if self.data.dtype in (np.float64, np.float32):
+            bins = np.unique(np.array(np.linspace(_min, _max, nbins+1),
+                                      dtype=self.data.dtype))
+        else:
+            bins = np.arange(_min, _max+2,
+                             dtype=self.data.dtype)
+        res2 = np.zeros((bins.size+1,), np.uint32)
+        _histogram(self.data.flatten(), bins, res2)
+                #toc("histo2")
+        res = res2[1:-1], bins
+        return res
+
     
 assert_interfaces_valid(Histogram2DItem)
 

@@ -127,7 +127,7 @@ class HistogramItem(CurveItem):
         
     def set_hist_data(self, data):
         """Set histogram data"""
-        self.set_hist_source(HistDataSource(data))        
+        self.set_hist_source(HistDataSource(data))
 
     def set_logscale(self, state):
         """Sets whether we use a logarithm or linear scale

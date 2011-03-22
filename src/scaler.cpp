@@ -272,7 +272,11 @@ void _scale_rgb(DEST& dest,
 		scale.set_bg( it() );
 	    } else {
 		val = interpolate(src, tr, p);
-		it() = scale.eval(val);
+		if (isnan(val)) {
+		    scale.set_bg( it() );
+		} else {
+		    it() = scale.eval(val);
+		}
 	    }
 	    tr.incx(p);
 	    it.move(1,0);
