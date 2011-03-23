@@ -443,8 +443,8 @@ class CursorComputation(ObjectInfo):
         self.func = function
 
     def get_text(self):
-        x, y = self.cursor.get_handle_pos()
-        return self.label % self.func(x, y)
+        pos = self.cursor.get_pos()
+        return self.label % self.func(pos)
 
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):

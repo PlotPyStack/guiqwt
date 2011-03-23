@@ -1046,9 +1046,11 @@ assert_interfaces_valid(XRangeSelection)
 class Cursor(AbstractShape):
     """Horizontal/Vertical cursor base class"""
     ICON = None
-    def __init__(self, pos):
+    
+    def __init__(self, pos, moveable=True):
         super(Cursor, self).__init__()
         self.pos = pos
+        self.handle_pos = None
         self.shapeparam = CursorShapeParam(_("Cursor"), icon=self.ICON)
         self.shapeparam.read_config(CONF, "histogram", "range")
         self.pen = None
@@ -1057,8 +1059,10 @@ class Cursor(AbstractShape):
         self.symbol = None
         self.sel_symbol = None
         self.shapeparam.update_range(self) # creates all the above QObjects
+        self._can_move = moveable
+        self._can_resize = moveable
         
-    def get_handle_pos(self):
+    def update_handle_pos(self, xMap, yMap, canvasRect):
         raise NotImplementedError
         
     def get_line(self, xMap, yMap, plot):
@@ -1066,9 +1070,6 @@ class Cursor(AbstractShape):
         raise NotImplementedError
         
     def draw(self, painter, xMap, yMap, canvasRect):
-        plot = self.plot()
-        if not plot:
-            return
         if self.selected:
             pen = self.sel_pen
             sym = self.sel_symbol
@@ -1076,11 +1077,13 @@ class Cursor(AbstractShape):
             pen = self.pen
             sym = self.symbol
         painter.setPen(pen)
-        pos1, pos2 = self.get_line(xMap, yMap, plot)
+        pos1, pos2 = self.get_line(xMap, yMap, canvasRect)
         painter.drawLine(pos1, pos2)
-        painter.setPen(pen)
-        x, y = self.get_handle_pos()        
-        sym.draw(painter, QPoint(x,y))
+        
+        self.update_handle_pos(xMap, yMap, canvasRect) 
+        if self.can_move():
+            painter.setPen(pen)
+            sym.draw(painter, QPoint(*self.handle_pos))
         
     def get_distance_from_point(self, point):
         raise NotImplementedError
@@ -1099,7 +1102,8 @@ class Cursor(AbstractShape):
     def move_point_to(self, hnd, pos, ctrl=None):
         val, _ = pos
         self.pos = val
-        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
+        if self.plot():
+            self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
 
     def get_pos(self):
         return self.pos
@@ -1126,20 +1130,19 @@ assert_interfaces_valid(Cursor)
 class VerticalCursor(Cursor):
     """Vertical cursor"""
     ICON = 'vcursor.png'
-    def get_handle_pos(self):
-        plot = self.plot()
-        x = plot.transform(self.xAxis(), self.pos)
-        y = plot.canvas().contentsRect().center().y()
-        return x, y
+    def update_handle_pos(self, xMap, yMap, canvasRect):
+        x = xMap.transform(self.pos)
+        y = canvasRect.center().y()
+        self.handle_pos = x, y
         
-    def get_line(self, xMap, yMap, plot):
+    def get_line(self, xMap, yMap, canvasRect):
         """Return line to be drawn (QLineF object)"""
-        rect = QRectF( plot.canvas().contentsRect() )
+        rect = QRectF(canvasRect)
         rect.setLeft(xMap.transform(self.pos))
         return rect.topLeft(), rect.bottomLeft()
         
     def get_distance_from_point(self, point):
-        x, y = self.get_handle_pos()
+        x, y = self.handle_pos
         return fabs(x-point.x())
         
     def move_local_point_to(self, handle, pos, ctrl=None):
@@ -1159,20 +1162,19 @@ assert_interfaces_valid(VerticalCursor)
 class HorizontalCursor(Cursor):
     """Horizontal cursor"""
     ICON = 'hcursor.png'
-    def get_handle_pos(self):
-        plot = self.plot()
-        x = plot.canvas().contentsRect().center().x()
-        y = plot.transform(self.yAxis(), self.pos)
-        return x, y
+    def update_handle_pos(self, xMap, yMap, canvasRect):
+        x = canvasRect.center().x()
+        y = yMap.transform(self.pos)
+        self.handle_pos = x, y
         
-    def get_line(self, xMap, yMap, plot):
+    def get_line(self, xMap, yMap, canvasRect):
         """Return line to be drawn (QLineF object)"""
-        rect = QRectF( plot.canvas().contentsRect() )
+        rect = QRectF(canvasRect)
         rect.setTop(yMap.transform(self.pos))
         return rect.topLeft(), rect.topRight()
         
     def get_distance_from_point(self, point):
-        x, y = self.get_handle_pos()
+        x, y = self.handle_pos
         return fabs(y-point.y())
         
     def move_local_point_to(self, handle, pos, ctrl=None):
