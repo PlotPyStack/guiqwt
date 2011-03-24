@@ -264,8 +264,10 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct.PixelRepresentation = ('u', 'i').index(infos.kind)
     dcmstruct.Rows = arr.shape[0]
     dcmstruct.Columns = arr.shape[1]
-    dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
+    if not dcmstruct.PhotometricInterpretation.startswith('MONOCHROME'):
+        dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
 #    print "LENGTH=", len(arr.tostring())
     dcmstruct.PixelData = arr.tostring()
+    dcmstruct[0x7fe00010].VR = 'OB'
     dcmstruct.save_as(filename)
     

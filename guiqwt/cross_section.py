@@ -38,7 +38,7 @@ Reference
 import weakref
 
 from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem, QFileDialog, QMessageBox, QApplication)
+                         QSpacerItem, QFileDialog, QMessageBox)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
