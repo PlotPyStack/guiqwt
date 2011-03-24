@@ -7,27 +7,28 @@
 
 """All image and plot tools test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           MultiLineTool, FreeFormTool, SegmentTool, CircleTool,
                           AnnotatedRectangleTool, AnnotatedEllipseTool,
-                          AnnotatedSegmentTool, AnnotatedCircleTool,
-                          AnnotatedPointTool, LabelTool)
+                          AnnotatedSegmentTool, AnnotatedCircleTool, LabelTool,
+                          AnnotatedPointTool, VCursorTool, HCursorTool)
 from guiqwt.builder import make
 
-SHOW = True # Show test in GUI-based test launcher
-
 def create_window():
-    win = ImagePlotDialog(edit=False, toolbar=True,
-                          wintitle="All image and plot tools test")
-    for toolklass in (LabelTool, SegmentTool, RectangleTool, CircleTool,
-                      EllipseTool, MultiLineTool, FreeFormTool, PlaceAxesTool,
-                      HRangeTool, AnnotatedRectangleTool, AnnotatedCircleTool,
+    win = ImageDialog(edit=False, toolbar=True,
+                      wintitle="All image and plot tools test")
+    for toolklass in (LabelTool, HRangeTool, VCursorTool, HCursorTool,
+                      SegmentTool, RectangleTool, CircleTool, EllipseTool,
+                      MultiLineTool, FreeFormTool, PlaceAxesTool,
+                      AnnotatedRectangleTool, AnnotatedCircleTool,
                       AnnotatedEllipseTool, AnnotatedSegmentTool,
                       AnnotatedPointTool):
-        win.register_tool(toolklass)
+        win.add_tool(toolklass)
     return win
 
 def test():

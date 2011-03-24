@@ -6,17 +6,52 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains several subclasses of QwtPlotItem
-intended for displaying labels and legends
+guiqwt.label
+------------
+
+The `labels` module provides plot items related to labels and legends:
+    * :py:class:`guiqwt.shapes.LabelItem`
+    * :py:class:`guiqwt.shapes.LegendBoxItem`
+    * :py:class:`guiqwt.shapes.SelectedLegendBoxItem`
+    * :py:class:`guiqwt.shapes.RangeComputation`
+    * :py:class:`guiqwt.shapes.RangeComputation2d`
+    * :py:class:`guiqwt.shapes.DataInfoLabel`
+
+A label or a legend is a plot item (derived from QwtPlotItem) that may be 
+displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+or :py:class:`guiqwt.image.ImagePlot`.
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: LabelItem
+   :members:
+   :inherited-members:
+.. autoclass:: LegendBoxItem
+   :members:
+   :inherited-members:
+.. autoclass:: SelectedLegendBoxItem
+   :members:
+   :inherited-members:
+.. autoclass:: RangeComputation
+   :members:
+   :inherited-members:
+.. autoclass:: RangeComputation2d
+   :members:
+   :inherited-members:
+.. autoclass:: DataInfoLabel
+   :members:
+   :inherited-members:
 """
 
 from PyQt4.QtGui import QPen, QColor, QTextDocument
 from PyQt4.QtCore import QRectF
-from PyQt4.Qwt5 import QwtPlotItem
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
+from guiqwt.transitional import QwtPlotItem
+from guiqwt.config import CONF
 from guiqwt.curve import CurveItem
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType
 from guiqwt.signals import SIG_ITEM_MOVED
@@ -42,7 +77,8 @@ class AbstractLabelItem(QwtPlotItem):
     G can also be an anchor string as in ANCHORS in which case
     the label will keep a fixed position wrt the canvas rect
     """
-    _readonly = True
+    _readonly = False
+    _private = False
     
     def __init__(self, labelparam):
         super(AbstractLabelItem, self).__init__()
@@ -53,6 +89,10 @@ class AbstractLabelItem(QwtPlotItem):
         self.border_pen = None
         self.bg_brush = None
         self.labelparam = labelparam
+        self.labelparam.update_label(self)
+
+    def set_style(self, section, option):
+        self.labelparam.read_config(CONF, section, option)
         self.labelparam.update_label(self)
 
     def get_state(self):
@@ -106,6 +146,14 @@ class AbstractLabelItem(QwtPlotItem):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()
@@ -113,6 +161,7 @@ class AbstractLabelItem(QwtPlotItem):
             plot.invalidate()
 
     def select(self):
+        """Select item"""
         if self.selected:
             # Already selected
             return
@@ -122,6 +171,7 @@ class AbstractLabelItem(QwtPlotItem):
         self.invalidate_plot()
 
     def unselect(self):
+        """Unselect item"""
         self.selected = False
         self.labelparam.update_label(self)
         self.invalidate_plot()
@@ -156,8 +206,9 @@ class AbstractLabelItem(QwtPlotItem):
         if self.selected:
             self.select()
     
-    def move_local_point_to(self, handle, pos):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         if handle != -1:
             return
     
@@ -226,9 +277,9 @@ class LabelItem(AbstractLabelItem):
         return unicode(self.text.toPlainText())
         
     def set_text(self, text=None):
-        if text is None:
-            text = self.text_string
-        self.text.setHtml("<div>%s</div>" % text)
+        if text is not None:
+            self.text_string = text
+        self.text.setHtml("<div>%s</div>" % self.text_string)
         
     def set_text_style(self, font, color):
         self.text.setDefaultFont(font)
@@ -291,7 +342,7 @@ class LegendBoxItem(AbstractLabelItem):
         return text_items
 
     def include_item(self, item):
-        return True
+        return item.isVisible()
     
     def get_legend_size(self, items):
         width = 0
@@ -375,7 +426,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
         return (self.__class__, (self.labelparam, []))
 
     def include_item(self, item):
-        return item in self.itemlist
+        return LegendBoxItem.include_item(self, item) and item in self.itemlist
         
     def add_item(self, item):
         self.itemlist.append(item)
@@ -384,6 +435,16 @@ class SelectedLegendBoxItem(LegendBoxItem):
 class ObjectInfo(object):
     def get_text(self):
         return u""
+
+class CursorComputation(ObjectInfo):
+    def __init__(self, label, cursor, function):
+        self.label = unicode(label)
+        self.cursor = cursor
+        self.func = function
+
+    def get_text(self):
+        x, y = self.cursor.get_handle_pos()
+        return self.label % self.func(x, y)
 
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):

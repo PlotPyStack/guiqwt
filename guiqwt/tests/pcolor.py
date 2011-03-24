@@ -5,18 +5,18 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
-"""ImagePlotDialog / Pcolor test"""
-
-import numpy as np
-
-from guiqwt.plot import ImagePlotDialog
-from guiqwt.builder import make
+"""ImageDialog / Pcolor test"""
 
 SHOW = True # Show test in GUI-based test launcher
 
+import numpy as np
+
+from guiqwt.plot import ImageDialog
+from guiqwt.builder import make
+
 def imshow( items ):
-    win = ImagePlotDialog(edit=False, toolbar=True, options={"yreverse": False},
-                          wintitle="Pcolor test")
+    win = ImageDialog(edit=False, toolbar=True, options={"yreverse": False},
+                      wintitle="Pcolor test")
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)

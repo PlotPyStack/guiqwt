@@ -7,16 +7,17 @@
 
 """Tests around image transforms: rotation, translation, ..."""
 
-import numpy as np
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtCore import QRectF
 from PyQt4.QtGui import QImage
 
+import numpy as np
+
 from guiqwt.image import assemble_imageitems
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
-
-SHOW = True # Show test in GUI-based test launcher
 
 DEFAULT_CHARS = "".join([chr(c) for c in range(32,256)])
 
@@ -65,8 +66,8 @@ def txtwrite(data, x, y, sz, txt, range=None):
 def imshow(items, title=""):
     gridparam = make.gridparam(background="black", minor_enabled=(False, False),
                                major_style=(".", "gray", 1))
-    win = ImagePlotDialog(edit=False, toolbar=True, wintitle=title,
-                          options=dict(gridparam=gridparam))
+    win = ImageDialog(edit=False, toolbar=True, wintitle=title,
+                      options=dict(gridparam=gridparam))
     nc = int(np.sqrt(len(items))+1.0)
     maxy = 0
     y = 0
@@ -123,19 +124,17 @@ def build_image(items):
     r = get_bbox(items)
     x,y,w,h = r.getRect()
     print "Assemble test1:", w,"x", h
-    dest = assemble_imageitems(items, r.getRect(), w, h, align=4, sampling=(0,))
+    dest = assemble_imageitems(items, r, w, h, align=4)
     print "saving..."
     save_image("test1.png", dest)
     
-    msk = np.ones( (11,11), float)
     print "Assemble test2:", w/4,"x", h/4
-    dest = assemble_imageitems(items, r.getRect(), w/4, h/4, align=4, sampling=(1,msk))
+    dest = assemble_imageitems(items, r, w/4, h/4, align=4)
     save_image("test2.png", dest)
-
 
 def test():
     """Test"""
-    N = 3000
+    N = 500
     data = compute_image(N, N)
     m = data.min()
     M = data.max()
@@ -149,7 +148,6 @@ def test():
         items.append(make.trimage(img, colormap="jet"))
     imshow(items, title=u"Transform test (%dx%d images)" % (N, N))
     return items
-
 
 if __name__ == "__main__":
     # -- Create QApplication

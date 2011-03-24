@@ -7,20 +7,19 @@
 
 """Mandelbrot demo"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import numpy as np
 
 from PyQt4.QtCore import QRectF, QPointF
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotDialog
-from guiqwt.image import ImageItem
+from guiqwt.plot import ImageDialog
+from guiqwt.image import RawImageItem
 from guiqwt.tools import ToggleTool
 
 from guiqwt._mandel import mandel
 mandelbrot = mandel.mandelbrot
-
-SHOW = True # Show test in GUI-based test launcher
-
 
 class FullScale(ToggleTool):
     def __init__(self, parent, image):
@@ -40,8 +39,7 @@ class FullScale(ToggleTool):
     def update_status(self, plot):
         self.action.setChecked(self.image.IMAX == self.maxprec)
 
-
-class MandelItem(ImageItem):
+class MandelItem(RawImageItem):
     def __init__(self, xmin, xmax, ymin, ymax):
         super(MandelItem, self).__init__(np.zeros((1, 1), np.int16, order='F'))
         self.bounds = QRectF(QPointF(xmin, ymin),
@@ -74,19 +72,17 @@ class MandelItem(ImageItem):
         super(MandelItem, self).draw_image(painter, canvasRect, srcRect,
                                            (x1, y1, x2, y2), xMap, yMap)
 
-
 def mandel():
-    win = ImagePlotDialog(edit=True, toolbar=True, wintitle="Mandelbrot",
-                          options=dict(yreverse=False))
+    win = ImageDialog(edit=True, toolbar=True, wintitle="Mandelbrot",
+                      options=dict(yreverse=False))
     mandel = MandelItem(-1.5, .5, -1., 1.)
-    win.register_tool(FullScale, mandel)
+    win.add_tool(FullScale, mandel)
     plot = win.get_plot()
     plot.set_aspect_ratio(lock=False)
     plot.add_item(mandel)
     plot.set_full_scale(mandel)
     win.show()
     win.exec_()
-
 
 if __name__ == "__main__":
     import guidata

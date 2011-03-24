@@ -1,19 +1,24 @@
 \.pyc$
+\.so$
 \.settings$
 \.ropeproject$
 \.orig$
+\.chm$
 \.pyd$
 \.gui$
+\.pickle$
 ^build/
+^sift/build/
+^sift/sift[0-9]*/
 ^dist/
 ^tests/build
 ^tests/dist
 Thumbs.db$
 MANIFEST$
-contrast.png$
 loadsavecanvas.gui$
 \.pot$
 ~$
 syntax: glob
 tests/test*.tif
 tests/test*.png
+tests/contrast.png

@@ -6,10 +6,29 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt input/output helpers
+guiqwt.io
+---------
+
+The `io` module provides input/output helper functions:
+    * :py:func:`guiqwt.io.imagefile_to_array`: load an image (.png, .tiff, 
+      .dicom, etc.) and return its data as a NumPy array
+    * :py:func:`guiqwt.io.array_to_imagefile`: save an array to an image file
+    * :py:func:`guiqwt.io.array_to_dicomfile`: save an array to a DICOM image 
+      file according to a passed DICOM structure (base file)
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: imagefile_to_array
+.. autofunction:: array_to_imagefile
+.. autofunction:: array_to_dicomfile
 """
 
 import sys, os.path as osp, numpy as np, os, time
+
+# Local imports
+from guiqwt.config import _
+
 
 if sys.byteorder == 'little':
     _ENDIAN = '<'
@@ -22,6 +41,7 @@ DTYPES = {
           "I": ('%si4' % _ENDIAN, None),
           "F": ('%sf4' % _ENDIAN, None),
           "I;16": ('%su2' % _ENDIAN, None),
+          "I;16B": ('%su2' % _ENDIAN, None),
           "I;16S": ('%si2' % _ENDIAN, None),
           "P": ('|u1', None),
           "RGB": ('|u1', 3),
@@ -97,17 +117,33 @@ def set_dynamic_range_from_mode(data, mode):
     return set_dynamic_range_from_dtype(data, dtypes[mode])
 
 
-def imagefile_to_array(filename):
-    """Return a numpy array from an image file *filename*"""
+IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
+                     '%s (*.npy)\n%s (*.txt *.csv)'\
+                     % (_(u"Images"), _(u"NumPy arrays"), _(u"Text files"))
+IMAGE_SAVE_FILTERS = IMAGE_LOAD_FILTERS
+try:
+    import dicom
+    IMAGE_LOAD_FILTERS += ('\n%s (*.dcm)' % _(u"DICOM images"))
+except ImportError:
+    pass
+
+def imagefile_to_array(filename, to_grayscale=False):
+    """
+    Return a NumPy array from an image file *filename*
+    If *to_grayscale* is True, convert RGB images to grayscale
+    """
     if not isinstance(filename, basestring):
         filename = unicode(filename) # in case *filename* is a QString instance
     _base, ext = osp.splitext(filename)
-    if ext.lower() in (".jpg", ".png", ".gif", ".tif"):
+    if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff", ".jp2"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
         img = PIL.Image.open(filename)
-        if img.mode in ("RGB", "RGBX", "RGBA", "CMYK", "YCbCr"):
-            # Converting RGB to greyscale
+        if img.mode in ("CMYK", "YCbCr"):
+            # Converting to RGB
+            img = img.convert("RGB")
+        if to_grayscale and img.mode in ("RGB", "RGBA", "RGBX"):
+            # Converting to grayscale
             img = img.convert("L")
         try:
             dtype, extra = DTYPES[img.mode]
@@ -117,8 +153,20 @@ def imagefile_to_array(filename):
         if extra is not None:
             shape += (extra,)
         arr = np.array(img.getdata(), dtype=np.dtype(dtype)).reshape(shape)
+        if img.mode in ("RGB", "RGBA", "RGBX"):
+            arr = np.flipud(arr)
+    elif ext.lower() == ".npy":
+        arr = np.load(filename)
+    elif ext.lower() in (".txt", ".asc", ""):
+        for delimiter in ('\t', ',', ' ', ';'):
+            try:
+                arr = np.loadtxt(filename, delimiter=delimiter)
+                break
+            except ValueError:
+                continue
+        else:
+            raise
     elif ext.lower() in (".dcm",):
-        import dicom
         dcm = dicom.ReadFile(filename)
         # **********************************************************************
         # The following is necessary until pydicom numpy support is improved:
@@ -159,9 +207,9 @@ def imagefile_to_array(filename):
     else:
         raise RuntimeError("%s: unsupported image file"
                            % osp.basename(filename))
-    # Converting RGB to greyscale
-    if arr.ndim == 3:
-        return arr.mean(axis=2)
+    if to_grayscale and arr.ndim == 3:
+        # Converting to grayscale
+        return arr[...,:4].mean(axis=2)
     else:
         return arr
 
@@ -171,9 +219,15 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     Warning: option 'max_range' changes data in place
     """
     if max_range:
+        assert mode is not None
         arr = set_dynamic_range_from_mode(arr, mode)
     _base, ext = osp.splitext(filename)
-    if ext.lower() in (".jpg", ".png", ".gif", ".tif"):
+    if arr.dtype in (np.int8, np.uint8, np.int16, np.uint16,
+                     np.int32, np.uint32):
+        fmt = '%d'
+    else:
+        fmt = '%.18e'
+    if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
         if mode is None:
@@ -184,15 +238,23 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
                 raise RuntimeError("Cannot determine PIL data type")
         img = PIL.Image.fromarray(arr, mode)
         img.save(filename)
+    elif ext.lower() == ".npy":
+        np.save(filename, arr)
+    elif ext.lower() in (".txt", ".asc", ""):
+        np.savetxt(filename, arr, fmt=fmt)
+    elif ext.lower() == ".csv":
+        np.savetxt(filename, arr, fmt=fmt, delimiter=',')
     else:
         raise RuntimeError("%s: unsupported image file type" % ext)
 
-def array_to_dicomfile(arr, dcmstruct, filename):
+def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     """
     Save a numpy array *arr* into a DICOM image file *filename*
     based on DICOM structure *dcmstruct*
     """
-#    import dicom
+    if max_range:
+        assert dtype is not None
+        arr = set_dynamic_range_from_dtype(arr, dtype)
 #    uid = make_uid(dicom.UID.root+"1")
     rows, columns = arr.shape
     infos = np.iinfo(arr.dtype)

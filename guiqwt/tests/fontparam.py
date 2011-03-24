@@ -7,9 +7,9 @@
 
 """FontParam test"""
 
-from guiqwt.styles import FontParam
-
 SHOW = False # Do not show test in GUI-based test launcher
+
+from guiqwt.styles import FontParam
 
 def test():
     fp = FontParam()

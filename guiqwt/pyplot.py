@@ -6,7 +6,96 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Interactive plotting interface with MATLAB-like syntax
+guiqwt.pyplot
+-------------
+
+The `pyplot` module provides an interactive plotting interface similar to 
+`Matplotlib`'s, i.e. with MATLAB-like syntax.
+
+The :py:mod:`guiqwt.pyplot` module was designed to be as close as possible 
+to the :py:mod:`matplotlib.pyplot` module, so that one could easily switch 
+between these two modules by simply changing the import statement. Basically,
+if `guiqwt` does support the plotting commands called in your script, replacing 
+``import matplotlib.pyplot`` by ``import guiqwt.pyplot`` should suffice, as 
+shown in the following example:
+    
+    * Simple example using `matplotlib`::
+    
+        import matplotlib.pyplot as plt
+        import numpy as np
+        x = np.linspace(-10, 10)
+        plt.plot(x, x**2, 'r+')
+        plt.show()
+
+    * Switching from `matplotlib` to `guiqwt` is trivial::
+    
+        import guiqwt.pyplot as plt # only this line has changed!
+        import numpy as np
+        x = np.linspace(-10, 10)
+        plt.plot(x, x**2, 'r+')
+        plt.show()
+
+Examples
+~~~~~~~~
+
+>>> import numpy as np
+>>> from guiqwt.pyplot import * # ugly but acceptable in an interactive session
+>>> ion() # switching to interactive mode
+>>> x = np.linspace(-5, 5, 1000)
+>>> figure(1)
+>>> subplot(2, 1, 1)
+>>> plot(x, np.sin(x), "r+")
+>>> plot(x, np.cos(x), "g-")
+>>> errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
+>>> xlabel("Axe x")
+>>> ylabel("Axe y")
+>>> subplot(2, 1, 2)
+>>> img = np.fromfunction(lambda x, y: np.sin((x/200.)*(y/200.)**2), (1000, 1000))
+>>> xlabel("pixels")
+>>> ylabel("pixels")
+>>> zlabel("intensity")
+>>> gray()
+>>> imshow(img)
+>>> figure("plotyy")
+>>> plotyy(x, np.sin(x), x, np.cos(x))
+>>> ylabel("sinus", "cosinus")
+>>> show()
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: interactive
+.. autofunction:: ion
+.. autofunction:: ioff
+
+.. autofunction:: figure
+.. autofunction:: gcf
+.. autofunction:: gca
+.. autofunction:: show
+.. autofunction:: subplot
+.. autofunction:: close
+
+.. autofunction:: title
+.. autofunction:: xlabel
+.. autofunction:: ylabel
+.. autofunction:: zlabel
+
+.. autofunction:: yreverse
+.. autofunction:: grid
+.. autofunction:: legend
+.. autofunction:: colormap
+
+.. autofunction:: savefig
+
+.. autofunction:: plot
+.. autofunction:: plotyy
+.. autofunction:: semilogx
+.. autofunction:: semilogy
+.. autofunction:: loglog
+.. autofunction:: errorbar
+.. autofunction:: hist
+.. autofunction:: imshow
+.. autofunction:: pcolor
 """
 
 import sys
@@ -23,7 +112,7 @@ from guiqwt.plot import PlotManager
 from guiqwt.image import ImagePlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.histogram import ContrastAdjustment
-from guiqwt.cross_section import XCrossSectionWidget, YCrossSectionWidget
+from guiqwt.cross_section import XCrossSection, YCrossSection
 from guiqwt.builder import make
 
 
@@ -40,12 +129,12 @@ class Window(QMainWindow):
         self.plots = []
         self.itemlist = PlotItemList(None)
         self.contrast = ContrastAdjustment(None)
-        self.xcsw = XCrossSectionWidget(None)
-        self.ycsw = YCrossSectionWidget(None)
+        self.xcsw = XCrossSection(None)
+        self.ycsw = YCrossSection(None)
         
         self.manager = PlotManager(self)
         self.toolbar = QToolBar(_("Tools"), self)
-        self.manager.add_toolbar(self.toolbar, id(self.toolbar))
+        self.manager.add_toolbar(self.toolbar, "default")
         self.toolbar.setMovable(True)
         self.toolbar.setFloatable(True)
         self.addToolBar(Qt.TopToolBarArea, self.toolbar)
@@ -75,7 +164,7 @@ class Window(QMainWindow):
         
     def add_plot(self, i, j, plot):
         self.layout.addWidget(plot, i, j)
-        self.manager.add_plot(plot, id(plot))
+        self.manager.add_plot(plot)
         self.plots.append(plot)
 
     def replot(self):
@@ -90,13 +179,10 @@ class Window(QMainWindow):
                 self.manager.add_panel(panel)
             
     def register_tools(self, images=False):
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_curve_tools()
         if images:
-            self.manager.register_image_tools()
-            self.manager.add_separator_tool()
-        self.manager.register_other_tools()
+            self.manager.register_all_image_tools()
+        else:
+            self.manager.register_all_curve_tools()
     
     def display(self):
         self.show()
@@ -362,6 +448,7 @@ def plot(*args, **kwargs):
     for curve in curves:
         axe.add_plot(curve)
     _show_if_interactive()
+    return curves
 
 def plotyy(x1, y1, x2, y2):
     """
@@ -382,6 +469,7 @@ def plotyy(x1, y1, x2, y2):
     axe.add_plot(curve1)
     axe.add_plot(curve2)
     _show_if_interactive()
+    return [curve1, curve2]
 
 def hist(data, bins=None, logscale=None, title=None, color=None):
     """
@@ -399,6 +487,7 @@ def hist(data, bins=None, logscale=None, title=None, color=None):
                            title=title, color=color, yaxis='left')
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def semilogx(*args, **kwargs):
     """
@@ -416,6 +505,7 @@ def semilogx(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
     
 def semilogy(*args, **kwargs):
     """
@@ -433,6 +523,7 @@ def semilogy(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
     
 def loglog(*args, **kwargs):
     """
@@ -451,6 +542,7 @@ def loglog(*args, **kwargs):
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def errorbar(*args, **kwargs):
     """
@@ -467,6 +559,7 @@ def errorbar(*args, **kwargs):
     curve = make.merror(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
+    return [curve]
 
 def imshow(data):
     """
@@ -487,6 +580,7 @@ def imshow(data):
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()
+    return [img]
 
 def pcolor(*args):
     """
@@ -509,6 +603,7 @@ def pcolor(*args):
     axe.add_image(img)
     axe.yreverse = len(args) == 1
     _show_if_interactive()
+    return [img]
 
 def interactive(state):
     """Toggle interactive mode"""

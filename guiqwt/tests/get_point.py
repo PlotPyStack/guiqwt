@@ -11,12 +11,13 @@ SelectPointTool test
 This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
-from guiqwt.plot import CurvePlotDialog
+SHOW = True # Show test in GUI-based test launcher
+
+from guiqwt.plot import CurveDialog
 from guiqwt.tools import SelectPointTool
 from guiqwt.builder import make
 from guiqwt.config import _
 
-SHOW = True # Show test in GUI-based test launcher
 
 def test_function(tool):
     print "Current coordinates:", tool.get_coordinates()
@@ -25,11 +26,9 @@ def get_point( *args ):
     """
     Plot curves and return selected point(s) coordinates
     """
-    win = CurvePlotDialog(_("Select one point then press OK to accept"),
-                          edit=True)
-    default = win.register_tool(SelectPointTool, title="Test",
-                                on_active_item=True, mode="create",
-                                end_callback=test_function)
+    win = CurveDialog(_("Select one point then press OK to accept"), edit=True)
+    default = win.add_tool(SelectPointTool, title="Test", on_active_item=True,
+                           mode="create", end_callback=test_function)
     default.activate()
     plot = win.get_plot()
     for cx, cy in args:

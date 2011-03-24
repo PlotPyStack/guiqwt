@@ -6,7 +6,10 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Object interface classes for guiqwt module
+guiqwt.interfaces
+-----------------
+
+The `interfaces` module provides object interface classes for `guiqwt`.
 """
 
 class IItemType(object):
@@ -42,8 +45,8 @@ class IImageItemType(IItemType):
     pass
 
 class IVoiImageItemType(IItemType):
-    """An image with with set_lut_range, get_lut_range"""
-    def set_lut_range(self, range):
+    """An image with set_lut_range, get_lut_range"""
+    def set_lut_range(self, lut_range):
         pass
 
     def get_lut_range(self):
@@ -58,8 +61,24 @@ class IVoiImageItemType(IItemType):
         """Get maximum range for this dataset"""
         return 0.,255.
 
+class IColormapImageItemType(IItemType):
+    """An image with an associated colormap"""
+    pass
+
+class IExportROIImageItemType(IItemType):
+    """An image with export_roi"""
+    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+        pass
+
+class IStatsImageItemType(IItemType):
+    """An image supporting stats computations"""
+    def get_stats(self, x0, y0, x1, y1):
+        """Return formatted string with stats on image rectangular area
+        (output should be compatible with AnnotatedShape.get_infos)"""
+        return dict()
+
 class ICSImageItemType(IItemType):
-    """An image with cross section methods implemented"""
+    """An image supporting X/Y cross sections"""
     def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
         assert isinstance(y0, (float, int))
@@ -78,10 +97,6 @@ class ICSImageItemType(IItemType):
         """Return average cross section along y-axis"""
         return np.array([])
 
-class IColormapImageItemType(IItemType):
-    """An image with an associated colormap"""
-    pass
-
 class IShapeItemType(IItemType):
     """A shape (annotation)"""
     pass
@@ -98,10 +113,11 @@ class ISerializableType(IItemType):
 class IBasePlotItem(object):
     """
     This is the interface that QwtPlotItem objects must implement
-    to be handled by *EnhancedQwtPlot* widgets
+    to be handled by *BasePlot* widgets
     """
     selected = False # True if this item is selected
-    _readonly = True
+    _readonly = False
+    _private = False
     _can_select = True # Indicate this item can be selected
     _can_move = True
     _can_resize = True
@@ -130,6 +146,14 @@ class IBasePlotItem(object):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def select(self):
         """
@@ -178,8 +202,9 @@ class IBasePlotItem(object):
         """
         pass
     
-    def move_local_point_to(self, handle, pos ):
-        """Move a handle as returned by hit_test to the new position pos"""
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        """Move a handle as returned by hit_test to the new position pos
+        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -219,16 +244,16 @@ class IHistDataSource(object):
         
 class IPlotManager(object):
     """A 'controller' that organizes relations between
-    plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
+    plots (BasePlot), panels, tools (GuiTool) and toolbar
     """
-    def add_plot(self, plot, id="default"):
+    def add_plot(self, plot, plot_id="default"):
         assert id not in self.plots
-        assert isinstance(plot, EnhancedQwtPlot)
+        assert isinstance(plot, BasePlot)
 
     def add_panel(self, panel):
         assert id not in self.panels
 
-    def add_toolbar(self, toolbar, id="default"):
+    def add_toolbar(self, toolbar, toolbar_id="default"):
         assert id not in self.toolbars
 
     def get_active_plot(self):
@@ -238,23 +263,17 @@ class IPlotManager(object):
         pass
 
 
-from guiqwt.signals import SIG_VISIBILITY_CHANGED
-from PyQt4.QtGui import QWidget
-
-class PanelWidget(QWidget):
-    def showEvent(self, event):
-        QWidget.showEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, True)
-        
-    def hideEvent(self, event):
-        QWidget.hideEvent(self, event)
-        self.emit(SIG_VISIBILITY_CHANGED, False)
-
 class IPanel(object):
     """Interface for panels controlled by PlotManager"""
-    __inherits__ = PanelWidget
-    def panel_id(self):
-        raise NotImplementedError
+    @staticmethod
+    def __inherits__():
+        from guiqwt.panels import PanelWidget
+        return PanelWidget
     
     def register_panel(self, manager):
+        """Register panel to plot manager"""
+        pass
+    
+    def configure_panel(self):
+        """Configure panel"""
         pass

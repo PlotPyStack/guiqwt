@@ -7,12 +7,12 @@
 
 """Contrast tool test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 def test():
     """Test"""
@@ -23,13 +23,18 @@ def test():
     filename = osp.join(osp.dirname(__file__), "brain.png")
     image = make.image(filename=filename, title="Original", colormap='gray')
     
-    win = ImagePlotDialog(edit=False, toolbar=True, wintitle="Contrast test",
-                          options=dict(show_contrast=True))
+    win = ImageDialog(edit=False, toolbar=True, wintitle="Contrast test",
+                      options=dict(show_contrast=True))
     plot = win.get_plot()
     plot.add_item(image)
     win.resize(600, 600)
     win.show()
-    plot.save_widget('contrast.png')
+    try:
+        plot.save_widget('contrast.png')
+    except IOError:
+        # Skipping this part of the test 
+        # because user has no write permission on current directory
+        pass
     win.exec_()
 
 if __name__ == "__main__":

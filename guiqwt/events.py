@@ -10,18 +10,20 @@
 # R0903: complains about too few public methods which is the purpose here
 
 """
-Gestion des événements par EventFilter
+guiqwt.events
+-------------
 
-un EventState est un gestionnaire d'événement faisant parti
-d'une machine d'état.
+The `event` module handles event management (states, event filter, ...).
 """
 
-from PyQt4.QtCore import QEvent, Qt, QObject, QPoint, SIGNAL
+from PyQt4.QtCore import QEvent, Qt, QObject, QPoint
 
 CursorShape = type(Qt.ArrowCursor)
 
 from guiqwt.config import CONF
 from guiqwt.debug import evt_type_to_str, buttons_to_str
+from guiqwt.signals import (SIG_CLICK_EVENT, SIG_START_TRACKING, SIG_END_RECT,
+                            SIG_STOP_NOT_MOVING, SIG_STOP_MOVING, SIG_MOVE)
 
 
 # Sélection d'événements  ---------
@@ -296,7 +298,7 @@ class ClickHandler(QObject):
                          self.click, start_state)
 
     def click(self, filter, event):
-        self.emit(SIGNAL("click_event"), filter, event)
+        self.emit(SIG_CLICK_EVENT, filter, event)
 
 
 class PanHandler(DragHandler):
@@ -323,16 +325,16 @@ class MenuHandler(ClickHandler):
 class QtDragHandler(DragHandler):
     def start_tracking(self, filter, event):
         super(QtDragHandler, self).start_tracking(filter, event)
-        self.emit(SIGNAL("start_tracking"), filter, event)
+        self.emit(SIG_START_TRACKING, filter, event)
 
     def stop_notmoving(self, filter, event):
-        self.emit(SIGNAL("stop_notmoving"), filter, event)
+        self.emit(SIG_STOP_NOT_MOVING, filter, event)
 
     def stop_moving(self, filter, event):
-        self.emit(SIGNAL("stop_moving"), filter, event)
+        self.emit(SIG_STOP_MOVING, filter, event)
 
     def move(self, filter, event):
-        self.emit(SIGNAL("move"), filter, event)
+        self.emit(SIG_MOVE, filter, event)
 
 
 class AutoZoomHandler(ClickHandler):
@@ -452,7 +454,8 @@ class ObjectHandler(object):
         if self.inside:
             self.active.move_local_shape(self.last_pos, event.pos())
         else:
-            self.active.move_local_point_to(self.handle, event.pos())
+            ctrl = event.modifiers() & Qt.ControlModifier == Qt.ControlModifier
+            self.active.move_local_point_to(self.handle, event.pos(), ctrl)
         self.last_pos = QPoint(event.pos())
         filter.plot.replot()
         
@@ -508,7 +511,7 @@ class RectangularSelectionHandler(DragHandler):
         
     def stop_moving_action(self, filter, event):
         """Les classes derivees peuvent surcharger cette methode"""
-        self.emit(SIGNAL("end_rect"), filter, self.start, event.pos())
+        self.emit(SIG_END_RECT, filter, self.start, event.pos())
 
 
 class ZoomRectHandler(RectangularSelectionHandler):

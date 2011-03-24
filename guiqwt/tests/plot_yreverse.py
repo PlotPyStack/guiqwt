@@ -7,10 +7,10 @@
 
 """Reverse y-axis test for curve plotting"""
 
-from guiqwt.plot import CurvePlotDialog
-from guiqwt.builder import make
-
 SHOW = False # Do not show test in GUI-based test launcher
+
+from guiqwt.plot import CurveDialog
+from guiqwt.builder import make
 
 def test():
     """Test"""
@@ -23,7 +23,7 @@ def test():
     y = x*np.exp(-x)
     item = make.curve(x, y, color="b")
     
-    win = CurvePlotDialog()
+    win = CurveDialog()
     plot = win.get_plot()
     plot.add_item(item)
     plot.set_axis_direction("left", True)

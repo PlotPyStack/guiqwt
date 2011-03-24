@@ -6,13 +6,107 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Ready-to-use curve and image plotting dialog boxes
+guiqwt.plot
+-----------
+
+The `plot` module provides the following features:
+    * :py:class:`guiqwt.plot.PlotManager`: the `plot manager` is an object to 
+      link `plots`, `panels` and `tools` together for designing highly 
+      versatile graphical user interfaces
+    * :py:class:`guiqwt.plot.CurveWidget`: a ready-to-use widget for curve 
+      displaying with an integrated and preconfigured `plot manager` providing 
+      the `item list panel` and curve-related `tools`
+    * :py:class:`guiqwt.plot.CurveDialog`: a ready-to-use dialog box for 
+      curve displaying with an integrated and preconfigured `plot manager` 
+      providing the `item list panel` and curve-related `tools`
+    * :py:class:`guiqwt.plot.ImageWidget`: a ready-to-use widget for curve 
+      and image displaying with an integrated and preconfigured `plot manager` 
+      providing the `item list panel`, the `contrast adjustment` panel, the 
+      `cross section panels` (along X and Y axes) and image-related `tools` 
+      (e.g. colormap selection tool)
+    * :py:class:`guiqwt.plot.ImageDialog`: a ready-to-use dialog box for 
+      curve and image displaying with an integrated and preconfigured 
+      `plot manager` providing the `item list panel`, the `contrast adjustment` 
+      panel, the `cross section panels` (along X and Y axes) and image-related 
+      `tools` (e.g. colormap selection tool)
+
+.. seealso::
+    
+    Module :py:mod:`guiqwt.curve`
+        Module providing curve-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.tools`
+        Module providing the `plot tools`
+        
+    Module :py:mod:`guiqwt.panels`
+        Module providing the `plot panels` IDs
+        
+    Module :py:mod:`guiqwt.signals`
+        Module providing all the end-user Qt SIGNAL objects defined in `guiqwt`
+        
+    Module :py:mod:`guiqwt.baseplot`
+        Module providing the `guiqwt` plotting widget base class
+
+
+Class diagrams
+~~~~~~~~~~~~~~
+
+Curve-related widgets with integrated plot manager:
+
+.. image:: images/curve_widgets.png
+
+Image-related widgets with integrated plot manager:
+
+.. image:: images/image_widgets.png
+
+Building your own plot manager:
+
+.. image:: images/my_plot_manager.png
+
+
+Examples
+~~~~~~~~
+
+Simple example *without* the `plot manager`:
+
+.. literalinclude:: ../guiqwt/tests/filtertest1.py
+   :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
+Simple example *with* the `plot manager`:
+even if this simple example does not justify the use of the `plot manager` 
+(this is an unnecessary complication here), it shows how to use it. In more 
+complex applications, using the `plot manager` allows to design highly versatile
+graphical user interfaces.
+
+.. literalinclude:: ../guiqwt/tests/filtertest2.py
+   :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: PlotManager
+   :members:
+   :inherited-members:
+.. autoclass:: CurveWidget
+   :members:
+.. autoclass:: CurveDialog
+   :members:
+.. autoclass:: ImageWidget
+   :members:
+.. autoclass:: ImageDialog
+   :members:
 """
 
-import weakref
+import weakref, warnings
+
 from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
                          QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QSizePolicy, QApplication)
+                         QSizePolicy, QApplication, QWidget, QMainWindow)
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
@@ -21,31 +115,37 @@ from guidata.qthelpers import create_action
 
 # Local imports
 from guiqwt.config import _
-from guiqwt.baseplot import EnhancedQwtPlot
+from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.image import ImagePlot
-from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool,
-                          ReverseYAxisTool, BasePlotMenuTool, HelpTool,
-                          ItemListTool, AntiAliasingTool, PrintTool,
+from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
+                          ReverseYAxisTool, BasePlotMenuTool, DeleteItemTool,
+                          ItemListPanelTool, AntiAliasingTool, PrintTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
-                          AspectRatioTool, ContrastTool, DummySeparatorTool,
-                          XCrossSectionTool, YCrossSectionTool, SnapshotTool,
-                          AverageCrossSectionsTool)
+                          AspectRatioTool, ContrastPanelTool, XCSPanelTool,
+                          YCSPanelTool, SnapshotTool, DummySeparatorTool,
+                          CrossSectionTool, AverageCrossSectionTool,
+                          ImageStatsTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_VISIBILITY_CHANGED)
+                            SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
 
+
+class DefaultPlotID(object):
+    pass
 
 class PlotManager(object):
     """
-    A 'controller' that organizes relations between
-    plots (EnhancedQwtPlot), panels, tools (GuiTool) and toolbar
+    Construct a PlotManager object, a 'controller' that organizes relations 
+    between plots (i.e. :py:class:`guiqwt.curve.CurvePlot` or 
+    :py:class:`guiqwt.image.ImagePlot` objects), panels, 
+    tools (see :py:mod:`guiqwt.tools`) and toolbars
     """
     __implements__ = (IPlotManager,)
 
     def __init__(self, main):
         self.main = main # The main parent widget
-        self.plots = {} # maps ids to instances of EnhancedQwtPlot
+        self.plots = {} # maps ids to instances of BasePlot
         self.panels = {} # Qt widgets that need to know about the plots
         self.tools = []
         self.toolbars = {}
@@ -53,47 +153,121 @@ class PlotManager(object):
         self.default_tool = None
         self.default_plot = None
         self.default_toolbar = None
+        self.synchronized_plots = {}
         self.groups = {} # Action groups for grouping QActions
+        # Keep track of the registration sequence (plots, panels, tools):
+        self._first_tool_flag = True
 
-    def add_plot(self, plot, id):
-        assert id not in self.plots
-        assert isinstance(plot, EnhancedQwtPlot)
+    def add_plot(self, plot, plot_id=DefaultPlotID):
+        """
+        Register a plot to the plot manager:
+            * plot: :py:class:`guiqwt.curve.CurvePlot` or 
+              :py:class:`guiqwt.image.ImagePlot` object
+            * plot_id (default id is the plot object's id: ``id(plot)``): 
+              unique ID identifying the plot (any Python object), 
+              this ID will be asked by the manager to access this plot later.
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
+        if plot_id is DefaultPlotID:
+            plot_id = id(plot)
+        assert plot_id not in self.plots
+        assert isinstance(plot, BasePlot)
         assert not self.tools, "tools must be added after plots"
         assert not self.panels, "panels must be added after plots"
-        self.plots[id] = plot
+        self.plots[plot_id] = plot
         if len(self.plots) == 1:
             self.default_plot = plot
-        plot.set_manager(self)
+        plot.set_manager(self, id)
         # Connecting signals
         plot.connect(plot, SIG_ITEMS_CHANGED, self.update_tools_status)
         plot.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.update_tools_status)
+        plot.connect(plot, SIG_PLOT_AXIS_CHANGED, self.plot_axis_changed)
         
     def set_default_plot(self, plot):
+        """
+        Set default plot
+        
+        The default plot is the plot on which tools and panels will act.
+        """
         self.default_plot = plot
         
     def get_default_plot(self):
+        """
+        Return default plot
+        
+        The default plot is the plot on which tools and panels will act.
+        """
         return self.default_plot
 
     def add_panel(self, panel):
-        id = panel.panel_id()
-        assert id not in self.panels
+        """
+        Register a panel to the plot manager
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
+        assert panel.PANEL_ID not in self.panels
         assert not self.tools, "tools must be added after panels"
-        self.panels[id] = panel
+        self.panels[panel.PANEL_ID] = panel
         panel.register_panel(self)
+        
+    def configure_panels(self):
+        """
+        Call all the registred panels 'configure_panel' methods to finalize the 
+        object construction (this allows to use tools registered to the same 
+        plot manager as the panel itself with breaking the registration 
+        sequence: "add plots, then panels, then tools")
+        """
+        for panel_id in self.panels:
+            panel = self.get_panel(panel_id)
+            panel.configure_panel()
 
-    def add_toolbar(self, toolbar, id):
-        assert id not in self.toolbars
-        self.toolbars[id] = toolbar
+    def add_toolbar(self, toolbar, toolbar_id="default"):
+        """
+        Add toolbar to the plot manager
+            toolbar: a QToolBar object
+            toolbar_id: toolbar's id (default id is string "default")
+        """
+        assert toolbar_id not in self.toolbars
+        self.toolbars[toolbar_id] = toolbar
         if self.default_toolbar is None:
             self.default_toolbar = toolbar
             
     def set_default_toolbar(self, toolbar):
+        """
+        Set default toolbar
+        """
         self.default_toolbar = toolbar
         
     def get_default_toolbar(self):
+        """
+        Return default toolbar
+        """
         return self.default_toolbar
 
     def add_tool(self, ToolKlass, *args, **kwargs):
+        """
+        Register a tool to the manager
+            * ToolKlass: tool's class (`guiqwt` builtin tools are defined in 
+              module :py:mod:`guiqwt.tools`)
+            * *args: arguments sent to the tool's class
+            * **kwargs: keyword arguments sent to the tool's class
+        
+        Plot manager's registration sequence is the following:
+            1. add plots
+            2. add panels
+            3. add tools
+        """
+        if self._first_tool_flag:
+            # This is the very first tool to be added to this manager
+            self._first_tool_flag = False
+            self.configure_panels()
         tool = ToolKlass(self, *args, **kwargs)
         self.tools.append(tool)
         for plot in self.plots.values():
@@ -103,6 +277,10 @@ class PlotManager(object):
         return tool
         
     def add_separator_tool(self, toolbar_id=None):
+        """
+        Register a separator tool to the plot manager: the separator tool is 
+        just a tool which insert a separator in the plot context menu
+        """
         if toolbar_id is None:
             for _id, toolbar in self.toolbars.iteritems():
                 if toolbar is self.get_default_toolbar():
@@ -111,28 +289,56 @@ class PlotManager(object):
         self.add_tool(DummySeparatorTool, toolbar_id)
         
     def set_default_tool(self, tool):
+        """
+        Set default tool
+        """
         self.default_tool = tool
 
     def get_default_tool(self):
+        """
+        Get default tool
+        """
         return self.default_tool
 
+    def activate_default_tool(self):
+        """
+        Activate default tool
+        """
+        self.get_default_tool().activate()
+
     def get_active_tool(self):
+        """
+        Return active tool
+        """
         return self.active_tool
 
     def set_active_tool(self, tool=None):
-        """Activate tool or default tool"""
+        """
+        Set active tool (if tool argument is None, the active tool will be 
+        the default tool)
+        """
         self.active_tool = tool
 
-    def get_plot(self, id=None):
-        if id is None:
+    def get_plot(self, plot_id=DefaultPlotID):
+        """
+        Return plot associated to `plot_id` (if method is called without 
+        specifying the `plot_id` parameter, return the default plot)
+        """
+        if plot_id is DefaultPlotID:
             return self.default_plot
-        return self.plots[id]
+        return self.plots[plot_id]
 
     def get_plots(self):
+        """
+        Return all registered plots
+        """
         return self.plots.values()
 
     def get_active_plot(self):
-        """The active plot is the plot whose canvas has the focus
+        """
+        Return the active plot
+        
+        The active plot is the plot whose canvas has the focus
         otherwise it's the "default" plot
         """
         for plot in self.plots.values():
@@ -151,24 +357,117 @@ class PlotManager(object):
             return group()
 
     def get_main(self):
+        """
+        Return the main (parent) widget
+        
+        Note that for py:class:`guiqwt.plot.CurveWidget` or 
+        :py:class:`guiqwt.plot.ImageWidget` objects, this method will 
+        return the widget itself because the plot manager is integrated to it.
+        """
         return self.main
 
+    def set_main(self, main):
+        self.main = main
+
     def get_panel(self, panel_id):
+        """
+        Return panel from its ID
+        Panel IDs are listed in module guiqwt.panels
+        """
         return self.panels.get(panel_id, None)
+        
+    def get_itemlist_panel(self):
+        """
+        Convenience function to get the `item list panel`
+        
+        Return None if the item list panel has not been added to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_ITEMLIST)
+        
+    def get_contrast_panel(self):
+        """
+        Convenience function to get the `contrast adjustment panel`
+        
+        Return None if the contrast adjustment panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_CONTRAST)
+        
+    def set_contrast_range(self, zmin, zmax):
+        """
+        Convenience function to set the `contrast adjustment panel` range
+        
+        This is strictly equivalent to the following::
+            
+            # Here, *widget* is for example a CurveWidget instance
+            # (the same apply for CurvePlot, ImageWidget, ImagePlot or any 
+            #  class deriving from PlotManager)
+            widget.get_contrast_panel().set_range(zmin, zmax)
+        """
+        self.get_contrast_panel().set_range(zmin, zmax)
+        
+    def get_xcs_panel(self):
+        """
+        Convenience function to get the `X-axis cross section panel`
+        
+        Return None if the X-axis cross section panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_XCS)
+        
+    def get_ycs_panel(self):
+        """
+        Convenience function to get the `Y-axis cross section panel`
+        
+        Return None if the Y-axis cross section panel has not been added 
+        to this manager
+        """
+        from guiqwt import panels
+        return self.get_panel(panels.ID_YCS)
+        
+    def update_cross_sections(self):
+        """
+        Convenience function to update the `cross section panels` at once
+        
+        This is strictly equivalent to the following::
+            
+            # Here, *widget* is for example a CurveWidget instance
+            # (the same apply for CurvePlot, ImageWidget, ImagePlot or any 
+            #  class deriving from PlotManager)
+            widget.get_xcs_panel().update_plot()
+            widget.get_ycs_panel().update_plot()
+        """
+        self.get_xcs_panel().update_plot()
+        self.get_ycs_panel().update_plot()
 
-    def get_toolbar(self, tbname):
-        return self.toolbars.get(tbname, None)
+    def get_toolbar(self, toolbar_id="default"):
+        """
+        Return toolbar from its ID
+            toolbar_id: toolbar's id (default id is string "default")
+        """
+        return self.toolbars.get(toolbar_id, None)
 
-    def get_context_menu(self, plot):
-        """Return widget context menu -- built using active tools"""
+    def get_context_menu(self, plot=None):
+        """
+        Return widget context menu -- built using active tools
+        """
+        if plot is None:
+            plot = self.get_plot()
         menu = QMenu(plot)
         self.update_tools_status(plot)
         for tool in self.tools:
             tool.setup_context_menu(menu, plot)
         return menu
         
-    def update_tools_status(self, plot):
-        """Update tools for current plot"""
+    def update_tools_status(self, plot=None):
+        """
+        Update tools for current plot
+        """
+        if plot is None:
+            plot = self.get_plot()
         for tool in self.tools:
             tool.update_status(plot)
 
@@ -181,40 +480,135 @@ class PlotManager(object):
     # The following methods provide some sets of tools that
     # are often registered together
     def register_standard_tools(self):
-        """Registering basic tools for standard plot dialog
-        --> top of the context-menu"""
+        """
+        Registering basic tools for standard plot dialog
+        --> top of the context-menu
+        """
         t = self.add_tool(SelectTool)
         self.set_default_tool(t)
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
+        self.add_tool(DeleteItemTool)
+        self.add_separator_tool()
         self.add_tool(BasePlotMenuTool, "grid")
         self.add_tool(BasePlotMenuTool, "axes")
         self.add_tool(DisplayCoordsTool)
-        self.add_tool(ItemListTool)
+        if self.get_itemlist_panel():
+            self.add_tool(ItemListPanelTool)
 
     def register_curve_tools(self):
-        """Registering specific tools
-        --> middle of the context-menu"""
+        """
+        Register only curve-related tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        """
         self.add_tool(AntiAliasingTool)
         self.add_tool(AxisScaleTool)
-        
-    def register_other_tools(self):
-        """Registering other common tools
-        --> bottom of the context-menu"""
-        self.add_tool(SaveAsTool)
-        self.add_tool(PrintTool)
-        self.add_tool(HelpTool)
 
     def register_image_tools(self):
+        """
+        Register only image-related tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        """
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
         self.add_tool(AspectRatioTool)
-        self.add_tool(ContrastTool)
-        self.add_tool(XCrossSectionTool)
-        self.add_tool(YCrossSectionTool)
-        self.add_tool(AverageCrossSectionsTool)
+        if self.get_contrast_panel():
+            self.add_tool(ContrastPanelTool)
         self.add_tool(SnapshotTool)
+        self.add_tool(ImageStatsTool)
+        if self.get_xcs_panel() and self.get_ycs_panel():
+            self.add_tool(XCSPanelTool)
+            self.add_tool(YCSPanelTool)
+            self.add_tool(CrossSectionTool)
+            self.add_tool(AverageCrossSectionTool)
+        
+    def register_other_tools(self):
+        """
+        Register other common tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        """
+        self.add_tool(SaveAsTool)
+        self.add_tool(PrintTool)
+        self.add_tool(HelpTool)
+        
+    def register_all_curve_tools(self):
+        """
+        Register standard, curve-related and other tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_all_image_tools`
+        """
+        self.register_standard_tools()
+        self.add_separator_tool()
+        self.register_curve_tools()
+        self.add_separator_tool()
+        self.register_other_tools()
+        self.add_separator_tool()
+        self.get_default_tool().activate()
+        
+    def register_all_image_tools(self):
+        """
+        Register standard, image-related and other tools
+        
+        .. seealso:: methods 
+        :py:meth:`guiqwt.plot.PlotManager.add_tool`
+        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        :py:meth:`guiqwt.plot.PlotManager.register_all_curve_tools`
+        """
+        self.register_standard_tools()
+        self.add_separator_tool()
+        self.register_image_tools()
+        self.add_separator_tool()
+        self.register_other_tools()
+        self.add_separator_tool()
+        self.get_default_tool().activate()
+        
+    def synchronize_axis(self, axis, plots):
+        for plot_id in plots:
+            synclist = self.synchronized_plots.setdefault(plot_id, [])
+            for plot2_id in plots:
+                if plot_id==plot2_id:
+                    continue
+                item = (axis,plot2_id)
+                if item not in synclist:
+                    synclist.append(item)
 
+    def plot_axis_changed(self, plot):
+        plot_id = plot.plot_id
+        if plot_id not in self.synchronized_plots:
+            return
+        for (axis, other_plot_id) in self.synchronized_plots[plot_id]:
+            scalediv = plot.axisScaleDiv(axis)
+            map = plot.canvasMap(axis)
+            other = self.get_plot(other_plot_id)
+            lb = scalediv.lowerBound()
+            ub = scalediv.upperBound()
+            other.setAxisScale(axis, lb, ub)
+            other.replot()
+        
 assert_interfaces_valid(PlotManager)
 
 
@@ -233,18 +627,50 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setStretchFactor(1, 1)
         qsplit.setSizes([1, 2])
 
-class CurvePlotWidget(QSplitter):
+class SubplotWidget(QSplitter):
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None):
+        QSplitter.__init__(self, Qt.Horizontal, parent)
+        
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+        self.plots = []
+
+        parent = QWidget()
+        self.plotlayout = QGridLayout()
+        parent.setLayout(self.plotlayout)
+        self.addWidget(parent)
+
+        self.itemlist = PlotItemList(self)
+        self.itemlist.setVisible(show_itemlist)
+        self.addWidget(self.itemlist)
+
+    def add_subplot(self, plot, i=0, j=0, plot_id=None):
+        """Add a plot to the grid of plots"""
+        self.plotlayout.addWidget(plot, i, j)
+        self.plots.append(plot)
+        if plot_id is None:
+            plot_id = id(plot)
+        self.manager.add_plot(plot, plot_id)
+
+    def finalize(self):
+        self.manager.add_panel(self.itemlist)
+        configure_plot_splitter(self)
+
+class BaseCurveWidget(QSplitter):
     """
-    CurvePlotWidget
-    
-    parent: parent widget
-    title: plot title
-    xlabel: (bottom axis title, top axis title) or bottom axis title only
-    ylabel: (left axis title, right axis title) or left axis title only
+    Construct a BaseCurveWidget object, which includes:
+        * A plot (:py:class:`guiqwt.curve.CurvePlot`)
+        * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
+        
+    This object does nothing in itself because plot and panels are not 
+    connected to each other.
+    See children class :py:class:`guiqwt.plot.CurveWidget`
     """
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  section="plot", show_itemlist=False, gridparam=None):
-        super(CurvePlotWidget, self).__init__(Qt.Horizontal, parent)
+        QSplitter.__init__(self, Qt.Horizontal, parent)
+        
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.plot = CurvePlot(parent=self,
@@ -255,120 +681,195 @@ class CurvePlotWidget(QSplitter):
         self.itemlist.setVisible(show_itemlist)
         self.addWidget(self.itemlist)
         configure_plot_splitter(self)
+
+class CurveWidget(BaseCurveWidget, PlotManager):
+    """
+    Construct a CurveWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title
+        * xlabel: (bottom axis title, top axis title) or bottom axis title only
+        * ylabel: (left axis title, right axis title) or left axis title only
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None,
+                 panels=None):
+        BaseCurveWidget.__init__(self, parent, title, xlabel, ylabel,
+                                     section, show_itemlist, gridparam)
+        PlotManager.__init__(self, main=self)
         
-        self.manager = PlotManager(self)
-        self.manager.add_plot(self.plot, id(self.plot))
-        self.manager.add_panel(self.itemlist)
-        
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
+        # Configuring plot manager
+        self.add_plot(self.plot)
+        self.add_panel(self.itemlist)
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
 
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
-
-
-class CurvePlotDialog(QDialog):
+class CurveWidgetMixin(PlotManager):
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
-        super(CurvePlotDialog, self).__init__(parent)
-        self.edit = edit
+                 toolbar=False, options=None, panels=None):
+        PlotManager.__init__(self, main=self)
+
+        self.plot_layout = QGridLayout()
+        
+        if options is None:
+            options = {}
+        self.plot_widget = None
+        self.create_plot(options)
+        
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
+        
+        self.toolbar = QToolBar(_("Tools"))
+        if not toolbar:
+            self.toolbar.hide()
+
+        # Configuring widget layout
+        self.setup_widget_properties(wintitle=wintitle, icon=icon)
+        self.setup_widget_layout()
+        
+        # Configuring plot manager
+        self.add_toolbar(self.toolbar, "default")
+        self.register_tools()
+        
+    def setup_widget_layout(self):
+        raise NotImplementedError
+        
+    def setup_widget_properties(self, wintitle, icon):
         self.setWindowTitle(wintitle)
         if isinstance(icon, basestring):
             icon = get_icon(icon)
         self.setWindowIcon(icon)
         self.setMinimumSize(320, 240)
         self.resize(640, 480)
+
+    def register_tools(self):
+        """
+        Register the plotting dialog box tools: the base implementation 
+        provides standard, curve-related and other tools - i.e. calling 
+        this method is exactly the same as calling 
+        :py:meth:`guiqwt.plot.CurveDialog.register_all_curve_tools`
+        
+        This method may be overriden to provide a fully customized set of tools
+        """
+        self.register_all_curve_tools()
+
+    def create_plot(self, options):
+        """
+        Create the plotting widget (which is an instance of class 
+        :py:class:`guiqwt.plot.BaseCurveWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`) and 
+        then add the `item list` panel
+
+        May be overriden to customize the plot layout 
+        (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
+        """
+        self.plot_widget = BaseCurveWidget(self, **options)
+        self.plot_layout.addWidget(self.plot_widget, 0, 0)
+        
+        # Configuring plot manager
+        self.add_plot(self.plot_widget.plot)
+        self.add_panel(self.plot_widget.itemlist)
+
+class CurveDialog(QDialog, CurveWidgetMixin):
+    """
+    Construct a CurveDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png", edit=False,
+                 toolbar=False, options=None, parent=None, panels=None):
+        QDialog.__init__(self, parent)
+        self.edit = edit
+        self.button_box = None
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                  toolbar=toolbar, options=options,
+                                  panels=panels)
         self.setWindowFlags(Qt.Window)
         
-        self.layout = QGridLayout()
-        
-        if options is None:
-            options = {}
-            
-        self.plotwidget = None
-        self.create_plot(options)
-        self.manager = self.plotwidget.manager
-        
-        self.vlayout = QVBoxLayout(self)
-        
-        self.toolbar = QToolBar(_("Tools"))
-        self.manager.add_toolbar(self.toolbar, "default")
-        if not toolbar:
-            self.toolbar.hide()
-        self.vlayout.addWidget(self.toolbar)
-        
-        self.setLayout(self.vlayout)
-        self.vlayout.addLayout(self.layout)
-        
+    def setup_widget_layout(self):
+        vlayout = QVBoxLayout(self)
+        vlayout.addWidget(self.toolbar)
+        vlayout.addLayout(self.plot_layout)
+        self.setLayout(vlayout)
         if self.edit:
             self.button_layout = QHBoxLayout()
             self.install_button_layout()
-            self.vlayout.addLayout(self.button_layout)
-        
-        self.register_tools()
+            vlayout.addLayout(self.button_layout)
         
     def install_button_layout(self):
-        """Install standard buttons (OK, Cancel) for dialog box
-        May be overriden to customize button box"""
+        """
+        Install standard buttons (OK, Cancel) in dialog button box layout 
+        (:py:attr:`guiqwt.plot.CurveDialog.button_layout`)
+        
+        This method may be overriden to customize the button box
+        """
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
         self.button_layout.addWidget(bbox)
-    
-    def register_tool(self, Klass, *args, **kwargs):
-        return self.manager.add_tool(Klass, *args, **kwargs)
-
-    def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools
-        or they can override register_extra_tools to
-        provide additionnal tools only
-        """
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_curve_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
+        self.button_box = bbox
         
-    def activate_default_tool(self):
-        self.manager.get_default_tool().activate()
-
-    def create_plot(self, options):
-        """CurvePlotWidget instantiation
-        May be overriden to customize plot layout"""
-        self.plotwidget = CurvePlotWidget(self, **options)
-        self.layout.addWidget(self.plotwidget, 0, 0)
+class CurveWindow(QMainWindow, CurveWidgetMixin):
+    """
+    Construct a CurveWindow object: plotting window with integrated plot manager
+        * wintitle: window title
+        * icon: window icon
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 toolbar=False, options=None, parent=None, panels=None):
+        QMainWindow.__init__(self, parent)
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                 toolbar=toolbar, options=options,
+                                 panels=panels)
         
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
-
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
+    def setup_widget_layout(self):
+        self.addToolBar(self.toolbar)
+        widget = QWidget()
+        widget.setLayout(self.plot_layout)
+        self.setCentralWidget(widget)
+        
+    def closeEvent(self, event):
+        # Closing panels (necessary if at least one of these panels has no 
+        # parent widget: otherwise, this panel will stay open after the main
+        # window has been closed which is not the expected behavior)
+        for panel in self.panels:
+            self.get_panel(panel).close()
+        QMainWindow.closeEvent(self, event)
 
 
 #===============================================================================
 # Image Plot Widget/Dialog with integrated Levels Histogram and other widgets
 #===============================================================================
-class ImagePlotWidget(QSplitter):
+class BaseImageWidget(QSplitter):
     """
-    ImagePlotWidget
-    
-    parent: parent widget
-    title: plot title (string)
-    xlabel, ylabel, zlabel: resp. bottom, left and right axis titles (strings)
-    yreverse: reversing Y-axis (bool)
-    aspect_ratio: height to width ratio (float)
-    lock_aspect_ratio: locking aspect ratio (bool)
-    show_contrast: showing contrast adjustment tool (bool)
-    show_xsection: showing x-axis cross section plot (bool)
-    show_ysection: showing y-axis cross section plot (bool)
-    xsection_pos: x-axis cross section plot position (string: "top", "bottom")
-    ysection_pos: y-axis cross section plot position (string: "left", "right")
+    Construct a BaseImageWidget object, which includes:
+        * A plot (:py:class:`guiqwt.curve.CurvePlot`)
+        * An `item list` panel (:py:class:`guiqwt.curve.PlotItemList`)
+        * A `contrast adjustment` panel 
+          (:py:class:`guiqwt.histogram.ContrastAdjustment`)
+        * An `X-axis cross section` panel
+          (:py:class:`guiqwt.histogram.XCrossSection`)
+        * An `Y-axis cross section` panel
+          (:py:class:`guiqwt.histogram.YCrossSection`)
+        
+    This object does nothing in itself because plot and panels are not 
+    connected to each other.
+    See children class :py:class:`guiqwt.plot.ImageWidget`
     """
     def __init__(self, parent=None, title="",
                  xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
@@ -376,7 +877,8 @@ class ImagePlotWidget(QSplitter):
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None):
-        super(ImagePlotWidget, self).__init__(Qt.Vertical, parent)
+        QSplitter.__init__(self, Qt.Vertical, parent)
+        
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
@@ -386,42 +888,41 @@ class ImagePlotWidget(QSplitter):
                               lock_aspect_ratio=lock_aspect_ratio,
                               gridparam=gridparam)
 
-        from guiqwt.cross_section import YCrossSectionWidget
-        self.ycsw = YCrossSectionWidget(self, position=ysection_pos)
+        from guiqwt.cross_section import YCrossSection
+        self.ycsw = YCrossSection(self, position=ysection_pos,
+                                  xsection_pos=xsection_pos)
         self.ycsw.setVisible(show_ysection)
         
-        from guiqwt.cross_section import XCrossSectionWidget
-        self.xcsw = XCrossSectionWidget(self)
+        from guiqwt.cross_section import XCrossSection
+        self.xcsw = XCrossSection(self)
         self.xcsw.setVisible(show_xsection)
         
         self.connect(self.xcsw, SIG_VISIBILITY_CHANGED, self.xcsw_is_visible)
         
-        xcsw_splitter = QSplitter(Qt.Vertical, self)
+        self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
-            self.ycsw_spacer = self.ycsw.spacer1
-            xcsw_splitter.addWidget(self.xcsw)
-            xcsw_splitter.addWidget(self.plot)
+            self.xcsw_splitter.addWidget(self.xcsw)
+            self.xcsw_splitter.addWidget(self.plot)
         else:
-            self.ycsw_spacer = self.ycsw.spacer2
-            xcsw_splitter.addWidget(self.plot)
-            xcsw_splitter.addWidget(self.xcsw)
-        self.connect(xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
+            self.xcsw_splitter.addWidget(self.plot)
+            self.xcsw_splitter.addWidget(self.xcsw)
+        self.connect(self.xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
                      lambda pos, index: self.adjust_ycsw_height())
         
-        ycsw_splitter = QSplitter(Qt.Horizontal, self)
+        self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
         if ysection_pos == "left":
-            ycsw_splitter.addWidget(self.ycsw)
-            ycsw_splitter.addWidget(xcsw_splitter)
+            self.ycsw_splitter.addWidget(self.ycsw)
+            self.ycsw_splitter.addWidget(self.xcsw_splitter)
         else:
-            ycsw_splitter.addWidget(xcsw_splitter)
-            ycsw_splitter.addWidget(self.ycsw)
+            self.ycsw_splitter.addWidget(self.xcsw_splitter)
+            self.ycsw_splitter.addWidget(self.ycsw)
             
-        configure_plot_splitter(xcsw_splitter,
+        configure_plot_splitter(self.xcsw_splitter,
                                 decreasing_size=xsection_pos == "bottom")
-        configure_plot_splitter(ycsw_splitter,
+        configure_plot_splitter(self.ycsw_splitter,
                                 decreasing_size=ysection_pos == "right")
         
-        self.sub_splitter.addWidget(ycsw_splitter)
+        self.sub_splitter.addWidget(self.ycsw_splitter)
         
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
@@ -436,19 +937,10 @@ class ImagePlotWidget(QSplitter):
         configure_plot_splitter(self)
         configure_plot_splitter(self.sub_splitter)
         
-        self.manager = PlotManager(self)
-        self.manager.add_plot(self.plot, id(self.plot))
-        self.manager.add_panel(self.itemlist)
-        self.manager.add_panel(self.xcsw)
-        self.manager.add_panel(self.ycsw)
-        self.manager.add_panel(self.contrast)
-        
     def adjust_ycsw_height(self, height=None):
         if height is None:
             height = self.xcsw.height()-self.ycsw.toolbar.height()
-        self.ycsw_spacer.changeSize(0, height,
-                                    QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.ycsw.layout().invalidate()
+        self.ycsw.adjust_height(height)
         if height:
             QApplication.processEvents()
         
@@ -458,36 +950,203 @@ class ImagePlotWidget(QSplitter):
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
+
+class ImageWidget(BaseImageWidget, PlotManager):
+    """
+    Construct a ImageWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title (string)
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+          (strings)
+        * yreverse: reversing Y-axis (bool)
+        * aspect_ratio: height to width ratio (float)
+        * lock_aspect_ratio: locking aspect ratio (bool)
+        * show_contrast: showing contrast adjustment tool (bool)
+        * show_xsection: showing x-axis cross section plot (bool)
+        * show_ysection: showing y-axis cross section plot (bool)
+        * xsection_pos: x-axis cross section plot position 
+          (string: "top", "bottom")
+        * ysection_pos: y-axis cross section plot position 
+          (string: "left", "right")
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    def __init__(self, parent=None, title="",
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
+                 show_contrast=False, show_itemlist=False, show_xsection=False,
+                 show_ysection=False, xsection_pos="top", ysection_pos="right",
+                 gridparam=None, panels=None):
+        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel,
+                 zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
+                 show_contrast, show_itemlist, show_xsection, show_ysection,
+                 xsection_pos, ysection_pos, gridparam)
+        PlotManager.__init__(self, main=self)
         
-    def get_plot(self):
-        """Return CurvePlot/ImagePlot instance"""
-        return self.manager.get_plot()
+        # Configuring plot manager
+        self.add_plot(self.plot)
+        self.add_panel(self.itemlist)
+        self.add_panel(self.xcsw)
+        self.add_panel(self.ycsw)
+        self.add_panel(self.contrast)
+        if panels is not None:
+            for panel in panels:
+                self.add_panel(panel)
 
-    def get_panel(self, id):
-        """Return panel associated to *id*"""
-        return self.manager.get_panel(id)
-
-
-class ImagePlotDialog(CurvePlotDialog):
-    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
-        super(ImagePlotDialog, self).__init__(wintitle=wintitle, icon=icon,
-                                              edit=edit, toolbar=toolbar,
-                                              options=options, parent=parent)
-
+class ImageWidgetMixin(CurveWidgetMixin):
     def register_tools(self):
-        """Derived classes can override this method
-        to provide a fully customized set of tools
-        or they can override register_extra_tools to
-        provide additionnal tools only
         """
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.activate_default_tool()
+        Register the plotting dialog box tools: the base implementation 
+        provides standard, image-related and other tools - i.e. calling 
+        this method is exactly the same as calling 
+        :py:meth:`guiqwt.plot.CurveDialog.register_all_image_tools`
+        
+        This method may be overriden to provide a fully customized set of tools
+        """
+        self.register_all_image_tools()
 
     def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
-        self.plotwidget = ImagePlotWidget(self, **options)
-        self.layout.addWidget(self.plotwidget, row, column, rowspan, columnspan)
+        """
+        Create the plotting widget (which is an instance of class 
+        :py:class:`guiqwt.plot.BaseImageWidget`), add it to the dialog box 
+        main layout (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`) and 
+        then add the `item list`, `contrast adjustment` and X/Y axes 
+        cross section panels.
+
+        May be overriden to customize the plot layout 
+        (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
+        """
+        self.plot_widget = BaseImageWidget(self, **options)
+        self.plot_layout.addWidget(self.plot_widget,
+                                   row, column, rowspan, columnspan)
+        
+        # Configuring plot manager
+        self.add_plot(self.plot_widget.plot)
+        self.add_panel(self.plot_widget.itemlist)
+        self.add_panel(self.plot_widget.xcsw)
+        self.add_panel(self.plot_widget.ycsw)
+        self.add_panel(self.plot_widget.contrast)
+
+class ImageDialog(CurveDialog, ImageWidgetMixin):
+    """
+    Construct a ImageDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    pass
+
+class ImageWindow(CurveWindow, ImageWidgetMixin):
+    """
+    Construct a ImageWindow object: plotting window with integrated plot manager
+        * wintitle: window title
+        * icon: window icon
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+        * panels (optional): additionnal panels (list, tuple)
+    """
+    pass
+
+
+#===============================================================================
+# The following classes will be removed in future versions
+#===============================================================================
+class CurvePlotWidget(CurveWidget):
+    """
+    Construct a CurveWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title
+        * xlabel: (bottom axis title, top axis title) or bottom axis title only
+        * ylabel: (left axis title, right axis title) or left axis title only
+    """
+    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+                 section="plot", show_itemlist=False, gridparam=None):
+        CurveWidget.__init__(self, parent, title, xlabel, ylabel, section,
+                             show_itemlist, gridparam)
+        self.manager = self
+        warnings.warn("For clarity's sake, the 'CurvePlotWidget' class has "
+                      "been renamed to 'CurveWidget' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class CurvePlotDialog(CurveDialog):
+    """
+    Construct a CurveDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 edit=False, toolbar=False, options=None, parent=None):
+        CurveDialog.__init__(self, wintitle, icon, edit, toolbar, options,
+                             parent)
+        self.manager = self
+        warnings.warn("For clarity's sake, the 'CurvePlotDialog' class has "
+                      "been renamed to 'CurveDialog' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class ImagePlotWidget(ImageWidget):
+    """
+    Construct a ImageWidget object: plotting widget with integrated 
+    plot manager
+        * parent: parent widget
+        * title: plot title (string)
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+          (strings)
+        * yreverse: reversing Y-axis (bool)
+        * aspect_ratio: height to width ratio (float)
+        * lock_aspect_ratio: locking aspect ratio (bool)
+        * show_contrast: showing contrast adjustment tool (bool)
+        * show_xsection: showing x-axis cross section plot (bool)
+        * show_ysection: showing y-axis cross section plot (bool)
+        * xsection_pos: x-axis cross section plot position 
+          (striImageDialogng: "top", "bottom")
+        * ysection_pos: y-axis cross section plot position 
+          (string: "left", "right")
+    """
+    def __init__(self, parent=None, title="",
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
+                 show_contrast=False, show_itemlist=False, show_xsection=False,
+                 show_ysection=False, xsection_pos="top", ysection_pos="right",
+                 gridparam=None):
+        ImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
+                             yreverse, colormap, aspect_ratio,
+                             lock_aspect_ratio, show_contrast, show_itemlist,
+                             show_xsection, show_ysection, xsection_pos,
+                             ysection_pos, gridparam)
+        self.manager = self
+        warnings.warn("For clarity's sake, the 'ImagePlotWidget' class has "
+                      "been renamed to 'ImageWidget' (this will raise an "
+                      "exception in future versions)", FutureWarning)
+class ImagePlotDialog(ImageDialog):
+    """
+    Construct a ImageDialog object: plotting dialog box with integrated 
+    plot manager
+        * wintitle: window title
+        * icon: window icon
+        * edit: editable state
+        * toolbar: show/hide toolbar
+        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
+          (dictionary)
+        * parent: parent widget
+    """
+    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
+                 edit=False, toolbar=False, options=None, parent=None):
+        ImageDialog.__init__(self, wintitle, icon, edit, toolbar, options,
+                             parent)
+        self.manager = self
+        warnings.warn("For clarity's sake, the 'ImagePlotDialog' class has "
+                      "been renamed to 'ImageDialog' (this will raise an "
+                      "exception in future versions)", FutureWarning)

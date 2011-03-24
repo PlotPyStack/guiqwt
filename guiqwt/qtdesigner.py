@@ -6,7 +6,20 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt QtDesigner helpers
+guiqwt.qtdesigner
+-----------------
+
+The `qtdesigner` module provides QtDesigner helper functions for `guiqwt`:
+    * :py:func:`guiqwt.qtdesigner.loadui`
+    * :py:func:`guiqwt.qtdesigner.compileui`
+    * :py:func:`guiqwt.qtdesigner.create_qtdesigner_plugins`
+    
+Reference
+~~~~~~~~~
+
+.. autofunction:: loadui
+.. autofunction:: compileui
+.. autofunction:: create_qtdesigner_plugin
 """
 
 
@@ -43,7 +56,7 @@ def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
     
     Example:
     create_qtdesigner_plugin(group = "guiqwt", module_name = "guiqwt.image",
-                             class_name = "ImagePlotWidget", icon = "image.png",
+                             class_name = "ImageWidget", icon = "image.png",
                              tooltip = "", whatsthis = ""):
     """
     Widget = getattr(__import__(module_name, fromlist=[class_name]), class_name)

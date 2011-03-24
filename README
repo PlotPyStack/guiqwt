@@ -1,13 +1,19 @@
 guiqwt
 ======
 
-Copyright © 2009-2010 CEA
+Copyright Â© 2009-2010 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
 
 
     Overview
 
+	Based on PyQwt (plotting widgets for PyQt4 graphical user interfaces)
+	and on the scientific modules NumPy and SciPy, guiqwt is a Python 
+	library providing efficient 2D data-plotting features (curve/image 
+	visualization and related tools) for interactive computing and 
+	signal/image processing application development.
+	
 	Extension to PyQt4.Qwt5:
 	  * set of tools for curve and image plotting
 	  * GUI-based application development helpers
@@ -15,14 +21,25 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
     Dependencies
     
         Requirements
-	    guidata v1.x (x>=2)
-            Qwt5 5.x (x>=2) (PyQt4 additional module)
-            scipy v0.x (x>=7) (signal and image processing library)
+            Python 2.x (x>=5)
+            PyQt4 4.x (x>=3 ; recommended x>=4)
+            QScintilla2 2.x (x>=1) (PyQt4 extension) for the test launcher
+            PyQwt 5.x (x>=2)
+            guidata 1.3.0 or later
+            NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
+            SciPy 0.x (x>=7)
+            PIL 1.1.x (x>=6)
             
 	Optional modules
 	    pydicom v0.9.x (x>=3)
 
-    Installation
+    Building/Installation
+
+        All platforms:
+            The setup.py script supports the following extra options for 
+            optimizing the image scaler engine with SSE2/SSE3 processors:
+                --sse2
+                --sse3
     
         On GNU/Linux and MacOS platforms:
             python setup.py build install

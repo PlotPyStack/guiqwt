@@ -7,6 +7,8 @@
 
 """Simple application based on guiqwt and guidata"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog)
 from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt, SIGNAL
@@ -23,15 +25,13 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotWidget
+from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
-from guiqwt.io import imagefile_to_array
-
-SHOW = True # Show test in GUI-based test launcher
+from guiqwt.signals import SIG_LUT_CHANGED
+from guiqwt.io import imagefile_to_array, IMAGE_LOAD_FILTERS
 
 APP_NAME = _("Application example")
 VERSION = '1.0.0'
-
 
 class ImageParam(DataSet):
     _hide_data = False
@@ -52,7 +52,6 @@ class ImageParamNew(ImageParam):
     type = ChoiceItem(_("Type"),
                       (("rand", _("random")), ("zeros", _("zeros"))))
 
-
 class ImageListWithProperties(QSplitter):
     def __init__(self, parent):
         QSplitter.__init__(self, parent)
@@ -61,7 +60,6 @@ class ImageListWithProperties(QSplitter):
         self.properties = DataSetEditGroupBox(_("Properties"), ImageParam)
         self.properties.setEnabled(False)
         self.addWidget(self.properties)
-
 
 class CentralWidget(QSplitter):
     def __init__(self, parent, toolbar):
@@ -80,21 +78,15 @@ class CentralWidget(QSplitter):
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
         
-        self.plotwidget = ImagePlotWidget(self)
+        self.imagewidget = ImageWidget(self)
+        self.connect(self.imagewidget.plot, SIG_LUT_CHANGED,
+                     self.lut_range_changed)
         self.item = None # image item
         
-        manager = self.plotwidget.manager
+        self.imagewidget.add_toolbar(toolbar, "default")
+        self.imagewidget.register_all_image_tools()
         
-        manager.add_toolbar(toolbar, "default")
-        
-        manager.register_standard_tools()
-        manager.add_separator_tool()
-        manager.register_image_tools()
-        manager.add_separator_tool()
-        manager.register_other_tools()
-        manager.get_default_tool().activate()
-        
-        self.addWidget(self.plotwidget)
+        self.addWidget(self.imagewidget)
 
         self.images = [] # List of ImageParam instances
         self.lut_ranges = [] # List of LUT ranges
@@ -120,16 +112,18 @@ class CentralWidget(QSplitter):
         update_dataset(self.properties.dataset, image)
         self.properties.get()
         
-    def lut_range_changed(self, _min, _max):
+    def lut_range_changed(self):
         row = self.imagelist.currentRow()
-        self.lut_ranges[row] = _min, _max
+        self.lut_ranges[row] = self.item.get_lut_range()
         
     def show_data(self, data, lut_range=None):
-        plot = self.plotwidget.plot
+        plot = self.imagewidget.plot
         if self.item is not None:
-            self.item.set_data(data, lut_range)
-            self.connect(plot, SIGNAL('lut_range_changed(double,double)'),
-                         self.lut_range_changed)
+            self.item.set_data(data)
+            if lut_range is None:
+                lut_range = self.item.get_lut_range()
+            self.imagewidget.set_contrast_range(*lut_range)
+            self.imagewidget.update_cross_sections()
         else:
             self.item = make.image(data)
             plot.add_item(self.item, z=0)
@@ -148,16 +142,15 @@ class CentralWidget(QSplitter):
         self.lut_ranges.append(None)
         self.refresh_list()
         self.imagelist.setCurrentRow(len(self.images)-1)
-        plot = self.plotwidget.plot
+        plot = self.imagewidget.plot
         plot.do_autoscale()
     
     def add_image_from_file(self, filename):
         image = ImageParam()
         image.title = unicode(filename)
-        image.data = imagefile_to_array(filename)
+        image.data = imagefile_to_array(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -236,11 +229,10 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename = QFileDialog.getOpenFileName(self, _("Open"), "",
-                           'Images (*.png *.jpg *.gif *.tif)\nDICOM (*.dcm)')
+                                               IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)
-        
         
 if __name__ == '__main__':
     from guidata import qapplication

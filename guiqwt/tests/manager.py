@@ -7,6 +7,8 @@
 
 """PlotManager test"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import os.path as osp
 
 from PyQt4.QtGui import QMainWindow, QWidget, QGridLayout
@@ -16,8 +18,6 @@ from guiqwt.curve import PlotItemList
 from guiqwt.histogram import ContrastAdjustment
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
-
-SHOW = True # Show test in GUI-based test launcher
 
 class CentralWidget(QWidget):
     def __init__(self, parent):
@@ -38,18 +38,12 @@ class CentralWidget(QWidget):
         
         self.manager = PlotManager(self)
         for plot in (self.plot1, self.plot2):
-            self.manager.add_plot(plot, id(plot))
+            self.manager.add_plot(plot)
         for panel in (self.itemlist, self.contrast):
             self.manager.add_panel(panel)
         
     def register_tools(self):
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
-        self.manager.add_separator_tool()
-        self.manager.get_default_tool().activate()        
+        self.manager.register_all_image_tools()        
         
 
 class Window(QMainWindow):

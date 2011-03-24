@@ -6,17 +6,51 @@
 # (see guiqwt/__init__.py for details)
 
 """
-Curve fitting tools
+guiqwt.fit
+----------
+
+The `fit` module provides an interactive curve fitting tool allowing:
+    * to fit data manually (by moving sliders)
+    * or automatically (with standard optimization algorithms 
+      provided by :py:mod:`scipy`).
+
+Example
+~~~~~~~
+
+.. literalinclude:: ../guiqwt/tests/fit.py
+   :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
+.. image:: images/screenshots/fit.png
+
+Reference
+~~~~~~~~~
+
+.. autofunction:: guifit
+
+.. autoclass:: FitDialog
+   :members:
+   :inherited-members:
+.. autoclass:: FitParam
+   :members:
+   :inherited-members:
+.. autoclass:: AutoFitParam
+   :members:
+   :inherited-members:
 """
 
-from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QFrame,
-                         QCheckBox)
-from PyQt4.QtCore import Qt, SIGNAL, QObject
+from __future__ import division
+
+from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QLineEdit,
+                         QDialog, QVBoxLayout, QHBoxLayout, QWidget,
+                         QDialogButtonBox)
+from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
 
 import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)
 
 import guidata
+from guidata.qthelpers import create_groupbox
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
@@ -25,7 +59,7 @@ from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
 # Local imports
 from guiqwt.config import _
 from guiqwt.builder import make
-from guiqwt.plot import CurvePlotDialog
+from guiqwt.plot import CurveWidgetMixin
 from guiqwt.signals import SIG_RANGE_CHANGED
 
 class AutoFitParam(DataSet):
@@ -54,12 +88,12 @@ class FitParam(DataSet):
     value = FloatItem(_("Value"), default=0.0)
     min = FloatItem(_("Min"), default=-1.0)
     max = FloatItem(_("Max"), default=1.0).set_pos(col=1)
-    steps = IntItem(_("Steps"), default=500)
+    steps = IntItem(_("Steps"), default=5000)
     format = StringItem(_("Format"), default="%.3f").set_pos(col=1)
     logscale = BoolItem(_("Logarithmic"), _("Scale"))
 
     def __init__(self, name, value, min, max, logscale=False,
-                 steps=500, format='%.3f'):
+                 steps=5000, format='%.3f', size_offset=0):
         DataSet.__init__(self, title=_("Curve fitting parameter"))
         self.name = name
         self.value = value
@@ -69,142 +103,295 @@ class FitParam(DataSet):
         self.steps = steps
         self.format = format
         self.label = None
+        self.lineedit = None
+        self.slider = None
+        self.button = None
+        self._size_offset = size_offset
         
-    def get_widgets(self, parent):
-        button = QPushButton(get_icon('edit.png'), _('Edit'), parent)
-        button.setToolTip(_("Edit fit parameter '%s' properties") % self.name)
-        QObject.connect(button, SIGNAL('clicked()'), self.edit_param)
-        self.checkbox = QCheckBox(_('Logarithmic scale'), parent)
-        self.update_checkbox_state()
-        QObject.connect(self.checkbox, SIGNAL('stateChanged(int)'), self.set_scale)
-        self.label = QLabel(parent)
-        self.slider = QSlider(parent)
+    def copy(self):
+        """Return a copy of this fitparam"""
+        return FitParam(self.name, self.value, self.min, self.max,
+                        self.logscale, self.steps, self.format,
+                        self._size_offset)
+        
+    def create_widgets(self, parent):
+        self.label = QLabel()
+        font = self.label.font()
+        font.setPointSize(font.pointSize()+self._size_offset)
+        self.label.setFont(font)
+        self.button = QPushButton()
+        self.button.setIcon(get_icon('settings.png'))
+        self.button.setToolTip(
+                        _("Edit '%s' fit parameter properties") % self.name)
+        QObject.connect(self.button, SIGNAL('clicked()'),
+                        lambda: self.edit_param(parent))
+        self.lineedit = QLineEdit()
+        QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
+                        self.line_editing_finished)
+        self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setRange(0, self.steps-1)
         QObject.connect(self.slider, SIGNAL("valueChanged(int)"),
                         self.slider_value_changed)
         self.set_text()
         self.update()
-        return button, self.checkbox, self.slider, self.label
+        return self.get_widgets()
+        
+    def get_widgets(self):
+        return self.label, self.lineedit, self.slider, self.button
         
     def set_scale(self, state):
         self.logscale = state > 0
         self.update_slider_value()
         
     def set_text(self):
-        text = ('<b>%s</b> : '+self.format) % (self.name, self.value)
-        self.label.setText(text)
+        style = "<span style=\'color: #444444\'><b>%s</b></span>"
+        self.label.setText(style % self.name)
+        if self.value is None:
+            value_str = ''
+        else:
+            value_str = self.format % self.value
+        self.lineedit.setText(value_str)
+        
+    def line_editing_finished(self):
+        try:
+            self.value = float(self.lineedit.text())
+        except ValueError:
+            self.set_text()
+            self.update_slider_value()
         
     def slider_value_changed(self, int_value):
         if self.logscale:
-            min, max = np.log10(self.min), np.log10(self.max)
-            self.value = 10**(min+(max-min)*int_value/self.steps)
+            total_delta = np.log10(1+self.max-self.min)
+            self.value = self.min+10**(total_delta*int_value/(self.steps-1))-1
         else:
-            self.value = self.min+(self.max-self.min)*int_value/self.steps
+            total_delta = self.max-self.min
+            self.value = self.min+total_delta*int_value/(self.steps-1)
         self.set_text()
     
-    def _logscale_check(self):
-        if self.min == 0:
-            self.min = self.max/10
-        if self.max == 0:
-            self.max = self.mix*10
-    
     def update_slider_value(self):
-        if self.logscale:
-            self._logscale_check()
-            value, min, max = (np.log10(self.value), np.log10(self.min),
-                               np.log10(self.max))
+        if self.value is None or self.min is None or self.max is None:
+            self.slider.setEnabled(False)
         else:
-            value, min, max = self.value, self.min, self.max
-        intval = int(self.steps*(value-min)/(max-min))
-        self.slider.setValue(intval)
+            self.slider.setEnabled(True)
+            if self.logscale:
+                value_delta = max([np.log10(1+self.value-self.min), 0.])
+                total_delta = np.log10(1+self.max-self.min)
+            else:
+                value_delta = self.value-self.min
+                total_delta = self.max-self.min
+            intval = int(self.steps*value_delta/total_delta)
+            self.slider.blockSignals(True)
+            self.slider.setValue(intval)
+            self.slider.blockSignals(False)
 
-    def update_checkbox_state(self):
-        state = Qt.Checked if self.logscale else Qt.Unchecked
-        self.checkbox.setCheckState(state)
-
-    def edit_param(self):
-        res = self.edit()
-        if res:
-            self.update_checkbox_state()
+    def edit_param(self, parent):
+        if self.edit(parent=parent):
             self.update()
 
     def update(self):
         self.slider.setRange(0, self.steps-1)
         self.update_slider_value()
         self.set_text()
+        # Force the QLineEdit to emit the editingFinished() signal
+        self.lineedit.emit(SIGNAL('editingFinished()'))
 
 
-class FitDialog(CurvePlotDialog):
-    def __init__(self, x, y, fitfunc, fitparams, title=None):
-        if title is None:
-            title = _('Curve fitting')
+def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
+    row_contents = []
+    row_nb = 0
+    col_nb = 0
+    for i, param in enumerate(fitparams):
+        widgets = param.create_widgets(layout.parent())
+        w_colums = len(widgets)+1
+        label, lineedit, slider, button = widgets
+        QObject.connect(slider, SIGNAL("valueChanged(int)"), refresh_callback)
+        QObject.connect(lineedit, SIGNAL("editingFinished()"), refresh_callback)
+        row_contents += [(label,    row_nb, 0+col_nb*w_colums),
+                         (slider,   row_nb, 1+col_nb*w_colums),
+                         (lineedit, row_nb, 2+col_nb*w_colums),
+                         (button,   row_nb, 3+col_nb*w_colums),]
+        col_nb += 1
+        if col_nb == param_cols:
+            row_nb += 1
+            col_nb = 0
+            for widget, row, col in row_contents:
+                layout.addWidget(widget, row, col)
+    if fitparams:
+        for col_nb in range(param_cols):
+            layout.setColumnStretch(1+col_nb*w_colums, 5)
+            if col_nb > 0:
+                layout.setColumnStretch(col_nb*w_colums-1, 1)
+
+class FitWidgetMixin(CurveWidgetMixin):
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+                 toolbar=False, options=None, panels=None, param_cols=1,
+                 legend_anchor='TR', auto_fit=True):
+        if wintitle is None:
+            wintitle = _('Curve fitting')
+
+        self.x = None
+        self.y = None
+        self.fitfunc = None
+        self.fitargs = None
+        self.fitkwargs = None
+        self.fitparams = None
+        self.autofit_prm = None
+        
+        self.data_curve = None
+        self.fit_curve = None
+        self.legend = None
+        self.legend_anchor = legend_anchor
+        self.xrange = None
+        self.show_xrange = False
+        
+        self.param_cols = param_cols
+        self.auto_fit_enabled = auto_fit      
+        self.button_list = [] # list of buttons to be disabled at startup
+
+        self.fit_layout = None
+        self.params_layout = None
+        
+        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                  toolbar=toolbar, options=options,
+                                  panels=panels)
+        
+        self.refresh()
+        
+    # CurveWidgetMixin API -----------------------------------------------------
+    def setup_widget_layout(self):
+        self.fit_layout = QHBoxLayout()
+        self.params_layout = QGridLayout()
+        params_group = create_groupbox(self, _("Fit parameters"),
+                                       layout=self.params_layout)
+        if self.auto_fit_enabled:
+            auto_group = self.create_autofit_group()
+            self.fit_layout.addWidget(auto_group)
+        self.fit_layout.addWidget(params_group)
+        self.plot_layout.addLayout(self.fit_layout, 1, 0)
+        
+        vlayout = QVBoxLayout(self)
+        vlayout.addWidget(self.toolbar)
+        vlayout.addLayout(self.plot_layout)
+        self.setLayout(vlayout)
+        
+    def create_plot(self, options):
+        super(FitWidgetMixin, self).create_plot(options)
+        for plot in self.get_plots():
+            self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
+        
+    # Public API ---------------------------------------------------------------  
+    def set_data(self, x, y, fitfunc=None, fitparams=None,
+                 fitargs=None, fitkwargs=None):
+        if self.fitparams is not None and fitparams is not None:
+            self.clear_params_layout()
         self.x = x
         self.y = y
-        self.fitfunc = fitfunc
-        self.fitparams = fitparams
-        super(FitDialog, self).__init__(wintitle=title, icon="guiqwt.png",
-                                        edit=True, toolbar=True, options=None)
-                
+        if fitfunc is not None:
+            self.fitfunc = fitfunc
+        if fitparams is not None:
+            self.fitparams = fitparams
+        if fitargs is not None:
+            self.fitargs = fitargs
+        if fitkwargs is not None:
+            self.fitkwargs = fitkwargs
         self.autofit_prm = AutoFitParam(title=_("Automatic fitting options"))
         self.autofit_prm.xmin = x.min()
         self.autofit_prm.xmax = x.max()
         self.compute_imin_imax()
-        
-        self.xrange = None
-        self.show_xrange = False
+        if self.fitparams is not None and fitparams is not None:
+            self.populate_params_layout()
         self.refresh()
         
-    # CurvePlotDialog API ------------------------------------------------------
-    def install_button_layout(self):
-        auto_button = QPushButton(get_icon('apply.png'), _("Auto"), self)
+    def set_fit_data(self, fitfunc, fitparams, fitargs=None, fitkwargs=None):
+        if self.fitparams is not None:
+            self.clear_params_layout()
+        self.fitfunc = fitfunc
+        self.fitparams = fitparams
+        self.fitargs = fitargs
+        self.fitkwargs = fitkwargs
+        self.populate_params_layout()
+        self.refresh()
+        
+    def clear_params_layout(self):
+        for i, param in enumerate(self.fitparams):
+            for widget in param.get_widgets():
+                if widget is not None:
+                    self.params_layout.removeWidget(widget)
+                    widget.hide()
+        
+    def populate_params_layout(self):
+        add_fitparam_widgets_to(self.params_layout, self.fitparams,
+                                self.refresh, param_cols=self.param_cols)
+    
+    def create_autofit_group(self):        
+        auto_button = QPushButton(get_icon('apply.png'), _("Run"), self)
         self.connect(auto_button, SIGNAL("clicked()"), self.autofit)
-        autoprm_button = QPushButton(get_icon('settings.png'),
-                                     _("Fit parameters..."), self)
+        autoprm_button = QPushButton(get_icon('settings.png'), _("Settings"),
+                                     self)
         self.connect(autoprm_button, SIGNAL("clicked()"), self.edit_parameters)
-        xrange_button = QPushButton(get_icon('xrange.png'), _("Fit bounds"),
-                                    self)
+        xrange_button = QPushButton(get_icon('xrange.png'), _("Bounds"), self)
         xrange_button.setCheckable(True)
         self.connect(xrange_button, SIGNAL("toggled(bool)"), self.toggle_xrange)
+        auto_layout = QVBoxLayout()
+        auto_layout.addWidget(auto_button)
+        auto_layout.addWidget(autoprm_button)
+        auto_layout.addWidget(xrange_button)
+        self.button_list += [auto_button, autoprm_button, xrange_button]
+        return create_groupbox(self, _("Automatic fit"), layout=auto_layout)
         
-        self.button_layout.addWidget(auto_button)
-        self.button_layout.addWidget(autoprm_button)
-        self.button_layout.addWidget(xrange_button)
-        super(FitDialog, self).install_button_layout()
-
-    def create_plot(self, options):
-        super(FitDialog, self).create_plot(options)
-        for plot in self.plotwidget.manager.get_plots():
-            self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
+    def get_fitfunc_arguments(self):
+        """Return fitargs and fitkwargs"""
+        fitargs = self.fitargs
+        if self.fitargs is None:
+            fitargs = []
+        fitkwargs = self.fitkwargs
+        if self.fitkwargs is None:
+            fitkwargs = {}
+        return fitargs, fitkwargs
         
-        params_frame = QFrame(self)
-        params_frame.setFrameShape(QFrame.Box)
-        params_frame.setFrameShadow(QFrame.Sunken)
-        params_layout = QGridLayout()
-        params_frame.setLayout(params_layout)
-        for i, param in enumerate(self.fitparams):
-            button, checkbox, slider, label = param.get_widgets(self)
-            self.connect(slider, SIGNAL("valueChanged(int)"), self.refresh)
-            self.connect(checkbox, SIGNAL("stateChanged(int)"), self.refresh)
-            params_layout.addWidget(button, i, 0)
-            params_layout.addWidget(checkbox, i, 1)
-            params_layout.addWidget(slider, i, 2)
-            params_layout.addWidget(label, i, 3)
-        self.layout.addWidget(params_frame, 1, 0)
-        
-    # Public API ---------------------------------------------------------------        
-    def refresh(self):
+    def refresh(self, slider_value=None):
         """Refresh Fit Tool dialog box"""
-        yfit = self.fitfunc(self.x, [p.value for p in self.fitparams])
-        self.xrange = make.range(self.autofit_prm.xmin, self.autofit_prm.xmax)
-        self.xrange.setVisible(self.show_xrange)
-        items = [make.curve(self.x, self.y, _("Data"), color="b", linewidth=2),
-                 make.curve(self.x, yfit, _("Fit"), color="r", linewidth=2),
-                 make.legend(), self.xrange]
+        # Update button states
+        enable = self.x is not None and self.y is not None \
+                 and self.x.size > 0 and self.y.size > 0 \
+                 and self.fitfunc is not None and self.fitparams is not None \
+                 and len(self.fitparams) > 0
+        for btn in self.button_list:
+            btn.setEnabled(enable)
+            
+        if not enable:
+            # Fit widget is not yet configured
+            return
+
+        fitargs, fitkwargs = self.get_fitfunc_arguments()
+        yfit = self.fitfunc(self.x, [p.value for p in self.fitparams],
+                            *fitargs, **fitkwargs)
+                            
         plot = self.get_plot()
-        plot.del_all_items()
-        for item in items:
-            plot.add_item(item)
+        
+        if self.legend is None:
+            self.legend = make.legend(anchor=self.legend_anchor)
+            plot.add_item(self.legend)
+        
+        if self.xrange is None:
+            self.xrange = make.range(0., 1.)
+            plot.add_item(self.xrange)
+        self.xrange.set_range(self.autofit_prm.xmin, self.autofit_prm.xmax)
+        self.xrange.setVisible(self.show_xrange)
+        
+        if self.data_curve is None:
+            self.data_curve = make.curve([], [],
+                                         _("Data"), color="b", linewidth=2)
+            plot.add_item(self.data_curve)
+        self.data_curve.set_data(self.x, self.y)
+        
+        if self.fit_curve is None:
+            self.fit_curve = make.curve([], [],
+                                        _("Fit"), color="r", linewidth=2)
+            plot.add_item(self.fit_curve)
+        self.fit_curve.set_data(self.x, yfit)
+        
         plot.replot()
         plot.disable_autoscale()
         
@@ -221,7 +408,7 @@ class FitDialog(CurvePlotDialog):
         self.show_xrange = state
         
     def edit_parameters(self):
-        if self.autofit_prm.edit():
+        if self.autofit_prm.edit(parent=self):
             self.xrange.set_range(self.autofit_prm.xmin, self.autofit_prm.xmax)
             plot = self.get_plot()
             plot.replot()
@@ -229,12 +416,13 @@ class FitDialog(CurvePlotDialog):
         
     def compute_imin_imax(self):
         self.i_min = self.x.searchsorted(self.autofit_prm.xmin)
-        self.i_max = self.x.searchsorted(self.autofit_prm.xmax)
+        self.i_max = self.x.searchsorted(self.autofit_prm.xmax, side='right')
         
     def errorfunc(self, params):
         x = self.x[self.i_min:self.i_max]
         y = self.y[self.i_min:self.i_max]
-        return y - self.fitfunc(x, params)
+        fitargs, fitkwargs = self.get_fitfunc_arguments()
+        return y - self.fitfunc(x, params, *fitargs, **fitkwargs)
 
     def autofit(self):
         meth = self.autofit_prm.method
@@ -313,14 +501,69 @@ class FitDialog(CurvePlotDialog):
     def get_values(self):
         """Convenience method to get fit parameter values"""
         return [param.value for param in self.fitparams]
+
+
+class FitWidget(QWidget, FitWidgetMixin):
+    def __init__(self, wintitle=None, icon="guiqwt.png", toolbar=False,
+                 options=None, parent=None, panels=None,
+                 param_cols=1, legend_anchor='TR', auto_fit=False):
+        QWidget.__init__(self, parent)
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
+                                param_cols, legend_anchor, auto_fit)
+
+
+class FitDialog(QDialog, FitWidgetMixin):
+    def __init__(self, wintitle=None, icon="guiqwt.png", edit=True,
+                 toolbar=False, options=None, parent=None, panels=None,
+                 param_cols=1, legend_anchor='TR', auto_fit=False):
+        QDialog.__init__(self, parent)
+        self.edit = edit
+        self.button_layout = None
+        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
+                                param_cols, legend_anchor, auto_fit)
+        self.setWindowFlags(Qt.Window)
+        
+    def setup_widget_layout(self):
+        FitWidgetMixin.setup_widget_layout(self)
+        if self.edit:
+            self.install_button_layout()
+        
+    def install_button_layout(self):        
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
+        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        self.button_list += [bbox.button(QDialogButtonBox.Ok)]
+
+        self.button_layout = QHBoxLayout()
+        self.button_layout.addStretch()
+        self.button_layout.addWidget(bbox)
+        
+        vlayout = self.layout()
+        vlayout.addSpacing(10)
+        vlayout.addLayout(self.button_layout)
         
 
-def guifit(x, y, fitfunc, fitparams, title=None):
+def guifit(x, y, fitfunc, fitparams, fitargs=None, fitkwargs=None,
+           wintitle=None, title=None, xlabel=None, ylabel=None,
+           param_cols=1, auto_fit=True, winsize=None, winpos=None):
     """GUI-based curve fitting tool"""
     _app = guidata.qapplication()
-    dlg = FitDialog(x, y, fitfunc, fitparams)
-    if dlg.exec_():
-        return dlg.get_values()
+#    win = FitWidget(wintitle=wintitle, toolbar=True,
+#                    param_cols=param_cols, auto_fit=auto_fit,
+#                    options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
+    win = FitDialog(edit=True, wintitle=wintitle, toolbar=True,
+                    param_cols=param_cols, auto_fit=auto_fit,
+                    options=dict(title=title, xlabel=xlabel, ylabel=ylabel))
+    win.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
+    if winsize is not None:
+        win.resize(*winsize)
+    if winpos is not None:
+        win.move(*winpos)
+    if win.exec_():
+        return win.get_values()
+#    win.show()
+#    _app.exec_()
+#    return win.get_values()
 
 
 if __name__ == "__main__":
@@ -330,8 +573,8 @@ if __name__ == "__main__":
         a, b = params
         return np.cos(b*x)+a
     a = FitParam("Offset", 1., 0., 2.)
-    b = FitParam("Frequency", 2., 1., 10., logscale=True)
+    b = FitParam("Frequency", 1.05, 0., 10., logscale=True)
     params = [a, b]
-    values = guifit(x, y, fit, params)
+    values = guifit(x, y, fit, params, auto_fit=True)
     print values
     print [param.value for param in params]

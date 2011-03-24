@@ -6,30 +6,122 @@
 # (see guiqwt/__init__.py for details)
 
 """
-guiqwt curve objects
+guiqwt.curve
+------------
+
+The `curve` module provides curve-related objects:
+    * :py:class:`guiqwt.curve.CurvePlot`: a 2d curve plotting widget
+    * :py:class:`guiqwt.curve.CurveItem`: a curve plot item
+    * :py:class:`guiqwt.curve.ErrorBarCurveItem`: a curve plot item with 
+      error bars
+    * :py:class:`guiqwt.curve.GridItem`
+    * :py:class:`guiqwt.curve.ItemListWidget`: base widget implementing the 
+      `plot item list panel`
+    * :py:class:`guiqwt.curve.PlotItemList`: the `plot item list panel`
+
+``CurveItem`` and ``GridItem`` objects are plot items (derived from 
+QwtPlotItem) that may be displayed on a 2D plotting widget like 
+:py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`.
+
+.. seealso::
+    
+    Module :py:mod:`guiqwt.image`
+        Module providing image-related plot items and plotting widgets
+        
+    Module :py:mod:`guiqwt.plot`
+        Module providing ready-to-use curve and image plotting widgets and 
+        dialog boxes
+
+Examples
+~~~~~~~~
+
+Create a basic curve plotting widget:
+    * before creating any widget, a `QApplication` must be instantiated (that 
+      is a `Qt` internal requirement):
+          
+>>> import guidata
+>>> app = guidata.qapplication()
+
+    * that is mostly equivalent to the following (the only difference is that 
+      the `guidata` helper function also installs the `Qt` translation 
+      corresponding to the system locale):
+          
+>>> from PyQt4.QtGui import QApplication
+>>> app = QApplication([])
+
+    * now that a `QApplication` object exists, we may create the plotting 
+      widget:
+          
+>>> from guiqwt.curve import CurvePlot
+>>> plot = CurvePlot(title="Example", xlabel="X", ylabel="Y")
+
+Create a curve item:
+    * from the associated plot item class (e.g. `ErrorBarCurveItem` to 
+      create a curve with error bars): the item properties are then assigned 
+      by creating the appropriate style parameters object
+      (e.g. :py:class:`guiqwt.styles.ErrorBarParam`)
+      
+>>> from guiqwt.curve import CurveItem
+>>> from guiqwt.styles import CurveParam
+>>> param = CurveParam()
+>>> param.label = 'My curve'
+>>> curve = CurveItem(param)
+>>> curve.set_data(x, y)
+      
+    * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
+      
+>>> from guiqwt.builder import make
+>>> curve = make.curve(x, y, title='My curve')
+
+Attach the curve to the plotting widget:
+    
+>>> plot.add_item(curve)
+
+Display the plotting widget:
+    
+>>> plot.show()
+>>> app.exec_()
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: CurvePlot
+   :members:
+   :inherited-members:
+.. autoclass:: CurveItem
+   :members:
+   :inherited-members:
+.. autoclass:: ErrorBarCurveItem
+   :members:
+   :inherited-members:
+.. autoclass:: PlotItemList
+   :members:
 """
 
 import sys, numpy as np
 
 from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                         QToolBar, QMessageBox)
-from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL
-from PyQt4.Qwt5 import QwtPlotCurve, QwtPlotGrid, QwtPlotItem
+                         QToolBar, QMessageBox, QBrush)
+from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF, QLine
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import create_action, add_actions
 
 # Local imports
+from guiqwt.transitional import (QwtPlotCurve, QwtPlotGrid, QwtPlotItem,
+                                 QwtScaleMap)
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
-                               ITrackableItemType, IPanel, PanelWidget)
-from guiqwt.baseplot import EnhancedQwtPlot
-from guiqwt.styles import GridParam, CurveParam, SymbolParam
+                               ITrackableItemType, IPanel)
+from guiqwt.panels import PanelWidget, ID_ITEMLIST
+from guiqwt.baseplot import BasePlot
+from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED)
+                            SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED,
+                            SIG_PLOT_AXIS_CHANGED)
 
 
 def seg_dist(P, P0, P1):
@@ -69,7 +161,7 @@ def seg_dist_v(P, X0, Y0, X1, Y1):
     V[:, 0] = X1-X0
     V[:, 1] = Y1-Y0
     dP = np.array(P).reshape(1, 2) - PP
-    nV = np.sqrt(norm2(V))
+    nV = np.sqrt(norm2(V)).clip(1e-12) # clip: avoid division by zero
     w2 = V/nV[:, np.newaxis]
     w = np.array([ -w2[:,1], w2[:,0] ]).T
     distances = np.fabs((dP*w).sum(axis=1))
@@ -95,9 +187,14 @@ SELECTED_SYMBOL = SELECTED_SYMBOL_PARAM.build_symbol()
 
 
 class GridItem(QwtPlotGrid):
+    """
+    Construct a grid `plot item` with the parameters *gridparam*
+    (see :py:class:`guiqwt.styles.GridParam`)
+    """
     __implements__ = (IBasePlotItem,)
     
     _readonly = True
+    _private = False
     
     def __init__(self, gridparam=None):
         super(GridItem, self).__init__()
@@ -119,12 +216,20 @@ class GridItem(QwtPlotGrid):
         self.update_params()
 
     def set_readonly(self, state):
-        """Set object readonly state"""
+        """Set object read-only state"""
         self._readonly = state
         
     def is_readonly(self):
-        """Return object readonly state"""
+        """Return object read-only state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def can_select(self):
         return False
@@ -136,15 +241,17 @@ class GridItem(QwtPlotGrid):
         return False
 
     def select(self):
+        """Select item"""
         pass
     
     def unselect(self):
+        """Unselect item"""
         pass
 
     def hit_test(self, pos):
         return sys.maxint, 0, False, None
 
-    def move_local_point_to(self, handle, pos ):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         pass
 
     def move_local_shape(self, old_pos, new_pos):
@@ -167,14 +274,19 @@ assert_interfaces_valid(GridItem)
 
 
 class CurveItem(QwtPlotCurve):
+    """
+    Construct a curve `plot item` with the parameters *curveparam*
+    (see :py:class:`guiqwt.styles.CurveParam`)
+    """
     __implements__ = (IBasePlotItem,)
     
-    _readonly = True
+    _readonly = False
+    _private = False
     
     def __init__(self, curveparam=None):
         super(CurveItem, self).__init__()
         if curveparam is None:
-            self.curveparam = CurveParam()
+            self.curveparam = CurveParam(_("Curve"), icon='curve.png')
         else:
             self.curveparam = curveparam
         self.selected = False
@@ -182,7 +294,7 @@ class CurveItem(QwtPlotCurve):
         self._x = None
         self._y = None
         self.update_params()
-
+        
     def types(self):
         return (ICurveItemType, ITrackableItemType, ISerializableType)
 
@@ -214,6 +326,14 @@ class CurveItem(QwtPlotCurve):
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
+        
+    def set_private(self, state):
+        """Set object as private"""
+        self._private = state
+        
+    def is_private(self):
+        """Return True if object is private"""
+        return self._private
 
     def invalidate_plot(self):
         plot = self.plot()
@@ -221,25 +341,34 @@ class CurveItem(QwtPlotCurve):
             plot.invalidate()
 
     def select(self):
+        """Select item"""
         self.selected = True
         self.setSymbol(SELECTED_SYMBOL)
         self.invalidate_plot()
     
     def unselect(self):
+        """Unselect item"""
         self.selected = False
         # Restoring initial curve parameters:
         self.curveparam.update_curve(self)
         self.invalidate_plot()
 
     def get_data(self):
+        """Return curve data x, y (NumPy arrays)"""
         return self._x, self._y
 
     def set_data(self, x, y):
+        """
+        Set curve data:
+            * x: NumPy array
+            * y: NumPy array
+        """
         self._x = np.array(x, copy=False)
         self._y = np.array(y, copy=False)
         self.setData(self._x, self._y)
         
     def is_empty(self):
+        """Return True if item data is empty"""
         return self._x is None or self._y is None or self._y.size == 0
 
     def hit_test(self, pos):
@@ -310,7 +439,7 @@ class CurveItem(QwtPlotCurve):
         ay = self.yAxis()
         return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
 
-    def move_local_point_to(self, handle, pos):
+    def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return
         if handle < 0 or handle > self._x.shape[0]:
@@ -353,6 +482,194 @@ class CurveItem(QwtPlotCurve):
         self.update_params()
 
 assert_interfaces_valid(CurveItem)
+
+
+def _transform(map,v):
+    return QwtScaleMap.transform(map,v)
+vmap = np.vectorize(_transform)
+
+class ErrorBarCurveItem(CurveItem):
+    """
+    Construct an error-bar curve `plot item` 
+    with the parameters *errorbarparam*
+    (see :py:class:`guiqwt.styles.ErrorBarParam`)
+    """
+    def __init__(self, curveparam=None, errorbarparam=None):
+        if errorbarparam is None:
+            self.errorbarparam = ErrorBarParam(_("Error bars"),
+                                               icon='errorbar.png')
+        else:
+            self.errorbarparam = errorbarparam
+        super(ErrorBarCurveItem, self).__init__(curveparam)
+        self._dx = None
+        self._dy = None
+        
+    def unselect(self):
+        """Unselect item"""
+        super(ErrorBarCurveItem, self).unselect()
+        self.errorbarparam.update_curve(self)
+
+    def get_data(self):
+        """
+        Return error-bar curve data: x, y, dx, dy
+            * x: NumPy array
+            * y: NumPy array
+            * dx: float or NumPy array (non-constant error bars)
+            * dy: float or NumPy array (non-constant error bars)
+        """
+        return self._x, self._y, self._dx, self._dy
+
+    def set_data(self, x, y, dx=None, dy=None):
+        """
+        Set error-bar curve data:
+            * x: NumPy array
+            * y: NumPy array
+            * dx: float or NumPy array (non-constant error bars)
+            * dy: float or NumPy array (non-constant error bars)
+        """
+        CurveItem.set_data(self, x, y)
+        if dx is not None:
+            dx = np.array(dx, copy=False)
+            if dx.size == 0:
+                dx = None
+        if dy is not None:
+            dy = np.array(dy, copy=False)
+            if dy.size == 0:
+                dy = None
+        self._dx = dx
+        self._dy = dy
+
+    def get_minmax_arrays(self):
+        x = self._x
+        y = self._y
+        dx = self._dx
+        dy = self._dy
+        if dx is None:
+            xmin = x
+            xmax = x
+        else:
+            xmin = x - dx
+            xmax = x + dx
+        if dy is None:
+            ymin = y
+            ymax = y
+        else:
+            ymin = y - dy
+            ymax = y + dy
+        return xmin, xmax, ymin, ymax
+        
+    def get_closest_coordinates(self, x, y):
+        # Surcharge d'une méthode de base de CurveItem
+        plot = self.plot()
+        ax = self.xAxis()
+        ay = self.yAxis()
+        xc = plot.transform(ax, x)
+        yc = plot.transform(ay, y)
+        _distance, i, _inside, _other = self.hit_test(QPoint(xc, yc))
+        x0, y0 = self.plot().canvas2plotitem(self, xc, yc)
+        x = self.x(i)
+        y = self.y(i)
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        if abs(y0-y) > abs(y0-ymin[i]):
+            y = ymin[i]
+        elif abs(y0-y) > abs(y0-ymax[i]):
+            y = ymax[i]
+        if abs(x0-x) > abs(x0-xmin[i]):
+            x = xmin[i]
+        elif abs(x0-x) > abs(x0-xmax[i]):
+            x = xmax[i]
+        return x, y
+
+    def boundingRect(self):
+        """Return the bounding rectangle of the data, error bars included"""
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        if xmin is None or xmin.size == 0:
+            return super(ErrorBarCurveItem, self).boundingRect()
+        return QRectF( xmin.min(), ymin.min(),
+                       xmax.max()-xmin.min(), ymax.max()-ymin.min() )
+        
+    def draw(self, painter, xMap, yMap, canvasRect):
+        x = self._x
+        if x is None:
+            return
+        y = self._y
+        tx = vmap(xMap, x)
+        ty = vmap(yMap, y)
+        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
+        RN = xrange(len(tx))
+        if self.errorOnTop:
+            QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
+        
+        painter.save()
+        painter.setPen(self.errorPen)
+        cap = self.errorCap/2.
+
+        if self._dx is not None and self.errorbarparam.mode == 0:
+            txmin = vmap(xMap, xmin)
+            txmax = vmap(xMap, xmax)
+            # Classic error bars
+            lines = []
+            for i in RN:
+                yi = ty[i]
+                lines.append(QLine(txmin[i], yi, txmax[i], yi))
+            painter.drawLines(lines)
+            if cap > 0:
+                lines = []
+                for i in RN:
+                    yi = ty[i]
+                    lines.append(QLine(txmin[i], yi-cap, txmin[i], yi+cap))
+                    lines.append(QLine(txmax[i], yi-cap, txmax[i], yi+cap))
+            painter.drawLines(lines)
+            
+        if self._dy is not None:
+            tymin = vmap(yMap, ymin)
+            tymax = vmap(yMap, ymax)
+            if self.errorbarparam.mode == 0:
+                # Classic error bars
+                lines = []
+                for i in RN:
+                    xi = tx[i]
+                    lines.append(QLine(xi, tymin[i], xi, tymax[i]))
+                painter.drawLines(lines)
+                if cap > 0:
+                    # Cap
+                    lines = []
+                    for i in RN:
+                        xi = tx[i]
+                        lines.append(QLine(xi-cap, tymin[i], xi+cap, tymin[i]))
+                        lines.append(QLine(xi-cap, tymax[i], xi+cap, tymax[i]))
+                painter.drawLines(lines)
+            else:
+                # Error area
+                points = []
+                rpoints = []
+                for i in RN:
+                    xi = tx[i]
+                    points.append(QPoint(xi, tymin[i]))
+                    rpoints.append(QPoint(xi, tymax[i]))
+                points+=reversed(rpoints)
+                painter.setBrush(QBrush(self.errorBrush))
+                painter.drawPolygon(*points)
+
+        painter.restore()
+
+        if not self.errorOnTop:
+            QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
+        
+    def update_params(self):
+        self.errorbarparam.update_curve(self)
+        super(ErrorBarCurveItem, self).update_params()
+
+    def get_item_parameters(self, itemparams):
+        super(ErrorBarCurveItem, self).get_item_parameters(itemparams)
+        itemparams.add("ErrorBarParam", self, self.errorbarparam)
+    
+    def set_item_parameters(self, itemparams):
+        update_dataset(self.errorbarparam, itemparams.get("ErrorBarParam"),
+                       visible_only=True)
+        super(ErrorBarCurveItem, self).set_item_parameters(itemparams)
+
+assert_interfaces_valid( ErrorBarCurveItem )
 
 
 #===============================================================================
@@ -456,8 +773,8 @@ class ItemListWidget(QListWidget):
                                         AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
-                                   XRangeSelection)
-        from guiqwt.errorbar import ErrorBarCurveItem
+                                   XRangeSelection, VerticalCursor,
+                                   HorizontalCursor)
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
@@ -482,6 +799,8 @@ class ItemListWidget(QListWidget):
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
                             (XRangeSelection, 'xrange.png'),
+                            (VerticalCursor, 'vcursor.png'),
+                            (HorizontalCursor, 'hcursor.png'),
                             (PolygonShape, 'freeform.png'),
                             (Histogram2DItem, 'histogram2d.png'),
                             (ImageFilterItem, 'funct.png'),
@@ -499,7 +818,7 @@ class ItemListWidget(QListWidget):
         self.plot = plot
         _block = self.blockSignals(True)
         active = plot.get_active_item()
-        self.items = plot.get_items(z_sorted=True)
+        self.items = plot.get_public_items(z_sorted=True)
         self.clear()
         for item in self.items:
             title = item.title().text()
@@ -569,23 +888,26 @@ class ItemListWidget(QListWidget):
             self.plot.del_items(items)
             self.plot.replot()
             for item in items:
-                self.parent().emit(SIG_ITEM_REMOVED, item)
+                self.plot.emit(SIG_ITEM_REMOVED, item)
         
 
 class PlotItemList(PanelWidget):
+    """Construct the `plot item list panel`"""
     __implements__ = (IPanel,)
+    PANEL_ID = ID_ITEMLIST
+    PANEL_TITLE = _("Item list")
+    PANEL_ICON = "item_list.png"
     
     def __init__(self, parent):
         super(PlotItemList, self).__init__(parent)
-        widget_title = _("Item list")
-        widget_icon = "item_list.png"
         self.manager = None
         
         vlayout = QVBoxLayout()
         self.setLayout(vlayout)
         
         style = "<span style=\'color: #444444\'><b>%s</b></span>"
-        layout, _label = get_image_layout(widget_icon, style % widget_title,
+        layout, _label = get_image_layout(self.PANEL_ICON,
+                                          style % self.PANEL_TITLE,
                                           alignment=Qt.AlignCenter)
         vlayout.addLayout(layout)
         self.listwidget = ItemListWidget(self)
@@ -594,29 +916,28 @@ class PlotItemList(PanelWidget):
         toolbar = QToolBar(self)
         vlayout.addWidget(toolbar)
         add_actions(toolbar, self.listwidget.menu_actions)
-        
-        self.setWindowIcon(get_icon(widget_icon))
-        self.setWindowTitle(widget_title)
-        
-    def panel_id(self):
-        return "itemlist"
 
     def register_panel(self, manager):
+        """Register panel to plot manager"""
         self.manager = manager
         self.listwidget.register_panel(manager)
+                         
+    def configure_panel(self):
+        """Configure panel"""
+        pass
 
 assert_interfaces_valid(PlotItemList)
 
 
-class CurvePlot(EnhancedQwtPlot):
+class CurvePlot(BasePlot):
     """
-    CurvePlot
-    
-    parent: parent widget
-    title: plot title
-    xlabel: (bottom axis title, top axis title) or bottom axis title only
-    ylabel: (left axis title, right axis title) or left axis title only
-    gridparam: GridParam instance
+    Construct a 2D curve plotting widget 
+    (this class inherits :py:class:`guiqwt.baseplot.BasePlot`)
+        * parent: parent widget
+        * title: plot title
+        * xlabel: (bottom axis title, top axis title) or bottom axis title only
+        * ylabel: (left axis title, right axis title) or left axis title only
+        * gridparam: GridParam instance
     """
     AUTOSCALE_TYPES = (CurveItem,)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
@@ -742,6 +1063,9 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, lbound-pos0, hbound-pos1)
         self.setAutoReplot(auto)
         self.replot()
+        # the signal MUST be emitted after replot, otherwise
+        # we receiver won't see the new bounds (don't know why?)
+        self.emit(SIG_PLOT_AXIS_CHANGED, self)
 
     def do_zoom_view(self, dx, dy, lock_aspect_ratio=False):
         """
@@ -773,6 +1097,9 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, l_new, l_new + F*rng)
         self.setAutoReplot(auto)
         self.replot()
+        # the signal MUST be emitted after replot, otherwise
+        # we receiver won't see the new bounds (don't know why?)
+        self.emit(SIG_PLOT_AXIS_CHANGED, self)
         
     def do_zoom_rect_view(self, start, end):
         x1, y1 = start.x(), start.y()
@@ -792,57 +1119,13 @@ class CurvePlot(EnhancedQwtPlot):
             self.setAxisScale(k, o1, o2)
         self.replot()
 
-    #---- EnhancedQwtPlot API --------------------------------------------------
-    def get_axis_title(self, axis):
-        """
-        Reimplement EnhancedQwtPlot method
-        Get axis title
-        axis: 'bottom', 'left', 'top' or 'right'
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        return super(CurvePlot, self).get_axis_title(axis)
-        
-    def set_axis_title(self, axis, title):
-        """
-        Reimplement EnhancedQwtPlot method
-        Set axis title
-        axis: 'bottom', 'left', 'top' or 'right'
-        title: string
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_title(axis, title)
-
-    def set_axis_font(self, axis, font):
-        """
-        Reimplement EnhancedQwtPlot method
-        Set axis font
-        axis: 'bottom', 'left', 'top' or 'right'
-        font: QFont instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_font(axis, font)
-    
-    def set_axis_color(self, axis, color):
-        """
-        Reimplement EnhancedQwtPlot method
-        Set axis color
-        axis: 'bottom', 'left', 'top' or 'right'
-        color: color name (string) or QColor instance
-        """
-        if axis in self.AXES:
-            axis = self.AXES[axis]
-        super(CurvePlot, self).set_axis_color(axis, color)
-
+    #---- BasePlot API ---------------------------------------------------------
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
-        
-        item: QwtPlotItem (PyQt4.Qwt5) object implementing
+            * item: QwtPlotItem (PyQt4.Qwt5) object implementing
               the IBasePlotItem interface (guiqwt.interfaces)
-        z: item's z order (None -> z = max(self.get_items())+1)
+            * z: item's z order (None -> z = max(self.get_items())+1)
         """
         if isinstance(item, QwtPlotCurve):
             item.setRenderHint(QwtPlotItem.RenderAntialiased, self.antialiased)
@@ -879,46 +1162,72 @@ class CurvePlot(EnhancedQwtPlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        rect = None
-        for item in self.get_items():
-            if isinstance(item, self.AUTOSCALE_TYPES) and not item.is_empty() \
-               and item.isVisible():
-                bounds = item.boundingRect()
-                if rect is None:
-                    rect = bounds
-                else:
-                    rect = rect.united(bounds)
-        if rect is not None:
-            self.set_plot_limits(rect.left(), rect.right(),
-                                 rect.top(), rect.bottom())
-            if replot:
-                self.replot()
+        for axis_id in self.AXIS_IDS:
+            vmin, vmax = None, None
+            if not self.axisEnabled(axis_id):
+                continue
+            for item in self.get_items():
+                if isinstance(item, self.AUTOSCALE_TYPES) \
+                   and not item.is_empty() and item.isVisible():
+                    bounds = item.boundingRect()
+                    if axis_id == item.xAxis():
+                        xmin, xmax = bounds.left(), bounds.right()
+                        if vmin is None or xmin < vmin:
+                            vmin = xmin
+                        if vmax is None or xmax > vmax:
+                            vmax = xmax
+                    elif axis_id == item.yAxis():
+                        ymin, ymax = bounds.top(), bounds.bottom()
+                        if vmin is None or ymin < vmin:
+                            vmin = ymin
+                        if vmax is None or ymax > vmax:
+                            vmax = ymax
+            if vmin is None or vmax is None:
+                continue
+            if vmin == vmax: # same behavior as MATLAB
+                vmin -= 1
+                vmax += 1
+            else:
+                dv = vmax-vmin
+                vmin -= .002*dv
+                vmax += .002*dv
+            self.set_axis_limits(axis_id, vmin, vmax)
+        if replot:
+            self.replot()
+
+    def set_axis_limits(self, axis_id, vmin, vmax):
+        """Set axis limits (minimum and maximum values)"""
+        axis_id = self.get_axis_id(axis_id)
+        vmin, vmax = sorted([vmin, vmax])
+        dv = vmax-vmin
+        if self.get_axis_direction(axis_id):
+            self.setAxisScale(axis_id, vmin+dv, vmin)
+        else:
+            self.setAxisScale(axis_id, vmin, vmin+dv)
             
     #---- Public API -----------------------------------------------------------    
-    def get_axis_direction(self, axis):
+    def get_axis_direction(self, axis_id):
         """
         Return axis direction of increasing values
-        axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         return self.axes_reverse[axis_id]
             
-    def set_axis_direction(self, axis, reverse=False):
+    def set_axis_direction(self, axis_id, reverse=False):
         """
         Set axis direction of increasing values
-        axis: axis id (QwtPlot.yLeft, QwtPlot.xBottom, ...)
+            * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
-        
-        reverse = False (default)
-            x-axis values increase from left to right
-            y-axis values increase from bottom to top
-        
-        reverse = True
-            x-axis values increase from right to left
-            y-axis values increase from top to bottom
+            * reverse: False (default)
+                - x-axis values increase from left to right
+                - y-axis values increase from bottom to top
+            * reverse: True
+                - x-axis values increase from right to left
+                - y-axis values increase from top to bottom
         """
-        axis_id = self.AXES.get(axis, axis)
+        axis_id = self.get_axis_id(axis_id)
         if reverse != self.axes_reverse[axis_id]:
             self.replot()
             self.axes_reverse[axis_id] = reverse
@@ -930,10 +1239,11 @@ class CurvePlot(EnhancedQwtPlot):
     def set_titles(self, title=None, xlabel=None, ylabel=None):
         """
         Set plot and axes titles at once
-        
-        title: plot title
-        xlabel: (bottom axis title, top axis title) or bottom axis title only
-        ylabel: (left axis title, right axis title) or left axis title only
+            * title: plot title
+            * xlabel: (bottom axis title, top axis title) 
+              or bottom axis title only
+            * ylabel: (left axis title, right axis title) 
+              or left axis title only
         """
         if title is not None:
             self.set_title(title)
@@ -952,10 +1262,11 @@ class CurvePlot(EnhancedQwtPlot):
     
     def set_pointer(self, pointer_type):
         """
-        valid *pointer_type* values:
-            None: disable pointer
-            "canvas": enable canvas pointer
-            "curve": enable on-curve pointer
+        Set pointer.
+        Valid values of `pointer_type`:
+            * None: disable pointer
+            * "canvas": enable canvas pointer
+            * "curve": enable on-curve pointer
         """
         self.canvas_pointer = False
         self.curve_pointer = False
@@ -972,26 +1283,17 @@ class CurvePlot(EnhancedQwtPlot):
                 curve.setRenderHint(QwtPlotItem.RenderAntialiased,
                                     self.antialiased)
 
-    def set_plot_limits(self, x0, x1, y0, y1):
+    def set_plot_limits(self, x0, x1, y0, y1, xaxis="bottom", yaxis="left"):
         """Set plot scale limits"""
-        dy = y1-y0
-        if self.get_axis_direction(self.yLeft):
-            self.setAxisScale(self.yLeft, y0+dy, y0)
-        else:
-            self.setAxisScale(self.yLeft, y0, y0+dy)
-        dx = x1-x0
-        if self.get_axis_direction(self.xBottom):
-            self.setAxisScale(self.xBottom, x0+dx, x0)
-        else:
-            self.setAxisScale(self.xBottom, x0, x0+dx)
+        self.set_axis_limits(yaxis, y0, y1)
+        self.set_axis_limits(xaxis, x0, x1)
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.yLeft)
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.xBottom)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
         
-    def set_item_visible(self, item, state):
-        """Show/hide *item* and notify the item browser"""
-        item.setVisible(state)
-        if item is self.active_item and not state:
-            self.set_active_item(None) # Notify the item list (see baseplot)
-        self.emit(SIG_ITEMS_CHANGED, self)
-        self.replot()
+    def get_plot_limits(self, xaxis="bottom", yaxis="left"):
+        """Return plot scale limits"""
+        x0, x1 = self.get_axis_limits(xaxis)
+        y0, y1 = self.get_axis_limits(yaxis)
+        return x0, x1, y0, y1
+        

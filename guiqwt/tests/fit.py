@@ -7,11 +7,11 @@
 
 """Curve fitting tools"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 import numpy as np
 
 from guiqwt.fit import FitParam, guifit
-
-SHOW = True # Show test in GUI-based test launcher
 
 def test():
     x = np.linspace(-10, 10, 1000)
@@ -24,7 +24,7 @@ def test():
     a = FitParam("Offset", 1., 0., 2.)
     b = FitParam("Frequency", 2., 1., 10., logscale=True)
     params = [a, b]
-    values = guifit(x, y, fit, params)
+    values = guifit(x, y, fit, params, xlabel="Time (s)", ylabel="Power (a.u.)")
     
     print values
     print [param.value for param in params]

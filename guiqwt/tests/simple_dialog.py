@@ -7,6 +7,8 @@
 
 """Simple dialog box based on guiqwt and guidata"""
 
+SHOW = True # Show test in GUI-based test launcher
+
 from PyQt4.QtCore import SIGNAL
 
 import scipy.ndimage
@@ -17,13 +19,10 @@ from guidata.dataset.qtwidgets import DataSetShowGroupBox, DataSetEditGroupBox
 from guidata.utils import update_dataset
 
 from guiqwt.config import _
-from guiqwt.plot import ImagePlotDialog
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.tools import OpenImageTool
 from guiqwt.io import imagefile_to_array
-
-SHOW = True # Show test in GUI-based test launcher
-
 
 class ImageParam(DataSet):
     title = StringItem(_("Title"))
@@ -42,8 +41,7 @@ class FilterParam(DataSet):
                        ))
     size = IntItem(_("Size or sigma"), min=1, default=5)
     
-
-class ExampleDialog(ImagePlotDialog):
+class ExampleDialog(ImageDialog):
     def __init__(self, wintitle=_("Example dialog box"),
                  icon="guidata.png", options=dict(show_contrast=True),
                  edit=False):
@@ -56,13 +54,9 @@ class ExampleDialog(ImagePlotDialog):
         self.resize(600, 600)
         
     def register_tools(self):
-        opentool = self.register_tool(OpenImageTool)
+        opentool = self.add_tool(OpenImageTool)
         self.connect(opentool, SIGNAL("openfile(QString*)"), self.open_image)
-        self.manager.register_standard_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_image_tools()
-        self.manager.add_separator_tool()
-        self.manager.register_other_tools()
+        self.register_all_image_tools()
         self.activate_default_tool()
 
     def create_plot(self, options):
@@ -71,16 +65,16 @@ class ExampleDialog(ImagePlotDialog):
         self.filter_gbox.setEnabled(False)
         self.connect(self.filter_gbox, SIGNAL("apply_button_clicked()"),
                      self.apply_filter)
-        self.layout.addWidget(self.filter_gbox, 0, 0)
+        self.plot_layout.addWidget(self.filter_gbox, 0, 0)
         self.param_gbox = DataSetShowGroupBox(_("Image parameters"), ImageParam)
-        self.layout.addWidget(self.param_gbox, 0, 1)
+        self.plot_layout.addWidget(self.param_gbox, 0, 1)
         
         options = dict(title=_("Image title"), zlabel=_("z-axis scale label"))
-        ImagePlotDialog.create_plot(self, options, 1, 0, 1, 0)
+        ImageDialog.create_plot(self, options, 1, 0, 1, 0)
         
     def open_image(self, filename):
         """Opening image *filename*"""
-        self.data = imagefile_to_array(filename)
+        self.data = imagefile_to_array(filename, to_grayscale=True)
         self.show_data(self.data)
         param = ImageParam()
         param.title = filename
@@ -104,7 +98,6 @@ class ExampleDialog(ImagePlotDialog):
         filterfunc = getattr(scipy.ndimage, param.name)
         data = filterfunc(self.data, param.size)
         self.show_data(data)
-
 
 if __name__ == "__main__":
     from guidata import qapplication

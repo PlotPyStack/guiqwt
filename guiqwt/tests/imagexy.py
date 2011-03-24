@@ -7,18 +7,18 @@
 
 """Image with custom X/Y axes linear scales"""
 
-from guiqwt.plot import ImagePlotDialog
+SHOW = True # Show test in GUI-based test launcher
+
+from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 
 import numpy as np
 
-SHOW = True # Show test in GUI-based test launcher
-
 def imshow( x, y, data ):
-    win = ImagePlotDialog(edit=False, toolbar=True,
-                          wintitle="Image with custom X/Y axes scales",
-                          options=dict(xlabel="x (a.u.)", ylabel="y (a.u.)",
-                                       yreverse=False))
+    win = ImageDialog(edit=False, toolbar=True,
+                      wintitle="Image with custom X/Y axes scales",
+                      options=dict(xlabel="x (a.u.)", ylabel="y (a.u.)",
+                                   yreverse=False))
     item = make.xyimage(x, y, data)
     plot = win.get_plot()
     plot.add_item(item)

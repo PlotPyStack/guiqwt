@@ -13,5 +13,5 @@ A guiqwt plot widget plugin for Qt Designer
 """
 
 from guiqwt.qtdesigner import create_qtdesigner_plugin
-Plugin = create_qtdesigner_plugin("guiqwt", "guiqwt.plot", "CurvePlotWidget",
+Plugin = create_qtdesigner_plugin("guiqwt", "guiqwt.plot", "CurveWidget",
                                   icon="curve.png")

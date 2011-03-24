@@ -6,16 +6,19 @@
 # (see guiqwt/__init__.py for details)
 
 """
-This module contains definition of common colormaps and tools
+guiqwt.colormap
+---------------
+
+The `colormap` module contains definition of common colormaps and tools
 to manipulate and create them
 """
 
-from PyQt4.Qwt5 import QwtLinearColorMap, QwtDoubleInterval, toQImage
 from PyQt4.QtGui import QColor, QIcon, QPixmap
 
 from numpy import array, uint8, linspace, zeros, newaxis
 
 # Local imports
+from guiqwt.transitional import QwtLinearColorMap, QwtDoubleInterval, toQImage
 from guiqwt import _cm # Reuse matplotlib data
 
 
@@ -54,6 +57,7 @@ def _setup_colormap(cmap, cmdata):
 FULLRANGE = QwtDoubleInterval(0.0, 1.0)
 
 COLORMAPS = {}
+EXTRA_COLORMAPS = [] # custom build colormaps
 
 def get_cmap(name):
     """
@@ -78,6 +82,7 @@ def get_colormap_list():
     """Builds a list of available colormaps
     by introspection of the _cm module"""
     cmlist = []
+    cmlist += EXTRA_COLORMAPS
     for name in dir(_cm):
         if name.endswith("_data"):
             obj = getattr(_cm, name)
@@ -103,3 +108,14 @@ def build_icon_from_cmap_name(cmap_name):
     icon = build_icon_from_cmap(get_cmap(cmap_name))
     ICON_CACHE[cmap_name] = icon
     return icon
+
+def register_extra_colormap(name, colormap):
+    """Add a custom colormap to the list of known colormaps
+    must be done early in the import process because
+    datasets will use get_color_map list at import time
+
+    colormap is a QwtColorMap object
+    """
+    COLORMAPS[name] = colormap
+    COLORMAPS[colormap] = name
+    EXTRA_COLORMAPS.append(name)

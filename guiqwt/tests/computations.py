@@ -7,13 +7,13 @@
 
 """Plot computations test"""
 
-from guiqwt.plot import CurvePlotDialog
-from guiqwt.builder import make
-
 SHOW = True # Show test in GUI-based test launcher
 
+from guiqwt.plot import CurveDialog
+from guiqwt.builder import make
+
 def plot( *items ):
-    win = CurvePlotDialog(edit=False, toolbar=True)
+    win = CurveDialog(edit=False, toolbar=True)
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)

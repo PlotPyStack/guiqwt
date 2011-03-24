@@ -7,17 +7,16 @@
 
 """Histogram test"""
 
-from guiqwt.plot import CurvePlotDialog
-from guiqwt.builder import make
-
 SHOW = True # Show test in GUI-based test launcher
+
+from guiqwt.plot import CurveDialog
+from guiqwt.builder import make
 
 def test():
     """Test"""
     from numpy.random import normal
     data = normal(0, 1, (2000, ))
-    win = CurvePlotDialog(edit=False, toolbar=True,
-                          wintitle="Histogram test")
+    win = CurveDialog(edit=False, toolbar=True, wintitle="Histogram test")
     plot = win.get_plot()
     plot.add_item(make.histogram(data))
     win.show()
