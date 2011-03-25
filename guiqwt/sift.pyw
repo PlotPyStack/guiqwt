@@ -502,10 +502,11 @@ class SignalFT(ObjectFT):
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
                   % (_(u"Text files"), _(u"NumPy arrays"))
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
                                                self.directory, filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        if filename:
+        filenames = list(filenames)
+        for filename in filenames:
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             signal = SignalParam()
@@ -756,10 +757,11 @@ class ImageFT(ObjectFT):
         """Open image file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
                                            self.directory, IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        if filename:
+        filenames = list(filenames)
+        for filename in filenames:
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             image = ImageParam()
