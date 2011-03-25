@@ -39,7 +39,27 @@ from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.1'
+VERSION = '0.2.2'
+
+
+def xy_fft(x, y):
+    """Compute FFT on X,Y data"""
+    y1 = np.fft.fft(y)
+    x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
+    return x1, y1
+    
+def xy_ifft(x, y):
+    """Compute iFFT on X,Y data"""
+    y1 = np.fft.ifft(y)
+    x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
+    return x1, y1
+    
+def flatfield(rawdata, flatdata):
+    """Compute flat-field correction"""
+    dtemp = np.array(rawdata, dtype=np.float64, copy=True)*flatdata.mean()
+    dunif = np.array(flatdata, dtype=np.float64, copy=True)
+    dunif[dunif == 0] = 1.
+    return np.array(dtemp/dunif, dtype=rawdata.dtype)
 
 
 class SignalParam(DataSet):
@@ -453,18 +473,10 @@ class SignalFT(ObjectFT):
                         suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
-        def func(x, y):
-            y1 = np.fft.fft(y)
-            x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
-            return x1, y1
-        self.compute_11("FFT", func)
+        self.compute_11("FFT", xy_fft)
                          
     def compute_ifft(self):
-        def func(x, y):
-            y1 = np.fft.ifft(y)
-            x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
-            return x1, y1
-        self.compute_11("iFFT", func)
+        self.compute_11("iFFT", xy_ifft)
                             
     #------I/O
     def new_signal(self):
@@ -595,15 +607,20 @@ class ImageFT(ObjectFT):
                                       triggered=self.rotate_90)
         rotate_action = create_action(self, _("Rotate arbitrarily..."),
                                       triggered=self.rotate_arbitrarily)
-        self.actlist_1more += [hflip_action, vflip_action,
-                               rot90_action, rot270_action, rotate_action]
         resize_action = create_action(self, _("Resize"),
                                       triggered=self.resize_image)
+        crop_action = create_action(self, _("Crop"), triggered=self.crop_image)
+        flatfield_action = create_action(self, _("Flat-field correction"),
+                                         triggered=self.flat_field_correction)
         self.actlist_1 += [resize_action]
+        self.actlist_2 += [flatfield_action]
+        self.actlist_1more += [crop_action, hflip_action, vflip_action,
+                               rot90_action, rot270_action, rotate_action]
         add_actions(rotate_menu, [hflip_action, vflip_action,
                                   rot90_action, rot270_action, rotate_action])
         self.operation_actions += [None, rotate_menu, None,
-                                   resize_action]
+                                   resize_action, crop_action,
+                                   None, flatfield_action]
         
         # Processing actions
         gaussian_action = create_action(self, _("Gaussian filter"),
@@ -636,6 +653,7 @@ class ImageFT(ObjectFT):
         lut_range = [item.min, item.max]
         item.set_data(image.data.real, lut_range=lut_range)
         item.imageparam.label = image.title
+        item.plot().update_colormap_axis(item)
         
     #------Image operations
     def rotate_arbitrarily(self):
@@ -700,13 +718,41 @@ class ImageFT(ObjectFT):
             order = IntItem(_(u"Order"), default=3, min=0, max=5,
                             help=_("Spline interpolation order")
                             ).set_prop("display", active=prop)
-        param = ResizeParam(_("Gaussian filter"))
+        param = ResizeParam(_("Resize"))
         import scipy.ndimage as spi
         self.compute_11("Zoom", lambda x, p:
                         spi.interpolation.zoom(x, p.zoom, order=p.order,
                                                mode=p.mode, cval=p.cval,
                                                prefilter=p.prefilter),
                         param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
+                        
+    def crop_image(self):
+        class CropParam(DataSet):
+            row1 = IntItem(_("First row index"), default=0, min=-1)
+            row2 = IntItem(_("Last row index"), default=-1, min=-1)
+            col1 = IntItem(_("First column index"), default=0, min=-1)
+            col2 = IntItem(_("Last column index"), default=-1, min=-1)
+        param = CropParam(_("Crop"))
+        self.compute_11("Crop", lambda x, p:
+                        x.copy()[p.row1:p.row2, p.col1:p.col2],
+                        param, suffix=lambda p: u"roi=%d:%d,%d:%d" 
+                        % (p.row1, p.row2, p.col1, p.col2))
+        
+    def flat_field_correction(self):
+        rows = self._get_selected_rows()
+        robj = self.PARAMCLASS()
+        robj.title = "FlatField("+(','.join(["%s%03d" % (self.PREFIX, row)
+                                             for row in rows]))+")"
+        try:
+            robj.data = flatfield(self.objects[rows[0]].data,
+                                  self.objects[rows[1]].data)
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.parent(), APP_NAME,
+                                 _(u"Error:")+"\n%s" % str(msg))
+            return
+        self.add_object(robj)
         
     #------Image Processing
     def compute_wiener(self):
