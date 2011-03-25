@@ -238,15 +238,15 @@ class AbstractLabelItem(QwtPlotItem):
             self.labelparam.xg, self.labelparam.yg = lx1, ly1
             plot.emit(SIG_ITEM_MOVED, self, lx0, ly0, lx1, ly1)
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         if self.G in ANCHORS or not self.labelparam.move_anchor:
             return
         lx0, ly0 = self.G
-        lx1, ly1 = lx0+dx, ly0+dy
+        lx1, ly1 = lx0+delta_x, ly0+delta_y
         self.G = lx1, ly1
         self.labelparam.xg, self.labelparam.yg = lx1, ly1
 

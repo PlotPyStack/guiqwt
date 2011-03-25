@@ -257,7 +257,7 @@ class GridItem(QwtPlotGrid):
     def move_local_shape(self, old_pos, new_pos):
         pass
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         pass
 
     def update_params(self):
@@ -459,13 +459,13 @@ class CurveItem(QwtPlotCurve):
         self._y += (ny-oy)
         self.setData(self._x, self._y)
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self._x += dx
-        self._y += dy
+        self._x += delta_x
+        self._y += delta_y
         self.setData(self._x, self._y)
 
     def update_params(self):

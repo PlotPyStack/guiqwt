@@ -624,10 +624,10 @@ class BaseImageItem(QwtPlotItem):
         in canvas coordinates"""
         pass        
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         pass
 
@@ -1239,13 +1239,13 @@ class TrImageItem(RawImageItem):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        self.set_transform(x0+dx, y0+dy, angle, dx, dy, hflip, vflip)
+        self.set_transform(x0+delta_x, y0+delta_y, angle, dx, dy, hflip, vflip)
 
 assert_interfaces_valid(TrImageItem)
 
@@ -1833,12 +1833,12 @@ class ImageFilterItem(BaseImageItem):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self.border_rect.move_with_selection(dx, dy)
+        self.border_rect.move_with_selection(delta_x, delta_y)
 
     def set_color_map(self, name_or_table):
         if self.use_source_cmap:
