@@ -625,14 +625,16 @@ class ImageFT(ObjectFT):
         
     def make_item(self, row):
         image = self.objects[row]
-        item = make.image(image.data.real, title=image.title, colormap='gray')
+        item = make.image(image.data.real, title=image.title, colormap='gray',
+                          eliminate_outliers=2.)
         self.items[row] = item
         return item
         
     def update_item(self, row):
         image = self.objects[row]
         item = self.items[row]
-        item.set_data(image.data.real)
+        lut_range = [item.min, item.max]
+        item.set_data(image.data.real, lut_range=lut_range)
         item.imageparam.label = image.title
         
     #------Image operations
