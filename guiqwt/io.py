@@ -24,7 +24,7 @@ Reference
 .. autofunction:: array_to_dicomfile
 """
 
-import sys, os.path as osp, numpy as np, os, time
+import sys, os.path as osp, numpy as np, os, time, re
 
 # Local imports
 from guiqwt.config import _
@@ -126,6 +126,13 @@ try:
     IMAGE_LOAD_FILTERS += ('\n%s (*.dcm)' % _(u"DICOM images"))
 except ImportError:
     pass
+
+def _add_all_supported_files(filters):
+    extlist = re.findall(r'\*.[a-zA-Z0-9]*', filters)
+    allfiles = '%s (%s)\n' % (_("All supported files"), ' '.join(extlist))
+    return allfiles+filters    
+
+IMAGE_LOAD_FILTERS = _add_all_supported_files(IMAGE_LOAD_FILTERS)
 
 def imagefile_to_array(filename, to_grayscale=False):
     """
