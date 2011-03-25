@@ -184,7 +184,7 @@ def _nanmin(data):
 
 def _nanmax(data):
     if data.dtype.name in ("float32","float64", "float128"):
-        return _nanmax(data)
+        return np.nanmax(data)
     else:
         return data.max()
 
