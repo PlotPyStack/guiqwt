@@ -230,6 +230,7 @@ class ObjectFT(QSplitter):
             else:
                 self.update_item(row)
                 self.plot.set_item_visible(item, True)
+                self.plot.set_active_item(item)
         self.plot.do_autoscale()
         
     def refresh_list(self):
