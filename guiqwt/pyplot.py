@@ -561,6 +561,11 @@ def errorbar(*args, **kwargs):
     _show_if_interactive()
     return [curve]
 
+def imread(fname, to_grayscale=False):
+    """Read data from *fname*"""
+    from guiqwt.io import imagefile_to_array
+    return imagefile_to_array(fname, to_grayscale=to_grayscale)
+
 def imshow(data):
     """
     Display the image in *data* to current axes
