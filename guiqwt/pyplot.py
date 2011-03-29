@@ -265,7 +265,8 @@ def do_mainloop(mainloop):
     if not _current_fig:
         print >>sys.stderr, "Warning: must create a figure before showing it"
     elif mainloop:
-        guidata.exec_qapplication_eventloop()
+        app = guidata.qapplication()
+        app.exec_()
         
 
 class Axes(object):
