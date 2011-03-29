@@ -65,8 +65,10 @@ def flatfield(rawdata, flatdata):
 class SignalParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     xydata = FloatArrayItem(_("Data"), transpose=True, minmax="rows")
-    def copy_data_from(self, other):
-        self.xydata = np.array(other.xydata, copy=True)
+    def copy_data_from(self, other, dtype=None):
+        self.xydata = np.array(other.xydata, copy=True, dtype=dtype)
+    def change_data_type(self, dtype):
+        self.xydata = np.array(self.xydata, dtype=dtype)
     def get_data(self):
         if self.xydata is not None:
             return self.xydata[1]
@@ -89,8 +91,10 @@ class ImageParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
 #    metadata = DictItem(_("Informations and metadata"), default=None)
-    def copy_data_from(self, other):
-        self.data = np.array(other.data, copy=True)
+    def copy_data_from(self, other, dtype=None):
+        self.data = np.array(other.data, copy=True, dtype=dtype)
+    def change_data_type(self, dtype):
+        self.data = np.array(self.data, dtype=dtype)
 
 class ImageParamNew(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
@@ -176,16 +180,18 @@ class ObjectFT(QSplitter):
         
         # Operation actions
         sum_action = create_action(self, _("Sum"), triggered=self.compute_sum)
+        average_action = create_action(self, _("Average"),
+                                       triggered=self.compute_average)
         diff_action = create_action(self, _("Difference"),
                                     triggered=self.compute_difference)
         prod_action = create_action(self, _("Product"),
                                     triggered=self.compute_product)
         div_action = create_action(self, _("Division"),
                                    triggered=self.compute_division)
-        self.actlist_2more += [sum_action, prod_action]
+        self.actlist_2more += [sum_action, average_action, prod_action]
         self.actlist_2 += [diff_action, div_action]
-        self.operation_actions = [sum_action, diff_action, prod_action,
-                                  div_action]
+        self.operation_actions = [sum_action, average_action,
+                                  diff_action, prod_action, div_action]
 
     #------GUI refresh/setup
     def current_item_changed(self, row):
@@ -276,12 +282,6 @@ class ObjectFT(QSplitter):
         self.refresh_plot()
         
     #------Operations
-    def apply_sum_func(self, sumobj, obj):
-        raise NotImplementedError
-        
-    def apply_diff_func(self, diffobj, obj0, obj1):
-        raise NotImplementedError
-        
     def compute_sum(self):
         rows = self._get_selected_rows()
         sumobj = self.PARAMCLASS()
@@ -299,6 +299,29 @@ class ObjectFT(QSplitter):
             QMessageBox.critical(self.parent(), APP_NAME,
                                  _(u"Error:")+"\n%s" % str(msg))
             return
+        self.add_object(sumobj)
+    
+    def compute_average(self):
+        rows = self._get_selected_rows()
+        sumobj = self.PARAMCLASS()
+        title = ", ".join(["%s%03d" % (self.PREFIX, row) for row in rows])
+        sumobj.title = _("Average")+("(%s)" % title)
+        original_dtype = self.objects[rows[0]].data.dtype
+        try:
+            for row in rows:
+                obj = self.objects[row]
+                if sumobj.data is None:
+                    sumobj.copy_data_from(obj, dtype=np.float64)
+                else:
+                    sumobj.data += obj.data
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.parent(), APP_NAME,
+                                 _(u"Error:")+"\n%s" % str(msg))
+            return
+        sumobj.data /= float(len(rows))
+        sumobj.change_data_type(dtype=original_dtype)
         self.add_object(sumobj)
     
     def compute_product(self):
@@ -353,7 +376,7 @@ class ObjectFT(QSplitter):
                                  _(u"Error:")+"\n%s" % str(msg))
             return
         self.add_object(diffobj)
-            
+                                     
     #------Data Processing
     def apply_11_func(self, obj, orig, func, param):
         if param is None:
@@ -624,6 +647,10 @@ class ImageFT(ObjectFT):
                                    None, flatfield_action]
         
         # Processing actions
+        threshold_action = create_action(self, _("Thresholding"),
+                                         triggered=self.compute_threshold)
+        clip_action = create_action(self, _("Clipping"),
+                                    triggered=self.compute_clip)
         gaussian_action = create_action(self, _("Gaussian filter"),
                                         triggered=self.compute_gaussian)
         wiener_action = create_action(self, _("Wiener filter"),
@@ -634,9 +661,11 @@ class ImageFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [gaussian_action, wiener_action,
+        self.actlist_1more += [threshold_action, clip_action,
+                               gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [gaussian_action, wiener_action, fft_action,
+        self.processing_actions = [threshold_action, clip_action, None,
+                                   gaussian_action, wiener_action, fft_action,
                                    ifft_action]
                                    
         add_actions(toolbar, [new_action, open_action, save_action])
@@ -756,6 +785,20 @@ class ImageFT(ObjectFT):
         self.add_object(robj)
         
     #------Image Processing
+    def compute_threshold(self):
+        class ThresholdParam(DataSet):
+            value = FloatItem(_(u"Threshold"))
+        self.compute_11("Threshold", lambda x, p: np.clip(x, p.value, x.max()),
+                        ThresholdParam(_("Thresholding")),
+                        suffix=lambda p: u"min=%s lsb" % p.value)
+                        
+    def compute_clip(self):
+        class ClipParam(DataSet):
+            value = FloatItem(_(u"Clipping value"))
+        self.compute_11("Clip", lambda x, p: np.clip(x, x.min(), p.value),
+                        ClipParam(_("Clipping")),
+                        suffix=lambda p: u"max=%s lsb" % p.value)
+                        
     def compute_wiener(self):
         import scipy.signal as sps
         self.compute_11("WienerFilter", sps.wiener)
