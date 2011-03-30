@@ -39,14 +39,36 @@ from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.1'
+VERSION = '0.2.2'
+
+
+def xy_fft(x, y):
+    """Compute FFT on X,Y data"""
+    y1 = np.fft.fft(y)
+    x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
+    return x1, y1
+    
+def xy_ifft(x, y):
+    """Compute iFFT on X,Y data"""
+    y1 = np.fft.ifft(y)
+    x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
+    return x1, y1
+    
+def flatfield(rawdata, flatdata):
+    """Compute flat-field correction"""
+    dtemp = np.array(rawdata, dtype=np.float64, copy=True)*flatdata.mean()
+    dunif = np.array(flatdata, dtype=np.float64, copy=True)
+    dunif[dunif == 0] = 1.
+    return np.array(dtemp/dunif, dtype=rawdata.dtype)
 
 
 class SignalParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     xydata = FloatArrayItem(_("Data"), transpose=True, minmax="rows")
-    def copy_data_from(self, other):
-        self.xydata = np.array(other.xydata, copy=True)
+    def copy_data_from(self, other, dtype=None):
+        self.xydata = np.array(other.xydata, copy=True, dtype=dtype)
+    def change_data_type(self, dtype):
+        self.xydata = np.array(self.xydata, dtype=dtype)
     def get_data(self):
         if self.xydata is not None:
             return self.xydata[1]
@@ -69,8 +91,10 @@ class ImageParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
 #    metadata = DictItem(_("Informations and metadata"), default=None)
-    def copy_data_from(self, other):
-        self.data = np.array(other.data, copy=True)
+    def copy_data_from(self, other, dtype=None):
+        self.data = np.array(other.data, copy=True, dtype=dtype)
+    def change_data_type(self, dtype):
+        self.data = np.array(self.data, dtype=dtype)
 
 class ImageParamNew(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
@@ -156,16 +180,18 @@ class ObjectFT(QSplitter):
         
         # Operation actions
         sum_action = create_action(self, _("Sum"), triggered=self.compute_sum)
+        average_action = create_action(self, _("Average"),
+                                       triggered=self.compute_average)
         diff_action = create_action(self, _("Difference"),
                                     triggered=self.compute_difference)
         prod_action = create_action(self, _("Product"),
                                     triggered=self.compute_product)
         div_action = create_action(self, _("Division"),
                                    triggered=self.compute_division)
-        self.actlist_2more += [sum_action, prod_action]
+        self.actlist_2more += [sum_action, average_action, prod_action]
         self.actlist_2 += [diff_action, div_action]
-        self.operation_actions = [sum_action, diff_action, prod_action,
-                                  div_action]
+        self.operation_actions = [sum_action, average_action,
+                                  diff_action, prod_action, div_action]
 
     #------GUI refresh/setup
     def current_item_changed(self, row):
@@ -210,6 +236,7 @@ class ObjectFT(QSplitter):
             else:
                 self.update_item(row)
                 self.plot.set_item_visible(item, True)
+                self.plot.set_active_item(item)
         self.plot.do_autoscale()
         
     def refresh_list(self):
@@ -255,12 +282,6 @@ class ObjectFT(QSplitter):
         self.refresh_plot()
         
     #------Operations
-    def apply_sum_func(self, sumobj, obj):
-        raise NotImplementedError
-        
-    def apply_diff_func(self, diffobj, obj0, obj1):
-        raise NotImplementedError
-        
     def compute_sum(self):
         rows = self._get_selected_rows()
         sumobj = self.PARAMCLASS()
@@ -278,6 +299,29 @@ class ObjectFT(QSplitter):
             QMessageBox.critical(self.parent(), APP_NAME,
                                  _(u"Error:")+"\n%s" % str(msg))
             return
+        self.add_object(sumobj)
+    
+    def compute_average(self):
+        rows = self._get_selected_rows()
+        sumobj = self.PARAMCLASS()
+        title = ", ".join(["%s%03d" % (self.PREFIX, row) for row in rows])
+        sumobj.title = _("Average")+("(%s)" % title)
+        original_dtype = self.objects[rows[0]].data.dtype
+        try:
+            for row in rows:
+                obj = self.objects[row]
+                if sumobj.data is None:
+                    sumobj.copy_data_from(obj, dtype=np.float64)
+                else:
+                    sumobj.data += obj.data
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.parent(), APP_NAME,
+                                 _(u"Error:")+"\n%s" % str(msg))
+            return
+        sumobj.data /= float(len(rows))
+        sumobj.change_data_type(dtype=original_dtype)
         self.add_object(sumobj)
     
     def compute_product(self):
@@ -332,7 +376,7 @@ class ObjectFT(QSplitter):
                                  _(u"Error:")+"\n%s" % str(msg))
             return
         self.add_object(diffobj)
-            
+                                     
     #------Data Processing
     def apply_11_func(self, obj, orig, func, param):
         if param is None:
@@ -453,18 +497,10 @@ class SignalFT(ObjectFT):
                         suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
-        def func(x, y):
-            y1 = np.fft.fft(y)
-            x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
-            return x1, y1
-        self.compute_11("FFT", func)
+        self.compute_11("FFT", xy_fft)
                          
     def compute_ifft(self):
-        def func(x, y):
-            y1 = np.fft.ifft(y)
-            x1 = np.fft.fftshift(np.fft.fftfreq(x.shape[-1], d=x[1]-x[0]))
-            return x1, y1
-        self.compute_11("iFFT", func)
+        self.compute_11("iFFT", xy_ifft)
                             
     #------I/O
     def new_signal(self):
@@ -502,10 +538,11 @@ class SignalFT(ObjectFT):
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
                   % (_(u"Text files"), _(u"NumPy arrays"))
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
                                                self.directory, filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        if filename:
+        filenames = list(filenames)
+        for filename in filenames:
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             signal = SignalParam()
@@ -594,17 +631,26 @@ class ImageFT(ObjectFT):
                                       triggered=self.rotate_90)
         rotate_action = create_action(self, _("Rotate arbitrarily..."),
                                       triggered=self.rotate_arbitrarily)
-        self.actlist_1more += [hflip_action, vflip_action,
-                               rot90_action, rot270_action, rotate_action]
         resize_action = create_action(self, _("Resize"),
                                       triggered=self.resize_image)
+        crop_action = create_action(self, _("Crop"), triggered=self.crop_image)
+        flatfield_action = create_action(self, _("Flat-field correction"),
+                                         triggered=self.flat_field_correction)
         self.actlist_1 += [resize_action]
+        self.actlist_2 += [flatfield_action]
+        self.actlist_1more += [crop_action, hflip_action, vflip_action,
+                               rot90_action, rot270_action, rotate_action]
         add_actions(rotate_menu, [hflip_action, vflip_action,
                                   rot90_action, rot270_action, rotate_action])
         self.operation_actions += [None, rotate_menu, None,
-                                   resize_action]
+                                   resize_action, crop_action,
+                                   None, flatfield_action]
         
         # Processing actions
+        threshold_action = create_action(self, _("Thresholding"),
+                                         triggered=self.compute_threshold)
+        clip_action = create_action(self, _("Clipping"),
+                                    triggered=self.compute_clip)
         gaussian_action = create_action(self, _("Gaussian filter"),
                                         triggered=self.compute_gaussian)
         wiener_action = create_action(self, _("Wiener filter"),
@@ -615,24 +661,29 @@ class ImageFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [gaussian_action, wiener_action,
+        self.actlist_1more += [threshold_action, clip_action,
+                               gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [gaussian_action, wiener_action, fft_action,
+        self.processing_actions = [threshold_action, clip_action, None,
+                                   gaussian_action, wiener_action, fft_action,
                                    ifft_action]
                                    
         add_actions(toolbar, [new_action, open_action, save_action])
         
     def make_item(self, row):
         image = self.objects[row]
-        item = make.image(image.data.real, title=image.title, colormap='gray')
+        item = make.image(image.data.real, title=image.title, colormap='gray',
+                          eliminate_outliers=2.)
         self.items[row] = item
         return item
         
     def update_item(self, row):
         image = self.objects[row]
         item = self.items[row]
-        item.set_data(image.data.real)
+        lut_range = [item.min, item.max]
+        item.set_data(image.data.real, lut_range=lut_range)
         item.imageparam.label = image.title
+        item.plot().update_colormap_axis(item)
         
     #------Image operations
     def rotate_arbitrarily(self):
@@ -697,15 +748,57 @@ class ImageFT(ObjectFT):
             order = IntItem(_(u"Order"), default=3, min=0, max=5,
                             help=_("Spline interpolation order")
                             ).set_prop("display", active=prop)
-        param = ResizeParam(_("Gaussian filter"))
+        param = ResizeParam(_("Resize"))
         import scipy.ndimage as spi
         self.compute_11("Zoom", lambda x, p:
                         spi.interpolation.zoom(x, p.zoom, order=p.order,
                                                mode=p.mode, cval=p.cval,
                                                prefilter=p.prefilter),
                         param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
+                        
+    def crop_image(self):
+        class CropParam(DataSet):
+            row1 = IntItem(_("First row index"), default=0, min=-1)
+            row2 = IntItem(_("Last row index"), default=-1, min=-1)
+            col1 = IntItem(_("First column index"), default=0, min=-1)
+            col2 = IntItem(_("Last column index"), default=-1, min=-1)
+        param = CropParam(_("Crop"))
+        self.compute_11("Crop", lambda x, p:
+                        x.copy()[p.row1:p.row2, p.col1:p.col2],
+                        param, suffix=lambda p: u"roi=%d:%d,%d:%d" 
+                        % (p.row1, p.row2, p.col1, p.col2))
+        
+    def flat_field_correction(self):
+        rows = self._get_selected_rows()
+        robj = self.PARAMCLASS()
+        robj.title = "FlatField("+(','.join(["%s%03d" % (self.PREFIX, row)
+                                             for row in rows]))+")"
+        try:
+            robj.data = flatfield(self.objects[rows[0]].data,
+                                  self.objects[rows[1]].data)
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self.parent(), APP_NAME,
+                                 _(u"Error:")+"\n%s" % str(msg))
+            return
+        self.add_object(robj)
         
     #------Image Processing
+    def compute_threshold(self):
+        class ThresholdParam(DataSet):
+            value = FloatItem(_(u"Threshold"))
+        self.compute_11("Threshold", lambda x, p: np.clip(x, p.value, x.max()),
+                        ThresholdParam(_("Thresholding")),
+                        suffix=lambda p: u"min=%s lsb" % p.value)
+                        
+    def compute_clip(self):
+        class ClipParam(DataSet):
+            value = FloatItem(_(u"Clipping value"))
+        self.compute_11("Clip", lambda x, p: np.clip(x, x.min(), p.value),
+                        ClipParam(_("Clipping")),
+                        suffix=lambda p: u"max=%s lsb" % p.value)
+                        
     def compute_wiener(self):
         import scipy.signal as sps
         self.compute_11("WienerFilter", sps.wiener)
@@ -756,10 +849,11 @@ class ImageFT(ObjectFT):
         """Open image file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(self.parent(), _("Open"),
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
                                            self.directory, IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        if filename:
+        filenames = list(filenames)
+        for filename in filenames:
             filename = unicode(filename)
             self.directory = osp.dirname(filename)
             image = ImageParam()

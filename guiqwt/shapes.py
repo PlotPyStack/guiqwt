@@ -174,12 +174,12 @@ class AbstractShape(QwtPlotItem):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self.move_shape([0, 0], [dx, dy])
+        self.move_shape([0, 0], [delta_x, delta_y])
 
     def move_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
@@ -313,12 +313,12 @@ class Marker(QwtPlotMarker):
         new_pt = self.canvas_to_axes(new_pos)
         self.move_shape(old_pt, new_pt)
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self.move_shape([0, 0], [dx, dy])
+        self.move_shape([0, 0], [delta_x, delta_y])
 
     def move_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos

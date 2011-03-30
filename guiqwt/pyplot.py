@@ -265,7 +265,8 @@ def do_mainloop(mainloop):
     if not _current_fig:
         print >>sys.stderr, "Warning: must create a figure before showing it"
     elif mainloop:
-        guidata.exec_qapplication_eventloop()
+        app = guidata.qapplication()
+        app.exec_()
         
 
 class Axes(object):
@@ -560,6 +561,11 @@ def errorbar(*args, **kwargs):
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
+
+def imread(fname, to_grayscale=False):
+    """Read data from *fname*"""
+    from guiqwt.io import imagefile_to_array
+    return imagefile_to_array(fname, to_grayscale=to_grayscale)
 
 def imshow(data):
     """
