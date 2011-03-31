@@ -262,8 +262,6 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     if max_range:
         assert dtype is not None
         arr = set_dynamic_range_from_dtype(arr, dtype)
-#    uid = make_uid(dicom.UID.root+"1")
-    rows, columns = arr.shape
     infos = np.iinfo(arr.dtype)
     dcmstruct.BitsAllocated = infos.bits
     dcmstruct.BitsStored = infos.bits
@@ -271,9 +269,10 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct.PixelRepresentation = ('u', 'i').index(infos.kind)
     dcmstruct.Rows = arr.shape[0]
     dcmstruct.Columns = arr.shape[1]
+    dcmstruct.SmallestImagePixelValue = str(arr.min())
+    dcmstruct.LargestImagePixelValue = str(arr.max())
     if not dcmstruct.PhotometricInterpretation.startswith('MONOCHROME'):
         dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
-#    print "LENGTH=", len(arr.tostring())
     dcmstruct.PixelData = arr.tostring()
     dcmstruct[0x7fe00010].VR = 'OB'
     dcmstruct.save_as(filename)
