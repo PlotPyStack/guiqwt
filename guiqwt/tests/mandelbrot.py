@@ -86,5 +86,5 @@ def mandel():
 
 if __name__ == "__main__":
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     mandel()

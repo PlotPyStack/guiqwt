@@ -35,7 +35,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     win = RACSImageDialog(toolbar=True,
                           wintitle="Radially-averaged cross section test")

@@ -32,7 +32,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     from PIL.Image import open
     img = np.array(open(IMGFILE))

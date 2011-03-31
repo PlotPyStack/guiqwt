@@ -24,7 +24,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     filename = osp.join(osp.dirname(__file__), "brain.png")
     win = create_window()

@@ -61,7 +61,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --    
     imshow(compute_quads()+compute_quads3())
 
