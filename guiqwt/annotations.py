@@ -469,7 +469,7 @@ class AnnotatedEllipse(AnnotatedShape):
         return "<br>".join([
                     _("Center:") + (" ( "+f+u" ; "+f+" )") % self.get_center(),
                     _("Size:") + (" "+f+u" x "+f) % self.get_size(),
-                    _("Angle:") + " %.1f°" % self.get_angle(),
+                    _(u"Angle:") + u" %.1f°" % self.get_angle(),
                             ])
         
 
