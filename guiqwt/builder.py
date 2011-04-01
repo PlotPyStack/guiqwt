@@ -66,7 +66,7 @@ from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
                            SegmentShape, VerticalCursor, HorizontalCursor)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
-                                AnnotatedSegment)
+                                AnnotatedSegment, AnnotatedVCursor)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
@@ -974,6 +974,18 @@ class PlotItemBuilder(object):
         """
         return self.__annotated_shape(AnnotatedSegment,
                                       x0, y0, x1, y1, title, subtitle)
+                                      
+    def annotated_vcursor(self, pos, title=None, subtitle=None,
+                          infos_format="value = %.2f", moveable=True):
+        """
+        Make an annotated vertical cursor `plot item` 
+        (:py:class:`guiqwt.annotations.AnnotatedVCursor` object)
+            * pos: cursor x coordinate
+            * title, subtitle: strings
+        """
+        param = self.__get_annotationparam(title, subtitle)
+        param.format = infos_format
+        return AnnotatedVCursor(pos, param, moveable)
 
     def info_label(self, anchor, comps, title=""):
         """
@@ -997,16 +1009,13 @@ class PlotItemBuilder(object):
         return DataInfoLabel(param, comps)
         
     def info_cursor(self, cursor, anchor, label=None, func=None):
-        if isinstance(cursor, VerticalCursor):
-            if label is None:
+        if func is None:
+                func = lambda x: x        
+        if label is None:
+            if isinstance(cursor, VerticalCursor):
                 label = 'x = %s'
-            if func is None:
-                func = lambda x, y: x
-        else:
-            if label is None:
+            else:
                 label = 'y = %s'
-            if func is None:
-                func = lambda x, y: y
         comp = CursorComputation(label, cursor, func)
         return self.info_label(anchor, [comp])
 

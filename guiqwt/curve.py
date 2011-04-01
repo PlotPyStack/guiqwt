@@ -938,10 +938,12 @@ class CurvePlot(BasePlot):
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
         * gridparam: GridParam instance
+        * axes_synchronised: keep all x and y axes synchronised when zomming or
+                             panning
     """
     AUTOSCALE_TYPES = (CurveItem,)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 gridparam=None, section="plot"):
+                 gridparam=None, section="plot", axes_synchronised=False):
         super(CurvePlot, self).__init__(parent, section)
 
         self.axes_reverse = [False]*4
@@ -951,6 +953,8 @@ class CurvePlot(BasePlot):
         self.antialiased = False
 
         self.set_antialiasing(CONF.get(section, "antialiasing"))
+        
+        self.axes_synchronised = axes_synchronised
         
         # Installing our own event filter:
         # (PyQwt's event filter does not fit our needs)
@@ -1040,6 +1044,20 @@ class CurvePlot(BasePlot):
             self.curve_marker.setVisible(False)
             if vis_cross or vis_curve:
                 self.replot()
+                
+    def get_axes_to_update(self, dx, dy):
+        if self.axes_synchronised:
+            axes = []
+            for axis_name in self.AXIS_NAMES:
+                if axis_name in ("left", "right"):
+                    d = dy
+                else:
+                    d = dx
+                axes.append((d, self.get_axis_id(axis_name)))
+            return axes
+        else:
+            xaxis, yaxis = self.get_active_axes()
+            return [(dx, xaxis), (dy, yaxis)]
         
     def do_pan_view(self, dx, dy):
         """
@@ -1048,10 +1066,9 @@ class CurvePlot(BasePlot):
         """
         auto = self.autoReplot()
         self.setAutoReplot(False)
-        xaxis, yaxis = self.get_active_axes()
-        active_axes = [ (dx, xaxis),
-                        (dy, yaxis) ]
-        for (x1, x0, _, w), k in active_axes:
+        axes_to_update = self.get_axes_to_update(dx, dy)
+        
+        for (x1, x0, _, w), k in axes_to_update:
             axis = self.axisScaleDiv(k)
             # pour les axes logs on bouge lbound et hbound relativement
             # à l'inverse du delta aux bords de l'axe
@@ -1080,10 +1097,9 @@ class CurvePlot(BasePlot):
         if lock_aspect_ratio:
             sens, x1, x0, s, w = dx
             F = 1+3*sens*float(x1-x0)/w
-        xaxis, yaxis = self.get_active_axes()
-        active_axes = [ (dx, xaxis),
-                        (dy, yaxis) ]
-        for (sens, x1, x0, s, w), k in active_axes:
+        axes_to_update = self.get_axes_to_update(dx, dy)
+                                    
+        for (sens, x1, x0, s, w), k in axes_to_update:
             axis = self.axisScaleDiv(k)
             lbound = axis.lowerBound()
             hbound = axis.upperBound()
@@ -1102,6 +1118,7 @@ class CurvePlot(BasePlot):
         self.emit(SIG_PLOT_AXIS_CHANGED, self)
         
     def do_zoom_rect_view(self, start, end):
+        # XXX implement the case when axes are synchronised
         x1, y1 = start.x(), start.y()
         x2, y2 = end.x(), end.y()
         xaxis, yaxis = self.get_active_axes()
@@ -1162,6 +1179,7 @@ class CurvePlot(BasePlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
+        # XXX implement the case when axes are synchronised
         for axis_id in self.AXIS_IDS:
             vmin, vmax = None, None
             if not self.axisEnabled(axis_id):
@@ -1286,10 +1304,14 @@ class CurvePlot(BasePlot):
     def set_plot_limits(self, x0, x1, y0, y1, xaxis="bottom", yaxis="left"):
         """Set plot scale limits"""
         self.set_axis_limits(yaxis, y0, y1)
-        self.set_axis_limits(xaxis, x0, x1)
+        self.set_axis_limits(xaxis, x0, x1)     
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(yaxis))
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(xaxis))
+        
+    def set_plot_limits_synchronised(self, x0, x1, y0, y1):
+        for yaxis, xaxis in (("left", "bottom"), ("right", "top")):
+            self.set_plot_limits(x0, x1, y0, y1, xaxis=xaxis, yaxis=yaxis)
         
     def get_plot_limits(self, xaxis="bottom", yaxis="left"):
         """Return plot scale limits"""

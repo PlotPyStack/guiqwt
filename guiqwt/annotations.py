@@ -71,10 +71,10 @@ from guidata.utils import update_dataset
 from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
-                           SegmentShape, PointShape)
+                           SegmentShape, PointShape, VerticalCursor)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
-from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
+from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED
 
 
 class AnnotatedShape(AbstractShape):
@@ -498,3 +498,78 @@ class AnnotatedCircle(AnnotatedEllipse):
     #----AnnotatedEllipse API---------------------------------------------------
     def set_rect(self, x0, y0, x1, y1):
         self.shape.set_rect(x0, y0, x1, y1)
+        
+
+
+class AnnotatedCursor(AnnotatedShape):
+    """
+    Construct an annotated vertical cursor in x=pos
+    with properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
+    SHAPE_CLASS = VerticalCursor
+    LABEL_ANCHOR = "BL"
+
+    def __init__(self, pos=0, annotationparam=None, moveable=True):
+        self._can_move = moveable
+        self._can_resize = moveable
+        
+        AnnotatedShape.__init__(self, annotationparam)
+        self.set_pos(pos)
+
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def set_pos(self, pos):
+        self.shape.set_pos(pos, dosignal=False)
+
+    def get_pos(self):
+        return self.shape.get_pos()
+        
+    def set_style(self, section, option):
+        pass
+           
+    def hit_test(self, pos):
+        return self.shape.hit_test(pos)
+        
+    def move_point_to(self, handle, pos, ctrl=None):
+        super(AnnotatedCursor, self).move_point_to(handle, pos, ctrl)
+        if self.plot():
+            self.plot().emit(SIG_CURSOR_MOVED, self)
+        
+    def draw(self, painter, xMap, yMap, canvasRect):
+        self.set_label_position()
+        super(AnnotatedCursor, self).draw(painter, xMap, yMap, canvasRect)
+        
+    def get_label(self):
+        """Return the label object associated to this annotated shape object"""
+        label_param = LabelParam(_("Label"), icon='label.png')
+        label_param.read_config(CONF, "plot", "shape/cursor_label")
+        label_param.anchor = self.LABEL_ANCHOR
+        label_param.color = self.shape.shapeparam.line.color
+        return DataInfoLabel(label_param, [self])
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def get_shape(self):
+        """Return the shape object associated to this annotated shape object"""
+        return self.SHAPE_CLASS(0, self.can_move())
+        
+    def get_infos(self):
+        """Return dictionary with measured data on shape"""
+        f = self.annotationparam.format
+        return f % self.get_pos()
+        
+        
+class AnnotatedVCursor(AnnotatedCursor):
+    def set_label_position(self):
+        """Set label position, for instance based on shape position"""
+        plot = self.plot()
+        y = plot.invTransform(self.yAxis(), plot.canvas().contentsRect().bottomLeft().y())
+        self.label.set_position(self.shape.pos, y)
+        
+
+class AnnotatedHCursor(AnnotatedCursor):
+    def set_label_position(self):
+        """Set label position, for instance based on shape position"""
+        plot = self.plot()
+        x = plot.invTransform(self.xAxis(), plot.canvas().contentsRect().bottomLeft().x())
+        self.label.set_position(x, self.shape.pos)
