@@ -117,6 +117,9 @@ SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
 # Emitted by cross section plot when cross section curve data has changed
 SIG_CS_CURVE_CHANGED = SIGNAL("cs_curve_changed(PyQt_PyObject)")
 
+# Emitted by the ImageMaskTool when applying the shape-defined mask
+SIG_APPLIED_MASK_TOOL = SIGNAL("applied_mask_tool()")
+
 #===============================================================================
 # Event filter related signals (private)
 #===============================================================================

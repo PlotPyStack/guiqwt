@@ -265,7 +265,8 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED)
+                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
+                            SIG_APPLIED_MASK_TOOL)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_RACS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -1906,6 +1907,7 @@ class ImageMaskTool(CommandTool):
                                                      inside=inside)
         self.masked_image.set_mask(mask)
         plot.replot()
+        self.emit(SIG_APPLIED_MASK_TOOL)
         
     def remove_all_shapes(self):
         message = _("Do you really want to remove all masking shapes?")
@@ -1913,10 +1915,14 @@ class ImageMaskTool(CommandTool):
         answer = QMessageBox.warning(plot, _("Remove all masking shapes"),
                                      message, QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
-            plot.del_items([shape for shape, _inside
-                            in self._mask_shapes[plot]]) # remove shapes
-            self._mask_shapes[plot] = []
-            plot.replot()
+            self.remove_shapes()
+    
+    def remove_shapes(self):
+        plot = self.get_active_plot()
+        plot.del_items([shape for shape, _inside
+                        in self._mask_shapes[plot]]) # remove shapes
+        self._mask_shapes[plot] = []
+        plot.replot()
 
     def show_shapes(self, state):
         plot = self.get_active_plot()
@@ -1942,10 +1948,8 @@ class ImageMaskTool(CommandTool):
                      if isinstance(item, MaskedImageItem)]
             if items:
                 return items[-1]
-
+        
     def create_shapes_from_masked_areas(self):
-        if self.masked_image is None or self._mask_already_restored:
-            return
         plot = self.get_active_plot()
         self._mask_shapes[plot] = []
         masked_areas = self.masked_image.get_masked_areas()
@@ -1961,11 +1965,12 @@ class ImageMaskTool(CommandTool):
             plot.blockSignals(True)
             plot.add_item(shape)
             plot.blockSignals(False)
-        self._mask_already_restored = True
                 
     def set_masked_image(self, plot):
         self.masked_image = item = self.find_masked_image(plot)
-        self.create_shapes_from_masked_areas()
+        if self.masked_image is not None and not self._mask_already_restored:
+            self.create_shapes_from_masked_areas()
+            self._mask_already_restored = True
         enable = False if item is None else item.is_mask_visible()
         self.showmask_action.setChecked(enable)
 
