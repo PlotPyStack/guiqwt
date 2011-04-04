@@ -13,7 +13,7 @@ from distutils.core import setup
 import py2exe # Patching distutils setup
 from guidata.disthelpers import (remove_build_dist, get_default_excludes,
                          get_default_dll_excludes, create_vs2008_data_files,
-                         add_modules)
+                         add_modules, add_module_data_files)
 
 from guiqwt import sift
 DIST_DIR = "sift"+sift.VERSION.replace('.', '')
@@ -29,6 +29,18 @@ DATA_FILES = create_vs2008_data_files()
 
 # Configuring/including Python modules
 add_modules(('PyQt4', 'guidata', 'guiqwt'), DATA_FILES, INCLUDES, EXCLUDES)
+
+try:
+    import spyderlib
+    # Distributing application-specific data files
+    add_module_data_files("spyderlib", ("images", ),
+                          ('.png', '.svg',), DATA_FILES, copy_to_root=False)
+    add_module_data_files("spyderlib", ("", ),
+                          ('.mo', '.py'), DATA_FILES, copy_to_root=False)
+except ImportError:
+    pass
+
+EXCLUDES += ['IPython']
 
 setup(
       options={
@@ -48,5 +60,5 @@ setup(
                 "name": "Sift",
                 "description": "Signal and Image Filtering Tool",
                 },],
-      zipfile = None,
+#      zipfile = None,
       )

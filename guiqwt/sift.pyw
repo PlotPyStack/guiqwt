@@ -14,10 +14,10 @@ SHOW = True # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                          QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QTabWidget, QMenu, QApplication, QCursor)
+                         QTabWidget, QMenu, QApplication, QCursor, QFont)
 from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
-import sys, platform, os.path as osp
+import sys, platform, os.path as osp, os
 import numpy as np
 
 from guidata.dataset.datatypes import DataSet, ValueProp
@@ -239,23 +239,35 @@ class ObjectFT(QSplitter):
                 self.plot.set_active_item(item)
         self.plot.do_autoscale()
         
-    def refresh_list(self):
+    def refresh_list(self, new_current_row='current'):
+        """new_current_row: integer, 'first', 'last', 'current'"""
+        row = self.listwidget.currentRow()
         self.listwidget.clear()
         self.listwidget.addItems(["%s%03d: %s" % (self.PREFIX, i, obj.title)
                                   for i, obj in enumerate(self.objects)])
+        if new_current_row == 'first':
+            row = 0
+        elif new_current_row == 'last':
+            row = self.listwidget.count()-1
+        elif isinstance(new_current_row, int):
+            row = new_current_row
+        else:
+            assert new_current_row == 'current'
+        if row < self.listwidget.count():
+            self.listwidget.setCurrentRow(row)
         
     def properties_changed(self):
         """The properties 'Apply' button was clicked: updating signal"""
         row = self.listwidget.currentRow()
         update_dataset(self.objects[row], self.properties.dataset)
-        self.refresh_list()
+        self.refresh_list(new_current_row='current')
         self.listwidget.setCurrentRow(row)
         self.refresh_plot()
     
     def add_object(self, obj):
         self.objects.append(obj)
         self.items.append(None)
-        self.refresh_list()
+        self.refresh_list(new_current_row='last')
         self.listwidget.setCurrentRow(len(self.objects)-1)
         self.emit(SIGNAL('object_added()'))
         
@@ -268,8 +280,7 @@ class ObjectFT(QSplitter):
         objcopy.copy_data_from(obj)
         self.objects.insert(row+1, objcopy)
         self.items.insert(row+1, None)
-        self.refresh_list()
-        self.listwidget.setCurrentRow(row+1)
+        self.refresh_list(new_current_row=row+1)
         self.refresh_plot()
     
     def remove_object(self):
@@ -278,7 +289,7 @@ class ObjectFT(QSplitter):
             self.objects.pop(row)
             item = self.items.pop(row)
             self.plot.del_item(item)
-        self.refresh_list()
+        self.refresh_list(new_current_row='first')
         self.refresh_plot()
         
     #------Operations
@@ -934,6 +945,37 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
         DockableWidgetMixin.__init__(self, parent)
 
 
+try:
+    from spyderlib.widgets.internalshell import InternalShell
+
+    class DockableConsole(InternalShell, DockableWidgetMixin):
+        LOCATION = Qt.BottomDockWidgetArea
+        def __init__(self, parent, namespace, message, commands=[]):
+            InternalShell.__init__(self, namespace=namespace, message=message,
+                                   commands=commands)
+            DockableWidgetMixin.__init__(self, parent)
+            self.setup()
+            
+        def setup(self):
+            font = QFont("Courier new")
+            font.setPointSize(10)
+            self.set_font(font)
+            self.set_codecompletion_auto(True)
+            self.set_calltips(True)
+            self.setup_calltips(size=600, font=font)
+            self.setup_completion(size=(300, 180), font=font)
+            
+except ImportError:
+    DockableConsole = None
+
+
+class SiftProxy(object):
+    def __init__(self, win):
+        self.win = win
+        self.s = self.win.signalft.objects
+        self.i = self.win.signalft.objects
+        
+
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -1025,6 +1067,25 @@ class MainWindow(QMainWindow):
                                      triggered=self.about)
         add_actions(help_menu, (about_action,))
         
+        # Eventually add an internal console (requires 'spyderlib')
+        self.sift_proxy = SiftProxy(self)
+        if DockableConsole is None:
+            self.console = None
+        else:
+            import time, scipy.signal as sps, scipy.ndimage as spi
+            ns = {'sift': self.sift_proxy,
+                  'np': np, 'sps': sps, 'spi': spi,
+                  'os': os, 'sys': sys, 'osp': osp, 'time': time}
+            msg = "Example: sift.s[0] returns signal object #0\n"\
+                  "Modules imported at startup: "\
+                  "os, sys, os.path as osp, time, "\
+                  "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+            self.console = DockableConsole(self, namespace=ns, message=msg)
+            self.add_dockwidget(self.console, _(u"Console"))
+            self.connect(self.console.interpreter.widget_proxy,
+                         SIGNAL("new_prompt(QString)"),
+                         lambda txt: self.refresh_lists())
+        
         # Update selection dependent actions
         self.update_actions()
         
@@ -1038,6 +1099,10 @@ class MainWindow(QMainWindow):
         dockwidget, location = child.create_dockwidget(title)
         self.addDockWidget(location, dockwidget)
         return dockwidget
+        
+    def refresh_lists(self):
+        self.signalft.refresh_list()
+        self.imageft.refresh_list()
         
     def update_actions(self):
         self.signalft.selection_changed()
@@ -1081,6 +1146,11 @@ class MainWindow(QMainWindow):
               (APP_NAME, VERSION, APP_DESC, _("Developped by"),
                platform.python_version(),
                QT_VERSION_STR, PYQT_VERSION_STR, _("on"), platform.system()) )
+               
+    def closeEvent(self, event):
+        if self.console is not None:
+            self.console.exit_interpreter()
+        event.accept()
 
 
 def run():
