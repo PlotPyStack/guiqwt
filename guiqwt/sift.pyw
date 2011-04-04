@@ -90,7 +90,7 @@ class SignalParamNew(DataSet):
 class ImageParam(DataSet):
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
-#    metadata = DictItem(_("Informations and metadata"), default=None)
+    metadata = DictItem(_("Metadata"), default=None)
     def copy_data_from(self, other, dtype=None):
         self.data = np.array(other.data, copy=True, dtype=dtype)
     def change_data_type(self, dtype):
@@ -860,6 +860,13 @@ class ImageFT(ObjectFT):
             image.title = filename
             try:
                 image.data = imagefile_to_array(filename, to_grayscale=True)
+                if osp.splitext(filename)[1].lower() == ".dcm":
+                    import dicom
+                    dcm = dicom.read_file(filename, stop_before_pixels=True)
+                    image.metadata = {}
+                    for attr_str in dir(dcm):
+                        if attr_str != 'GroupLength':
+                            image.metadata[attr_str] = getattr(dcm, attr_str)
             except Exception, msg:
                 import traceback
                 traceback.print_exc()
