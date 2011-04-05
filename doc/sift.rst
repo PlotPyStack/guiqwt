@@ -19,6 +19,6 @@ signal/image processing application using ``guidata`` and ``guiqwt``.
 
 .. image:: images/screenshots/sift2.png
 
-.. literalinclude:: ../guiqwt/tests/sift.pyw
+.. literalinclude:: ../guiqwt/tests/sift.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive

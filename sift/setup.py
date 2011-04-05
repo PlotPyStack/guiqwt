@@ -4,7 +4,7 @@
 # Setup script for distributing SIFT as a stand-alone executable
 # SIFT is the Signal and Image Filtering Tool
 # Simple signal and image processing application based on guiqwt and guidata
-# (see guiqwt/tests/sift.pyw)
+# (see guiqwt/tests/sift.py)
 #
 # Buiding instructions:
 # python setup_sift.py py2exe
@@ -51,7 +51,7 @@ setup(
                },
       data_files=DATA_FILES,
       windows=[{
-                "script": "../guiqwt/tests/sift.pyw",
+                "script": "sift.pyw",
                 "icon_resources": [(0, "sift.ico")],
                 "dest_base": "sift",
                 "version": sift.VERSION,

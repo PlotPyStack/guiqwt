@@ -1,2 +1,2 @@
 @echo off
-python "%~dpn0" %*
+start pythonw "%~dpn0" %*
