@@ -42,7 +42,6 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.RACSPanelTool`
     * :py:class:`guiqwt.tools.CrossSectionTool`
     * :py:class:`guiqwt.tools.AverageCrossSectionTool`
-    * :py:class:`guiqwt.tools.RACrossSectionTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
     * :py:class:`guiqwt.tools.OpenFileTool`
     * :py:class:`guiqwt.tools.OpenImageTool`
@@ -267,7 +266,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
                             SIG_APPLIED_MASK_TOOL)
-from guiqwt.panels import ID_XCS, ID_YCS, ID_RACS, ID_ITEMLIST, ID_CONTRAST
+from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
 
 
 class DefaultToolbarID:
@@ -995,14 +994,6 @@ class AverageCrossSectionTool(CrossSectionTool):
     def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
-class RACrossSectionTool(CrossSectionTool):
-    TITLE = _("Radially-averaged cross section")
-    ICON = "csection_ra.png"
-    SHAPE_STYLE_KEY = "shape/average_cross_section"
-    PANEL_IDS = (ID_RACS, )
-    def create_shape(self):
-        return AnnotatedCircle(0, 0, 1, 1), 0, 1
-
 
 class RectZoomTool(InteractiveTool):
     TITLE = _("Rectangle zoom")
@@ -1337,10 +1328,6 @@ class XCSPanelTool(PanelTool):
 class YCSPanelTool(PanelTool):
     panel_name = _("Y-axis cross section")
     panel_id = ID_YCS
-
-class RACSPanelTool(PanelTool):
-    panel_name = _("Radially-averaged cross section")
-    panel_id = ID_RACS
 
 class ItemListPanelTool(PanelTool):
     panel_name = _("Item list")

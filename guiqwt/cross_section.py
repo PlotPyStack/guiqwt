@@ -51,7 +51,7 @@ from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
                                ICurveItemType)
-from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_RACS
+from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot, LUT_MAX
 from guiqwt.styles import CurveParam
@@ -836,110 +836,3 @@ class YCrossSection(XCrossSection):
     def adjust_height(self, height):
         self.spacer.changeSize(0, height, QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout().invalidate()
-
-
-#===============================================================================
-# Radially-averaged cross section plot
-#===============================================================================
-import sys
-try:
-    from guiqwt._ext import radialaverage
-except ImportError:
-    print >>sys.stderr, ("Module 'guiqwt.cross_section':"
-                         " missing fortran or C extension")
-    print >>sys.stderr, ("try running :"
-                         "python setup.py build_ext --inplace -c mingw32" )
-    raise
-
-def radial_average(orig_data, ix0, iy0, ix1, iy1, ixc, iyc, iradius):
-    """
-    Pure Python algorithm for computing the radially-averaged cross section
-    Not used anymore (the Fortran extension 'radavg.f90' being so much faster)
-    """
-#    import time
-#    t0 = time.time()
-    data = orig_data[iy0:iy1, ix0:ix1]
-    x = (np.ones((iy1-iy0, 1))*np.arange(0, ix1-ix0))-(ixc-ix0)
-    y = (np.ones((ix1-ix0, 1))*np.arange(0, iy1-iy0)).T-(iyc-iy0)
-    r = np.array(np.floor(np.sqrt(x**2+y**2)+.5), dtype=np.int)
-#    t1 = time.time()
-#    print "%03d pixels *** dt0: %03d ms" % (iradius, round((t1-t0)*1e3)),
-    ylist = []
-    for i_r in np.arange(0, iradius+1):
-        r_data = data[r == i_r]
-        if r_data.size > 0:
-            ylist.append(r_data.mean())
-#    t2 = time.time()
-#    print "dt1: %03d ms" % round((t2-t1)*1e3)
-    return np.array(ylist, dtype=data.dtype)
-
-def compute_radial_section(item, x0, y0, x1, y1, dyfunc=None):
-    """
-    Return radially-averaged cross section
-    
-    dyfunc: takes two arguments (ydata and ycount arrays) and 
-    returns the cross section's uncertainty array
-    """
-    ix0, iy0 = item.get_closest_pixel_indexes(x0, y0)
-    ix1, iy1 = item.get_closest_pixel_indexes(x1, y1)
-    ixc, iyc = item.get_closest_pixel_indexes(.5*(x0+x1), .5*(y0+y1))
-    iradius = int(np.floor(.5*np.sqrt(.5*(ix1-ix0)**2+.5*(iy1-iy0)**2)+.5))
-    if iradius == 0:
-        return np.array([]), np.array([]), np.array([])
-    ydata = np.zeros((iradius+1,), dtype=np.float64)
-    ycount = np.zeros((iradius+1,), dtype=np.float64)
-    data = item.data
-    if isinstance(item.data, np.ma.MaskedArray):
-        mask = np.ma.getmaskarray(item.data)
-        radialaverage.radavg_mask(ydata, ycount, data, mask, iyc, ixc, iradius)
-    else:
-        radialaverage.radavg(ydata, ycount, data, iyc, ixc, iradius)
-    if dyfunc is None:
-        # Ignoring the dy values
-        dydata = None
-    else:
-        dydata = dyfunc(ydata, ycount)
-    xdata = item.get_x_values(iyc, iyc+ydata.size)[:ydata.size]
-    try:
-        xdata -= xdata[0]
-    except IndexError:
-        print xdata, ydata
-    return xdata, ydata, dydata
-
-class RACrossSectionItem(CrossSectionItem):
-    """A Qwt item representing radially-averaged cross section data"""
-    def __init__(self, curveparam=None, errorbarparam=None):
-        CrossSectionItem.__init__(self, curveparam, errorbarparam)
-        
-    def update_curve_data(self, obj):
-        source = self.get_source_image()
-        rect = get_rectangular_area(obj)
-        if rect is not None and source.data is not None:
-            sectx, secty, sectdy = compute_radial_section(source, *rect)
-            if secty.size == 0 or np.all(np.isnan(secty)):
-                sectx, secty, sectdy = np.array([]), np.array([]), None
-            self.process_curve_data(sectx, secty, None, sectdy)
-            
-    def update_scale(self):
-        pass
-
-class RACrossSectionPlot(HorizontalCrossSectionPlot):
-    """Radially-averaged cross section plot"""
-    PLOT_TITLE = _("Radially-averaged cross section")
-    CURVE_LABEL = _("Radially-averaged cross section")
-    LABEL_TEXT = _("Activate the radially-averaged cross section tool")
-    def __init__(self, parent=None):
-        super(RACrossSectionPlot, self).__init__(parent)
-        self.set_title(self.PLOT_TITLE)
-        
-    def create_cross_section_item(self):
-        return RACrossSectionItem(self.curveparam)
-        
-    def axis_dir_changed(self, plot, axis_id):
-        """An axis direction has changed"""
-        pass
-
-class RACrossSection(CrossSectionWidget):
-    """Radially-averaged cross section widget"""
-    PANEL_ID = ID_RACS
-    CrossSectionPlotKlass = RACrossSectionPlot
