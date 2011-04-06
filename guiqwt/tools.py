@@ -39,7 +39,6 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.ColormapTool`
     * :py:class:`guiqwt.tools.XCSPanelTool`
     * :py:class:`guiqwt.tools.YCSPanelTool`
-    * :py:class:`guiqwt.tools.RACSPanelTool`
     * :py:class:`guiqwt.tools.CrossSectionTool`
     * :py:class:`guiqwt.tools.AverageCrossSectionTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
@@ -178,9 +177,6 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: YCSPanelTool
-   :members:
-   :inherited-members:
-.. autoclass:: RACSPanelTool
    :members:
    :inherited-members:
 .. autoclass:: CrossSectionTool
