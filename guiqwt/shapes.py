@@ -117,6 +117,24 @@ class AbstractShape(QwtPlotItem):
     
     def types(self):
         return (IShapeItemType, )
+        
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
+        
     def can_select(self):
         return self._can_select
     def can_resize(self):
@@ -237,6 +255,24 @@ class Marker(QwtPlotMarker):
 
     def types(self):
         return (IShapeItemType,)
+        
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
+        
     def can_select(self):
         return True
     def can_resize(self):
