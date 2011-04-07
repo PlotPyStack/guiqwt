@@ -50,6 +50,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.LoadItemsTool`
     * :py:class:`guiqwt.tools.AxisScaleTool`
     * :py:class:`guiqwt.tools.HelpTool`
+    * :py:class:`guiqwt.tools.ExportItemDataTool`
     * :py:class:`guiqwt.tools.DeleteItemTool`
 
 A `plot tool` is an object providing various features to a plotting widget 
@@ -212,6 +213,9 @@ Reference
 .. autoclass:: HelpTool
    :members:
    :inherited-members:
+.. autoclass:: ExportItemDataTool
+   :members:
+   :inherited-members:
 .. autoclass:: DeleteItemTool
    :members:
    :inherited-members:
@@ -255,7 +259,7 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType, IExportROIImageItemType,
-                               IStatsImageItemType)
+                               IStatsImageItemType, ICurveItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
@@ -1672,6 +1676,58 @@ class HelpTool(CommandTool):
   - left-click + mouse move: move item (when available)
   - middle-click + mouse move: pan
   - right-click + mouse move: zoom"""))
+
+
+def export_curve_data(item):
+    """Export curve item data to text file"""
+    item_data = item.get_data()
+    if len(item_data) > 2:
+        x, y, dx, dy = item_data
+        array_list = [x, y]
+        if dx is not None:
+            array_list.append(dx)
+        if dy is not None:
+            array_list.append(dy)
+        data = np.array(array_list).T
+    else:
+        x, y = item_data
+        data = np.array([x, y]).T
+    plot = item.plot()
+    title = _("Export")
+    if item.curveparam.label:
+        title += (' (%s)' % item.curveparam.label)
+    fname = QFileDialog.getSaveFileName(plot, title, "",
+                                        _("Text file")+" (*.txt)")
+    if fname:
+        try:
+            np.savetxt(unicode(fname), data, delimiter=',')
+        except RuntimeError, error:
+            QMessageBox.critical(plot, _("Export"),
+                                 _("Unable to export item data.")+\
+                                 "<br><br>"+_("Error message:")+"<br>"+\
+                                 str(error))
+
+#TODO: ExportItemDataTool: add support for images
+class ExportItemDataTool(CommandTool):
+    def __init__(self, manager, toolbar_id=None):
+        super(ExportItemDataTool,self).__init__(manager, _("Export data..."),
+                                          "export.png", toolbar_id=toolbar_id)
+        
+    def get_supported_items(self, plot):
+        all_items = [item for item in plot.get_items(item_type=ICurveItemType)]
+        if len(all_items) == 1:
+            return all_items
+        else:
+            return [item for item in plot.get_selected_items(ICurveItemType)]
+
+    def update_status(self, plot):
+        self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
+            
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        for item in self.get_supported_items(plot):
+            if ICurveItemType in item.types():
+                export_curve_data(item)
 
 
 class DeleteItemTool(CommandTool):

@@ -45,7 +45,7 @@ import numpy as np
 
 from guidata.utils import assert_interfaces_valid
 from guidata.configtools import get_icon
-from guidata.qthelpers import create_action, add_actions, get_std_icon
+from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -55,8 +55,7 @@ from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot, LUT_MAX
 from guiqwt.styles import CurveParam
-from guiqwt.tools import (SelectTool, BasePlotMenuTool, AntiAliasingTool,
-                          DeleteItemTool)
+from guiqwt.tools import ExportItemDataTool
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
@@ -504,43 +503,6 @@ class CrossSectionPlot(CurvePlot):
             self.set_axis_color(self.Z_AXIS, "red")
         else:
             self.plot_labels_changed(obj.plot())
-                
-    def export(self):
-        """Export cross-section plot in a text file"""
-        items = [item for item in self.get_items(item_type=ICurveItemType)
-                 if item.isVisible() and not item.is_empty()]
-        if not items:
-            QMessageBox.warning(self, _("Export"),
-                                _("There is no cross section plot to export."))
-            return
-        if len(items) > 1:
-            items = self.get_selected_items()
-        if not items:
-            QMessageBox.warning(self, _("Export"),
-                                _("Please select a cross section plot."))
-            return
-        item_data = items[0].get_data()
-        if len(item_data) > 2:
-            x, y, dx, dy = item_data
-            array_list = [x, y]
-            if dx is not None:
-                array_list.append(dx)
-            if dy is not None:
-                array_list.append(dy)
-            data = np.array(array_list).T
-        else:
-            x, y = item_data
-            data = np.array([x, y]).T
-        fname = QFileDialog.getSaveFileName(self, _("Export"),
-                                            "", _("Text file")+" (*.txt)")
-        if fname:
-            try:
-                np.savetxt(unicode(fname), data, delimiter=',')
-            except RuntimeError, error:
-                QMessageBox.critical(self, _("Export"),
-                                     _("Unable to export cross section data.")+\
-                                     "<br><br>"+_("Error message:")+"<br>"+\
-                                     str(error))
         
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
@@ -640,17 +602,8 @@ class CrossSectionWidget(PanelWidget):
         self.cs_plot = self.CrossSectionPlotKlass(parent)
         self.connect(self.cs_plot, SIG_CS_CURVE_CHANGED,
                      self.cs_curve_has_changed)
-        
-        # Configure the local manager
-        lman = self.local_manager
-        lman.add_plot(self.cs_plot)
-        lman.add_tool(SelectTool)
-        lman.add_tool(BasePlotMenuTool, "item")
-        lman.add_tool(BasePlotMenuTool, "axes")
-        lman.add_tool(BasePlotMenuTool, "grid")
-        lman.add_tool(AntiAliasingTool)
-        lman.add_tool(DeleteItemTool)
-        lman.get_default_tool().activate()
+        self.export_tool = None
+        self.setup_plot()
         
         self.toolbar = QToolBar(self)
         self.toolbar.setOrientation(Qt.Vertical)
@@ -663,6 +616,13 @@ class CrossSectionWidget(PanelWidget):
             self.autoscale_ac.setChecked(autoscale)
         if autorefresh is not None:
             self.autorefresh_ac.setChecked(autorefresh)
+
+    def setup_plot(self):
+        # Configure the local manager
+        lman = self.local_manager
+        lman.add_plot(self.cs_plot)
+        lman.register_all_curve_tools()
+        self.export_tool = lman.get_tool(ExportItemDataTool)
         
     def setup_widget(self):
         layout = QHBoxLayout()
@@ -692,10 +652,7 @@ class CrossSectionWidget(PanelWidget):
         return self.manager.get_active_plot()
         
     def setup_actions(self):
-        self.export_ac = create_action(self, _("Export"),
-                                   icon=get_std_icon("DialogSaveButton", 16),
-                                   triggered=self.cs_plot.export,
-                                   tip=_("Export cross section data"))
+        self.export_ac = self.export_tool.action
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
@@ -709,8 +666,8 @@ class CrossSectionWidget(PanelWidget):
         self.autorefresh_ac.setChecked(self.cs_plot.autorefresh_mode)
         
     def add_actions_to_toolbar(self):
-        add_actions(self.toolbar, (self.export_ac, self.autoscale_ac, None,
-                                   self.refresh_ac, self.autorefresh_ac))
+        add_actions(self.toolbar, (self.export_ac, self.autoscale_ac,
+                                   None, self.refresh_ac, self.autorefresh_ac))
         
     def register_shape(self, shape, final):
         plot = self.get_plot()
