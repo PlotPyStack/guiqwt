@@ -577,20 +577,20 @@ class BaseImageItem(QwtPlotItem):
         return self.data is None or self.data.size == 0
         
     def set_selectable(self, state):
-        """Set image selectable state"""
+        """Set item selectable state"""
         self._can_select = state
         
     def set_resizable(self, state):
-        """Set image resizable state
+        """Set item resizable state
         (or any action triggered when moving an handle, e.g. rotation)"""
         self._can_resize = state
         
     def set_movable(self, state):
-        """Set image movable state"""
+        """Set item movable state"""
         self._can_move = state
         
     def set_rotatable(self, state):
-        """Set image rotatable state"""
+        """Set item rotatable state"""
         self._can_rotate = state
 
     def can_select(self):
