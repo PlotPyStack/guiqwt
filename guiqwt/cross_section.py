@@ -394,9 +394,6 @@ class CrossSectionPlot(CurvePlot):
         if shape in known_shapes:
             return
         self._shapes[plot] = known_shapes+[shape]
-        param = shape.annotationparam
-        param.title = "X/Y"
-        param.update_annotation(shape)
         self.update_plot(shape)
         
     def unregister_shape(self, shape):
