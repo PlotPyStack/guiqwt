@@ -43,6 +43,7 @@ def get_package_data(name, extlist):
 
 LIBNAME = 'guiqwt'
 from guiqwt import __version__ as version
+del sys.modules[LIBNAME] # forcing Python to reload module (see build_doc.run)
 
 DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to PyQwt 5.2)'
 LONG_DESCRIPTION = ''
@@ -80,7 +81,6 @@ cmdclass = {'build' : build}
 
 if sphinx:
     from sphinx.setup_command import BuildDoc
-    import sys
     class build_doc(BuildDoc):
         def run(self):
             # make sure the python path is pointing to the newly built
