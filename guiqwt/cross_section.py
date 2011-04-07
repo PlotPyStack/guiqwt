@@ -92,6 +92,10 @@ class CrossSectionItem(ErrorBarCurveItem):
     def get_cross_section(self, obj):
         """Get cross section data from source image"""
         raise NotImplementedError
+        
+    def clear_data(self):
+        self.set_data(np.array([]), np.array([]), None, None)
+        self.plot().emit(SIG_CS_CURVE_CHANGED, self)
 
     def update_curve_data(self, obj):
         sectx, secty = self.get_cross_section(obj)
@@ -401,6 +405,10 @@ class CrossSectionPlot(CurvePlot):
             shapes = self._shapes[plot]            
             if shape in shapes:
                 shapes.pop(shapes.index(shape))
+                if len(shapes) == 0 or shape is self.get_last_obj():
+                    for curve in self.known_items.itervalues():
+                        curve.clear_data()
+                    self.replot()
                 break
         
     def create_cross_section_item(self):
@@ -417,20 +425,21 @@ class CrossSectionPlot(CurvePlot):
         return self.known_items.values()
 
     def items_changed(self, plot):
-        self.known_items = {}
+        # Del obsolete cross section items
+        new_sources = plot.get_items(item_type=ICSImageItemType)
+        for source in self.known_items.copy():
+            if source not in new_sources:
+                curve = self.known_items.pop(source)
+                self.del_item(curve)
         
-        # Del all cross section items
-        self.del_items(self.get_items(item_type=ICurveItemType))
-        
-        items = plot.get_items(item_type=ICSImageItemType)
-        if not items:
+        if not new_sources:
             self.replot()
             return
             
-        self.curveparam.shade = self.SHADE/len(items)
-        for item in items:
-            if item.isVisible():
-                self.add_cross_section_item(source=item)
+        self.curveparam.shade = self.SHADE/len(new_sources)
+        for source in new_sources:
+            if source not in self.known_items and source.isVisible():
+                self.add_cross_section_item(source=source)
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
