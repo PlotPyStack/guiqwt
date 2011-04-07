@@ -624,7 +624,7 @@ class ErrorBarCurveItem(CurveItem):
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
-        if x is None:
+        if x is None or x.size == 0:
             return
         y = self._y
         tx = vmap(xMap, x)
