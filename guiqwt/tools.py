@@ -1717,11 +1717,13 @@ class ExportItemDataTool(CommandTool):
                                           "export.png", toolbar_id=toolbar_id)
         
     def get_supported_items(self, plot):
-        all_items = [item for item in plot.get_items(item_type=ICurveItemType)]
+        all_items = [item for item in plot.get_items(item_type=ICurveItemType)
+                     if not item.is_empty()]
         if len(all_items) == 1:
             return all_items
         else:
-            return [item for item in plot.get_selected_items(ICurveItemType)]
+            return [item for item in plot.get_selected_items(ICurveItemType)
+                    if not item.is_empty()]
 
     def update_status(self, plot):
         self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
