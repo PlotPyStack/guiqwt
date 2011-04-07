@@ -276,6 +276,12 @@ class PlotManager(object):
             self.default_tool = tool
         return tool
         
+    def get_tool(self, ToolKlass):
+        """Return tool instance from its class"""
+        for tool in self.tools:
+            if isinstance(tool, ToolKlass):
+                return tool
+        
     def add_separator_tool(self, toolbar_id=None):
         """
         Register a separator tool to the plot manager: the separator tool is 
