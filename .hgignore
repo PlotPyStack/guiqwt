@@ -5,6 +5,7 @@
 \.orig$
 \.chm$
 \.pyd$
+\.rar$
 \.gui$
 \.pickle$
 ^build/

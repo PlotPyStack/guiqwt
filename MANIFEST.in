@@ -2,6 +2,8 @@ recursive-include guiqwt *.png *.svg *.pot *.po *.mo *.dcm
 recursive-include py2exe_example *.py *.pyw *.png *.svg *.ico *.bat
 recursive-include qtdesigner *.py
 recursive-include sift *.py *.pyw *.png *.svg *.ico *.bat
+prune sift/build
+prune sift/sift[0-9]
 recursive-include src *.hpp *.cpp
 recursive-include doc *.py *.rst *.png *.ico
 include MANIFEST.in
