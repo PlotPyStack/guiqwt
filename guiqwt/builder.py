@@ -66,7 +66,8 @@ from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
                            SegmentShape, VerticalCursor, HorizontalCursor)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
-                                AnnotatedSegment, AnnotatedVCursor)
+                                AnnotatedSegment, AnnotatedVCursor,
+                                AnnotatedHCursor)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
@@ -974,6 +975,18 @@ class PlotItemBuilder(object):
         """
         return self.__annotated_shape(AnnotatedSegment,
                                       x0, y0, x1, y1, title, subtitle)
+                                      
+    def annotated_hcursor(self, pos, title=None, subtitle=None,
+                          infos_format="value = %.2f", moveable=True):
+        """
+        Make an annotated vertical cursor `plot item` 
+        (:py:class:`guiqwt.annotations.AnnotatedHCursor` object)
+            * pos: cursor x coordinate
+            * title, subtitle: strings
+        """
+        param = self.__get_annotationparam(title, subtitle)
+        param.format = infos_format
+        return AnnotatedHCursor(pos, param, moveable)
                                       
     def annotated_vcursor(self, pos, title=None, subtitle=None,
                           infos_format="value = %.2f", moveable=True):

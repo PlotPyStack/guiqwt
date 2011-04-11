@@ -71,10 +71,12 @@ from guidata.utils import update_dataset
 from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
-                           SegmentShape, PointShape, VerticalCursor)
+                           SegmentShape, PointShape, VerticalCursor,
+                           HorizontalCursor)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
-from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED
+from guiqwt.signals import (SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED,
+                            SIG_CURSOR_MOVED)
 
 
 class AnnotatedShape(AbstractShape):
@@ -507,7 +509,6 @@ class AnnotatedCursor(AnnotatedShape):
     with properties set with *annotationparam* 
     (see :py:class:`guiqwt.styles.AnnotationParam`)
     """
-    SHAPE_CLASS = VerticalCursor
     LABEL_ANCHOR = "BL"
 
     def __init__(self, pos=0, annotationparam=None, moveable=True):
@@ -516,7 +517,21 @@ class AnnotatedCursor(AnnotatedShape):
         
         AnnotatedShape.__init__(self, annotationparam)
         self.set_pos(pos)
-
+        
+    #----IBasePlotItem API------------------------------------------------------
+    def select(self):
+        """Select item"""
+        AnnotatedShape.select(self)
+        param = self.label.labelparam
+        param.color = self.shape.shapeparam.sel_line.color
+        param.update_label(self.label)
+        
+    def unselect(self):
+        """Unselect item"""
+        AnnotatedShape.unselect(self)
+        param = self.label.labelparam
+        param.color = self.shape.shapeparam.line.color
+        param.update_label(self.label)
         
     #----AnnotatedShape API-----------------------------------------------------
     def set_pos(self, pos):
@@ -534,7 +549,7 @@ class AnnotatedCursor(AnnotatedShape):
     def move_point_to(self, handle, pos, ctrl=None):
         super(AnnotatedCursor, self).move_point_to(handle, pos, ctrl)
         if self.plot():
-            self.plot().emit(SIG_CURSOR_MOVED, self)
+            self.plot().emit(SIG_CURSOR_MOVED, self, self.get_pos())
         
     def draw(self, painter, xMap, yMap, canvasRect):
         self.set_label_position()
@@ -560,16 +575,28 @@ class AnnotatedCursor(AnnotatedShape):
         
         
 class AnnotatedVCursor(AnnotatedCursor):
+    SHAPE_CLASS = VerticalCursor
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        val = self.plot().invTransform(self.xAxis(), pos.x())
+        self.move_point_to(handle, (val, 0))
+        
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         plot = self.plot()
-        y = plot.invTransform(self.yAxis(), plot.canvas().contentsRect().bottomLeft().y())
+        y = plot.invTransform(self.yAxis(),
+                              plot.canvas().contentsRect().bottomLeft().y())
         self.label.set_position(self.shape.pos, y)
         
 
 class AnnotatedHCursor(AnnotatedCursor):
+    SHAPE_CLASS = HorizontalCursor
+    def move_local_point_to(self, handle, pos, ctrl=None):
+        val = self.plot().invTransform(self.yAxis(), pos.y())
+        self.move_point_to(handle, (val, 0))
+        
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         plot = self.plot()
-        x = plot.invTransform(self.xAxis(), plot.canvas().contentsRect().bottomLeft().x())
+        x = plot.invTransform(self.xAxis(),
+                              plot.canvas().contentsRect().bottomLeft().x())
         self.label.set_position(x, self.shape.pos)
