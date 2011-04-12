@@ -39,7 +39,7 @@ from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.2'
+VERSION = '0.2.3'
 
 
 def xy_fft(x, y):
@@ -973,7 +973,7 @@ class SiftProxy(object):
     def __init__(self, win):
         self.win = win
         self.s = self.win.signalft.objects
-        self.i = self.win.signalft.objects
+        self.i = self.win.imageft.objects
         
 
 class MainWindow(QMainWindow):
