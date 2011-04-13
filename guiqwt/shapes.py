@@ -94,6 +94,8 @@ from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
                            AxesShapeParam, CursorShapeParam)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
                             SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
+from guiqwt.geometry import rotate, vector
+
 
 class AbstractShape(QwtPlotItem):
     """Interface pour les objets manipulables
@@ -434,6 +436,8 @@ assert_interfaces_valid(Marker)
 
 
 class PolygonShape(AbstractShape):
+    ADDITIONNAL_POINTS = 0 # Number of points which are not part of the shape
+    LINK_ADDITIONNAL_POINTS = False # Link additionnal points with dotted lines
     def __init__(self, points, closed=True):
         super(PolygonShape, self).__init__()
         self.closed = closed
@@ -513,13 +517,24 @@ class PolygonShape(AbstractShape):
         painter.setPen(pen)
         painter.setBrush(brush)
         points = self.transform_points(xMap, yMap)
-        if self.closed:
-            painter.drawPolygon(points)
+        if self.ADDITIONNAL_POINTS:
+            shape_points = points[:-self.ADDITIONNAL_POINTS]
+            other_points = points[-self.ADDITIONNAL_POINTS:]
         else:
-            painter.drawPolyline(points)
+            shape_points = points
+            other_points = []
+        if self.closed:
+            painter.drawPolygon(shape_points)
+        else:
+            painter.drawPolyline(shape_points)
         if symbol != QwtSymbol.NoSymbol:
             for i in xrange(points.size()):
                 symbol.draw(painter, points[i].toPoint())
+        if self.LINK_ADDITIONNAL_POINTS and other_points:
+            pen2 = painter.pen()
+            pen2.setStyle(Qt.DotLine)
+            painter.setPen(pen2)
+            painter.drawPolyline(other_points)
     
     def poly_hit_test(self, plot, ax, ay, pos):
         pos = QPointF(pos)
@@ -532,7 +547,8 @@ class PolygonShape(AbstractShape):
             # On calcule la distance dans le repère du canvas
             px = plot.transform(ax, pts[i, 0])
             py = plot.transform(ay, pts[i, 1])
-            poly.append(QPointF(px, py))
+            if i < pts.shape[0]-self.ADDITIONNAL_POINTS:
+                poly.append(QPointF(px, py))
             d = (Cx-px)**2 + (Cy-py)**2
             if d < dist:
                 dist = d
@@ -602,12 +618,13 @@ class PointShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0,0), state)
+        return (self.__class__, (0, 0), state)
 
 assert_interfaces_valid(PointShape)
 
 
 class SegmentShape(PolygonShape):
+    ADDITIONNAL_POINTS = 1 # Number of points which are not part of the shape
     def __init__(self, x1, y1, x2, y2):
         super(SegmentShape, self).__init__([], closed=False)
         self.set_rect(x1, y1, x2, y2)
@@ -617,28 +634,42 @@ class SegmentShape(PolygonShape):
         Set the start point of this segment to (x1, y1) 
         and the end point of this line to (x2, y2)
         """
-        self.set_points([(x1, y1), (0, 0), (x2, y2)])
+        self.set_points([(x1, y1), (x2, y2),
+                         (.5*(x1+x2), .5*(y1+y2))])
 
     def get_rect(self):
-        return tuple(self.points[0])+tuple(self.points[2])
-
-    def draw(self, painter, xMap, yMap, canvasRect):
-        self.points[1] = (self.points[0]+self.points[2])/2.
-        super(SegmentShape, self).draw(painter, xMap, yMap, canvasRect)
+        return tuple(self.points[0])+tuple(self.points[1])
     
     def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
+        x1, y1, x2, y2 = self.get_rect()
         if handle == 0:
-            self.points[0] = (nx, ny)
-        elif handle == 2:
-            self.points[2] = (nx, ny)
-        elif handle in (1, -1):
+            self.set_rect(nx, ny, x2, y2)
+        elif handle == 1:
+            self.set_rect(x1, y1, nx, ny)
+        elif handle in (2, -1):
             delta = (nx, ny)-self.points.mean(axis=0)
             self.points += delta
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0,0,0,0), state)
+        return (self.__class__, (0, 0, 0, 0), state)
+
+    def __setstate__(self, state):
+        param, points, z = state
+        #----------------------------------------------------------------------
+        # compatibility with previous version of SegmentShape:
+        x1, y1, x2, y2, x3, y3 = points.ravel()
+        v12 = np.array((x2-x1, y2-y1))
+        v13 = np.array((x3-x1, y3-y1))
+        if np.linalg.norm(v12) < np.linalg.norm(v13):
+            # old pickle format
+            points = np.flipud(np.roll(points, -1, axis=0))
+        #----------------------------------------------------------------------
+        self.points = points
+        self.setZ(z)
+        self.shapeparam = param
+        self.shapeparam.update_shape(self)
 
 assert_interfaces_valid(SegmentShape)
 
@@ -660,8 +691,7 @@ class RectangleShape(PolygonShape):
 
     def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
-        x1, y1 = self.points[0]
-        x2, y2 = self.points[2]
+        x1, y1, x2, y2 = self.get_rect()
         if handle == 0:
             self.set_rect(nx, ny, x2, y2)
         elif handle == 1:
@@ -679,6 +709,129 @@ class RectangleShape(PolygonShape):
         return (self.__class__, (0,0,0,0), state)
 
 assert_interfaces_valid(RectangleShape)
+
+
+def _vector_projection(dv, xa, ya, xb, yb):
+    v_ab = np.array((xb-xa, yb-ya))
+    u_ab = v_ab/np.linalg.norm(v_ab)
+    return np.dot(u_ab, dv)*u_ab+np.array([xb, yb])
+
+def _vector_angle(v1, v2):
+    return np.arccos(np.dot(v1, v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)))
+
+def _vector_rotation(v, theta):
+    return np.array( rotate(theta)*vector(*v) ).ravel()[:2]
+
+class SkewRectangleShape(PolygonShape):
+    ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
+    LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
+    def __init__(self, x0, y0, x1, y1, x2, y2, x3, y3):
+        super(SkewRectangleShape, self).__init__([], closed=True)
+        self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        
+    def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
+        u"""
+        Set the rectangle corners coordinates:
+            (x0, y0): top-left corner
+            (x1, y1): top-right corner
+            (x2, y2): bottom-right corner
+            (x3, y3): bottom-left corner
+            
+            x: additionnal points
+            
+            (x0, y0)------>(x1, y1)
+                ↑             |
+                |             |
+                x             x
+                |             |
+                |             ↓
+            (x3, y3)<------(x2, y2)
+        """
+        self.set_points([(x0, y0), (x1, y1), (x2, y2), (x3, y3),
+                         (.5*(x0+x3), .5*(y0+y3)),
+                         (.5*(x1+x2), .5*(y1+y2))])
+
+    def get_rect(self):
+        return self.points.ravel()[:-self.ADDITIONNAL_POINTS*2]
+
+    def move_point_to(self, handle, pos, ctrl=None):
+        nx, ny = pos
+        x0, y0, x1, y1, x2, y2, x3, y3 = self.get_rect()
+        if handle == 0:
+            v0n = np.array((nx-x0, ny-y0))
+            x3, y3 = _vector_projection(v0n, x2, y2, x3, y3)
+            x1, y1 = _vector_projection(v0n, x2, y2, x1, y1)
+            x0, y0 = nx, ny
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == 1:
+            v1n = np.array((nx-x1, ny-y1))
+            x0, y0 = _vector_projection(v1n, x3, y3, x0, y0)
+            x2, y2 = _vector_projection(v1n, x3, y3, x2, y2)
+            x1, y1 = nx, ny
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == 2:
+            v2n = np.array((nx-x2, ny-y2))
+            x1, y1 = _vector_projection(v2n, x0, y0, x1, y1)
+            x3, y3 = _vector_projection(v2n, x0, y0, x3, y3)
+            x2, y2 = nx, ny
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == 3:
+            v3n = np.array((nx-x3, ny-y3))
+            x0, y0 = _vector_projection(v3n, x1, y1, x0, y0)
+            x2, y2 = _vector_projection(v3n, x1, y1, x2, y2)
+            x3, y3 = nx, ny
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == 4:
+            x4, y4 = .5*(x0+x3), .5*(y0+y3)
+            x5, y5 = .5*(x1+x2), .5*(y1+y2)
+            nx, ny = x0+nx-x4, y0+ny-y4 # moving handle #4 to handle #0
+            
+            v10 = np.array((x0-x1, y0-y1))
+            v12 = np.array((x2-x1, y2-y1))
+            v10n = np.array((nx-x1, ny-y1))
+            k = np.linalg.norm(v12)/np.linalg.norm(v10)
+            v12n = _vector_rotation(v10n, -np.pi/2)*k
+            x2, y2 = v12n+np.array([x1, y1])
+            x3, y3 = v12n+v10n+np.array([x1, y1])
+            x0, y0 = nx, ny
+            
+            dx = x5-.5*(x1+x2)
+            dy = y5-.5*(y1+y2)
+            x0, y0 = x0+dx, y0+dy
+            x1, y1 = x1+dx, y1+dy
+            x2, y2 = x2+dx, y2+dy
+            x3, y3 = x3+dx, y3+dy
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == 5:
+            x4, y4 = .5*(x0+x3), .5*(y0+y3)
+            x5, y5 = .5*(x1+x2), .5*(y1+y2)
+            nx, ny = x1+nx-x5, y1+ny-y5 # moving handle #5 to handle #1
+            
+            v01 = np.array((x1-x0, y1-y0))
+            v03 = np.array((x3-x0, y3-y0))
+            v01n = np.array((nx-x0, ny-y0))
+            k = np.linalg.norm(v03)/np.linalg.norm(v01)
+            v03n = _vector_rotation(v01n, np.pi/2)*k
+            x3, y3 = v03n+np.array([x0, y0])
+            x2, y2 = v03n+v01n+np.array([x0, y0])
+            x1, y1 = nx, ny
+            
+            dx = x4-.5*(x0+x3)
+            dy = y4-.5*(y0+y3)
+            x0, y0 = x0+dx, y0+dy
+            x1, y1 = x1+dx, y1+dy
+            x2, y2 = x2+dx, y2+dy
+            x3, y3 = x3+dx, y3+dy
+            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        elif handle == -1:
+            delta = (nx, ny)-self.points.mean(axis=0)
+            self.points += delta
+
+    def __reduce__(self):
+        state = (self.shapeparam, self.points, self.z())
+        return (self.__class__, (0, 0, 0, 0, 0, 0, 0, 0), state)
+
+assert_interfaces_valid(SkewRectangleShape)
 
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1
