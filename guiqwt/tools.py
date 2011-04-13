@@ -844,15 +844,21 @@ class PlaceAxesTool(RectangularShapeTool):
 
 class AnnotatedRectangleTool(RectangleTool):
     def create_shape(self):
-        return AnnotatedRectangle(0, 0, 1, 1), 0, 2
+        annotation = AnnotatedRectangle(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
 
 class AnnotatedCircleTool(CircleTool):
     def create_shape(self):
-        return AnnotatedCircle(0, 0, 1, 1), 0, 1
+        annotation = AnnotatedCircle(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 1
 
 class AnnotatedEllipseTool(EllipseTool):
     def create_shape(self):
-        return AnnotatedEllipse(0, 0, 1, 1), 0, 1
+        annotation = AnnotatedEllipse(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 1
         
     def handle_final_shape(self, shape):
         shape.shape.switch_to_ellipse()
@@ -860,11 +866,15 @@ class AnnotatedEllipseTool(EllipseTool):
 
 class AnnotatedPointTool(PointTool):
     def create_shape(self):
-        return AnnotatedPoint(0, 0), 0, 0
+        annotation = AnnotatedPoint(0, 0)
+        self.set_shape_style(annotation)
+        return annotation, 0, 0
 
 class AnnotatedSegmentTool(SegmentTool):
     def create_shape(self):
-        return AnnotatedSegment(0, 0, 1, 1), 0, 2
+        annotation = AnnotatedSegment(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
 
 
 class ImageStatsRectangle(AnnotatedRectangle):

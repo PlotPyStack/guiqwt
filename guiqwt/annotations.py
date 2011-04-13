@@ -89,8 +89,8 @@ class AnnotatedShape(AbstractShape):
     def __init__(self, annotationparam=None):
         AbstractShape.__init__(self)
         assert self.LABEL_ANCHOR is not None
-        self.shape = self.get_shape()
-        self.label = self.get_label()
+        self.shape = self.create_shape()
+        self.label = self.create_label()
         self.area_computations_visible = True
         if annotationparam is None:
             self.annotationparam = AnnotationParam(_("Annotation"),
@@ -123,13 +123,12 @@ class AnnotatedShape(AbstractShape):
             self.label.draw(painter, xMap, yMap, canvasRect)
         
     #----Public API-------------------------------------------------------------
-    def get_shape(self):
+    def create_shape(self):
         """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0, 1, 1)
-        shape.set_style("plot", "shape/drag")
         return shape
         
-    def get_label(self):
+    def create_label(self):
         """Return the label object associated to this annotated shape object"""
         label_param = LabelParam(_("Label"), icon='label.png')
         label_param.read_config(CONF, "plot", "shape/label")
@@ -273,10 +272,9 @@ class AnnotatedPoint(AnnotatedShape):
         return self.shape.get_pos()
         
     #----AnnotatedShape API-----------------------------------------------------
-    def get_shape(self):
+    def create_shape(self):
         """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0)
-        shape.set_style("plot", "shape/drag")
         return shape
 
     def set_label_position(self):
@@ -325,9 +323,8 @@ class AnnotatedSegment(AnnotatedShape):
     
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
-        x0, y0 = self.shape.points[0]
-        x2, y2 = self.shape.points[2]
-        self.label.set_position(*compute_center(x0, y0, x2, y2))
+        x1, y1, x2, y2 = self.get_rect()
+        self.label.set_position(*compute_center(x1, y1, x2, y2))
         
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
@@ -453,10 +450,9 @@ class AnnotatedEllipse(AnnotatedShape):
         return (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
         
     #----AnnotatedShape API-----------------------------------------------------
-    def get_shape(self):
+    def create_shape(self):
         """Return the shape object associated to this annotated shape object"""
         shape = self.SHAPE_CLASS(0, 0, 1, 1, ratio=self.ratio)
-        shape.set_style("plot", "shape/drag")
         return shape
         
     def set_label_position(self):
@@ -555,7 +551,7 @@ class AnnotatedCursor(AnnotatedShape):
         self.set_label_position()
         super(AnnotatedCursor, self).draw(painter, xMap, yMap, canvasRect)
         
-    def get_label(self):
+    def create_label(self):
         """Return the label object associated to this annotated shape object"""
         label_param = LabelParam(_("Label"), icon='label.png')
         label_param.read_config(CONF, "plot", "shape/cursor_label")
@@ -564,7 +560,7 @@ class AnnotatedCursor(AnnotatedShape):
         return DataInfoLabel(label_param, [self])
         
     #----AnnotatedShape API-----------------------------------------------------
-    def get_shape(self):
+    def create_shape(self):
         """Return the shape object associated to this annotated shape object"""
         return self.SHAPE_CLASS(0, self.can_move())
         
