@@ -13,6 +13,7 @@ The `annotations` module provides annotated shapes:
     * :py:class:`guiqwt.annotations.AnnotatedPoint`
     * :py:class:`guiqwt.annotations.AnnotatedSegment`
     * :py:class:`guiqwt.annotations.AnnotatedRectangle`
+    * :py:class:`guiqwt.annotations.AnnotatedSkewRectangle`
     * :py:class:`guiqwt.annotations.AnnotatedEllipse`
     * :py:class:`guiqwt.annotations.AnnotatedCircle`
 
@@ -54,6 +55,9 @@ Reference
 .. autoclass:: AnnotatedRectangle
    :members:
    :inherited-members:
+.. autoclass:: AnnotatedSkewRectangle
+   :members:
+   :inherited-members:
 .. autoclass:: AnnotatedEllipse
    :members:
    :inherited-members:
@@ -72,7 +76,7 @@ from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
                            SegmentShape, PointShape, VerticalCursor,
-                           HorizontalCursor)
+                           HorizontalCursor, SkewRectangleShape)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import (SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED,
@@ -388,6 +392,78 @@ class AnnotatedRectangle(AnnotatedShape):
                     _("Size:") + (" "+f+u" x "+f) % self.get_size(),
                             ])
 
+
+class AnnotatedSkewRectangle(AnnotatedRectangle):
+    """
+    Construct an annotated skewed rectangle between coordinates (x0, y0),
+    (x1, y1), (x2, y2) and (x3, y3) with properties set with *annotationparam* 
+    (see :py:class:`guiqwt.styles.AnnotationParam`)
+    """
+    SHAPE_CLASS = SkewRectangleShape
+    LABEL_ANCHOR = "C"
+    def __init__(self, x0=0, y0=0, x1=0, y1=0, x2=0, y2=0, x3=0, y3=0,
+                 annotationparam=None):
+        AnnotatedShape.__init__(self, annotationparam)
+        self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        
+    #----Public API-------------------------------------------------------------
+    def get_angle(self):
+        """Return X-diameter angle with horizontal direction"""
+        xcoords = self.get_transformed_coords(0, 1)
+        _x, yr1 = self.apply_transform_matrix(1., 1.)
+        _x, yr2 = self.apply_transform_matrix(1., 2.)
+        return (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
+        
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def create_shape(self):
+        """Return the shape object associated to this annotated shape object"""
+        shape = self.SHAPE_CLASS(0, 0, 0, 0, 0, 0, 0, 0)
+        return shape
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def set_label_position(self):
+        """Set label position, for instance based on shape position"""
+        self.label.set_position(*self.get_center())
+        
+    #----RectangleShape API-----------------------------------------------------
+    def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
+        u"""
+        Set the rectangle corners coordinates:
+            (x0, y0): top-left corner
+            (x1, y1): top-right corner
+            (x2, y2): bottom-right corner
+            (x3, y3): bottom-left corner
+            
+            x: additionnal points
+            
+            (x0, y0)------>(x1, y1)
+                ↑             |
+                |             |
+                x             x
+                |             |
+                |             ↓
+            (x3, y3)<------(x2, y2)
+        """
+        self.shape.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+        self.set_label_position()
+        
+    def get_size(self):
+        """Return rectangle size: (width, height)"""
+        dx = compute_distance(*self.get_transformed_coords(0, 1))
+        dy = compute_distance(*self.get_transformed_coords(0, 3))
+        return dx, dy
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def get_infos(self):
+        """Return formatted string with informations on current shape"""
+        f = self.annotationparam.format
+        return "<br>".join([
+                    _("Center:") + (" ( "+f+u" ; "+f+" )") % self.get_center(),
+                    _("Size:") + (" "+f+u" x "+f) % self.get_size(),
+                    _(u"Angle:") + u" %.1f°" % self.get_angle(),
+                            ])
+    
 
 class AnnotatedEllipse(AnnotatedShape):
     """

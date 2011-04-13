@@ -12,6 +12,7 @@ guiqwt.shapes
 The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.PolygonShape`
     * :py:class:`guiqwt.shapes.RectangleShape`
+    * :py:class:`guiqwt.shapes.SkewRectangleShape`
     * :py:class:`guiqwt.shapes.PointShape`
     * :py:class:`guiqwt.shapes.SegmentShape`
     * :py:class:`guiqwt.shapes.EllipseShape`
@@ -53,6 +54,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: RectangleShape
+   :members:
+   :inherited-members:
+.. autoclass:: SkewRectangleShape
    :members:
    :inherited-members:
 .. autoclass:: PointShape
