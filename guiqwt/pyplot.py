@@ -195,6 +195,7 @@ class Figure(object):
         self.axes = {}
         self.title = title
         self.win = None
+        self.app = None
 
     def get_axes(self, i, j):
         if (i,j) in self.axes:
@@ -205,7 +206,7 @@ class Figure(object):
         return ax
 
     def build_window(self):
-        _app = guidata.qapplication()
+        self.app = guidata.qapplication()
         self.win = Window(wintitle=self.title)
         images = False
         for (i, j), ax in self.axes.items():
@@ -223,7 +224,7 @@ class Figure(object):
     def save(self, fname, draft):
         ext = fname.rsplit(".", 1)[-1].lower()
         if ext == "pdf":
-            _app = guidata.qapplication()
+            self.app = guidata.qapplication()
             if draft:
                 mode = QPrinter.ScreenResolution
             else:
