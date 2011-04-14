@@ -715,13 +715,19 @@ class RectangleShape(PolygonShape):
 assert_interfaces_valid(RectangleShape)
 
 
+def _vector_norm(xa, ya, xb, yb):
+    v_ab = np.array((xb-xa, yb-ya))
+    return np.linalg.norm(v_ab)
+
 def _vector_projection(dv, xa, ya, xb, yb):
     v_ab = np.array((xb-xa, yb-ya))
     u_ab = v_ab/np.linalg.norm(v_ab)
     return np.dot(u_ab, dv)*u_ab+np.array([xb, yb])
 
 def _vector_angle(v1, v2):
-    return np.arccos(np.dot(v1, v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)))
+    norm_v1, norm_v2 = np.linalg.norm(v1), np.linalg.norm(v2)
+    if norm_v1 and norm_v2:
+        return np.arccos(np.dot(v1, v2)/(norm_v1*norm_v2))
 
 def _vector_rotation(v, theta):
     return np.array( rotate(theta)*vector(*v) ).ravel()[:2]
@@ -762,29 +768,59 @@ class SkewRectangleShape(PolygonShape):
         nx, ny = pos
         x0, y0, x1, y1, x2, y2, x3, y3 = self.get_rect()
         if handle == 0:
-            v0n = np.array((nx-x0, ny-y0))
-            x3, y3 = _vector_projection(v0n, x2, y2, x3, y3)
-            x1, y1 = _vector_projection(v0n, x2, y2, x1, y1)
-            x0, y0 = nx, ny
-            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+            if _vector_norm(nx, ny, x2, y2) and \
+               _vector_norm(nx, ny, x3, y3) and \
+               _vector_norm(x2, y2, x3, y3):
+                v0n = np.array((nx-x0, ny-y0))
+                x3, y3 = _vector_projection(v0n, x2, y2, x3, y3)
+                x1, y1 = _vector_projection(v0n, x2, y2, x1, y1)
+                x0, y0 = nx, ny
+                if _vector_norm(nx, ny, x2, y2) and \
+                   _vector_norm(nx, ny, x3, y3) and \
+                   _vector_norm(x2, y2, x3, y3):
+                    self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 1:
-            v1n = np.array((nx-x1, ny-y1))
-            x0, y0 = _vector_projection(v1n, x3, y3, x0, y0)
-            x2, y2 = _vector_projection(v1n, x3, y3, x2, y2)
-            x1, y1 = nx, ny
-            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+            if _vector_norm(nx, ny, x0, y0) and \
+               _vector_norm(nx, ny, x3, y3) and \
+               _vector_norm(x0, y0, x3, y3) and \
+               _vector_norm(x2, y2, x3, y3):
+                v1n = np.array((nx-x1, ny-y1))
+                x0, y0 = _vector_projection(v1n, x3, y3, x0, y0)
+                x2, y2 = _vector_projection(v1n, x3, y3, x2, y2)
+                x1, y1 = nx, ny
+                if _vector_norm(nx, ny, x0, y0) and \
+                   _vector_norm(nx, ny, x3, y3) and \
+                   _vector_norm(x0, y0, x3, y3) and \
+                   _vector_norm(x2, y2, x3, y3):
+                    self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 2:
-            v2n = np.array((nx-x2, ny-y2))
-            x1, y1 = _vector_projection(v2n, x0, y0, x1, y1)
-            x3, y3 = _vector_projection(v2n, x0, y0, x3, y3)
-            x2, y2 = nx, ny
-            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+            if _vector_norm(nx, ny, x0, y0) and \
+               _vector_norm(nx, ny, x1, y1) and \
+               _vector_norm(x2, y2, x3, y3):
+                v2n = np.array((nx-x2, ny-y2))
+                x1, y1 = _vector_projection(v2n, x0, y0, x1, y1)
+                x3, y3 = _vector_projection(v2n, x0, y0, x3, y3)
+                x2, y2 = nx, ny
+                if _vector_norm(nx, ny, x0, y0) and \
+                   _vector_norm(nx, ny, x1, y1) and \
+                   _vector_norm(x2, y2, x3, y3):
+                    self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 3:
-            v3n = np.array((nx-x3, ny-y3))
-            x0, y0 = _vector_projection(v3n, x1, y1, x0, y0)
-            x2, y2 = _vector_projection(v3n, x1, y1, x2, y2)
-            x3, y3 = nx, ny
-            self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
+            if _vector_norm(nx, ny, x0, y0) and \
+               _vector_norm(nx, ny, x1, y1) and \
+               _vector_norm(x1, y1, x0, y0) and \
+               _vector_norm(x1, y1, x2, y2) and \
+               _vector_norm(x2, y2, x3, y3):
+                v3n = np.array((nx-x3, ny-y3))
+                x0, y0 = _vector_projection(v3n, x1, y1, x0, y0)
+                x2, y2 = _vector_projection(v3n, x1, y1, x2, y2)
+                x3, y3 = nx, ny
+                if _vector_norm(nx, ny, x0, y0) and \
+                   _vector_norm(nx, ny, x1, y1) and \
+                   _vector_norm(x1, y1, x0, y0) and \
+                   _vector_norm(x1, y1, x2, y2) and \
+                   _vector_norm(x2, y2, x3, y3):
+                    self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 4:
             x4, y4 = .5*(x0+x3), .5*(y0+y3)
             x5, y5 = .5*(x1+x2), .5*(y1+y2)

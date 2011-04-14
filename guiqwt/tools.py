@@ -719,7 +719,7 @@ class RectangularActionTool(InteractiveTool):
     def set_shape_style(self, shape):
         shape.set_style(self.shape_style_sect, self.shape_style_key)
     
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = RectangleShape(0, 0, 1, 1)
         self.set_shape_style(shape)
         return shape, 0, 2
@@ -734,7 +734,7 @@ class RectangularActionTool(InteractiveTool):
         return shape, h0, h1
         
     def get_final_shape(self, plot, p0, p1):
-        shape, h0, h1 = self.create_shape(final=True)
+        shape, h0, h1 = self.create_shape()
         self.setup_shape(shape)
         plot.add_item_with_z_offset(shape, SHAPE_Z_OFFSET)
         shape.move_local_point_to(h0, p0)
@@ -798,19 +798,16 @@ class RectangleTool(RectangularShapeTool):
 class SkewRectangleTool(RectangularShapeTool):
     TITLE = _("Skew rectangle")
     ICON = "skew_rectangle.png"
-    def create_shape(self, final=False):
-        if final:
-            shape = SkewRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
-            self.set_shape_style(shape)
-            return shape, 0, 2
-        else:
-            return super(SkewRectangleTool, self).create_shape(final)
+    def create_shape(self):
+        shape = SkewRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
+        self.set_shape_style(shape)
+        return shape, 0, 2
 
 class PointTool(RectangularShapeTool):
     TITLE = _("Point")
     ICON = "point_shape.png"
     SHAPE_STYLE_KEY = "shape/point"
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = PointShape(0, 0)
         self.set_shape_style(shape)
         return shape, 0, 0
@@ -819,7 +816,7 @@ class SegmentTool(RectangularShapeTool):
     TITLE = _("Segment")
     ICON = "segment.png"
     SHAPE_STYLE_KEY = "shape/segment"
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = SegmentShape(0, 0, 1, 1)
         self.set_shape_style(shape)
         return shape, 0, 1
@@ -827,7 +824,7 @@ class SegmentTool(RectangularShapeTool):
 class CircleTool(RectangularShapeTool):
     TITLE = _("Circle")
     ICON = "circle.png"
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = EllipseShape(0, 0, 1, 1)
         self.set_shape_style(shape)
         return shape, 0, 1
@@ -835,7 +832,7 @@ class CircleTool(RectangularShapeTool):
 class EllipseTool(RectangularShapeTool):
     TITLE = _("Ellipse")
     ICON = "ellipse_shape.png"
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = EllipseShape(0, 0, 1, 1)
         self.set_shape_style(shape)
         return shape, 0, 1
@@ -848,37 +845,32 @@ class PlaceAxesTool(RectangularShapeTool):
     TITLE = _("Axes")
     ICON = "gtaxes.png"
     SHAPE_STYLE_KEY = "shape/axes"
-    def create_shape(self, final=False):
+    def create_shape(self):
         shape = Axes( (0,1), (1,1), (0,0) )
         self.set_shape_style(shape)
         return shape, 0, 2
 
 
 class AnnotatedRectangleTool(RectangleTool):
-    def create_shape(self, final=False):
+    def create_shape(self):
         annotation = AnnotatedRectangle(0, 0, 1, 1)
         self.set_shape_style(annotation)
         return annotation, 0, 2
 
 class AnnotatedSkewRectangleTool(SkewRectangleTool):
-    def create_shape(self, final=False):
-        if final:
-            annotation = AnnotatedSkewRectangle(0, 0, 1, 0, 1, 1, 0, 1)
-            self.set_shape_style(annotation)
-            return annotation, 0, 2
-        else:
-            annotation = AnnotatedRectangle(0, 0, 1, 1)
-            self.set_shape_style(annotation)
-            return annotation, 0, 2
+    def create_shape(self):
+        annotation = AnnotatedSkewRectangle(0, 0, 1, 0, 1, 1, 0, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
 
 class AnnotatedCircleTool(CircleTool):
-    def create_shape(self, final=False):
+    def create_shape(self):
         annotation = AnnotatedCircle(0, 0, 1, 1)
         self.set_shape_style(annotation)
         return annotation, 0, 1
 
 class AnnotatedEllipseTool(EllipseTool):
-    def create_shape(self, final=False):
+    def create_shape(self):
         annotation = AnnotatedEllipse(0, 0, 1, 1)
         self.set_shape_style(annotation)
         return annotation, 0, 1
@@ -888,13 +880,13 @@ class AnnotatedEllipseTool(EllipseTool):
         super(EllipseTool, self).handle_final_shape(shape)
 
 class AnnotatedPointTool(PointTool):
-    def create_shape(self, final=False):
+    def create_shape(self):
         annotation = AnnotatedPoint(0, 0)
         self.set_shape_style(annotation)
         return annotation, 0, 0
 
 class AnnotatedSegmentTool(SegmentTool):
-    def create_shape(self, final=False):
+    def create_shape(self):
         annotation = AnnotatedSegment(0, 0, 1, 1)
         self.set_shape_style(annotation)
         return annotation, 0, 1
@@ -933,7 +925,7 @@ class ImageStatsTool(RectangularShapeTool):
                                 title, icon, tip)
         self._last_item = None
         
-    def create_shape(self, final=False):
+    def create_shape(self):
         return ImageStatsRectangle(0, 0, 1, 1), 0, 2
         
     def setup_shape(self, shape):
@@ -983,7 +975,7 @@ class CrossSectionTool(RectangularShapeTool):
     SHAPE_STYLE_KEY = "shape/cross_section"
     SHAPE_TITLE = TITLE
     PANEL_IDS = (ID_XCS, ID_YCS)
-    def create_shape(self, final=False):
+    def create_shape(self):
         return AnnotatedPoint(0, 0), 0, 0
         
     def setup_shape(self, shape):
@@ -1027,7 +1019,7 @@ class AverageCrossSectionTool(CrossSectionTool):
     ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
     SHAPE_TITLE = TITLE
-    def create_shape(self, final=False):
+    def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
 
