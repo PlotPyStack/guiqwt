@@ -5,9 +5,12 @@
 \.orig$
 \.chm$
 \.pyd$
+\.rar$
 \.gui$
 \.pickle$
 ^build/
+^sift/build/
+^sift/sift[0-9]*/
 ^dist/
 ^tests/build
 ^tests/dist

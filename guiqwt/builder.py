@@ -60,13 +60,14 @@ from numpy import arange, array, zeros, meshgrid, ndarray
 from guiqwt.config import _, CONF, make_title
 from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
-from guiqwt.histogram import HistogramItem
+from guiqwt.histogram import HistogramItem, lut_range_threshold
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
                           Histogram2DItem, RGBImageItem, MaskedImageItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
                            SegmentShape, VerticalCursor, HorizontalCursor)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
-                                AnnotatedSegment)
+                                AnnotatedSegment, AnnotatedVCursor,
+                                AnnotatedHCursor)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
@@ -517,7 +518,8 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(hist, xaxis, yaxis)
         return hist
 
-    def __set_image_param(self, param, title, alpha_mask, alpha, **kwargs):
+    def __set_image_param(self, param, title, alpha_mask, alpha, interpolation,
+                          **kwargs):
         if title:
             param.label = title
         else:
@@ -530,6 +532,8 @@ class PlotItemBuilder(object):
         if alpha is not None:
             assert (0.0 <= alpha <= 1.0)
             param.alpha = alpha
+        interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
+        param.interpolation = interp_methods[interpolation]
         for key, val in kwargs.items():
             if val is not None:
                 setattr(param, key, val)
@@ -554,7 +558,9 @@ class PlotItemBuilder(object):
         
     def image(self, data=None, filename=None, title=None, alpha_mask=None,
               alpha=None, background_color=None, colormap=None,
-              xdata=[None, None], ydata=[None, None], pixel_size=None):
+              xdata=[None, None], ydata=[None, None], pixel_size=None,
+              interpolation='linear', eliminate_outliers=None,
+              xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make an image `plot item` from data
         (:py:class:`guiqwt.image.ImageItem` object or 
@@ -574,19 +580,26 @@ class PlotItemBuilder(object):
             ymin, ymax = ydata
         else:
             xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
-        self.__set_image_param(param, title, alpha_mask, alpha,
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                background=background_color,
                                colormap=colormap,
-                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         image = ImageItem(data, param)
         image.set_filename(filename)
+        if eliminate_outliers is not None:
+            image.set_lut_range(lut_range_threshold(image, 256,
+                                                    eliminate_outliers))
         return image
 
     def maskedimage(self, data=None, mask=None, filename=None, title=None,
                     alpha_mask=False, alpha=1.0,
                     xdata=[None, None], ydata=[None, None], pixel_size=None,
                     background_color=None, colormap=None,
-                    show_mask=False, fill_value=None):
+                    show_mask=False, fill_value=None, interpolation='linear',
+                    eliminate_outliers=None,
+                    xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make a masked image `plot item` from data
         (:py:class:`guiqwt.image.MaskedImageItem` object)
@@ -602,18 +615,24 @@ class PlotItemBuilder(object):
             ymin, ymax = ydata
         else:
             xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
-        self.__set_image_param(param, title, alpha_mask, alpha,
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                background=background_color,
                                colormap=colormap,
                                xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                               show_mask=show_mask, fill_value=fill_value)
+                               show_mask=show_mask, fill_value=fill_value,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         image = MaskedImageItem(data, mask, param)
         image.set_filename(filename)
+        if eliminate_outliers is not None:
+            image.set_lut_range(lut_range_threshold(image, 256,
+                                                    eliminate_outliers))
         return image
 
     def rgbimage(self, data=None, filename=None, title=None,
                  alpha_mask=False, alpha=1.0,
-                 xdata=[None, None], ydata=[None, None], pixel_size=None):
+                 xdata=[None, None], ydata=[None, None], pixel_size=None,
+                 interpolation='linear'):
         """
         Make a RGB image `plot item` from data
         (:py:class:`guiqwt.image.RGBImageItem` object)
@@ -629,20 +648,21 @@ class PlotItemBuilder(object):
             ymin, ymax = ydata
         else:
             xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
-        self.__set_image_param(param, title, alpha_mask, alpha,
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
         image = RGBImageItem(data, param)
         image.set_filename(filename)
         return image
         
     def quadgrid(self, X, Y, Z, filename=None, title=None, alpha_mask=None,
-                 alpha=None, background_color=None, colormap=None):
+                 alpha=None, background_color=None, colormap=None,
+                 interpolation='linear'):
         """
         Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
         param = QuadGridParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, alpha_mask, alpha,
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                colormap=colormap)
         image = QuadGridItem(X, Y, Z, param)
         return image
@@ -670,7 +690,8 @@ class PlotItemBuilder(object):
     def trimage(self, data=None, filename=None, title=None, alpha_mask=None,
                 alpha=None, background_color=None, colormap=None,
                 x0=0.0, y0=0.0, angle=0.0, dx=1.0, dy=1.0,
-                interpolation='linear'):
+                interpolation='linear', eliminate_outliers=None,
+                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make a transformable image `plot item` (image with an arbitrary 
         affine transform)
@@ -686,17 +707,22 @@ class PlotItemBuilder(object):
         param = TrImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
                                                      to_grayscale=True)
-        self.__set_image_param(param, title, alpha_mask, alpha,
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                background=background_color, colormap=colormap,
-                               x0=x0, y0=y0, angle=angle, dx=dx, dy=dy)
-        interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
-        param.interpolation = interp_methods[interpolation]
+                               x0=x0, y0=y0, angle=angle, dx=dx, dy=dy,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
         image = TrImageItem(data, param)
         image.set_filename(filename)
+        if eliminate_outliers is not None:
+            image.set_lut_range(lut_range_threshold(image, 256,
+                                                    eliminate_outliers))
         return image
 
     def xyimage(self, x, y, data, title=None, alpha_mask=None, alpha=None,
-                background_color=None, colormap=None):
+                background_color=None, colormap=None,
+                interpolation='linear', eliminate_outliers=None,
+                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
@@ -704,11 +730,18 @@ class PlotItemBuilder(object):
             * y: 1D NumPy array
             * data: 2D NumPy array (image pixel data)
             * title: image title (optional)
+            * interpolation: 'nearest', 'linear' (default), 'antialiasing' (5x5)
         """
         param = XYImageParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, alpha_mask, alpha,
-                               background=background_color, colormap=colormap)
-        return XYImageItem(x, y, data, param)
+        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
+                               background=background_color, colormap=colormap,
+                               xformat=xformat, yformat=yformat,
+                               zformat=zformat)
+        image = XYImageItem(x, y, data, param)
+        if eliminate_outliers is not None:
+            image.set_lut_range(lut_range_threshold(image, 256,
+                                                    eliminate_outliers))
+        return image
     
     def imagefilter(self, xmin, xmax, ymin, ymax,
                     imageitem, filter, title=None):
@@ -945,6 +978,30 @@ class PlotItemBuilder(object):
         """
         return self.__annotated_shape(AnnotatedSegment,
                                       x0, y0, x1, y1, title, subtitle)
+                                      
+    def annotated_hcursor(self, pos, title=None, subtitle=None,
+                          infos_format="value = %.2f", moveable=True):
+        """
+        Make an annotated vertical cursor `plot item` 
+        (:py:class:`guiqwt.annotations.AnnotatedHCursor` object)
+            * pos: cursor x coordinate
+            * title, subtitle: strings
+        """
+        param = self.__get_annotationparam(title, subtitle)
+        param.format = infos_format
+        return AnnotatedHCursor(pos, param, moveable)
+                                      
+    def annotated_vcursor(self, pos, title=None, subtitle=None,
+                          infos_format="value = %.2f", moveable=True):
+        """
+        Make an annotated vertical cursor `plot item` 
+        (:py:class:`guiqwt.annotations.AnnotatedVCursor` object)
+            * pos: cursor x coordinate
+            * title, subtitle: strings
+        """
+        param = self.__get_annotationparam(title, subtitle)
+        param.format = infos_format
+        return AnnotatedVCursor(pos, param, moveable)
 
     def info_label(self, anchor, comps, title=""):
         """
@@ -968,16 +1025,13 @@ class PlotItemBuilder(object):
         return DataInfoLabel(param, comps)
         
     def info_cursor(self, cursor, anchor, label=None, func=None):
-        if isinstance(cursor, VerticalCursor):
-            if label is None:
+        if func is None:
+                func = lambda x: x        
+        if label is None:
+            if isinstance(cursor, VerticalCursor):
                 label = 'x = %s'
-            if func is None:
-                func = lambda x, y: x
-        else:
-            if label is None:
+            else:
                 label = 'y = %s'
-            if func is None:
-                func = lambda x, y: y
         comp = CursorComputation(label, cursor, func)
         return self.info_label(anchor, [comp])
 

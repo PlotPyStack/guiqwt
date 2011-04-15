@@ -161,7 +161,7 @@ def seg_dist_v(P, X0, Y0, X1, Y1):
     V[:, 0] = X1-X0
     V[:, 1] = Y1-Y0
     dP = np.array(P).reshape(1, 2) - PP
-    nV = np.sqrt(norm2(V))
+    nV = np.sqrt(norm2(V)).clip(1e-12) # clip: avoid division by zero
     w2 = V/nV[:, np.newaxis]
     w = np.array([ -w2[:,1], w2[:,0] ]).T
     distances = np.fabs((dP*w).sum(axis=1))
@@ -231,6 +231,23 @@ class GridItem(QwtPlotGrid):
         """Return True if object is private"""
         return self._private
 
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
+
     def can_select(self):
         return False
     def can_resize(self):
@@ -257,7 +274,7 @@ class GridItem(QwtPlotGrid):
     def move_local_shape(self, old_pos, new_pos):
         pass
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         pass
 
     def update_params(self):
@@ -298,6 +315,23 @@ class CurveItem(QwtPlotCurve):
     def types(self):
         return (ICurveItemType, ITrackableItemType, ISerializableType)
 
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
+        
     def can_select(self):
         return True
     def can_resize(self):
@@ -459,13 +493,13 @@ class CurveItem(QwtPlotCurve):
         self._y += (ny-oy)
         self.setData(self._x, self._y)
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self._x += dx
-        self._y += dy
+        self._x += delta_x
+        self._y += delta_y
         self.setData(self._x, self._y)
 
     def update_params(self):
@@ -590,7 +624,7 @@ class ErrorBarCurveItem(CurveItem):
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
-        if x is None:
+        if x is None or x.size == 0:
             return
         y = self._y
         tx = vmap(xMap, x)
@@ -895,18 +929,19 @@ class PlotItemList(PanelWidget):
     """Construct the `plot item list panel`"""
     __implements__ = (IPanel,)
     PANEL_ID = ID_ITEMLIST
+    PANEL_TITLE = _("Item list")
+    PANEL_ICON = "item_list.png"
     
     def __init__(self, parent):
         super(PlotItemList, self).__init__(parent)
-        widget_title = _("Item list")
-        widget_icon = "item_list.png"
         self.manager = None
         
         vlayout = QVBoxLayout()
         self.setLayout(vlayout)
         
         style = "<span style=\'color: #444444\'><b>%s</b></span>"
-        layout, _label = get_image_layout(widget_icon, style % widget_title,
+        layout, _label = get_image_layout(self.PANEL_ICON,
+                                          style % self.PANEL_TITLE,
                                           alignment=Qt.AlignCenter)
         vlayout.addLayout(layout)
         self.listwidget = ItemListWidget(self)
@@ -915,9 +950,6 @@ class PlotItemList(PanelWidget):
         toolbar = QToolBar(self)
         vlayout.addWidget(toolbar)
         add_actions(toolbar, self.listwidget.menu_actions)
-        
-        self.setWindowIcon(get_icon(widget_icon))
-        self.setWindowTitle(widget_title)
 
     def register_panel(self, manager):
         """Register panel to plot manager"""
@@ -940,10 +972,12 @@ class CurvePlot(BasePlot):
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
         * gridparam: GridParam instance
+        * axes_synchronised: keep all x and y axes synchronised when zomming or
+                             panning
     """
     AUTOSCALE_TYPES = (CurveItem,)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 gridparam=None, section="plot"):
+                 gridparam=None, section="plot", axes_synchronised=False):
         super(CurvePlot, self).__init__(parent, section)
 
         self.axes_reverse = [False]*4
@@ -953,6 +987,8 @@ class CurvePlot(BasePlot):
         self.antialiased = False
 
         self.set_antialiasing(CONF.get(section, "antialiasing"))
+        
+        self.axes_synchronised = axes_synchronised
         
         # Installing our own event filter:
         # (PyQwt's event filter does not fit our needs)
@@ -1042,6 +1078,20 @@ class CurvePlot(BasePlot):
             self.curve_marker.setVisible(False)
             if vis_cross or vis_curve:
                 self.replot()
+                
+    def get_axes_to_update(self, dx, dy):
+        if self.axes_synchronised:
+            axes = []
+            for axis_name in self.AXIS_NAMES:
+                if axis_name in ("left", "right"):
+                    d = dy
+                else:
+                    d = dx
+                axes.append((d, self.get_axis_id(axis_name)))
+            return axes
+        else:
+            xaxis, yaxis = self.get_active_axes()
+            return [(dx, xaxis), (dy, yaxis)]
         
     def do_pan_view(self, dx, dy):
         """
@@ -1050,10 +1100,9 @@ class CurvePlot(BasePlot):
         """
         auto = self.autoReplot()
         self.setAutoReplot(False)
-        xaxis, yaxis = self.get_active_axes()
-        active_axes = [ (dx, xaxis),
-                        (dy, yaxis) ]
-        for (x1, x0, _, w), k in active_axes:
+        axes_to_update = self.get_axes_to_update(dx, dy)
+        
+        for (x1, x0, _, w), k in axes_to_update:
             axis = self.axisScaleDiv(k)
             # pour les axes logs on bouge lbound et hbound relativement
             # à l'inverse du delta aux bords de l'axe
@@ -1082,10 +1131,9 @@ class CurvePlot(BasePlot):
         if lock_aspect_ratio:
             sens, x1, x0, s, w = dx
             F = 1+3*sens*float(x1-x0)/w
-        xaxis, yaxis = self.get_active_axes()
-        active_axes = [ (dx, xaxis),
-                        (dy, yaxis) ]
-        for (sens, x1, x0, s, w), k in active_axes:
+        axes_to_update = self.get_axes_to_update(dx, dy)
+                                    
+        for (sens, x1, x0, s, w), k in axes_to_update:
             axis = self.axisScaleDiv(k)
             lbound = axis.lowerBound()
             hbound = axis.upperBound()
@@ -1104,6 +1152,7 @@ class CurvePlot(BasePlot):
         self.emit(SIG_PLOT_AXIS_CHANGED, self)
         
     def do_zoom_rect_view(self, start, end):
+        # XXX implement the case when axes are synchronised
         x1, y1 = start.x(), start.y()
         x2, y2 = end.x(), end.y()
         xaxis, yaxis = self.get_active_axes()
@@ -1164,6 +1213,7 @@ class CurvePlot(BasePlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
+        # XXX implement the case when axes are synchronised
         for axis_id in self.AXIS_IDS:
             vmin, vmax = None, None
             if not self.axisEnabled(axis_id):
@@ -1288,10 +1338,14 @@ class CurvePlot(BasePlot):
     def set_plot_limits(self, x0, x1, y0, y1, xaxis="bottom", yaxis="left"):
         """Set plot scale limits"""
         self.set_axis_limits(yaxis, y0, y1)
-        self.set_axis_limits(xaxis, x0, x1)
+        self.set_axis_limits(xaxis, x0, x1)     
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.Y_LEFT)
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.X_BOTTOM)
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(yaxis))
+        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(xaxis))
+        
+    def set_plot_limits_synchronised(self, x0, x1, y0, y1):
+        for yaxis, xaxis in (("left", "bottom"), ("right", "top")):
+            self.set_plot_limits(x0, x1, y0, y1, xaxis=xaxis, yaxis=yaxis)
         
     def get_plot_limits(self, xaxis="bottom", yaxis="left"):
         """Return plot scale limits"""

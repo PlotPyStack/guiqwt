@@ -195,6 +195,7 @@ class Figure(object):
         self.axes = {}
         self.title = title
         self.win = None
+        self.app = None
 
     def get_axes(self, i, j):
         if (i,j) in self.axes:
@@ -205,7 +206,7 @@ class Figure(object):
         return ax
 
     def build_window(self):
-        _app = guidata.qapplication()
+        self.app = guidata.qapplication()
         self.win = Window(wintitle=self.title)
         images = False
         for (i, j), ax in self.axes.items():
@@ -223,7 +224,7 @@ class Figure(object):
     def save(self, fname, draft):
         ext = fname.rsplit(".", 1)[-1].lower()
         if ext == "pdf":
-            _app = guidata.qapplication()
+            self.app = guidata.qapplication()
             if draft:
                 mode = QPrinter.ScreenResolution
             else:
@@ -265,7 +266,8 @@ def do_mainloop(mainloop):
     if not _current_fig:
         print >>sys.stderr, "Warning: must create a figure before showing it"
     elif mainloop:
-        guidata.exec_qapplication_eventloop()
+        app = guidata.qapplication()
+        app.exec_()
         
 
 class Axes(object):
@@ -284,6 +286,8 @@ class Axes(object):
         self.colormap = "jet"
         self.xscale = 'lin'
         self.yscale = 'lin'
+        self.xlimits = None
+        self.ylimits = None
         self.widget = None
         self.main_widget = None
 
@@ -292,6 +296,14 @@ class Axes(object):
 
     def set_grid(self, grid):
         self.grid = grid
+        
+    def set_xlim(self, xmin, xmax):
+        self.xlimits = xmin, xmax
+        self._update_plotwidget()
+        
+    def set_ylim(self, ymin, ymax):
+        self.ylimits = ymin, ymax
+        self._update_plotwidget()
 
     def add_plot(self, item):
         self.plots.append(item)
@@ -308,16 +320,30 @@ class Axes(object):
             plot = self.setup_plot(i, j, win)
         self.widget = plot
         plot.do_autoscale()
+        self._update_plotwidget()
+        
+    def _update_plotwidget(self):
+        p = self.main_widget
+        if p is None:
+            return
+        if self.grid:
+            p.gridparam.maj_xenabled = True
+            p.gridparam.maj_yenabled = True
+            p.gridparam.update_grid(p)
+        p.set_axis_color('bottom', self.xcolor[0])
+        p.set_axis_color('top', self.xcolor[1])
+        p.set_axis_color('left', self.ycolor[0])
+        p.set_axis_color('right', self.ycolor[1])
+        if self.xlimits is not None:
+            p.set_axis_limits('bottom', *self.xlimits)
+        if self.ylimits is not None:
+            p.set_axis_limits('left', *self.ylimits)
 
     def setup_image(self, i, j, win):
         p = ImagePlot(win, xlabel=self.xlabel, ylabel=self.ylabel,
                       zlabel=self.zlabel, yreverse=self.yreverse)
         self.main_widget = p
         win.add_plot(i, j, p)
-        p.set_axis_color('bottom', self.xcolor[0])
-        p.set_axis_color('top', self.xcolor[1])
-        p.set_axis_color('left', self.ycolor[0])
-        p.set_axis_color('right', self.ycolor[1])
         for item in self.images+self.plots:
             if item in self.images:
                 item.set_color_map(self.colormap)
@@ -328,27 +354,16 @@ class Axes(object):
 
     def setup_plot(self, i, j, win):
         p = CurvePlot(win, xlabel=self.xlabel, ylabel=self.ylabel)
-        p.set_axis_color('bottom', self.xcolor[0])
-        p.set_axis_color('top', self.xcolor[1])
-        p.set_axis_color('left', self.ycolor[0])
-        p.set_axis_color('right', self.ycolor[1])
         self.main_widget = p
         win.add_plot(i, j, p)
         for item in self.plots:
             p.add_item(item)
         p.enable_used_axes()
-
         active_item = p.get_active_item(force=True)
         p.set_scales(self.xscale, self.yscale)
         active_item.unselect()
-
         if self.legend_position is not None:
             p.add_item(make.legend(self.legend_position))
-
-        if self.grid:
-            p.gridparam.maj_xenabled = True
-            p.gridparam.maj_yenabled = True
-            p.gridparam.update_grid(p)
         return p
             
 
@@ -560,6 +575,11 @@ def errorbar(*args, **kwargs):
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
+
+def imread(fname, to_grayscale=False):
+    """Read data from *fname*"""
+    from guiqwt.io import imagefile_to_array
+    return imagefile_to_array(fname, to_grayscale=to_grayscale)
 
 def imshow(data):
     """

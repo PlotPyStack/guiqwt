@@ -26,7 +26,7 @@ FNAME = "image_masked.pickle"
 
 if __name__ == "__main__":
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     win = ImageDialog(toolbar=True, wintitle="Masked image item test")
     win.add_tool(ImageMaskTool)
     if os.access(FNAME, os.R_OK):

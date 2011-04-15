@@ -152,7 +152,7 @@ def test():
 if __name__ == "__main__":
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --    
     items = test()
     build_image(items)

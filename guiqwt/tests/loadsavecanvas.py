@@ -47,7 +47,7 @@ def build_items():
 
 def test():
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     win = ImageDialog(edit=False, toolbar=True, wintitle="Load/save test",
                       options=dict(title="Title", xlabel="xlabel",
                                    ylabel="ylabel"))

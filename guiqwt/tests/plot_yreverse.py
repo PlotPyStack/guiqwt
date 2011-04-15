@@ -16,7 +16,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     import numpy as np
     x = np.linspace(-10, 10, 200)

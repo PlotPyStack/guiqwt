@@ -130,7 +130,7 @@ Reference
    :inherited-members:
 
 .. autofunction:: assemble_imageitems
-.. autofunction:: get_plot_source_rect
+.. autofunction:: get_plot_qrect
 .. autofunction:: get_image_from_plot
 """
 
@@ -150,7 +150,7 @@ from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
                                IColormapImageItemType, IVoiImageItemType,
                                ISerializableType, ICSImageItemType,
-                               IExportROIImageItemType)
+                               IExportROIImageItemType, IStatsImageItemType)
 from guiqwt.curve import CurvePlot, CurveItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
@@ -159,6 +159,7 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
 from guiqwt.shapes import RectangleShape
 from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
+from guiqwt.geometry import translate, scale, rotate, vector
 
 stderr = sys.stderr
 try:
@@ -209,7 +210,7 @@ def pixelround(x, corner=None):
 #===============================================================================
 class BaseImageItem(QwtPlotItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
-                      IVoiImageItemType, ICSImageItemType,
+                      IVoiImageItemType, ICSImageItemType, IStatsImageItemType,
                       IExportROIImageItemType)
     _can_select = True
     _can_resize = False
@@ -555,7 +556,8 @@ class BaseImageItem(QwtPlotItem):
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
-                ITrackableItemType, ICSImageItemType, IExportROIImageItemType)
+                ITrackableItemType, ICSImageItemType, IExportROIImageItemType,
+                IStatsImageItemType, IStatsImageItemType)
 
     def set_readonly(self, state):
         """Set object readonly state"""
@@ -588,20 +590,20 @@ class BaseImageItem(QwtPlotItem):
         return self.data is None or self.data.size == 0
         
     def set_selectable(self, state):
-        """Set image selectable state"""
+        """Set item selectable state"""
         self._can_select = state
         
     def set_resizable(self, state):
-        """Set image resizable state
+        """Set item resizable state
         (or any action triggered when moving an handle, e.g. rotation)"""
         self._can_resize = state
         
     def set_movable(self, state):
-        """Set image movable state"""
+        """Set item movable state"""
         self._can_move = state
         
     def set_rotatable(self, state):
-        """Set image rotatable state"""
+        """Set item rotatable state"""
         self._can_rotate = state
 
     def can_select(self):
@@ -635,10 +637,10 @@ class BaseImageItem(QwtPlotItem):
         in canvas coordinates"""
         pass        
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         pass
 
@@ -686,6 +688,27 @@ class BaseImageItem(QwtPlotItem):
             return (ydata*a+b).clip(0, LUT_MAX)
         else:
             return ydata
+            
+    def get_stats(self, x0, y0, x1, y1):
+        """Return formatted string with stats on image rectangular area
+        (output should be compatible with AnnotatedShape.get_infos)"""
+        ix0, iy0, ix1, iy1 = self.get_closest_index_rect(x0, y0, x1, y1)
+        data = self.data[iy0:iy1, ix0:ix1]
+        xfmt = self.imageparam.xformat
+        yfmt = self.imageparam.yformat
+        zfmt = self.imageparam.zformat
+        return "<br>".join([
+                            u"%sx%s %s" % (self.data.shape[1],
+                                           self.data.shape[0],
+                                           str(self.data.dtype)),
+                            u"",
+                            u"%s ≤ x ≤ %s" % (xfmt % x0, xfmt % x1),
+                            u"%s ≤ y ≤ %s" % (yfmt % y0, yfmt % y1),
+                            u"%s ≤ z ≤ %s" % (zfmt % data.min(),
+                                              zfmt % data.max()),
+                            u"‹z› = " + zfmt % data.mean(),
+                            u"σ(z) = " + zfmt % data.std(),
+                            ])
 
     def get_xsection(self, y0, apply_lut=False):
         """Return cross section along x-axis at y=y0"""
@@ -790,7 +813,7 @@ class RawImageItem(BaseImageItem):
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType, ICSImageItemType, ISerializableType,
-                IExportROIImageItemType)
+                IExportROIImageItemType, IStatsImageItemType)
 
     def get_item_parameters(self, itemparams):
         super(RawImageItem, self).get_item_parameters(itemparams)
@@ -1006,20 +1029,6 @@ assert_interfaces_valid(QuadGridItem)
 #===============================================================================
 # Image with a custom linear transform
 #===============================================================================
-def translate(tx, ty):
-    return np.matrix([[1, 0, tx], [0, 1, ty], [0, 0, 1]], float)
-
-def scale(sx, sy):
-    return np.matrix([[sx, 0, 0], [0, sy, 0], [0, 0, 1]], float)
-
-def rotate(alpha):
-    cs = np.cos(alpha)
-    sn = np.sin(alpha)
-    return np.matrix([[cs, sn, 0],[-sn, cs, 0], [0, 0, 1]], float)
-
-def point(x,y):
-    return np.matrix([x,y,1]).T
-
 class TrImageItem(RawImageItem):
     """
     Construct a transformable image item
@@ -1049,7 +1058,7 @@ class TrImageItem(RawImageItem):
         if self.data is None:
             return
         ni, nj = self.data.shape
-        rot = rotate(angle)
+        rot = rotate(-angle)
         tr1 = translate(nj/2.+0.5, ni/2.+0.5)
         xflip = -1. if hflip else 1.
         yflip = -1. if vflip else 1.
@@ -1065,7 +1074,7 @@ class TrImageItem(RawImageItem):
     def debug_transform(self, pt):
         x0, y0, angle, dx, dy, _hflip, _vflip = self.get_transform()
         ni, nj = self.data.shape
-        rot = rotate(angle)
+        rot = rotate(-angle)
         tr1 = translate(ni/2.+0.5, nj/2.+0.5)
         sc = scale(dx, dy)
         tr2 = translate(-x0, -y0)
@@ -1116,34 +1125,34 @@ class TrImageItem(RawImageItem):
 
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
-        v = self.tr*point(xplot, yplot)
+        v = self.tr*vector(xplot, yplot)
         xpixel, ypixel, _ = v[:, 0]
         return xpixel, ypixel
         
     def get_plot_coordinates(self, xpixel, ypixel):
         """Return plot coordinates (from image pixel coordinates)"""
-        v0 = self.itr*point(xpixel, ypixel)
+        v0 = self.itr*vector(xpixel, ypixel)
         xplot, yplot, _ = v0[:, 0].A.ravel()
         return xplot, yplot
         
     def get_x_values(self, i0, i1):
-        v0 = self.itr*point(i0, 0)
+        v0 = self.itr*vector(i0, 0)
         x0, _y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*point(i1, 0)
+        v1 = self.itr*vector(i1, 0)
         x1, _y1, _ = v1[:, 0].A.ravel()
         return np.linspace(x0, x1, i1-i0)
     
     def get_y_values(self, j0, j1):
-        v0 = self.itr*point(0, j0)
+        v0 = self.itr*vector(0, j0)
         _x0, y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*point(0, j1)
+        v1 = self.itr*vector(0, j1)
         _x1, y1, _ = v1[:, 0].A.ravel()
         return np.linspace(y0, y1, j1-j0)
 
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
         xi, yi = self.get_closest_indexes(x, y)
-        v = self.itr*point(xi, yi)
+        v = self.itr*vector(xi, yi)
         x, y, _ = v[:, 0].A.ravel()
         return x, y
     
@@ -1206,7 +1215,7 @@ class TrImageItem(RawImageItem):
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
         nx, ny = self.canvas_to_axes(pos)
         handles = self.itr*self.points
-        p0 = point(nx, ny)
+        p0 = vector(nx, ny)
         #self.debug_transform(p0)
         center = handles.sum(axis=1)/4
         vec0 = handles[:, handle] - center
@@ -1233,13 +1242,13 @@ class TrImageItem(RawImageItem):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        self.set_transform(x0+dx, y0+dy, angle, dx, dy, hflip, vflip)
+        self.set_transform(x0+delta_x, y0+delta_y, angle, dx, dy, hflip, vflip)
 
 assert_interfaces_valid(TrImageItem)
 
@@ -1827,12 +1836,12 @@ class ImageFilterItem(BaseImageItem):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
 
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
-        self.border_rect.move_with_selection(dx, dy)
+        self.border_rect.move_with_selection(delta_x, delta_y)
 
     def set_color_map(self, name_or_table):
         if self.use_source_cmap:

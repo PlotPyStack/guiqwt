@@ -19,7 +19,7 @@ Licensed under the terms of the CECILL License
 # python setup.py build_ext -c mingw32 --inplace
 
 from numpy.distutils.core import setup, Extension
-import os, os.path as osp
+import sys, os, os.path as osp
 join = osp.join
 
 #TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
@@ -54,12 +54,14 @@ CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
                'Topic :: Scientific/Engineering']
 
 PACKAGES = [LIBNAME+p for p in ['', '.tests']]
-PACKAGE_DATA = {LIBNAME: get_package_data(LIBNAME, ('.png', '.mo', '.dcm'))}
+PACKAGE_DATA = {LIBNAME: get_package_data(LIBNAME,
+                                          ('.png', '.svg', '.mo', '.dcm'))}
 
 if os.name == 'nt':
-    SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat']
+    SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
 else:
-    SCRIPTS = ['guiqwt-tests']
+    SCRIPTS = ['guiqwt-tests', 'sift']
+SCRIPTS = [join('scripts', fname) for fname in SCRIPTS]
 
 
 try:
@@ -81,7 +83,6 @@ cmdclass = {'build' : build}
 
 if sphinx:
     from sphinx.setup_command import BuildDoc
-    import sys
     class build_doc(BuildDoc):
         def run(self):
             # make sure the python path is pointing to the newly built
@@ -98,6 +99,14 @@ if sphinx:
     cmdclass['build_doc'] = build_doc
 
 
+CFLAGS = ["-Wall", "-Werror"]
+for arg, compile_arg in (("--sse2", "-msse2"),
+                         ("--sse3", "-msse3"),):
+    if arg in sys.argv:
+        sys.argv.pop(sys.argv.index(arg))
+        CFLAGS.insert(0, compile_arg)
+
+
 setup(name=LIBNAME, version=version,
       download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
                                                   LIBNAME, LIBNAME, version),
@@ -105,12 +114,11 @@ setup(name=LIBNAME, version=version,
       packages=PACKAGES, package_data=PACKAGE_DATA,
       requires=["PyQt4 (>4.3)", "NumPy", "guidata (>=1.3.0)"],
       scripts=SCRIPTS,
-      ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),
-                                               join("src", 'radavg.f90')]),
+      ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),]),
                    Extension(LIBNAME+'._mandel', [join("src", 'mandel.f90')]),
                    Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp"),
                                                   join("src", "pcolor.cpp")],
-                             extra_compile_args=["-msse2 -Wall -Werror",],
+                             extra_compile_args=CFLAGS,
                              depends=[join("src", "traits.hpp"),
                                       join("src", "points.hpp"),
                                       join("src", "arrays.hpp"),

@@ -101,6 +101,6 @@ class ExampleDialog(ImageDialog):
 
 if __name__ == "__main__":
     from guidata import qapplication
-    qapplication()
+    _app = qapplication()
     dlg = ExampleDialog()
     dlg.exec_() # No need to call app.exec_: a dialog box has its own event loop

@@ -70,6 +70,13 @@ class IExportROIImageItemType(IItemType):
     def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
         pass
 
+class IStatsImageItemType(IItemType):
+    """An image supporting stats computations"""
+    def get_stats(self, x0, y0, x1, y1):
+        """Return formatted string with stats on image rectangular area
+        (output should be compatible with AnnotatedShape.get_infos)"""
+        return dict()
+
 class ICSImageItemType(IItemType):
     """An image supporting X/Y cross sections"""
     def get_xsection(self, y0, apply_lut=False):
@@ -115,6 +122,23 @@ class IBasePlotItem(object):
     _can_move = True
     _can_resize = True
     _can_rotate = True
+
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
     
     def can_select(self):
         return self._can_select
@@ -207,10 +231,10 @@ class IBasePlotItem(object):
         """
         pass
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         pass
 

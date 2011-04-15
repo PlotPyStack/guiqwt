@@ -994,6 +994,12 @@ class BaseImageParam(DataSet):
                                 (3, _("3x3 antialiasing filter")),
                                 (5, _("5x5 antialiasing filter"))],
                                default=0, help=_("Image interpolation type"))
+
+    _formats = BeginGroup(_("Statistics string formatting"))
+    xformat = StringItem(_("X-Axis"), default=r'%.1f')
+    yformat = StringItem(_("Y-Axis"), default=r'%.1f')
+    zformat = StringItem(_("Z-Axis"), default=r'%.1f')
+    _end_formats = EndGroup(_("Statistics string formatting"))
                                
     def update_param(self, image):
         self.label = unicode(image.title().text())
@@ -1199,21 +1205,29 @@ class ImageFilterParam(BaseImageParam):
 
 
 class TrImageParam(RawImageParam):
-    _crop = BeginGroup(_("Crop"))
+    _crop = BeginGroup(_("Crop")
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
     crop_left = IntItem(_("Left"), default=0)
     crop_right = IntItem(_("Right"), default=0)
     crop_top = IntItem(_("Top"), default=0)
     crop_bottom = IntItem(_("Bottom"), default=0)
-    _end_crop = EndGroup(_("Cropping"))
-    _ps = BeginGroup(_("Pixel size"))
+    _end_crop = EndGroup(_("Cropping")
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    _ps = BeginGroup(_("Pixel size")
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
     dx = FloatItem(_("Width (dx)"), default=1.0)
     dy = FloatItem(_("Height (dy)"), default=1.0)
-    _end_ps = EndGroup(_("Pixel size"))
+    _end_ps = EndGroup(_("Pixel size")
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
     _pos = BeginGroup(_("Translate, rotate and flip"))
-    pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0)
-    hflip = BoolItem(_("Flip horizontally"), default=False).set_prop("display", col=1)
-    pos_y0 = FloatItem(_("y<sub>CENTER</sub>"), default=0.0)
-    vflip = BoolItem(_("Flip vertically"), default=False).set_prop("display", col=1)
+    pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    hflip = BoolItem(_("Flip horizontally"), default=False
+                     ).set_prop("display", col=1)
+    pos_y0 = FloatItem(_("y<sub>CENTER</sub>"), default=0.0
+                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    vflip = BoolItem(_("Flip vertically"), default=False
+                     ).set_prop("display", col=1)
     pos_angle = FloatItem(_("θ (°)"), default=0.0).set_prop("display", col=0)
     _end_pos = EndGroup(_("Translate, rotate and flip"))
 
@@ -1252,7 +1266,10 @@ class TrImageParam(RawImageParam):
         return (self.crop_left, self.crop_top,
                 self.crop_right, self.crop_bottom)
     
-ItemParameters.register_multiselection(TrImageParam, ImageParam_MS)
+class TrImageParam_MS(TrImageParam):
+    _multiselection = True
+    
+ItemParameters.register_multiselection(TrImageParam, TrImageParam_MS)
 
 
 # ===================================================
@@ -1401,7 +1418,8 @@ class AxesShapeParam(DataSet):
 
 class AnnotationParam(DataSet):
     show_label = BoolItem(_("Show annotation"), default=True)
-    show_position = BoolItem(_("Show position and size"), default=True)
+    show_computations = BoolItem(_("Show informations on area "
+                                   "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
     format = StringItem(_("String formatting"), default="%d pixels")
@@ -1410,13 +1428,13 @@ class AnnotationParam(DataSet):
     
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
-        self.show_position = obj.position_and_size_visible
+        self.show_computations = obj.area_computations_visible
         self.title = obj.title().text()
         
     def update_annotation(self, obj):
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
-        obj.position_and_size_visible = self.show_position
+        obj.area_computations_visible = self.show_computations
         obj.update_label()
 
 

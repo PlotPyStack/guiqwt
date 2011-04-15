@@ -21,7 +21,7 @@ class VerySimpleDialog(ImageDialog):
 if __name__ == "__main__":
     import numpy as np
     from guidata import qapplication
-    qapplication()
+    _app = qapplication()
     dlg = VerySimpleDialog()
     dlg.set_data(np.random.rand(100, 100))
     dlg.exec_() # No need to call app.exec_: a dialog box has its own event loop

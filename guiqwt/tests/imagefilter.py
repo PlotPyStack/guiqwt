@@ -33,7 +33,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     from guiqwt.tests.imagexy import compute_image
     x, y, data = compute_image()

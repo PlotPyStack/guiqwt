@@ -130,6 +130,23 @@ class AbstractLabelItem(QwtPlotItem):
             y0 = yMap.transform(self.G[1])
             return x0, y0
 
+    def set_selectable(self, state):
+        """Set item selectable state"""
+        self._can_select = state
+        
+    def set_resizable(self, state):
+        """Set item resizable state
+        (or any action triggered when moving an handle, e.g. rotation)"""
+        self._can_resize = state
+        
+    def set_movable(self, state):
+        """Set item movable state"""
+        self._can_move = state
+        
+    def set_rotatable(self, state):
+        """Set item rotatable state"""
+        self._can_rotate = state
+
     def can_select(self):
         return True
     def can_resize(self):
@@ -238,15 +255,15 @@ class AbstractLabelItem(QwtPlotItem):
             self.labelparam.xg, self.labelparam.yg = lx1, ly1
             plot.emit(SIG_ITEM_MOVED, self, lx0, ly0, lx1, ly1)
         
-    def move_with_selection(self, dx, dy):
+    def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
-        dx, dy: translation in plot coordinates
+        delta_x, delta_y: translation in plot coordinates
         """
         if self.G in ANCHORS or not self.labelparam.move_anchor:
             return
         lx0, ly0 = self.G
-        lx1, ly1 = lx0+dx, ly0+dy
+        lx1, ly1 = lx0+delta_x, ly0+delta_y
         self.G = lx1, ly1
         self.labelparam.xg, self.labelparam.yg = lx1, ly1
 
@@ -277,9 +294,9 @@ class LabelItem(AbstractLabelItem):
         return unicode(self.text.toPlainText())
         
     def set_text(self, text=None):
-        if text is None:
-            text = self.text_string
-        self.text.setHtml("<div>%s</div>" % text)
+        if text is not None:
+            self.text_string = text
+        self.text.setHtml("<div>%s</div>" % self.text_string)
         
     def set_text_style(self, font, color):
         self.text.setDefaultFont(font)
@@ -443,8 +460,8 @@ class CursorComputation(ObjectInfo):
         self.func = function
 
     def get_text(self):
-        x, y = self.cursor.get_handle_pos()
-        return self.label % self.func(x, y)
+        pos = self.cursor.get_pos()
+        return self.label % self.func(pos)
 
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):

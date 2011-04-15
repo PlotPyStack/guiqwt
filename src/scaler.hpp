@@ -35,16 +35,16 @@ class LinearScale {
 public:
     typedef T source_type;
     typedef D dest_type;
-    LinearScale(double _a, double _b, D _bg, bool apply_bg):s(_a, _b),bg(_bg), has_bg(apply_bg) {}
+    LinearScale(double _a, double _b, D _bg, bool apply_bg):a(_a), b(_b), bg(_bg), has_bg(apply_bg) {}
 
     D eval(T x) const {
-	return s.scale(x);
+	return a*x+b;
     }
     void set_bg(D& dest) const {
 	if (has_bg) dest = bg;
     }
 protected:
-    Scaler<T> s;
+    D a, b;
     D bg;
     bool has_bg;
 };

@@ -34,13 +34,13 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.ReverseYAxisTool`
     * :py:class:`guiqwt.tools.AspectRatioTool`
     * :py:class:`guiqwt.tools.PanelTool`
-    * :py:class:`guiqwt.tools.ContrastTool`
+    * :py:class:`guiqwt.tools.ItemListPanelTool`
+    * :py:class:`guiqwt.tools.ContrastPanelTool`
     * :py:class:`guiqwt.tools.ColormapTool`
-    * :py:class:`guiqwt.tools.XCrossSectionTool`
-    * :py:class:`guiqwt.tools.YCrossSectionTool`
+    * :py:class:`guiqwt.tools.XCSPanelTool`
+    * :py:class:`guiqwt.tools.YCSPanelTool`
     * :py:class:`guiqwt.tools.CrossSectionTool`
     * :py:class:`guiqwt.tools.AverageCrossSectionTool`
-    * :py:class:`guiqwt.tools.ItemListTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
     * :py:class:`guiqwt.tools.OpenFileTool`
     * :py:class:`guiqwt.tools.OpenImageTool`
@@ -50,6 +50,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.LoadItemsTool`
     * :py:class:`guiqwt.tools.AxisScaleTool`
     * :py:class:`guiqwt.tools.HelpTool`
+    * :py:class:`guiqwt.tools.ExportItemDataTool`
     * :py:class:`guiqwt.tools.DeleteItemTool`
 
 A `plot tool` is an object providing various features to a plotting widget 
@@ -164,25 +165,25 @@ Reference
 .. autoclass:: PanelTool
    :members:
    :inherited-members:
-.. autoclass:: ContrastTool
+.. autoclass:: ItemListPanelTool
+   :members:
+   :inherited-members:
+.. autoclass:: ContrastPanelTool
    :members:
    :inherited-members:
 .. autoclass:: ColormapTool
    :members:
    :inherited-members:
-.. autoclass:: XCrossSectionTool
+.. autoclass:: XCSPanelTool
    :members:
    :inherited-members:
-.. autoclass:: YCrossSectionTool
+.. autoclass:: YCSPanelTool
    :members:
    :inherited-members:
 .. autoclass:: CrossSectionTool
    :members:
    :inherited-members:
 .. autoclass:: AverageCrossSectionTool
-   :members:
-   :inherited-members:
-.. autoclass:: ItemListTool
    :members:
    :inherited-members:
 .. autoclass:: SaveAsTool
@@ -210,6 +211,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: HelpTool
+   :members:
+   :inherited-members:
+.. autoclass:: ExportItemDataTool
    :members:
    :inherited-members:
 .. autoclass:: DeleteItemTool
@@ -248,19 +252,22 @@ from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, QtDragHandler, ZoomRectHandler,
                            RectangularSelectionHandler, ClickHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
-                           EllipseShape, SegmentShape, PointShape)
+                           EllipseShape, SegmentShape, PointShape,
+                           SkewRectangleShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
                                 AnnotatedEllipse, AnnotatedSegment,
-                                AnnotatedPoint)
+                                AnnotatedPoint, AnnotatedSkewRectangle)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
-                               IVoiImageItemType, IExportROIImageItemType)
+                               IVoiImageItemType, IExportROIImageItemType,
+                               IStatsImageItemType, ICurveItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED)
-from guiqwt.panels import ID_XCS, ID_YCS, ID_RACS, ID_ITEMLIST, ID_CONTRAST
+                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
+                            SIG_APPLIED_MASK_TOOL)
+from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
 
 
 class DefaultToolbarID:
@@ -787,6 +794,14 @@ class RectangularShapeTool(RectangularActionTool):
 class RectangleTool(RectangularShapeTool):
     TITLE = _("Rectangle")
     ICON = "rectangle.png"
+    
+class SkewRectangleTool(RectangularShapeTool):
+    TITLE = _("Skew rectangle")
+    ICON = "skew_rectangle.png"
+    def create_shape(self):
+        shape = SkewRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
+        self.set_shape_style(shape)
+        return shape, 0, 2
 
 class PointTool(RectangularShapeTool):
     TITLE = _("Point")
@@ -804,7 +819,7 @@ class SegmentTool(RectangularShapeTool):
     def create_shape(self):
         shape = SegmentShape(0, 0, 1, 1)
         self.set_shape_style(shape)
-        return shape, 0, 2
+        return shape, 0, 1
 
 class CircleTool(RectangularShapeTool):
     TITLE = _("Circle")
@@ -838,15 +853,27 @@ class PlaceAxesTool(RectangularShapeTool):
 
 class AnnotatedRectangleTool(RectangleTool):
     def create_shape(self):
-        return AnnotatedRectangle(0, 0, 1, 1), 0, 2
+        annotation = AnnotatedRectangle(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
+
+class AnnotatedSkewRectangleTool(SkewRectangleTool):
+    def create_shape(self):
+        annotation = AnnotatedSkewRectangle(0, 0, 1, 0, 1, 1, 0, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
 
 class AnnotatedCircleTool(CircleTool):
     def create_shape(self):
-        return AnnotatedCircle(0, 0, 1, 1), 0, 1
+        annotation = AnnotatedCircle(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 1
 
 class AnnotatedEllipseTool(EllipseTool):
     def create_shape(self):
-        return AnnotatedEllipse(0, 0, 1, 1), 0, 1
+        annotation = AnnotatedEllipse(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 1
         
     def handle_final_shape(self, shape):
         shape.shape.switch_to_ellipse()
@@ -854,17 +881,99 @@ class AnnotatedEllipseTool(EllipseTool):
 
 class AnnotatedPointTool(PointTool):
     def create_shape(self):
-        return AnnotatedPoint(0, 0), 0, 0
+        annotation = AnnotatedPoint(0, 0)
+        self.set_shape_style(annotation)
+        return annotation, 0, 0
 
 class AnnotatedSegmentTool(SegmentTool):
     def create_shape(self):
-        return AnnotatedSegment(0, 0, 1, 1), 0, 2
+        annotation = AnnotatedSegment(0, 0, 1, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 1
 
+
+class ImageStatsRectangle(AnnotatedRectangle):
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
+        super(ImageStatsRectangle, self).__init__(x1, y1, x2, y2,
+                                                  annotationparam)
+        self.image_item = None
+        
+    def set_image_item(self, image_item):
+        self.image_item = image_item
+        
+    #----AnnotatedShape API-----------------------------------------------------
+    def get_infos(self):
+        """Return formatted string with informations on current shape"""
+        if self.image_item is not None:
+            return self.image_item.get_stats(*self.get_rect())
+
+def update_image_tool_status(tool, plot):
+    from guiqwt.image import ImagePlot
+    enabled = isinstance(plot, ImagePlot)
+    tool.action.setEnabled(enabled)
+    return enabled
+
+class ImageStatsTool(RectangularShapeTool):
+    TITLE = _("Image statistics")
+    ICON = "imagestats.png"
+    SHAPE_STYLE_KEY = "shape/image_stats"
+    def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
+                 shape_style=None, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        super(ImageStatsTool, self).__init__(manager, setup_shape_cb,
+                                handle_final_shape_cb, shape_style, toolbar_id,
+                                title, icon, tip)
+        self._last_item = None
+        
+    def create_shape(self):
+        return ImageStatsRectangle(0, 0, 1, 1), 0, 2
+        
+    def setup_shape(self, shape):
+        self.setup_shape_appearance(shape)
+        self.register_shape(shape, final=False)
+        
+    def setup_shape_appearance(self, shape):        
+        self.set_shape_style(shape)
+        param = shape.annotationparam
+        if self._last_item is not None:
+            title = self._last_item.imageparam.label
+            if title:
+                param.title = title
+        param.update_annotation(shape)
+        
+    def register_shape(self, shape, final=False):
+        plot = shape.plot()
+        if plot is not None:
+            plot.unselect_all()
+            plot.set_active_item(shape)
+            shape.set_image_item(self._last_item)
+
+#    def activate(self):
+#        """Activate tool"""
+#        super(ImageStatsTool, self).activate()
+#    
+    def handle_final_shape(self, shape):
+        super(ImageStatsTool, self).handle_final_shape(shape)
+        self.setup_shape_appearance(shape)
+        self.register_shape(shape, final=True)
+        
+    def get_associated_item(self, plot):
+        items = plot.get_selected_items(IStatsImageItemType)
+        if len(items) == 1:
+            self._last_item = items[0]
+        return self._last_item
+        
+    def update_status(self, plot):
+        if update_image_tool_status(self, plot):
+            item = self.get_associated_item(plot)
+            self.action.setEnabled(item is not None)
+    
         
 class CrossSectionTool(RectangularShapeTool):
     TITLE = _("Cross section")
     ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
+    SHAPE_TITLE = TITLE
     PANEL_IDS = (ID_XCS, ID_YCS)
     def create_shape(self):
         return AnnotatedPoint(0, 0), 0, 0
@@ -876,7 +985,8 @@ class CrossSectionTool(RectangularShapeTool):
     def setup_shape_appearance(self, shape):        
         self.set_shape_style(shape)
         param = shape.annotationparam
-        param.show_position = False
+        param.title = self.SHAPE_TITLE
+#        param.show_computations = False
         param.update_annotation(shape)
         
     def register_shape(self, shape, final=False):
@@ -886,7 +996,8 @@ class CrossSectionTool(RectangularShapeTool):
             plot.set_active_item(shape)
         for panel_id in self.PANEL_IDS:
             panel = self.manager.get_panel(panel_id)
-            panel.register_shape(shape, final=final)
+            if panel is not None:
+                panel.register_shape(shape, final=final)
 
     def activate(self):
         """Activate tool"""
@@ -907,16 +1018,9 @@ class AverageCrossSectionTool(CrossSectionTool):
     TITLE = _("Average cross section")
     ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
+    SHAPE_TITLE = TITLE
     def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
-
-class RACrossSectionTool(CrossSectionTool):
-    TITLE = _("Radially-averaged cross section")
-    ICON = "csection_ra.png"
-    SHAPE_STYLE_KEY = "shape/average_cross_section"
-    PANEL_IDS = (ID_RACS, )
-    def create_shape(self):
-        return AnnotatedCircle(0, 0, 1, 1), 0, 1
 
 
 class RectZoomTool(InteractiveTool):
@@ -1128,12 +1232,6 @@ class DisplayCoordsTool(CommandTool):
         self.curve_act.setChecked(plot.curve_pointer)
 
 
-def update_image_tool_status(tool, plot):
-    from guiqwt.image import ImagePlot
-    enabled = isinstance(plot, ImagePlot)
-    tool.action.setEnabled(enabled)
-    return enabled
-
 class ReverseYAxisTool(ToggleTool):
     def __init__(self, manager):
         super(ReverseYAxisTool, self).__init__(manager, _("Reverse Y axis"))
@@ -1238,12 +1336,12 @@ class PanelTool(ToggleTool):
         panel = self.manager.get_panel(self.panel_id)
         self.action.setChecked(panel.isVisible())
 
-class ContrastTool(PanelTool):
+class ContrastPanelTool(PanelTool):
     panel_name = _("Contrast adjustment")
     panel_id = ID_CONTRAST
     
     def update_status(self, plot):
-        super(ContrastTool, self).update_status(plot)
+        super(ContrastPanelTool, self).update_status(plot)
         update_image_tool_status(self, plot)
         item = plot.get_last_active_item(IVoiImageItemType)
         panel = self.manager.get_panel(self.panel_id)
@@ -1251,15 +1349,15 @@ class ContrastTool(PanelTool):
             if isinstance(action, QAction):
                 action.setEnabled(item is not None)
 
-class XCrossSectionTool(PanelTool):
+class XCSPanelTool(PanelTool):
     panel_name = _("X-axis cross section")
     panel_id = ID_XCS
 
-class YCrossSectionTool(PanelTool):
+class YCSPanelTool(PanelTool):
     panel_name = _("Y-axis cross section")
     panel_id = ID_YCS
 
-class ItemListTool(PanelTool):
+class ItemListPanelTool(PanelTool):
     panel_name = _("Item list")
     panel_id = ID_ITEMLIST
         
@@ -1274,9 +1372,10 @@ def get_save_filename(plot, title, defaultname, types):
     return unicode(fname)
 
 class SaveAsTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(SaveAsTool,self).__init__(manager, _("Save as..."),
-                                        get_std_icon("DialogSaveButton", 16))
+                                        get_std_icon("DialogSaveButton", 16),
+                                        toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         #FIXME: Qt's PDF printer is unable to print plots including images
@@ -1432,9 +1531,10 @@ class PrintFilter(QwtPlotPrintFilter):
         return result
 
 class PrintTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(PrintTool,self).__init__(manager, _("Print..."),
-                                       get_icon("print.png"))
+                                       get_icon("print.png"),
+                                       toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         printer = QPrinter()
@@ -1453,9 +1553,10 @@ class PrintTool(CommandTool):
 
 
 class OpenFileTool(CommandTool):
-    def __init__(self, manager, formats='*.*'):
+    def __init__(self, manager, formats='*.*', toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Open..."),
-                             get_std_icon("DialogOpenButton", 16))
+                             get_std_icon("DialogOpenButton", 16),
+                             toolbar_id=toolbar_id)
         self.formats = formats
         self.directory = ""
         
@@ -1478,9 +1579,10 @@ class OpenFileTool(CommandTool):
 
 
 class SaveItemsTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Save items"),
-                             get_std_icon("DialogSaveButton", 16))
+                             get_std_icon("DialogSaveButton", 16),
+                             toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         fname = get_save_filename(plot, _("Save items as"), _('untitled'),
@@ -1491,9 +1593,10 @@ class SaveItemsTool(CommandTool):
         plot.save_items(itemfile, selected=True)
 
 class LoadItemsTool(OpenFileTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         CommandTool.__init__(self, manager, _("Load items"),
-                             get_std_icon("DialogOpenButton", 16))
+                             get_std_icon("DialogOpenButton", 16),
+                             toolbar_id=toolbar_id)
         self.formats = '*.gui'
 
     def activate_command(self, plot, checked):
@@ -1507,11 +1610,10 @@ class LoadItemsTool(OpenFileTool):
 
 
 class OpenImageTool(OpenFileTool):
-    def __init__(self, manager):
-        formats = 'Images (*.png *.jpg *.gif *.tif *.tiff)'
-        if is_module_available('dicom'):
-            formats += '\n%s (*.dcm)' % _("DICOM images")
-        OpenFileTool.__init__(self, manager, formats=formats)
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+        from guiqwt.io import IMAGE_LOAD_FILTERS
+        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS,
+                              toolbar_id=toolbar_id)
     
 
 class AxisScaleTool(CommandTool):
@@ -1586,9 +1688,10 @@ class AxisScaleTool(CommandTool):
 
 
 class HelpTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(HelpTool,self).__init__(manager, _("Help"),
-                                      get_std_icon("DialogHelpButton", 16))
+                                      get_std_icon("DialogHelpButton", 16),
+                                      toolbar_id=toolbar_id)
                                       
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1603,9 +1706,64 @@ class HelpTool(CommandTool):
   - right-click + mouse move: zoom"""))
 
 
+def export_curve_data(item):
+    """Export curve item data to text file"""
+    item_data = item.get_data()
+    if len(item_data) > 2:
+        x, y, dx, dy = item_data
+        array_list = [x, y]
+        if dx is not None:
+            array_list.append(dx)
+        if dy is not None:
+            array_list.append(dy)
+        data = np.array(array_list).T
+    else:
+        x, y = item_data
+        data = np.array([x, y]).T
+    plot = item.plot()
+    title = _("Export")
+    if item.curveparam.label:
+        title += (' (%s)' % item.curveparam.label)
+    fname = QFileDialog.getSaveFileName(plot, title, "",
+                                        _("Text file")+" (*.txt)")
+    if fname:
+        try:
+            np.savetxt(unicode(fname), data, delimiter=',')
+        except RuntimeError, error:
+            QMessageBox.critical(plot, _("Export"),
+                                 _("Unable to export item data.")+\
+                                 "<br><br>"+_("Error message:")+"<br>"+\
+                                 str(error))
+
+#TODO: ExportItemDataTool: add support for images
+class ExportItemDataTool(CommandTool):
+    def __init__(self, manager, toolbar_id=None):
+        super(ExportItemDataTool,self).__init__(manager, _("Export data..."),
+                                          "export.png", toolbar_id=toolbar_id)
+        
+    def get_supported_items(self, plot):
+        all_items = [item for item in plot.get_items(item_type=ICurveItemType)
+                     if not item.is_empty()]
+        if len(all_items) == 1:
+            return all_items
+        else:
+            return [item for item in plot.get_selected_items(ICurveItemType)
+                    if not item.is_empty()]
+
+    def update_status(self, plot):
+        self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
+            
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        for item in self.get_supported_items(plot):
+            if ICurveItemType in item.types():
+                export_curve_data(item)
+
+
 class DeleteItemTool(CommandTool):
-    def __init__(self, manager):
-        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png")
+    def __init__(self, manager, toolbar_id=None):
+        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png",
+                                            toolbar_id=toolbar_id)
         
     def get_removable_items(self, plot):
         return [item for item in plot.get_selected_items()
@@ -1631,9 +1789,10 @@ class DeleteItemTool(CommandTool):
 
 
 class DuplicateCurveTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=None):
         super(DuplicateCurveTool,self).__init__(manager, _("Duplicate"),
-                                                "copy.png")
+                                                "copy.png",
+                                                toolbar_id=toolbar_id)
     def update_status(self, plot):
         self.set_status_active_item()
             
@@ -1643,8 +1802,10 @@ class DuplicateCurveTool(CommandTool):
 
 
 class DeleteCurveTool(CommandTool):
-    def __init__(self, manager):
-        super(DeleteCurveTool,self).__init__(manager, _("Remove"), "delete.png")
+    def __init__(self, manager, toolbar_id=None):
+        super(DeleteCurveTool,self).__init__(manager, _("Remove"),
+                                             "delete.png",
+                                             toolbar_id=toolbar_id)
 
     def update_status(self, plot):
         self.set_status_active_item()
@@ -1655,8 +1816,9 @@ class DeleteCurveTool(CommandTool):
         
         
 class FilterTool(CommandTool):
-    def __init__(self, manager, filter):
-        super(FilterTool, self).__init__(manager, unicode(filter.name))
+    def __init__(self, manager, filter, toolbar_id=None):
+        super(FilterTool, self).__init__(manager, unicode(filter.name),
+                                         toolbar_id=toolbar_id)
         self.filter = filter
 
     def update_status(self, plot):
@@ -1668,10 +1830,11 @@ class FilterTool(CommandTool):
 
 
 class ColormapTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(ColormapTool, self).__init__(manager, _("Colormap"),
                                            tip=_("Select colormap for active "
-                                                 "image"))
+                                                 "image"),
+                                           toolbar_id=toolbar_id)
         self.action.setEnabled(False)
         self.action.setIconText("")
         self.default_icon = build_icon_from_cmap(get_cmap("jet"),
@@ -1729,11 +1892,13 @@ class ColormapTool(CommandTool):
 
 
 class ImageMaskTool(CommandTool):
-    def __init__(self, manager):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
         self._mask_shapes = {}
         self._mask_already_restored = {}
         super(ImageMaskTool, self).__init__(manager, _("Mask"),
-                                            icon="mask_tool.png")
+                                            icon="mask_tool.png",
+                                            tip=_("Manage image masking areas"),
+                                            toolbar_id=toolbar_id)
         self.masked_image = None # associated masked image item
 
     def create_action_menu(self, manager):
@@ -1793,7 +1958,8 @@ class ImageMaskTool(CommandTool):
                      self.item_selection_changed)
 
     def show_mask(self, state):
-        self.masked_image.set_mask_visible(state)
+        if self.masked_image is not None:
+            self.masked_image.set_mask_visible(state)
 
     def apply_mask(self):
         mask = self.masked_image.get_mask()
@@ -1810,6 +1976,7 @@ class ImageMaskTool(CommandTool):
                                                      inside=inside)
         self.masked_image.set_mask(mask)
         plot.replot()
+        self.emit(SIG_APPLIED_MASK_TOOL)
         
     def remove_all_shapes(self):
         message = _("Do you really want to remove all masking shapes?")
@@ -1817,10 +1984,14 @@ class ImageMaskTool(CommandTool):
         answer = QMessageBox.warning(plot, _("Remove all masking shapes"),
                                      message, QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
-            plot.del_items([shape for shape, _inside
-                            in self._mask_shapes[plot]]) # remove shapes
-            self._mask_shapes[plot] = []
-            plot.replot()
+            self.remove_shapes()
+    
+    def remove_shapes(self):
+        plot = self.get_active_plot()
+        plot.del_items([shape for shape, _inside
+                        in self._mask_shapes[plot]]) # remove shapes
+        self._mask_shapes[plot] = []
+        plot.replot()
 
     def show_shapes(self, state):
         plot = self.get_active_plot()
@@ -1846,10 +2017,8 @@ class ImageMaskTool(CommandTool):
                      if isinstance(item, MaskedImageItem)]
             if items:
                 return items[-1]
-
+        
     def create_shapes_from_masked_areas(self):
-        if self.masked_image is None or self._mask_already_restored:
-            return
         plot = self.get_active_plot()
         self._mask_shapes[plot] = []
         masked_areas = self.masked_image.get_masked_areas()
@@ -1865,11 +2034,12 @@ class ImageMaskTool(CommandTool):
             plot.blockSignals(True)
             plot.add_item(shape)
             plot.blockSignals(False)
-        self._mask_already_restored = True
                 
     def set_masked_image(self, plot):
         self.masked_image = item = self.find_masked_image(plot)
-        self.create_shapes_from_masked_areas()
+        if self.masked_image is not None and not self._mask_already_restored:
+            self.create_shapes_from_masked_areas()
+            self._mask_already_restored = True
         enable = False if item is None else item.is_mask_visible()
         self.showmask_action.setChecked(enable)
 

@@ -24,7 +24,11 @@ Reference
 .. autofunction:: array_to_dicomfile
 """
 
-import sys, os.path as osp, numpy as np, os, time
+import sys, os.path as osp, numpy as np, os, time, re
+
+# Local imports
+from guiqwt.config import _
+
 
 if sys.byteorder == 'little':
     _ENDIAN = '<'
@@ -37,6 +41,7 @@ DTYPES = {
           "I": ('%si4' % _ENDIAN, None),
           "F": ('%sf4' % _ENDIAN, None),
           "I;16": ('%su2' % _ENDIAN, None),
+          "I;16B": ('%su2' % _ENDIAN, None),
           "I;16S": ('%si2' % _ENDIAN, None),
           "P": ('|u1', None),
           "RGB": ('|u1', 3),
@@ -112,6 +117,23 @@ def set_dynamic_range_from_mode(data, mode):
     return set_dynamic_range_from_dtype(data, dtypes[mode])
 
 
+IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
+                     '%s (*.npy)\n%s (*.txt *.csv)'\
+                     % (_(u"Images"), _(u"NumPy arrays"), _(u"Text files"))
+IMAGE_SAVE_FILTERS = IMAGE_LOAD_FILTERS
+try:
+    import dicom
+    IMAGE_LOAD_FILTERS += ('\n%s (*.dcm)' % _(u"DICOM images"))
+except ImportError:
+    pass
+
+def _add_all_supported_files(filters):
+    extlist = re.findall(r'\*.[a-zA-Z0-9]*', filters)
+    allfiles = '%s (%s)\n' % (_("All supported files"), ' '.join(extlist))
+    return allfiles+filters    
+
+IMAGE_LOAD_FILTERS = _add_all_supported_files(IMAGE_LOAD_FILTERS)
+
 def imagefile_to_array(filename, to_grayscale=False):
     """
     Return a NumPy array from an image file *filename*
@@ -140,8 +162,18 @@ def imagefile_to_array(filename, to_grayscale=False):
         arr = np.array(img.getdata(), dtype=np.dtype(dtype)).reshape(shape)
         if img.mode in ("RGB", "RGBA", "RGBX"):
             arr = np.flipud(arr)
+    elif ext.lower() == ".npy":
+        arr = np.load(filename)
+    elif ext.lower() in (".txt", ".asc", ""):
+        for delimiter in ('\t', ',', ' ', ';'):
+            try:
+                arr = np.loadtxt(filename, delimiter=delimiter)
+                break
+            except ValueError:
+                continue
+        else:
+            raise
     elif ext.lower() in (".dcm",):
-        import dicom
         dcm = dicom.ReadFile(filename)
         # **********************************************************************
         # The following is necessary until pydicom numpy support is improved:
@@ -197,6 +229,11 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
         assert mode is not None
         arr = set_dynamic_range_from_mode(arr, mode)
     _base, ext = osp.splitext(filename)
+    if arr.dtype in (np.int8, np.uint8, np.int16, np.uint16,
+                     np.int32, np.uint32):
+        fmt = '%d'
+    else:
+        fmt = '%.18e'
     if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
@@ -208,6 +245,12 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
                 raise RuntimeError("Cannot determine PIL data type")
         img = PIL.Image.fromarray(arr, mode)
         img.save(filename)
+    elif ext.lower() == ".npy":
+        np.save(filename, arr)
+    elif ext.lower() in (".txt", ".asc", ""):
+        np.savetxt(filename, arr, fmt=fmt)
+    elif ext.lower() == ".csv":
+        np.savetxt(filename, arr, fmt=fmt, delimiter=',')
     else:
         raise RuntimeError("%s: unsupported image file type" % ext)
 
@@ -219,9 +262,6 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     if max_range:
         assert dtype is not None
         arr = set_dynamic_range_from_dtype(arr, dtype)
-#    import dicom
-#    uid = make_uid(dicom.UID.root+"1")
-    rows, columns = arr.shape
     infos = np.iinfo(arr.dtype)
     dcmstruct.BitsAllocated = infos.bits
     dcmstruct.BitsStored = infos.bits
@@ -229,8 +269,11 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct.PixelRepresentation = ('u', 'i').index(infos.kind)
     dcmstruct.Rows = arr.shape[0]
     dcmstruct.Columns = arr.shape[1]
-    dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
-#    print "LENGTH=", len(arr.tostring())
+    dcmstruct.SmallestImagePixelValue = str(arr.min())
+    dcmstruct.LargestImagePixelValue = str(arr.max())
+    if not dcmstruct.PhotometricInterpretation.startswith('MONOCHROME'):
+        dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
     dcmstruct.PixelData = arr.tostring()
+    dcmstruct[0x7fe00010].VR = 'OB'
     dcmstruct.save_as(filename)
     

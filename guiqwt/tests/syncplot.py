@@ -7,7 +7,14 @@
 
 """CurvePlotDialog test"""
 
-SHOW = True # Show test in GUI-based test launcher
+
+#===============================================================================
+#TODO: Make this test work!!
+#===============================================================================
+
+
+
+SHOW = False # Show test in GUI-based test launcher
 
 from PyQt4.QtGui import QFont
 
@@ -57,7 +64,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     from numpy import linspace, sin
     x = linspace(-10, 10, 200)

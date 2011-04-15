@@ -9,6 +9,7 @@ Contents:
     overview
     installation
     examples
+    sift
     disthelpers
     reference
     

@@ -16,16 +16,19 @@ from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           MultiLineTool, FreeFormTool, SegmentTool, CircleTool,
                           AnnotatedRectangleTool, AnnotatedEllipseTool,
                           AnnotatedSegmentTool, AnnotatedCircleTool, LabelTool,
-                          AnnotatedPointTool, VCursorTool, HCursorTool)
+                          AnnotatedPointTool, VCursorTool, HCursorTool,
+                          SkewRectangleTool, AnnotatedSkewRectangleTool)
 from guiqwt.builder import make
 
 def create_window():
     win = ImageDialog(edit=False, toolbar=True,
                       wintitle="All image and plot tools test")
     for toolklass in (LabelTool, HRangeTool, VCursorTool, HCursorTool,
-                      SegmentTool, RectangleTool, CircleTool, EllipseTool,
+                      SegmentTool, RectangleTool, SkewRectangleTool,
+                      CircleTool, EllipseTool,
                       MultiLineTool, FreeFormTool, PlaceAxesTool,
-                      AnnotatedRectangleTool, AnnotatedCircleTool,
+                      AnnotatedRectangleTool, AnnotatedSkewRectangleTool,
+                      AnnotatedCircleTool,
                       AnnotatedEllipseTool, AnnotatedSegmentTool,
                       AnnotatedPointTool):
         win.add_tool(toolklass)
@@ -35,7 +38,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     filename = osp.join(osp.dirname(__file__), "brain.png")
     win = create_window()

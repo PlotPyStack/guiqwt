@@ -58,19 +58,23 @@ ID_XCS = "x_cross_section"
 # Y-cross section panel
 ID_YCS = "y_cross_section"
 
-# Radially-averaged cross section panel
-ID_RACS = "ra_cross_section"
-
 
 #===============================================================================
 # Base Panel Widget class
 #===============================================================================
 class PanelWidget(DockableWidget):
     PANEL_ID = None # string
+    PANEL_TITLE = None # string
+    PANEL_ICON = None # string
     
     def __init__(self, parent=None):
         super(PanelWidget, self).__init__(parent)
         assert self.PANEL_ID is not None
+        if self.PANEL_TITLE is not None:
+            self.setWindowTitle(self.PANEL_TITLE)
+        if self.PANEL_ICON is not None:
+            from guidata.configtools import get_icon
+            self.setWindowIcon(get_icon(self.PANEL_ICON))
     
     def showEvent(self, event):
         super(PanelWidget, self).showEvent(event)

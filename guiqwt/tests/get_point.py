@@ -43,7 +43,7 @@ def test():
     """Test"""
     # -- Create QApplication
     import guidata
-    guidata.qapplication()
+    _app = guidata.qapplication()
     # --
     from numpy import linspace, sin
     x = linspace(-10, 10, 1000)
