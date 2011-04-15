@@ -1047,8 +1047,8 @@ class QuadGridParam(DataSet):
                                  ],
                                default=0,
                                help=_("Image interpolation type, Flat mode use fixed u,v interpolation parameters"))
-    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1.)
-    vflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1.)
+    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
+    vflat = FloatItem(_("Fixed V interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
     grid = BoolItem(_("Show grid"), default=False)
     gridcolor = ColorItem(_("Grid lines color"), default="black")
                                
