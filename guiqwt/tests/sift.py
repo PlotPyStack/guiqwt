@@ -708,6 +708,10 @@ class ImageFT(ObjectFT):
                              help=_(u"Value used for points outside the "
                                     u"boundaries of the input if mode is "
                                     u"'constant'"))
+            reshape = BoolItem(_(u"Reshape the output array"), default=True,
+                               help=_(u"Reshape the output array "
+                                      u"so that the input array is "
+                                      u"contained completely in the output"))
             prefilter = BoolItem(_(u"Prefilter the input image"),
                                  default=True).set_prop("display", store=prop)
             order = IntItem(_(u"Order"), default=3, min=0, max=5,
@@ -717,7 +721,8 @@ class ImageFT(ObjectFT):
         import scipy.ndimage as spi
         self.compute_11("Rotate",
                         lambda x, p:
-                        spi.rotate(x, p.angle, order=p.order, mode=p.mode,
+                        spi.rotate(x, p.angle, reshape=p.reshape,
+                                   order=p.order, mode=p.mode,
                                    cval=p.cval, prefilter=p.prefilter),
                         param, suffix=lambda p: u"α=%.3f°, mode='%s'"\
                                                 % (p.angle, p.mode))
