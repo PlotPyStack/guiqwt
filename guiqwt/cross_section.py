@@ -38,7 +38,7 @@ Reference
 import weakref
 
 from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem, QFileDialog, QMessageBox)
+                         QSpacerItem)
 from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
@@ -49,8 +49,7 @@ from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
-                               ICurveItemType)
+from guiqwt.interfaces import ICSImageItemType, IPanel, IBasePlotItem
 from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot, LUT_MAX
@@ -350,6 +349,7 @@ class CrossSectionPlot(CurvePlot):
         self.autoscale_mode = True
         self.autorefresh_mode = True
         self.apply_lut = False
+        self.single_source = False
         
         self.last_obj = None
         self.known_items = {}
@@ -439,7 +439,8 @@ class CrossSectionPlot(CurvePlot):
         self.curveparam.shade = self.SHADE/len(new_sources)
         for source in new_sources:
             if source not in self.known_items and source.isVisible():
-                self.add_cross_section_item(source=source)
+                if not self.single_source or not self.known_items:
+                    self.add_cross_section_item(source=source)
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
