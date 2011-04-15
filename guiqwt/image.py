@@ -159,7 +159,7 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
 from guiqwt.shapes import RectangleShape
 from guiqwt.io import imagefile_to_array
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
-from guiqwt.geometry import translate, scale, rotate, vector
+from guiqwt.geometry import translate, scale, rotate, colvector
 
 stderr = sys.stderr
 try:
@@ -1109,34 +1109,34 @@ class TrImageItem(RawImageItem):
 
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
-        v = self.tr*vector(xplot, yplot)
+        v = self.tr*colvector(xplot, yplot)
         xpixel, ypixel, _ = v[:, 0]
         return xpixel, ypixel
         
     def get_plot_coordinates(self, xpixel, ypixel):
         """Return plot coordinates (from image pixel coordinates)"""
-        v0 = self.itr*vector(xpixel, ypixel)
+        v0 = self.itr*colvector(xpixel, ypixel)
         xplot, yplot, _ = v0[:, 0].A.ravel()
         return xplot, yplot
         
     def get_x_values(self, i0, i1):
-        v0 = self.itr*vector(i0, 0)
+        v0 = self.itr*colvector(i0, 0)
         x0, _y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*vector(i1, 0)
+        v1 = self.itr*colvector(i1, 0)
         x1, _y1, _ = v1[:, 0].A.ravel()
         return np.linspace(x0, x1, i1-i0)
     
     def get_y_values(self, j0, j1):
-        v0 = self.itr*vector(0, j0)
+        v0 = self.itr*colvector(0, j0)
         _x0, y0, _ = v0[:, 0].A.ravel()
-        v1 = self.itr*vector(0, j1)
+        v1 = self.itr*colvector(0, j1)
         _x1, y1, _ = v1[:, 0].A.ravel()
         return np.linspace(y0, y1, j1-j0)
 
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
         xi, yi = self.get_closest_indexes(x, y)
-        v = self.itr*vector(xi, yi)
+        v = self.itr*colvector(xi, yi)
         x, y, _ = v[:, 0].A.ravel()
         return x, y
     
@@ -1199,7 +1199,7 @@ class TrImageItem(RawImageItem):
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
         nx, ny = self.canvas_to_axes(pos)
         handles = self.itr*self.points
-        p0 = vector(nx, ny)
+        p0 = colvector(nx, ny)
         #self.debug_transform(p0)
         center = handles.sum(axis=1)/4
         vec0 = handles[:, handle] - center
@@ -1889,7 +1889,7 @@ class XYImageFilterItem(ImageFilterItem):
         i0, i1 = xMap.transform(x0), xMap.transform(x1)
         j0, j1 = yMap.transform(y0), yMap.transform(y1)
 
-        dstRect = QRect(i0, j0, i1-i0, j1-j0)        
+        dstRect = QRect(i0, j0, i1-i0, j1-j0)
         if not dstRect.intersects(canvasRect):
             return
         

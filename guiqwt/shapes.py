@@ -98,7 +98,7 @@ from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
                            AxesShapeParam, CursorShapeParam)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
                             SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
-from guiqwt.geometry import rotate, vector
+from guiqwt.geometry import vector_norm, vector_projection, vector_rotation
 
 
 class AbstractShape(QwtPlotItem):
@@ -715,23 +715,6 @@ class RectangleShape(PolygonShape):
 assert_interfaces_valid(RectangleShape)
 
 
-def _vector_norm(xa, ya, xb, yb):
-    v_ab = np.array((xb-xa, yb-ya))
-    return np.linalg.norm(v_ab)
-
-def _vector_projection(dv, xa, ya, xb, yb):
-    v_ab = np.array((xb-xa, yb-ya))
-    u_ab = v_ab/np.linalg.norm(v_ab)
-    return np.dot(u_ab, dv)*u_ab+np.array([xb, yb])
-
-def _vector_angle(v1, v2):
-    norm_v1, norm_v2 = np.linalg.norm(v1), np.linalg.norm(v2)
-    if norm_v1 and norm_v2:
-        return np.arccos(np.dot(v1, v2)/(norm_v1*norm_v2))
-
-def _vector_rotation(v, theta):
-    return np.array( rotate(theta)*vector(*v) ).ravel()[:2]
-
 class SkewRectangleShape(PolygonShape):
     ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
@@ -768,58 +751,58 @@ class SkewRectangleShape(PolygonShape):
         nx, ny = pos
         x0, y0, x1, y1, x2, y2, x3, y3 = self.get_rect()
         if handle == 0:
-            if _vector_norm(nx, ny, x2, y2) and \
-               _vector_norm(nx, ny, x3, y3) and \
-               _vector_norm(x2, y2, x3, y3):
+            if vector_norm(nx, ny, x2, y2) and \
+               vector_norm(nx, ny, x3, y3) and \
+               vector_norm(x2, y2, x3, y3):
                 v0n = np.array((nx-x0, ny-y0))
-                x3, y3 = _vector_projection(v0n, x2, y2, x3, y3)
-                x1, y1 = _vector_projection(v0n, x2, y2, x1, y1)
+                x3, y3 = vector_projection(v0n, x2, y2, x3, y3)
+                x1, y1 = vector_projection(v0n, x2, y2, x1, y1)
                 x0, y0 = nx, ny
-                if _vector_norm(nx, ny, x2, y2) and \
-                   _vector_norm(nx, ny, x3, y3) and \
-                   _vector_norm(x2, y2, x3, y3):
+                if vector_norm(nx, ny, x2, y2) and \
+                   vector_norm(nx, ny, x3, y3) and \
+                   vector_norm(x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 1:
-            if _vector_norm(nx, ny, x0, y0) and \
-               _vector_norm(nx, ny, x3, y3) and \
-               _vector_norm(x0, y0, x3, y3) and \
-               _vector_norm(x2, y2, x3, y3):
+            if vector_norm(nx, ny, x0, y0) and \
+               vector_norm(nx, ny, x3, y3) and \
+               vector_norm(x0, y0, x3, y3) and \
+               vector_norm(x2, y2, x3, y3):
                 v1n = np.array((nx-x1, ny-y1))
-                x0, y0 = _vector_projection(v1n, x3, y3, x0, y0)
-                x2, y2 = _vector_projection(v1n, x3, y3, x2, y2)
+                x0, y0 = vector_projection(v1n, x3, y3, x0, y0)
+                x2, y2 = vector_projection(v1n, x3, y3, x2, y2)
                 x1, y1 = nx, ny
-                if _vector_norm(nx, ny, x0, y0) and \
-                   _vector_norm(nx, ny, x3, y3) and \
-                   _vector_norm(x0, y0, x3, y3) and \
-                   _vector_norm(x2, y2, x3, y3):
+                if vector_norm(nx, ny, x0, y0) and \
+                   vector_norm(nx, ny, x3, y3) and \
+                   vector_norm(x0, y0, x3, y3) and \
+                   vector_norm(x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 2:
-            if _vector_norm(nx, ny, x0, y0) and \
-               _vector_norm(nx, ny, x1, y1) and \
-               _vector_norm(x2, y2, x3, y3):
+            if vector_norm(nx, ny, x0, y0) and \
+               vector_norm(nx, ny, x1, y1) and \
+               vector_norm(x2, y2, x3, y3):
                 v2n = np.array((nx-x2, ny-y2))
-                x1, y1 = _vector_projection(v2n, x0, y0, x1, y1)
-                x3, y3 = _vector_projection(v2n, x0, y0, x3, y3)
+                x1, y1 = vector_projection(v2n, x0, y0, x1, y1)
+                x3, y3 = vector_projection(v2n, x0, y0, x3, y3)
                 x2, y2 = nx, ny
-                if _vector_norm(nx, ny, x0, y0) and \
-                   _vector_norm(nx, ny, x1, y1) and \
-                   _vector_norm(x2, y2, x3, y3):
+                if vector_norm(nx, ny, x0, y0) and \
+                   vector_norm(nx, ny, x1, y1) and \
+                   vector_norm(x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 3:
-            if _vector_norm(nx, ny, x0, y0) and \
-               _vector_norm(nx, ny, x1, y1) and \
-               _vector_norm(x1, y1, x0, y0) and \
-               _vector_norm(x1, y1, x2, y2) and \
-               _vector_norm(x2, y2, x3, y3):
+            if vector_norm(nx, ny, x0, y0) and \
+               vector_norm(nx, ny, x1, y1) and \
+               vector_norm(x1, y1, x0, y0) and \
+               vector_norm(x1, y1, x2, y2) and \
+               vector_norm(x2, y2, x3, y3):
                 v3n = np.array((nx-x3, ny-y3))
-                x0, y0 = _vector_projection(v3n, x1, y1, x0, y0)
-                x2, y2 = _vector_projection(v3n, x1, y1, x2, y2)
+                x0, y0 = vector_projection(v3n, x1, y1, x0, y0)
+                x2, y2 = vector_projection(v3n, x1, y1, x2, y2)
                 x3, y3 = nx, ny
-                if _vector_norm(nx, ny, x0, y0) and \
-                   _vector_norm(nx, ny, x1, y1) and \
-                   _vector_norm(x1, y1, x0, y0) and \
-                   _vector_norm(x1, y1, x2, y2) and \
-                   _vector_norm(x2, y2, x3, y3):
+                if vector_norm(nx, ny, x0, y0) and \
+                   vector_norm(nx, ny, x1, y1) and \
+                   vector_norm(x1, y1, x0, y0) and \
+                   vector_norm(x1, y1, x2, y2) and \
+                   vector_norm(x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 4:
             x4, y4 = .5*(x0+x3), .5*(y0+y3)
@@ -830,7 +813,7 @@ class SkewRectangleShape(PolygonShape):
             v12 = np.array((x2-x1, y2-y1))
             v10n = np.array((nx-x1, ny-y1))
             k = np.linalg.norm(v12)/np.linalg.norm(v10)
-            v12n = _vector_rotation(v10n, -np.pi/2)*k
+            v12n = vector_rotation(-np.pi/2, *v10n)*k
             x2, y2 = v12n+np.array([x1, y1])
             x3, y3 = v12n+v10n+np.array([x1, y1])
             x0, y0 = nx, ny
@@ -851,7 +834,7 @@ class SkewRectangleShape(PolygonShape):
             v03 = np.array((x3-x0, y3-y0))
             v01n = np.array((nx-x0, ny-y0))
             k = np.linalg.norm(v03)/np.linalg.norm(v01)
-            v03n = _vector_rotation(v01n, np.pi/2)*k
+            v03n = vector_rotation(np.pi/2, *v01n)*k
             x3, y3 = v03n+np.array([x0, y0])
             x2, y2 = v03n+v01n+np.array([x0, y0])
             x1, y1 = nx, ny
