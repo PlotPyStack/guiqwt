@@ -42,8 +42,10 @@ def get_package_data(name, extlist):
 
 
 LIBNAME = 'guiqwt'
+import sys
 from guiqwt import __version__ as version
-del sys.modules[LIBNAME] # forcing Python to reload module (see build_doc.run)
+# Remove module from list to allow building doc from build dir
+del sys.modules['guiqwt']
 
 DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to PyQwt 5.2)'
 LONG_DESCRIPTION = ''
@@ -67,7 +69,7 @@ try:
 except ImportError:
     sphinx = None
     
-from distutils.command.build import build as dftbuild
+from numpy.distutils.command.build import build as dftbuild
 
 class build(dftbuild):
     def has_doc(self):
@@ -114,11 +116,13 @@ setup(name=LIBNAME, version=version,
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),]),
                    Extension(LIBNAME+'._mandel', [join("src", 'mandel.f90')]),
-                   Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp")],
+                   Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp"),
+                                                  join("src", "pcolor.cpp")],
                              extra_compile_args=CFLAGS,
                              depends=[join("src", "traits.hpp"),
                                       join("src", "points.hpp"),
                                       join("src", "arrays.hpp"),
+                                      join("src", "scaler.hpp"),
                                       join("src", "debug.hpp"),
                                       ],
                              ),

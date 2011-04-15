@@ -73,7 +73,7 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
-                           LineStyleParam, AnnotationParam,
+                           LineStyleParam, AnnotationParam, QuadGridParam,
                            LabelParamWithContents)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
                           RangeComputation2d, DataInfoLabel, CursorComputation,
@@ -661,9 +661,9 @@ class PlotItemBuilder(object):
         Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
-        param = ImageParam(title=_("Image"), icon='image.png')
+        param = QuadGridParam(title=_("Image"), icon='image.png')
         self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               background=background_color, colormap=colormap)
+                               colormap=colormap)
         image = QuadGridItem(X, Y, Z, param)
         return image
 
@@ -762,7 +762,8 @@ class PlotItemBuilder(object):
         return filt
     
     def histogram2D(self, X, Y, NX=None, NY=None, logscale=None,
-                    title=None, transparent=None):
+                    title=None, transparent=None, Z=None,
+                    computation=-1,interpolation=0):
         """
         Make a 2D Histogram `plot item` 
         (:py:class:`guiqwt.image.Histogram2DItem` object)
@@ -790,7 +791,9 @@ class PlotItemBuilder(object):
             param.label = make_title(basename, HISTOGRAM2D_COUNT)
         if transparent is not None:
             param.transparent = transparent
-        return Histogram2DItem(X, Y, param)
+        param.computation = computation
+        param.interpolation = interpolation
+        return Histogram2DItem(X, Y, param, Z=Z)
 
     def label(self, text, g, c, anchor, title=""):
         """

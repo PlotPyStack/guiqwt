@@ -635,22 +635,30 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setSizes([1, 2])
 
 class SubplotWidget(QSplitter):
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 section="plot", show_itemlist=False, gridparam=None):
+    """Construct a Widget that helps managing several plots
+    together handled by the same manager
+
+    Since the plots must be added to the manager before the panels
+    the add_itemlist method can be called after having declared
+    all the subplots
+    """
+    def __init__(self, manager, parent=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
-        
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
+        self.manager = manager
         self.plots = []
-
-        parent = QWidget()
+        self.itemlist = None
+        main = QWidget()
         self.plotlayout = QGridLayout()
-        parent.setLayout(self.plotlayout)
-        self.addWidget(parent)
+        main.setLayout(self.plotlayout)
+        self.addWidget(main)
 
+    def add_itemlist(self, show_itemlist=False):
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
         self.addWidget(self.itemlist)
+        configure_plot_splitter(self)
+        self.manager.add_panel(self.itemlist)
 
     def add_subplot(self, plot, i=0, j=0, plot_id=None):
         """Add a plot to the grid of plots"""
@@ -659,10 +667,6 @@ class SubplotWidget(QSplitter):
         if plot_id is None:
             plot_id = id(plot)
         self.manager.add_plot(plot, plot_id)
-
-    def finalize(self):
-        self.manager.add_panel(self.itemlist)
-        configure_plot_splitter(self)
 
 class BaseCurveWidget(QSplitter):
     """

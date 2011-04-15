@@ -163,7 +163,7 @@ from guiqwt.geometry import translate, scale, rotate, colvector
 
 stderr = sys.stderr
 try:
-    from guiqwt._ext import hist2d
+    from guiqwt._ext import hist2d, hist2d_func
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
                                 _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
@@ -176,6 +176,18 @@ except ImportError:
 
 LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
+
+def _nanmin(data):
+    if data.dtype.name in ("float32","float64", "float128"):
+        return np.nanmin(data)
+    else:
+        return data.min()
+
+def _nanmax(data):
+    if data.dtype.name in ("float32","float64", "float128"):
+        return np.nanmax(data)
+    else:
+        return data.max()
 
 
 def pixelround(x, corner=None):
@@ -466,7 +478,7 @@ class BaseImageItem(QwtPlotItem):
 
     def get_lut_range_full(self):
         """Return full dynamic range"""
-        return self.data.min(), self.data.max()
+        return _nanmin(self.data), _nanmax(self.data)
 
     def get_lut_range_max(self):
         """Get maximum range for this dataset"""
@@ -653,13 +665,13 @@ class BaseImageItem(QwtPlotItem):
                 #TODO: _histogram is faster, but caching is buggy
                 # in this version
                 #tic("histo2")
+                _min = _nanmin(self.data)
+                _max = _nanmax(self.data)
                 if self.data.dtype in (np.float64, np.float32):
-                    bins = np.unique(np.array(np.linspace(self.data.min(),
-                                                          self.data.max(),
-                                                          nbins+1),
+                    bins = np.unique(np.array(np.linspace(_min, _max, nbins+1),
                                               dtype=self.data.dtype))
                 else:
-                    bins = np.arange(self.data.min(), self.data.max()+2,
+                    bins = np.arange(_min, _max+2,
                                      dtype=self.data.dtype)
                 res2 = np.zeros((bins.size+1,), np.uint32)
                 _histogram(self.data.flatten(), bins, res2)
@@ -784,7 +796,7 @@ class RawImageItem(BaseImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = data.min(), data.max()
+            _min, _max = _nanmin(data), _nanmax(data)
             
         self.data = data
         self.histogram_cache = None
@@ -954,7 +966,7 @@ class QuadGridItem(RawImageItem):
                       IVoiImageItemType)
     def __init__(self, X, Y, Z, param=None):
         if param is None:
-            param = ImageParam(_("Quadrilaterals"))
+            param = QuadGridParam(_("Quadrilaterals"))
         assert X is not None
         assert Y is not None
         assert Z is not None
@@ -964,6 +976,8 @@ class QuadGridItem(RawImageItem):
         assert Z.shape == X.shape
         super(QuadGridItem, self).__init__(Z, param)
         self.set_data(Z)
+        self.grid = 1
+        self.interpolate = (0, 0.5, 0.5)
         self.imageparam.update_image(self)
 
     def types(self):
@@ -986,7 +1000,7 @@ class QuadGridItem(RawImageItem):
         if lut_range is not None:
             _min, _max = lut_range
         else:
-            _min, _max = data.min(), data.max()
+            _min, _max = _nanmin(data), _nanmax(data)
 
         self.data = data
         self.histogram_cache = None
@@ -995,9 +1009,11 @@ class QuadGridItem(RawImageItem):
         self.set_lut_range([_min, _max])
 
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
+        self._offscreen[...] = np.uint32(0)
         dest = _scale_quads(self.X, self.Y, self.data, src_rect,
                             self._offscreen, dst_rect,
-                            self.lut, self.interpolate)
+                            self.lut, self.interpolate,
+                            self.grid)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
         xl, yt, xr, yb = dest
@@ -1920,10 +1936,12 @@ class Histogram2DItem(BaseImageItem):
         * param (optional): style parameters
           (:py:class:`guiqwt.styles.Histogram2DParam` instance)
     """
-    __implements__ = (IBasePlotItem, IBaseImageItem)    
-    def __init__(self, X, Y, param=None):
+    __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
+                      IVoiImageItemType,)
+    def __init__(self, X, Y, param=None, Z=None):
         if param is None:
             param = ImageParam(_("Image"))
+        self._z = Z # allows set_bins to
         super(Histogram2DItem, self).__init__(param=param)
         
         # Set by parameters
@@ -1940,7 +1958,7 @@ class Histogram2DItem(BaseImageItem):
         self.histparam.update_histogram(self)
         
         self.set_lut_range([0, 10.])
-        self.set_data(X, Y)
+        self.set_data(X, Y, Z)
 
     #---- Public API -----------------------------------------------------------
     def set_bins(self, NX, NY):
@@ -1951,11 +1969,14 @@ class Histogram2DItem(BaseImageItem):
         # Thus, in order to get the result in the correct order we
         # have to swap X and Y axes _before_ computing the histogram
         self.data = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
+        if self._z is not None:
+            self.data_tmp = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
         
-    def set_data(self, X, Y):
+    def set_data(self, X, Y, Z=None):
         """Set histogram data"""
         self._x = X
         self._y = Y
+        self._z = Z
         self.bounds = QRectF(QPointF(X.min(), Y.min()),
                              QPointF(X.max(), Y.max()))
         self.update_border()
@@ -1963,12 +1984,31 @@ class Histogram2DItem(BaseImageItem):
     #---- QwtPlotItem API ------------------------------------------------------
     fill_canvas = True
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
-        self.data[:, :] = 0.0
+        computation = self.histparam.computation
         i1, j1, i2, j2 = src_rect
-        _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
-                         self.data, self.logscale)
-        self.set_lut_range([0, nmax])
-        self.plot().update_colormap_axis(self)
+        if computation == -1 or self._z is None:
+            self.data[:, :] = 0.0
+            _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
+                             self.data, self.logscale)
+        else:
+            self.data_tmp[:,:] = 0.0
+            if computation in (0,2,4):
+                self.data[:,:] = 0.0
+            elif computation==1:
+                self.data[:,:] = np.inf
+            elif computation==3:
+                self.data[:,:] = 1.
+            r = hist2d_func(self._y, self._x, self._z, j1, j2, i1, i2,
+                            self.data_tmp, self.data, computation)
+            _,_,nmax=r
+            if computation==1:
+                nmax = self.data.max()
+                self.data[self.data==np.inf] = np.nan
+            else:
+                self.data[self.data_tmp==0.0] = np.nan
+        if self.histparam.auto_lut:
+            self.set_lut_range([0, nmax])
+            self.plot().update_colormap_axis(self)
         src_rect = (0, 0, self.nx_bins, self.ny_bins)
         drawfunc = super(Histogram2DItem, self).draw_image
         if self.fill_canvas:
@@ -1979,7 +2019,8 @@ class Histogram2DItem(BaseImageItem):
     
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
-        return (IColormapImageItemType, IImageItemType, ITrackableItemType,)
+        return (IColormapImageItemType, IImageItemType, ITrackableItemType,
+                IVoiImageItemType, IColormapImageItemType, ICSImageItemType)
 
     def get_item_parameters(self, itemparams):
         super(Histogram2DItem, self).get_item_parameters(itemparams)
@@ -1996,7 +2037,26 @@ class Histogram2DItem(BaseImageItem):
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
-        return False
+        return True
+
+    def get_histogram(self, nbins):
+        """interface de IHistDataSource"""
+        if self.data is None:
+            return [0,], [0,1]
+        _min = _nanmin(self.data)
+        _max = _nanmax(self.data)
+        if self.data.dtype in (np.float64, np.float32):
+            bins = np.unique(np.array(np.linspace(_min, _max, nbins+1),
+                                      dtype=self.data.dtype))
+        else:
+            bins = np.arange(_min, _max+2,
+                             dtype=self.data.dtype)
+        res2 = np.zeros((bins.size+1,), np.uint32)
+        _histogram(self.data.flatten(), bins, res2)
+                #toc("histo2")
+        res = res2[1:-1], bins
+        return res
+
     
 assert_interfaces_valid(Histogram2DItem)
 

@@ -1,4 +1,4 @@
-c  Copyright © 2009-2010 CEA
+c  Copyright © 2009-2011 CEA
 c  Licensed under the terms of the CECILL License
 c  (see guiqwt/__init__.py for details)
 
@@ -47,4 +47,52 @@ c Apply log if needed and compute max value at the same time
             end do
          end do
       endif
+      end subroutine
+
+      subroutine hist2d_func(X, Y, Z, n, i0, i1, j0, j1, R, V,
+     +     nx, ny, do_func, nmax)
+c Compute a 2-D Histogram from data X(i),Y(i)
+cf2py intent(in) X, Y, Z, do_func
+cf2py intent(in,out) R,V
+cf2py intent(out) nmax
+      double precision :: X(n), Y(n), Z(n), R(nx,ny), V(nx,ny)
+      double precision :: i0, i1, j0, j1
+      integer :: n, nx, ny
+      integer :: i, ix, iy
+      integer :: do_func
+      double precision :: nmax
+      double precision :: cx, cy
+
+      cx = nx/(i1-i0)
+      cy = ny/(j1-j0)
+      do i=1,n
+        ix = 1+ NInt( (X(i)-i0)*cx )
+        iy = 1+ NInt( (Y(i)-j0)*cy )
+        if ((ix .GE. 1) .AND. (ix .LE. nx) .AND. (iy .GE. 1)
+     +      .AND. (iy .LE. ny)) then
+            R(ix,iy)=R(ix,iy)+1
+            select case (do_func)
+            case (0) ! max
+               V(ix,iy) = max(V(ix,iy), Z(i))
+            case (1) ! min
+               V(ix,iy) = min(V(ix,iy), Z(i))
+            case (2) ! sum
+               V(ix,iy) = V(ix,iy) + Z(i)
+            case (3) ! prod
+               V(ix,iy) = V(ix,iy) * Z(i)
+            case (4) ! avg
+               V(ix,iy) = V(ix,iy) + (Z(i)-V(ix,iy))/R(ix,iy)
+            end select
+        end if
+      end do
+
+c Apply log if needed and compute max value at the same time
+      nmax = 0.0
+      do i=1,nx
+         do j=1,ny
+            if (V(i,j).GT.nmax) then
+               nmax = V(i,j)
+            end if
+         end do
+      end do
       end subroutine

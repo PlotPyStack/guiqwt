@@ -1028,6 +1028,45 @@ class BaseImageParam(DataSet):
             mode = INTERP_AA
         image.set_interpolation(mode, size)
 
+class QuadGridParam(DataSet):
+    _multiselection = False
+    label = StringItem(_("Image title"), default=_("Image")) \
+            .set_prop("display", hide=GetAttrProp("_multiselection"))
+    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
+                          default=False)
+    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
+                      help=_("Global alpha value"))
+    _hide_colormap = False
+    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
+                               ).set_prop("display",
+                                      hide=GetAttrProp("_hide_colormap"))
+    
+    interpolation = ChoiceItem(_("Interpolation"),
+                               [ (0, _("Quadrangle interpolation")),
+                                 (1, _("Flat")),
+                                 ],
+                               default=0,
+                               help=_("Image interpolation type, Flat mode use fixed u,v interpolation parameters"))
+    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
+    vflat = FloatItem(_("Fixed V interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
+    grid = BoolItem(_("Show grid"), default=False)
+    gridcolor = ColorItem(_("Grid lines color"), default="black")
+                               
+    def update_param(self, image):
+        self.label = unicode(image.title().text())
+        self.colormap = image.get_color_map_name()
+        interp, uflat, vflat = image.interpolate
+        self.interpolation = interp
+        self.uflat = uflat
+        self.vflat = vflat
+        self.grid = image.grid
+
+    def update_image(self, image):
+        image.setTitle(self.label)
+        image.set_color_map(self.colormap)
+        image.interpolate = (self.interpolation,self.uflat,self.vflat)
+        image.grid = self.grid
+        # TODO : gridcolor
 
 class RawImageParam(BaseImageParam):
     _hide_background = False
@@ -1263,6 +1302,19 @@ class Histogram2DParam(BaseImageParam):
                       help=_("Number of bins along y-axis"))
     logscale = BoolItem(_("logarithmic"), _("Z-axis scale"), default=False)
     
+    computation = ChoiceItem(_("Computation"),
+                             [(-1, _("Bin count")),
+                              (0, _("Max value")),
+                              (1, _("Min value")),
+                              (2, _("Sum")),
+                              (3, _("Product")),
+                              (4, _("Average")),
+                              ],
+                       default=-1, help=_("Bin count : counts the number of points per bin,\n"
+                                          "For max, min, sum, product, average, compute the function of a third parameter (one by default)"))
+    auto_lut = BoolItem(_("Automatic LUT range"), default=True, help=_("Automatically adapt color scale when panning, zooming"))
+    background = ColorItem(_("Background color when no data is present"), default="transparent")
+
     def update_param(self, obj):
         super(Histogram2DParam, self).update_param(obj)
         self.logscale = obj.logscale
@@ -1270,6 +1322,7 @@ class Histogram2DParam(BaseImageParam):
 
     def update_histogram(self, histogram):
         histogram.logscale = int(self.logscale)
+        histogram.set_background_color(self.background)
         histogram.set_bins(self.nx_bins, self.ny_bins)
         self.update_image(histogram)
 
