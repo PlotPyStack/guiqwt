@@ -306,7 +306,7 @@ class AnnotatedSegment(AnnotatedShape):
         AnnotatedShape.__init__(self, annotationparam)
         self.set_rect(x1, y1, x2, y2)
         
-    #----AnnotatedShape API-----------------------------------------------------
+    #----Public API-------------------------------------------------------------
     def set_rect(self, x1, y1, x2, y2):
         """
         Set the coordinates of the shape's top-left corner to (x1, y1), 
@@ -325,6 +325,7 @@ class AnnotatedSegment(AnnotatedShape):
         """Return segment length"""
         return compute_distance(*self.get_transformed_coords(0, 2))
     
+    #----AnnotatedShape API-----------------------------------------------------
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x1, y1, x2, y2 = self.get_rect()
@@ -414,6 +415,9 @@ class AnnotatedSkewRectangle(AnnotatedRectangle):
         _x, yr2 = self.apply_transform_matrix(1., 2.)
         return (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
         
+    def get_bounding_rect_coords(self):
+        """Return bounding rectangle coordinates (in plot coordinates)"""
+        return self.shape.get_bounding_rect_coords()
         
     #----AnnotatedShape API-----------------------------------------------------
     def create_shape(self):

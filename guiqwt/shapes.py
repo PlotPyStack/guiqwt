@@ -485,6 +485,14 @@ class PolygonShape(AbstractShape):
         """Return polygon points"""
         return self.points
         
+    def get_bounding_rect_coords(self):
+        """Return bounding rectangle coordinates (in plot coordinates)"""
+        poly = QPolygonF()
+        shape_points = self.points[:-self.ADDITIONNAL_POINTS]
+        for i in xrange(shape_points.shape[0]):
+            poly.append(QPointF(shape_points[i, 0], shape_points[i, 1]))
+        return poly.boundingRect().getCoords()
+        
     def transform_points(self, xMap, yMap):
         points = QPolygonF()
         for i in xrange(self.points.shape[0]):
