@@ -1247,17 +1247,17 @@ class CurvePlot(BasePlot):
         if replot:
             self.replot()
 
-    def set_axis_limits(self, axis_id, vmin, vmax):
+    def set_axis_limits(self, axis_id, vmin, vmax, stepsize=0):
         """Set axis limits (minimum and maximum values)"""
         axis_id = self.get_axis_id(axis_id)
         vmin, vmax = sorted([vmin, vmax])
         dv = vmax-vmin
         if self.get_axis_direction(axis_id):
-            self.setAxisScale(axis_id, vmin+dv, vmin)
+            self.setAxisScale(axis_id, vmin+dv, vmin, stepsize)
         else:
-            self.setAxisScale(axis_id, vmin, vmin+dv)
-            
-    #---- Public API -----------------------------------------------------------    
+            self.setAxisScale(axis_id, vmin, vmin+dv, stepsize)
+
+    #---- Public API -----------------------------------------------------------
     def get_axis_direction(self, axis_id):
         """
         Return axis direction of increasing values
@@ -1352,4 +1352,3 @@ class CurvePlot(BasePlot):
         x0, x1 = self.get_axis_limits(xaxis)
         y0, y1 = self.get_axis_limits(yaxis)
         return x0, x1, y0, y1
-        
