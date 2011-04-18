@@ -19,9 +19,9 @@ def test():
     _app = guidata.qapplication()
     # --
     import numpy as np
-    x = np.linspace(-10, 10, 200)
+    x = np.linspace(1, 10, 200)
     y = np.exp(-x)
-    item = make.curve(x, y, color="b")
+    item = make.curve(y, x, color="b")
     
     win = CurveDialog()
     plot = win.get_plot()

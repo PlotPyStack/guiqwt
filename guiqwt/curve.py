@@ -1103,15 +1103,13 @@ class CurvePlot(BasePlot):
         axes_to_update = self.get_axes_to_update(dx, dy)
         
         for (x1, x0, _, w), k in axes_to_update:
-            axis = self.axisScaleDiv(k)
+            lbound, hbound = self.get_axis_limits(k)
             # pour les axes logs on bouge lbound et hbound relativement
             # à l'inverse du delta aux bords de l'axe
             # pour des axes lineaires pos0 et pos1 doivent être égaux
             pos0 = self.invTransform(k, x1-x0)-self.invTransform(k, 0)
             pos1 = self.invTransform(k, x1-x0+w)-self.invTransform(k, w)
-            lbound = axis.lowerBound()
-            hbound = axis.upperBound()
-            self.setAxisScale(k, lbound-pos0, hbound-pos1)
+            self.set_axis_limits(k, lbound-pos0, hbound-pos1)
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise
@@ -1134,9 +1132,7 @@ class CurvePlot(BasePlot):
         axes_to_update = self.get_axes_to_update(dx, dy)
         
         for (sens, x1, x0, s, w), k in axes_to_update:
-            axis = self.axisScaleDiv(k)
-            lbound = axis.lowerBound()
-            hbound = axis.upperBound()
+            lbound, hbound = self.get_axis_limits(k)
             orig = self.invTransform(k, s)
             rng = float(hbound-lbound)
             if not lock_aspect_ratio:
@@ -1144,7 +1140,7 @@ class CurvePlot(BasePlot):
             l_new = orig-F*(orig-lbound)
             if F*rng == 0:
                 continue
-            self.setAxisScale(k, l_new, l_new + F*rng)
+            self.set_axis_limits(k, l_new, l_new+F*rng)
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise
