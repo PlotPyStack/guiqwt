@@ -1239,10 +1239,14 @@ class CurvePlot(BasePlot):
             if vmin == vmax: # same behavior as MATLAB
                 vmin -= 1
                 vmax += 1
-            else:
+            elif self.get_axis_scale(axis_id) == 'lin':
                 dv = vmax-vmin
                 vmin -= .002*dv
                 vmax += .002*dv
+            else: # log scale
+                dv = np.log10(vmax)-np.log10(vmin)
+                vmin = 10**(np.log10(vmin)-.002*dv)
+                vmax = 10**(np.log10(vmax)+.002*dv)
             self.set_axis_limits(axis_id, vmin, vmax)
         if replot:
             self.replot()
@@ -1251,11 +1255,10 @@ class CurvePlot(BasePlot):
         """Set axis limits (minimum and maximum values)"""
         axis_id = self.get_axis_id(axis_id)
         vmin, vmax = sorted([vmin, vmax])
-        dv = vmax-vmin
         if self.get_axis_direction(axis_id):
-            self.setAxisScale(axis_id, vmin+dv, vmin)
+            super(CurvePlot, self).set_axis_limits(axis_id, vmax, vmin)
         else:
-            self.setAxisScale(axis_id, vmin, vmin+dv)
+            super(CurvePlot, self).set_axis_limits(axis_id, vmin, vmax)
             
     #---- Public API -----------------------------------------------------------    
     def get_axis_direction(self, axis_id):

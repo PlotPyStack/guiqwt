@@ -238,18 +238,20 @@ class BasePlot(QwtPlot):
         if nminor is not None:
             self.setAxisMaxMinor(axis_id, nminor)
 
-    def get_axis_scale(self, axis):
+    def get_axis_scale(self, axis_id):
         """Return the name ('lin' or 'log') of the scale used by axis"""
-        engine = self.axisScaleEngine(axis)
+        axis_id = self.get_axis_id(axis_id)
+        engine = self.axisScaleEngine(axis_id)
         for axis_label, axis_type in self.AXIS_TYPES.items():
             if isinstance(engine, axis_type):
                 return axis_label
         return "lin"  # unknown default to linear
 
-    def set_axis_scale(self, axis, scale):
+    def set_axis_scale(self, axis_id, scale):
         """Set axis scale
         Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
-        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
+        axis_id = self.get_axis_id(axis_id)
+        self.setAxisScaleEngine(axis_id, self.AXIS_TYPES[scale]())
 
     def set_scales(self, xscale, yscale):
         """Set active curve scales
