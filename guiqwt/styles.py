@@ -1046,9 +1046,13 @@ class QuadGridParam(DataSet):
                                  (1, _("Flat")),
                                  ],
                                default=0,
-                               help=_("Image interpolation type, Flat mode use fixed u,v interpolation parameters"))
-    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
-    vflat = FloatItem(_("Fixed V interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
+                               help=_("Image interpolation type, "
+                                      "Flat mode use fixed u,v "
+                                      "interpolation parameters"))
+    uflat = FloatItem(_("Fixed U interpolation parameter"),
+                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
+    vflat = FloatItem(_("Fixed V interpolation parameter"),
+                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
     grid = BoolItem(_("Show grid"), default=False)
     gridcolor = ColorItem(_("Grid lines color"), default="black")
                                
@@ -1304,8 +1308,8 @@ class Histogram2DParam(BaseImageParam):
     
     computation = ChoiceItem(_("Computation"),
                              [(-1, _("Bin count")),
-                              (0, _("Max value")),
-                              (1, _("Min value")),
+                              (0, _("Maximum value")),
+                              (1, _("Mininum value")),
                               (2, _("Sum")),
                               (3, _("Product")),
                               (4, _("Average")),

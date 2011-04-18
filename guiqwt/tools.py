@@ -267,7 +267,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
                             SIG_APPLIED_MASK_TOOL)
-from guiqwt.panels import ID_XCS, ID_YCS, ID_ITEMLIST, ID_CONTRAST
+from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
 
 
 class DefaultToolbarID:
@@ -1026,6 +1026,17 @@ class AverageCrossSectionTool(CrossSectionTool):
     def create_shape(self):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
+class ObliqueCrossSectionTool(CrossSectionTool):
+    TITLE = _("Oblique averaged cross section")
+    ICON = "csection_oblique.png"
+    SHAPE_STYLE_KEY = "shape/average_cross_section"
+    SHAPE_TITLE = TITLE
+    PANEL_IDS = (ID_OCS, )
+    def create_shape(self):
+        annotation = AnnotatedObliqueRectangle(0, 0, 1, 0, 1, 1, 0, 1)
+        self.set_shape_style(annotation)
+        return annotation, 0, 2
+
 
 class RectZoomTool(InteractiveTool):
     TITLE = _("Rectangle zoom")
@@ -1360,6 +1371,10 @@ class XCSPanelTool(PanelTool):
 class YCSPanelTool(PanelTool):
     panel_name = _("Y-axis cross section")
     panel_id = ID_YCS
+
+class OCSPanelTool(PanelTool):
+    panel_name = _("Oblique averaged cross section")
+    panel_id = ID_OCS
 
 class ItemListPanelTool(PanelTool):
     panel_name = _("Item list")

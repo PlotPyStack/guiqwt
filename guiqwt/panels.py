@@ -58,6 +58,9 @@ ID_XCS = "x_cross_section"
 # Y-cross section panel
 ID_YCS = "y_cross_section"
 
+# Oblique averaged cross section panel
+ID_OCS = "oblique_cross_section"
+
 
 #===============================================================================
 # Base Panel Widget class
