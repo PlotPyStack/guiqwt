@@ -13,7 +13,7 @@ The `annotations` module provides annotated shapes:
     * :py:class:`guiqwt.annotations.AnnotatedPoint`
     * :py:class:`guiqwt.annotations.AnnotatedSegment`
     * :py:class:`guiqwt.annotations.AnnotatedRectangle`
-    * :py:class:`guiqwt.annotations.AnnotatedSkewRectangle`
+    * :py:class:`guiqwt.annotations.AnnotatedObliqueRectangle`
     * :py:class:`guiqwt.annotations.AnnotatedEllipse`
     * :py:class:`guiqwt.annotations.AnnotatedCircle`
 
@@ -55,7 +55,7 @@ Reference
 .. autoclass:: AnnotatedRectangle
    :members:
    :inherited-members:
-.. autoclass:: AnnotatedSkewRectangle
+.. autoclass:: AnnotatedObliqueRectangle
    :members:
    :inherited-members:
 .. autoclass:: AnnotatedEllipse
@@ -76,7 +76,7 @@ from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
                            SegmentShape, PointShape, VerticalCursor,
-                           HorizontalCursor, SkewRectangleShape)
+                           HorizontalCursor, ObliqueRectangleShape)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import (SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED,
@@ -394,13 +394,13 @@ class AnnotatedRectangle(AnnotatedShape):
                             ])
 
 
-class AnnotatedSkewRectangle(AnnotatedRectangle):
+class AnnotatedObliqueRectangle(AnnotatedRectangle):
     """
-    Construct an annotated skewed rectangle between coordinates (x0, y0),
+    Construct an annotated oblique rectangle between coordinates (x0, y0),
     (x1, y1), (x2, y2) and (x3, y3) with properties set with *annotationparam* 
     (see :py:class:`guiqwt.styles.AnnotationParam`)
     """
-    SHAPE_CLASS = SkewRectangleShape
+    SHAPE_CLASS = ObliqueRectangleShape
     LABEL_ANCHOR = "C"
     def __init__(self, x0=0, y0=0, x1=0, y1=0, x2=0, y2=0, x3=0, y3=0,
                  annotationparam=None):

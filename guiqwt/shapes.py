@@ -12,7 +12,7 @@ guiqwt.shapes
 The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.PolygonShape`
     * :py:class:`guiqwt.shapes.RectangleShape`
-    * :py:class:`guiqwt.shapes.SkewRectangleShape`
+    * :py:class:`guiqwt.shapes.ObliqueRectangleShape`
     * :py:class:`guiqwt.shapes.PointShape`
     * :py:class:`guiqwt.shapes.SegmentShape`
     * :py:class:`guiqwt.shapes.EllipseShape`
@@ -56,7 +56,7 @@ Reference
 .. autoclass:: RectangleShape
    :members:
    :inherited-members:
-.. autoclass:: SkewRectangleShape
+.. autoclass:: ObliqueRectangleShape
    :members:
    :inherited-members:
 .. autoclass:: PointShape
@@ -723,11 +723,11 @@ class RectangleShape(PolygonShape):
 assert_interfaces_valid(RectangleShape)
 
 
-class SkewRectangleShape(PolygonShape):
+class ObliqueRectangleShape(PolygonShape):
     ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
     def __init__(self, x0, y0, x1, y1, x2, y2, x3, y3):
-        super(SkewRectangleShape, self).__init__([], closed=True)
+        super(ObliqueRectangleShape, self).__init__([], closed=True)
         self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
@@ -862,7 +862,7 @@ class SkewRectangleShape(PolygonShape):
         state = (self.shapeparam, self.points, self.z())
         return (self.__class__, (0, 0, 0, 0, 0, 0, 0, 0), state)
 
-assert_interfaces_valid(SkewRectangleShape)
+assert_interfaces_valid(ObliqueRectangleShape)
 
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1

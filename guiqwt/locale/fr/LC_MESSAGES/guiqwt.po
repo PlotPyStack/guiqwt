@@ -1773,9 +1773,8 @@ msgid "Rectangle"
 msgstr "Rectangle"
 
 #: guiqwt\tools.py:799
-#, fuzzy
-msgid "Skew rectangle"
-msgstr "Rectangle"
+msgid "Oblique rectangle"
+msgstr "Rectangle oblique"
 
 #: guiqwt\tools.py:807
 msgid "Point"

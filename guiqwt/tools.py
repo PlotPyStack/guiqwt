@@ -253,10 +253,10 @@ from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            RectangularSelectionHandler, ClickHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
                            EllipseShape, SegmentShape, PointShape,
-                           SkewRectangleShape)
+                           ObliqueRectangleShape)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
                                 AnnotatedEllipse, AnnotatedSegment,
-                                AnnotatedPoint, AnnotatedSkewRectangle)
+                                AnnotatedPoint, AnnotatedObliqueRectangle)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType, IExportROIImageItemType,
@@ -795,11 +795,11 @@ class RectangleTool(RectangularShapeTool):
     TITLE = _("Rectangle")
     ICON = "rectangle.png"
     
-class SkewRectangleTool(RectangularShapeTool):
-    TITLE = _("Skew rectangle")
-    ICON = "skew_rectangle.png"
+class ObliqueRectangleTool(RectangularShapeTool):
+    TITLE = _("Oblique rectangle")
+    ICON = "oblique_rectangle.png"
     def create_shape(self):
-        shape = SkewRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
+        shape = ObliqueRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
         self.set_shape_style(shape)
         return shape, 0, 2
 
@@ -857,9 +857,9 @@ class AnnotatedRectangleTool(RectangleTool):
         self.set_shape_style(annotation)
         return annotation, 0, 2
 
-class AnnotatedSkewRectangleTool(SkewRectangleTool):
+class AnnotatedObliqueRectangleTool(ObliqueRectangleTool):
     def create_shape(self):
-        annotation = AnnotatedSkewRectangle(0, 0, 1, 0, 1, 1, 0, 1)
+        annotation = AnnotatedObliqueRectangle(0, 0, 1, 0, 1, 1, 0, 1)
         self.set_shape_style(annotation)
         return annotation, 0, 2
 
