@@ -723,6 +723,11 @@ class RectangleShape(PolygonShape):
 assert_interfaces_valid(RectangleShape)
 
 
+def _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
+    return vector_norm(x0, y0, x1, y1) and vector_norm(x0, y0, x2, y2) and \
+           vector_norm(x0, y0, x3, y3) and vector_norm(x1, y1, x2, y2) and \
+           vector_norm(x1, y1, x3, y3) and vector_norm(x2, y2, x3, y3)
+    
 class ObliqueRectangleShape(PolygonShape):
     ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
@@ -738,7 +743,8 @@ class ObliqueRectangleShape(PolygonShape):
             (x2, y2): bottom-right corner
             (x3, y3): bottom-left corner
             
-            x: additionnal points
+            x: additionnal points (handles used for rotation -- other handles
+            being used for rectangle resizing)
             
             (x0, y0)------>(x1, y1)
                 ↑             |
@@ -759,58 +765,36 @@ class ObliqueRectangleShape(PolygonShape):
         nx, ny = pos
         x0, y0, x1, y1, x2, y2, x3, y3 = self.get_rect()
         if handle == 0:
-            if vector_norm(nx, ny, x2, y2) and \
-               vector_norm(nx, ny, x3, y3) and \
-               vector_norm(x2, y2, x3, y3):
+            if vector_norm(x2, y2, x3, y3) and vector_norm(x2, y2, x1, y1):
                 v0n = np.array((nx-x0, ny-y0))
                 x3, y3 = vector_projection(v0n, x2, y2, x3, y3)
                 x1, y1 = vector_projection(v0n, x2, y2, x1, y1)
                 x0, y0 = nx, ny
-                if vector_norm(nx, ny, x2, y2) and \
-                   vector_norm(nx, ny, x3, y3) and \
-                   vector_norm(x2, y2, x3, y3):
+                if _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 1:
-            if vector_norm(nx, ny, x0, y0) and \
-               vector_norm(nx, ny, x3, y3) and \
-               vector_norm(x0, y0, x3, y3) and \
-               vector_norm(x2, y2, x3, y3):
+            if vector_norm(x3, y3, x0, y0) and vector_norm(x3, y3, x2, y2):
                 v1n = np.array((nx-x1, ny-y1))
                 x0, y0 = vector_projection(v1n, x3, y3, x0, y0)
                 x2, y2 = vector_projection(v1n, x3, y3, x2, y2)
                 x1, y1 = nx, ny
-                if vector_norm(nx, ny, x0, y0) and \
-                   vector_norm(nx, ny, x3, y3) and \
-                   vector_norm(x0, y0, x3, y3) and \
-                   vector_norm(x2, y2, x3, y3):
+                if _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 2:
-            if vector_norm(nx, ny, x0, y0) and \
-               vector_norm(nx, ny, x1, y1) and \
-               vector_norm(x2, y2, x3, y3):
+            if vector_norm(x0, y0, x1, y1) and vector_norm(x0, y0, x3, y3):
                 v2n = np.array((nx-x2, ny-y2))
                 x1, y1 = vector_projection(v2n, x0, y0, x1, y1)
                 x3, y3 = vector_projection(v2n, x0, y0, x3, y3)
                 x2, y2 = nx, ny
-                if vector_norm(nx, ny, x0, y0) and \
-                   vector_norm(nx, ny, x1, y1) and \
-                   vector_norm(x2, y2, x3, y3):
+                if _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 3:
-            if vector_norm(nx, ny, x0, y0) and \
-               vector_norm(nx, ny, x1, y1) and \
-               vector_norm(x1, y1, x0, y0) and \
-               vector_norm(x1, y1, x2, y2) and \
-               vector_norm(x2, y2, x3, y3):
+            if vector_norm(x1, y1, x0, y0) and vector_norm(x1, y1, x2, y2):
                 v3n = np.array((nx-x3, ny-y3))
                 x0, y0 = vector_projection(v3n, x1, y1, x0, y0)
                 x2, y2 = vector_projection(v3n, x1, y1, x2, y2)
                 x3, y3 = nx, ny
-                if vector_norm(nx, ny, x0, y0) and \
-                   vector_norm(nx, ny, x1, y1) and \
-                   vector_norm(x1, y1, x0, y0) and \
-                   vector_norm(x1, y1, x2, y2) and \
-                   vector_norm(x2, y2, x3, y3):
+                if _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
                     self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         elif handle == 4:
             x4, y4 = .5*(x0+x3), .5*(y0+y3)

@@ -699,6 +699,7 @@ class LabelTool(InteractiveTool):
 class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_SECT = "plot"
     SHAPE_STYLE_KEY = "shape/drag"
+    AVOID_NULL_SHAPE = False
     def __init__(self, manager, func, shape_style=None,
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
         self.action_func = func
@@ -748,7 +749,8 @@ class RectangularActionTool(InteractiveTool):
         handler = RectangularSelectionHandler(filter, Qt.LeftButton,
                                               start_state=start_state)
         shape, h0, h1 = self.get_shape()
-        handler.set_shape(shape, h0, h1, self.setup_shape)
+        handler.set_shape(shape, h0, h1, self.setup_shape,
+                          avoid_null_shape=self.AVOID_NULL_SHAPE)
         self.connect(handler, SIG_END_RECT, self.end_rect)
         return setup_standard_tool_filter(filter, start_state)
 
@@ -798,6 +800,7 @@ class RectangleTool(RectangularShapeTool):
 class ObliqueRectangleTool(RectangularShapeTool):
     TITLE = _("Oblique rectangle")
     ICON = "oblique_rectangle.png"
+    AVOID_NULL_SHAPE = True
     def create_shape(self):
         shape = ObliqueRectangleShape(1, 1, 2, 1, 2, 2, 1, 2)
         self.set_shape_style(shape)
@@ -858,6 +861,7 @@ class AnnotatedRectangleTool(RectangleTool):
         return annotation, 0, 2
 
 class AnnotatedObliqueRectangleTool(ObliqueRectangleTool):
+    AVOID_NULL_SHAPE = True
     def create_shape(self):
         annotation = AnnotatedObliqueRectangle(0, 0, 1, 0, 1, 1, 0, 1)
         self.set_shape_style(annotation)
