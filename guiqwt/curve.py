@@ -1132,7 +1132,7 @@ class CurvePlot(BasePlot):
             sens, x1, x0, s, w = dx
             F = 1+3*sens*float(x1-x0)/w
         axes_to_update = self.get_axes_to_update(dx, dy)
-                                    
+        
         for (sens, x1, x0, s, w), k in axes_to_update:
             axis = self.axisScaleDiv(k)
             lbound = axis.lowerBound()
@@ -1243,7 +1243,7 @@ class CurvePlot(BasePlot):
                 dv = vmax-vmin
                 vmin -= .002*dv
                 vmax += .002*dv
-            else: # log scale
+            elif vmin > 0 and vmax > 0: # log scale
                 dv = np.log10(vmax)-np.log10(vmin)
                 vmin = 10**(np.log10(vmin)-.002*dv)
                 vmax = 10**(np.log10(vmax)+.002*dv)

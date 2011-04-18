@@ -25,10 +25,10 @@ def test():
     
     win = CurveDialog()
     plot = win.get_plot()
-    plot.add_item(item)
     plot.set_axis_scale("left", "log")
+    plot.set_axis_scale("bottom", "log")
 #    plot.set_axis_limits("left", 4.53999297625e-05, 22026.4657948)
-    plot.do_autoscale()
+    plot.add_item(item)
     win.show()
     win.exec_()
 
