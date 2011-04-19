@@ -9,7 +9,7 @@ Requirements:
     * PyQt4 4.x (x>=3 ; recommended x>=4)
     * QScintilla2 2.x (x>=1) (PyQt4 extension) for the test launcher
     * PyQwt 5.x (x>=2)
-    * guidata 1.2.5 or later
+    * guidata 1.3.0 or later
     * NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
     * SciPy 0.x (x>=7)
     * PIL 1.1.x (x>=6)
@@ -20,9 +20,23 @@ Optional Python modules:
 Installation
 ------------
 
-From the source package:
-    `python setup.py install`
-        
+All platforms:
+
+    The ``setup.py`` script supports the following extra options for 
+    optimizing the image scaler engine with SSE2/SSE3 processors:
+    ``--sse2`` and ``--sse3``
+
+On GNU/Linux and MacOS platforms:
+    ``python setup.py build install``
+
+    If `gfortran` is not your default Fortran compiler:
+	``python setup.py build --fcompiler=gfortran install``
+    or if it fails, you may try the following:
+	``python setup.py build_ext --fcompiler=gnu95 build install``
+    
+On Windows platforms (requires MinGW with gfortran):
+    ``python setup.py build -c mingw32 install``
+
 Help and support
 ----------------
 
