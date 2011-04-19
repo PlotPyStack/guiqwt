@@ -46,6 +46,8 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
 
 	    If gfortran is not your default Fortran compiler:
 	        python setup.py build --fcompiler=gfortran install
+	    or if it fails, you may try the following:
+	        python setup.py build_ext --fcompiler=gnu95 build install
 	    
 	On Windows platforms (requires MinGW with gfortran):
 	    python setup.py build -c mingw32 install
