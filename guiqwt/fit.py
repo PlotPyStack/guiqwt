@@ -215,8 +215,8 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
         if col_nb == param_cols:
             row_nb += 1
             col_nb = 0
-            for widget, row, col in row_contents:
-                layout.addWidget(widget, row, col)
+    for widget, row, col in row_contents:
+        layout.addWidget(widget, row, col)
     if fitparams:
         for col_nb in range(param_cols):
             layout.setColumnStretch(1+col_nb*w_colums, 5)
