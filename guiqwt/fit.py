@@ -258,6 +258,11 @@ class FitWidgetMixin(CurveWidgetMixin):
         
         self.refresh()
         
+    # QWidget API --------------------------------------------------------------
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+        self.get_plot().replot()
+        
     # CurveWidgetMixin API -----------------------------------------------------
     def setup_widget_layout(self):
         self.fit_layout = QHBoxLayout()
