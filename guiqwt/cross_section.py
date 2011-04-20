@@ -839,7 +839,7 @@ def compute_oblique_section(item, obj):
         if item.data.dtype in (np.float32, np.float64):
             item_data = item.data
         else:
-            item_data = np.array(item.data, dtype=np.float32, copy=True)
+            item_data = np.ma.array(item.data, dtype=np.float32, copy=True)
         data = np.ma.filled(item_data, np.nan)
     else:
         data = item.data
