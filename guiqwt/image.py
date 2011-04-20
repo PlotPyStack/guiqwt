@@ -991,7 +991,7 @@ class QuadGridItem(RawImageItem):
         ymax = self.Y.max()
         self.bounds = QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
 
-    def set_data(self, data, lut_range=None):
+    def set_data(self, data, X=None, Y=None, lut_range=None):
         """
         Set Image item data
             * data: 2D NumPy array
@@ -1004,6 +1004,10 @@ class QuadGridItem(RawImageItem):
 
         self.data = data
         self.histogram_cache = None
+        if X is not None:
+            assert Y is not None
+            self.X = X
+            self.Y = Y
         self.update_bounds()
         self.update_border()
         self.set_lut_range([_min, _max])
