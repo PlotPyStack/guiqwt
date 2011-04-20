@@ -920,5 +920,5 @@ class ObliqueCrossSection(CrossSectionWidget):
     """Oblique averaged cross section widget"""
     PANEL_ID = ID_OCS
     CrossSectionPlotKlass = ObliqueCrossSectionPlot
-    PANEL_ICON = "racs_panel.png"
+    PANEL_ICON = "csection_oblique.png"
 
