@@ -106,15 +106,18 @@ class FitParam(DataSet):
         self.lineedit = None
         self.slider = None
         self.button = None
+        self._widgets = []
         self._size_offset = size_offset
+        self._refresh_callback = None
         
     def copy(self):
         """Return a copy of this fitparam"""
-        return FitParam(self.name, self.value, self.min, self.max,
-                        self.logscale, self.steps, self.format,
-                        self._size_offset)
+        return self.__class__(self.name, self.value, self.min, self.max,
+                              self.logscale, self.steps, self.format,
+                              self._size_offset)
         
-    def create_widgets(self, parent):
+    def create_widgets(self, parent, refresh_callback):
+        self._refresh_callback = refresh_callback
         self.label = QLabel()
         font = self.label.font()
         font.setPointSize(font.pointSize()+self._size_offset)
@@ -135,10 +138,13 @@ class FitParam(DataSet):
                         self.slider_value_changed)
         self.set_text()
         self.update()
-        return self.get_widgets()
+        self.add_widgets([self.label, self.lineedit, self.slider, self.button])
+        
+    def add_widgets(self, widgets):
+        self._widgets += widgets
         
     def get_widgets(self):
-        return self.label, self.lineedit, self.slider, self.button
+        return self._widgets
         
     def set_scale(self, state):
         self.logscale = state > 0
@@ -159,6 +165,7 @@ class FitParam(DataSet):
         except ValueError:
             self.set_text()
             self.update_slider_value()
+        self._refresh_callback()
         
     def slider_value_changed(self, int_value):
         if self.logscale:
@@ -168,6 +175,7 @@ class FitParam(DataSet):
             total_delta = self.max-self.min
             self.value = self.min+total_delta*int_value/(self.steps-1)
         self.set_text()
+        self._refresh_callback()
     
     def update_slider_value(self):
         if self.value is None or self.min is None or self.max is None:
@@ -202,15 +210,11 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
     row_nb = 0
     col_nb = 0
     for i, param in enumerate(fitparams):
-        widgets = param.create_widgets(layout.parent())
+        param.create_widgets(layout.parent(), refresh_callback)
+        widgets = param.get_widgets()
         w_colums = len(widgets)+1
-        label, lineedit, slider, button = widgets
-        QObject.connect(slider, SIGNAL("valueChanged(int)"), refresh_callback)
-        QObject.connect(lineedit, SIGNAL("editingFinished()"), refresh_callback)
-        row_contents += [(label,    row_nb, 0+col_nb*w_colums),
-                         (slider,   row_nb, 1+col_nb*w_colums),
-                         (lineedit, row_nb, 2+col_nb*w_colums),
-                         (button,   row_nb, 3+col_nb*w_colums),]
+        row_contents += [(widget, row_nb, j+col_nb*w_colums)
+                         for j, widget in enumerate(widgets)]
         col_nb += 1
         if col_nb == param_cols:
             row_nb += 1
