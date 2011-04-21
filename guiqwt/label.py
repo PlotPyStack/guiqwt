@@ -475,7 +475,8 @@ class RangeComputation(ObjectInfo):
 
     def get_text(self):
         x0, x1 = self.range.get_range()
-        X, Y = self.curve.get_data()
+        data = self.curve.get_data()
+        X = data[0]
         i0 = X.searchsorted(x0)
         i1 = X.searchsorted(x1)
         if i0 == i1:
@@ -484,7 +485,13 @@ class RangeComputation(ObjectInfo):
         else:
             if i0 > i1:
                 i0, i1 = i1, i0
-            res = self.func(X[i0:i1], Y[i0:i1])
+            vectors = []
+            for vector in data:
+                if vector is None:
+                    vectors.append(None)
+                else:
+                    vectors.append(vector[i0:i1])
+            res = self.func(*vectors)
         return self.label % res
 
 class RangeComputation2d(ObjectInfo):
