@@ -20,7 +20,7 @@ def test_line(x0, y0, x1, y1):
     print x0,",",y0,"->",x1,",",y1
     imin[:]=N
     imax[:]=0
-    line(x0, y0, x1, y1, imin, imax)
+    line(x0, y0, x1, y1, N, imin, imax)
     print_tri(imin,imax)
 
 
@@ -34,9 +34,9 @@ def test_tri(x0, y0, x1, y1, x2, y2):
     print x0,",",y0,"->",x1,",",y1
     imin[:]=N+1
     imax[:]=-1
-    line(x0, y0, x1, y1, imin, imax)
-    line(x0, y0, x2, y2, imin, imax)
-    line(x1, y1, x2, y2, imin, imax)
+    line(x0, y0, x1, y1, N, imin, imax)
+    line(x0, y0, x2, y2, N, imin, imax)
+    line(x1, y1, x2, y2, N, imin, imax)
     print_tri(imin, imax)
 
 test_tri(0,1,2,9,8,7)
