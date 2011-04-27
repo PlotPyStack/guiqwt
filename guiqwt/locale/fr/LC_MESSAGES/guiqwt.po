@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-04-18 14:17+Paris, Madrid\n"
+"POT-Creation-Date: 2011-04-27 16:18+Paris, Madrid\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -251,109 +251,113 @@ msgstr "Souhaitez-vous vraiment supprimer les objets sélectionnés ?"
 msgid "Item list"
 msgstr "Liste des objets"
 
-#: guiqwt\fit.py:68
+#: guiqwt\fit.py:69
 msgid "Method"
 msgstr "Méthode"
 
-#: guiqwt\fit.py:71
+#: guiqwt\fit.py:72
 msgid "Conjugate Gradient"
 msgstr "Gradient conjugué"
 
-#: guiqwt\fit.py:72
+#: guiqwt\fit.py:73
 msgid "Least squares"
 msgstr "Moindres carrés"
 
-#: guiqwt\fit.py:75
+#: guiqwt\fit.py:76
 msgid "for simplex, powel, cg and bfgs norm used by the error function"
 msgstr ""
 
-#: guiqwt\fit.py:78 guiqwt\fit.py:80
+#: guiqwt\fit.py:79 guiqwt\fit.py:81
 msgid "for simplex, powel, least squares"
 msgstr ""
 
-#: guiqwt\fit.py:81
+#: guiqwt\fit.py:82
 msgid "for cg, bfgs"
 msgstr ""
 
-#: guiqwt\fit.py:83
+#: guiqwt\fit.py:84
 msgid "for cg, bfgs. inf is max, -inf is min"
 msgstr ""
 
-#: guiqwt\fit.py:87
+#: guiqwt\fit.py:88
 msgid "Name"
 msgstr "Nom"
 
-#: guiqwt\fit.py:88
+#: guiqwt\fit.py:89
 msgid "Value"
 msgstr "Valeur"
 
-#: guiqwt\fit.py:89
+#: guiqwt\fit.py:90
 msgid "Min"
 msgstr "Min"
 
-#: guiqwt\fit.py:90
+#: guiqwt\fit.py:91
 msgid "Max"
 msgstr "Max"
 
-#: guiqwt\fit.py:91 guiqwt\styles.py:285
+#: guiqwt\fit.py:92 guiqwt\styles.py:285
 msgid "Steps"
 msgstr "Pas"
 
-#: guiqwt\fit.py:92
+#: guiqwt\fit.py:93
 msgid "Format"
 msgstr "Format"
 
-#: guiqwt\fit.py:93
+#: guiqwt\fit.py:94
 msgid "Logarithmic"
 msgstr "logarithmique"
 
-#: guiqwt\fit.py:93 guiqwt\styles.py:595 guiqwt\styles.py:606
+#: guiqwt\fit.py:94 guiqwt\styles.py:595 guiqwt\styles.py:606
 #: guiqwt\tools.py:1640
 msgid "Scale"
 msgstr "Échelle"
 
-#: guiqwt\fit.py:97
+#: guiqwt\fit.py:95
+msgid "Unit"
+msgstr "Unité"
+
+#: guiqwt\fit.py:116
 msgid "Curve fitting parameter"
 msgstr "Paramètre d'ajustement"
 
-#: guiqwt\fit.py:125
+#: guiqwt\fit.py:133
 msgid "Edit '%s' fit parameter properties"
 msgstr "Modifier les propriétés du paramètre d'ajustement '%s'"
 
-#: guiqwt\fit.py:231
+#: guiqwt\fit.py:258
 msgid "Curve fitting"
 msgstr "Ajustement de courbes"
 
-#: guiqwt\fit.py:265
+#: guiqwt\fit.py:297
 msgid "Fit parameters"
 msgstr "Paramètres d'ajustement"
 
-#: guiqwt\fit.py:298
+#: guiqwt\fit.py:330
 msgid "Automatic fitting options"
 msgstr "Options d'ajustement automatique"
 
-#: guiqwt\fit.py:328
+#: guiqwt\fit.py:360
 msgid "Run"
 msgstr "Ajuster"
 
-#: guiqwt\fit.py:330
+#: guiqwt\fit.py:362
 msgid "Settings"
 msgstr "Options"
 
-#: guiqwt\fit.py:333 guiqwt\styles.py:1184
+#: guiqwt\fit.py:365 guiqwt\styles.py:1184
 msgid "Bounds"
 msgstr "Bornes"
 
-#: guiqwt\fit.py:341
+#: guiqwt\fit.py:373
 msgid "Automatic fit"
 msgstr "Ajustement automatique"
 
-#: guiqwt\fit.py:385 guiqwt\tests\sift.py:67 guiqwt\tests\sift.py:92
+#: guiqwt\fit.py:417 guiqwt\tests\sift.py:67 guiqwt\tests\sift.py:92
 #: guiqwt\tests\simple_window.py:40
 msgid "Data"
 msgstr "Données"
 
-#: guiqwt\fit.py:391
+#: guiqwt\fit.py:423
 msgid "Fit"
 msgstr "Ajustement"
 
