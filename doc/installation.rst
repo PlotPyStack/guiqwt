@@ -7,7 +7,6 @@ Dependencies
 Requirements:
     * Python 2.x (x>=5)
     * PyQt4 4.x (x>=3 ; recommended x>=4)
-    * QScintilla2 2.x (x>=1) (PyQt4 extension) for the test launcher
     * PyQwt 5.x (x>=2)
     * guidata 1.3.0 or later
     * NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
@@ -15,6 +14,7 @@ Requirements:
     * PIL 1.1.x (x>=6)
     
 Optional Python modules:
+    * spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
     * pydicom 0.9.x (x>=4) for DICOM files I/O features
 
 Installation
