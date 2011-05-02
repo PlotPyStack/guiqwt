@@ -934,6 +934,7 @@ class ImageStatsTool(RectangularShapeTool):
         
     def setup_shape(self, shape):
         self.setup_shape_appearance(shape)
+        super(ImageStatsTool, self).setup_shape(shape)
         self.register_shape(shape, final=False)
         
     def setup_shape_appearance(self, shape):        
@@ -979,6 +980,7 @@ class CrossSectionTool(RectangularShapeTool):
         
     def setup_shape(self, shape):
         self.setup_shape_appearance(shape)
+        super(CrossSectionTool, self).setup_shape(shape)
         self.register_shape(shape, final=False)
         
     def setup_shape_appearance(self, shape):        
