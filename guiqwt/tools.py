@@ -952,13 +952,8 @@ class ImageStatsTool(RectangularShapeTool):
             plot.set_active_item(shape)
             shape.set_image_item(self._last_item)
 
-#    def activate(self):
-#        """Activate tool"""
-#        super(ImageStatsTool, self).activate()
-#    
     def handle_final_shape(self, shape):
         super(ImageStatsTool, self).handle_final_shape(shape)
-        self.setup_shape_appearance(shape)
         self.register_shape(shape, final=True)
         
     def get_associated_item(self, plot):
@@ -1015,7 +1010,6 @@ class CrossSectionTool(RectangularShapeTool):
     
     def handle_final_shape(self, shape):
         super(CrossSectionTool, self).handle_final_shape(shape)
-        self.setup_shape_appearance(shape)
         self.register_shape(shape, final=True)
 
 class AverageCrossSectionTool(CrossSectionTool):
