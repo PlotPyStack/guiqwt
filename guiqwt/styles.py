@@ -1428,6 +1428,9 @@ class AnnotationParam(DataSet):
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
     format = StringItem(_("String formatting"), default="%d")
+    uncertainty = FloatItem(_("Uncertainty"), default=0., min=0., max=1.,
+                            help=_("Measurement relative uncertainty")
+                            ).set_pos(col=1)
     transform_matrix = FloatArrayItem(_("Transform matrix"),
                                       default=np.eye(3, dtype=float))
     
