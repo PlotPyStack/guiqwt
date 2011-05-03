@@ -98,7 +98,9 @@ from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
                            AxesShapeParam, CursorShapeParam)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
                             SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
-from guiqwt.geometry import vector_norm, vector_projection, vector_rotation
+from guiqwt.geometry import (vector_norm, vector_projection, vector_rotation,
+                             compute_center, compute_rect_size,
+                             compute_distance, compute_angle)
 
 
 class AbstractShape(QwtPlotItem):
@@ -700,6 +702,10 @@ class RectangleShape(PolygonShape):
 
     def get_rect(self):
         return tuple(self.points[0])+tuple(self.points[2])
+        
+    def get_center(self):
+        """Return center coordinates: (xc, yc)"""
+        return compute_center(*self.get_rect())
 
     def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
@@ -760,6 +766,11 @@ class ObliqueRectangleShape(PolygonShape):
 
     def get_rect(self):
         return self.points.ravel()[:-self.ADDITIONNAL_POINTS*2]
+        
+    def get_center(self):
+        """Return center coordinates: (xc, yc)"""
+        rect = tuple(self.points[0])+tuple(self.points[2])
+        return compute_center(*rect)
 
     def move_point_to(self, handle, pos, ctrl=None):
         nx, ny = pos
@@ -898,6 +909,10 @@ class EllipseShape(PolygonShape):
         xc, yc = .5*(x0+x1), .5*(y0+y1)
         radius = .5*np.sqrt((x1-x0)**2+(y1-y0)**2)
         return xc-radius, yc-radius, xc+radius, yc+radius
+        
+    def get_center(self):
+        """Return center coordinates: (xc, yc)"""
+        return compute_center(*self.get_xdiameter())
     
     def set_rect(self, x0, y0, x1, y1):
         """Circle only!"""

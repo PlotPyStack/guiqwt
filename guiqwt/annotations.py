@@ -67,7 +67,6 @@ Reference
 """
 
 import numpy as np
-from math import fabs
 
 from guidata.utils import update_dataset
 
@@ -81,6 +80,8 @@ from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import (SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED,
                             SIG_CURSOR_MOVED)
+from guiqwt.geometry import (compute_center, compute_rect_size,
+                             compute_distance, compute_angle)
 
 
 class AnnotatedShape(AbstractShape):
@@ -268,6 +269,15 @@ class AnnotatedShape(AbstractShape):
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
             self.plot().emit(SIG_ANNOTATION_CHANGED, self)
+            
+    def move_with_selection(self, delta_x, delta_y):
+        """
+        Translate the shape together with other selected items
+        delta_x, delta_y: translation in plot coordinates
+        """
+        self.shape.move_with_selection(delta_x, delta_y)
+        self.label.move_with_selection(delta_x, delta_y)
+        self.plot().emit(SIG_ANNOTATION_CHANGED, self)
 
     def select(self):
         """Select item"""
@@ -292,20 +302,6 @@ class AnnotatedShape(AbstractShape):
                        visible_only=True)
         self.annotationparam.update_annotation(self)
     
-
-def compute_center(x1, y1, x2, y2):
-    return .5*(x1+x2), .5*(y1+y2)
-    
-def compute_rect_size(x1, y1, x2, y2):
-    return x2-x1, fabs(y2-y1)
-
-def compute_distance(x1, y1, x2, y2):
-    return np.sqrt((x2-x1)**2+(y2-y1)**2)
-    
-def compute_angle(x1, y1, x2, y2, reverse=False):
-    sign = -1 if reverse else 1
-    return np.arctan(-sign*(y2-y1)/(x2-x1))*180/np.pi
-
 
 class AnnotatedPoint(AnnotatedShape):
     """
@@ -585,7 +581,7 @@ class AnnotatedEllipse(AnnotatedShape):
         ycoords = self.get_transformed_coords(2, 3)
         dx = compute_distance(*xcoords)
         dy = compute_distance(*ycoords)
-        if fabs(self.get_angle()) > 45:
+        if np.fabs(self.get_angle()) > 45:
             dx, dy = dy, dx
         return dx, dy
         

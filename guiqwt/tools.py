@@ -51,6 +51,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.AxisScaleTool`
     * :py:class:`guiqwt.tools.HelpTool`
     * :py:class:`guiqwt.tools.ExportItemDataTool`
+    * :py:class:`guiqwt.tools.ItemCenterTool`
     * :py:class:`guiqwt.tools.DeleteItemTool`
 
 A `plot tool` is an object providing various features to a plotting widget 
@@ -214,6 +215,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: ExportItemDataTool
+   :members:
+   :inherited-members:
+.. autoclass:: ItemCenterTool
    :members:
    :inherited-members:
 .. autoclass:: DeleteItemTool
@@ -1775,13 +1779,12 @@ class ExportItemDataTool(CommandTool):
                      if not item.is_empty()]
         from guiqwt.image import ImageItem
         all_items += [item for item in plot.get_items()
-                      if isinstance(item, ImageItem)]
+                      if isinstance(item, ImageItem) and not item.is_empty()]
         if len(all_items) == 1:
             return all_items
         else:
-            return [item for item in
-                    plot.get_selected_items(item_type=ICurveItemType)
-                    if not item.is_empty()]
+            return [item for item in all_items
+                    if item in plot.get_selected_items()]
 
     def update_status(self, plot):
         self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
@@ -1793,6 +1796,35 @@ class ExportItemDataTool(CommandTool):
                 export_curve_data(item)
             else:
                 export_image_data(item)
+
+
+class ItemCenterTool(CommandTool):
+    def __init__(self, manager, toolbar_id=None):
+        super(ItemCenterTool,self).__init__(manager, _("Center items"),
+                                            "center.png", toolbar_id=toolbar_id)
+        
+    def get_supported_items(self, plot):
+        from guiqwt.shapes import (RectangleShape, EllipseShape,
+                                   ObliqueRectangleShape)
+        from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
+                                        AnnotatedObliqueRectangle)
+        item_types = (RectangleShape, EllipseShape, ObliqueRectangleShape,
+                      AnnotatedRectangle, AnnotatedEllipse,
+                      AnnotatedObliqueRectangle)
+        return [item for item in plot.get_selected_items(z_sorted=True)
+                if isinstance(item, item_types)]
+
+    def update_status(self, plot):
+        self.action.setEnabled(len(self.get_supported_items(plot)) > 1)
+            
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        items = self.get_supported_items(plot)
+        xc0, yc0 = items.pop(-1).get_center()
+        for item in items:
+            xc, yc = item.get_center()
+            item.move_with_selection(xc0-xc, yc0-yc)
+        plot.replot()
 
 
 class DeleteItemTool(CommandTool):

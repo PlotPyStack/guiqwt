@@ -125,7 +125,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           AspectRatioTool, ContrastPanelTool, XCSPanelTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool,
-                          ImageStatsTool, ExportItemDataTool)
+                          ImageStatsTool, ExportItemDataTool, ItemCenterTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
@@ -495,6 +495,7 @@ class PlotManager(object):
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
         self.add_tool(ExportItemDataTool)
+        self.add_tool(ItemCenterTool)
         self.add_tool(DeleteItemTool)
         self.add_separator_tool()
         self.add_tool(BasePlotMenuTool, "grid")

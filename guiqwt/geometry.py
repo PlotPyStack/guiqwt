@@ -4,7 +4,7 @@ Basic geometry functions
 """
 
 from numpy import (matrix, array, arccos, sign, cos, sin, linalg, vdot,
-                   pi, sqrt)
+                   pi, sqrt, fabs, arctan)
 
 
 #===============================================================================
@@ -66,3 +66,21 @@ def vector_angle(dx, dy):
         sx, sy = sign(dx), sign(dy)
         acos = arccos(dx/sqrt(dx**2+dy**2))
         return sy*(pi*(sy-1)+acos)+pi*(1-sy**2)*(1-sx)*.5
+
+
+#===============================================================================
+# Misc.
+#===============================================================================
+
+def compute_center(x1, y1, x2, y2):
+    return .5*(x1+x2), .5*(y1+y2)
+    
+def compute_rect_size(x1, y1, x2, y2):
+    return x2-x1, fabs(y2-y1)
+
+def compute_distance(x1, y1, x2, y2):
+    return sqrt((x2-x1)**2+(y2-y1)**2)
+    
+def compute_angle(x1, y1, x2, y2, reverse=False):
+    sign = -1 if reverse else 1
+    return arctan(-sign*(y2-y1)/(x2-x1))*180/pi
