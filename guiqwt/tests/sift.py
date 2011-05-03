@@ -33,8 +33,6 @@ from guidata.utils import update_dataset
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
 from guiqwt.builder import make
-from guiqwt.io import (imagefile_to_array, IMAGE_LOAD_FILTERS,
-                       array_to_imagefile, IMAGE_SAVE_FILTERS)
 
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
@@ -863,55 +861,34 @@ class ImageFT(ObjectFT):
     
     def open_image(self):
         """Open image file"""
-        saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
-        sys.stdout = None
-        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
-                                           self.directory, IMAGE_LOAD_FILTERS)
-        sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        filenames = list(filenames)
-        for filename in filenames:
-            filename = unicode(filename)
+        from guiqwt.io import exec_images_open_dialog
+        for filename, data in exec_images_open_dialog(
+                                        self, basedir=self.directory,
+                                        app_name=APP_NAME, to_grayscale=True):
             self.directory = osp.dirname(filename)
             image = ImageParam()
             image.title = filename
-            try:
-                image.data = imagefile_to_array(filename, to_grayscale=True)
-                if osp.splitext(filename)[1].lower() == ".dcm":
-                    import dicom
-                    dcm = dicom.read_file(filename, stop_before_pixels=True)
-                    image.metadata = {}
-                    for attr_str in dir(dcm):
-                        if attr_str != 'GroupLength':
-                            image.metadata[attr_str] = getattr(dcm, attr_str)
-            except Exception, msg:
-                import traceback
-                traceback.print_exc()
-                QMessageBox.critical(self.parent(), APP_NAME,
-                     (_(u"%s could not be opened:") % osp.basename(filename))+\
-                     "\n"+str(msg))
-                return
+            image.data = data
+            if osp.splitext(filename)[1].lower() == ".dcm":
+                import dicom
+                dcm = dicom.read_file(filename, stop_before_pixels=True)
+                image.metadata = {}
+                for attr_str in dir(dcm):
+                    if attr_str != 'GroupLength':
+                        image.metadata[attr_str] = getattr(dcm, attr_str)
             self.add_object(image)
             
     def save_image(self):
         """Save selected image"""
         rows = self._get_selected_rows()
         for row in rows:
-            filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                                           self.directory, IMAGE_SAVE_FILTERS)
-            if not filename:
-                return
-            filename = unicode(filename)
-            self.directory = osp.dirname(filename)
             obj = self.objects[row]
-            try:
-                array_to_imagefile(obj.data, filename)
-            except Exception, msg:
-                import traceback
-                traceback.print_exc()
-                QMessageBox.critical(self.parent(), APP_NAME,
-                     (_(u"%s could not be written:") % osp.basename(filename))+\
-                     "\n"+str(msg))
-                return
+            from guiqwt.io import exec_image_save_dialog
+            filename = exec_image_save_dialog(obj.data, self,
+                                              basedir=self.directory,
+                                              app_name=APP_NAME)
+            if filename:
+                self.directory = osp.dirname(filename)
         
 
 class DockablePlotWidget(DockableWidget):

@@ -277,3 +277,71 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct[0x7fe00010].VR = 'OB'
     dcmstruct.save_as(filename)
     
+
+#===============================================================================
+# Ready-to-use open/save dialogs
+#===============================================================================
+def exec_image_save_dialog(data, parent, basedir='', app_name=None):
+    from PyQt4.QtGui import QFileDialog, QMessageBox
+    saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
+    sys.stdout = None
+    filename = QFileDialog.getSaveFileName(parent, _("Save as"), 
+                                           basedir, IMAGE_SAVE_FILTERS)
+    sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
+    if filename:
+        filename = unicode(filename)
+        try:
+            array_to_imagefile(data, filename)
+            return filename
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(parent,
+                 _('Error') if app_name is None else app_name,
+                 (_(u"%s could not be written:") % osp.basename(filename))+\
+                 "\n"+str(msg))
+            return
+
+def exec_image_open_dialog(parent, basedir='', app_name=None,
+                           to_grayscale=True):
+    from PyQt4.QtGui import QFileDialog, QMessageBox
+    saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
+    sys.stdout = None
+    filename = QFileDialog.getOpenFileName(parent, _("Open"),
+                                           basedir, IMAGE_LOAD_FILTERS)
+    sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
+    filename = unicode(filename)
+    try:
+        data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+    except Exception, msg:
+        import traceback
+        traceback.print_exc()
+        QMessageBox.critical(parent,
+             _('Error') if app_name is None else app_name,
+             (_(u"%s could not be opened:") % osp.basename(filename))+\
+             "\n"+str(msg))
+        return
+    return filename, data
+
+def exec_images_open_dialog(parent, basedir='', app_name=None,
+                            to_grayscale=True):
+    from PyQt4.QtGui import QFileDialog, QMessageBox
+    saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
+    sys.stdout = None
+    filenames = QFileDialog.getOpenFileNames(parent, _("Open"),
+                                             basedir, IMAGE_LOAD_FILTERS)
+    sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
+    filenames = [unicode(fname) for fname in list(filenames)]
+    for filename in filenames:
+        try:
+            data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+        except Exception, msg:
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(parent,
+                 _('Error') if app_name is None else app_name,
+                 (_(u"%s could not be opened:") % osp.basename(filename))+\
+                 "\n"+str(msg))
+            return
+        yield filename, data
+    
