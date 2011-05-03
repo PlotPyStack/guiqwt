@@ -147,9 +147,12 @@ class BasePlot(QwtPlot):
         return self.AXIS_NAMES.get(axis_name, axis_name)
 
     def read_axes_styles(self, section, options):
-        """Read axes styles from section and options (one option
-        for each axis in the order left,right,bottom,top).
-        skip axis if option is None"""
+        """
+        Read axes styles from section and options (one option
+        for each axis in the order left, right, bottom, top)
+        
+        Skip axis if option is None
+        """
         for prm, option in zip(self.axes_styles, options):
             if option is None:
                 continue
@@ -165,6 +168,17 @@ class BasePlot(QwtPlot):
         """Set axis title"""
         axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
+        self.update_axis_style(axis_id)
+        
+    def get_axis_unit(self, axis_id):
+        """Get axis unit"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].unit
+        
+    def set_axis_unit(self, axis_id, text):
+        """Set axis unit"""
+        axis_id = self.get_axis_id(axis_id)
+        self.axes_styles[axis_id].unit = text
         self.update_axis_style(axis_id)
 
     def get_axis_font(self, axis_id):
@@ -204,9 +218,15 @@ class BasePlot(QwtPlot):
         ticks_font = style.ticks_font.build_font()
         self.setAxisFont(axis_id, ticks_font)
         
+        if style.title and style.unit:
+            title = "%s (%s)" % (style.title, style.unit)
+        elif style.title:
+            title = style.title
+        else:
+            title = style.unit
         axis_text = self.axisTitle(axis_id)
         axis_text.setFont(title_font)
-        axis_text.setText(style.title)
+        axis_text.setText(title)
         axis_text.setColor(QColor(style.color))
         self.setAxisTitle(axis_id, axis_text)
         self.emit(SIG_PLOT_LABELS_CHANGED, self)

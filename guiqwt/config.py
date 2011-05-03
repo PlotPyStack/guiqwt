@@ -47,6 +47,7 @@ DEFAULTS = {
 
               # Default parameters for plot axes
               "axis/title" : "",
+              "axis/unit" : "",
               "axis/color" : "black",
               "axis/title_font/size" : 8,
               "axis/title_font/family" : "default",
@@ -57,8 +58,9 @@ DEFAULTS = {
               "axis/ticks_font/bold" : False,
               "axis/ticks_font/italic" : False,
 
-              # Default parameters for image axes
-              "image_axis/title" : _(u"Pixels"),
+              # Default parameters for X/Y image axes
+              "image_axis/title" : "",
+              "image_axis/unit" : _(u"pixels"),
               "image_axis/color" : "black",
               "image_axis/title_font/size" : 8,
               "image_axis/title_font/family" : "default",
@@ -71,6 +73,7 @@ DEFAULTS = {
 
               # Default parameters for color scale
               "color_axis/title" : _(u"Intensity"),
+              "color_axis/unit" : _(u"lsb"),
               "color_axis/color" : "black",
               "color_axis/title_font/size" : 8,
               "color_axis/title_font/family" : "default",

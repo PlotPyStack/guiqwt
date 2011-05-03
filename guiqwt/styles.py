@@ -578,6 +578,7 @@ class GridParam(DataSet):
 # ===================================================
 class AxeStyleParam(DataSet):
     title = StringItem(_("Title"), default=u"")
+    unit = StringItem(_("Unit"), default=u"")
     color = ColorItem(_("Color"), default="black").set_pos(col=1)
     title_font = FontItem(_("Title font"))
     ticks_font = FontItem(_("Values font"))
