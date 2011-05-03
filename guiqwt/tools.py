@@ -1760,7 +1760,11 @@ def export_curve_data(item):
                                  "<br><br>"+_("Error message:")+"<br>"+\
                                  str(error))
 
-#TODO: ExportItemDataTool: add support for images
+def export_image_data(item):
+    """Export image item data to file"""
+    from guiqwt.io import exec_image_save_dialog
+    exec_image_save_dialog(item.data, item.plot())
+
 class ExportItemDataTool(CommandTool):
     def __init__(self, manager, toolbar_id=None):
         super(ExportItemDataTool,self).__init__(manager, _("Export data..."),
@@ -1769,6 +1773,9 @@ class ExportItemDataTool(CommandTool):
     def get_supported_items(self, plot):
         all_items = [item for item in plot.get_items(item_type=ICurveItemType)
                      if not item.is_empty()]
+        from guiqwt.image import ImageItem
+        all_items += [item for item in plot.get_items()
+                      if isinstance(item, ImageItem)]
         if len(all_items) == 1:
             return all_items
         else:
@@ -1783,6 +1790,8 @@ class ExportItemDataTool(CommandTool):
         for item in self.get_supported_items(plot):
             if ICurveItemType in item.types():
                 export_curve_data(item)
+            else:
+                export_image_data(item)
 
 
 class DeleteItemTool(CommandTool):
