@@ -241,7 +241,7 @@ class LevelsHistogram(CurvePlot):
         self.del_items(del_curves)
 
     def selection_changed(self, plot):
-        items = plot.get_selected_items(IVoiImageItemType)
+        items = plot.get_selected_items(item_type=IVoiImageItemType)
         known_items = self._tracked_items.setdefault(plot, {})
 
         if items:
@@ -250,14 +250,15 @@ class LevelsHistogram(CurvePlot):
                 # Removing any cached item for other plots
                 for other_plot, _items in self._tracked_items.items():
                     if other_plot is not plot:
-                        if not other_plot.get_selected_items(IVoiImageItemType):
+                        if not other_plot.get_selected_items(
+                                                item_type=IVoiImageItemType):
                             other_known_items = self._tracked_items[other_plot]
                             self.__del_known_items(other_known_items, [])
         else:
             # if all items are deselected we keep the last known
             # selection (for one plot only)
             for other_plot, _items in self._tracked_items.items():
-                if other_plot.get_selected_items(IVoiImageItemType):
+                if other_plot.get_selected_items(item_type=IVoiImageItemType):
                     self.__del_known_items(known_items, [])
                     break
                 
@@ -293,7 +294,7 @@ class LevelsHistogram(CurvePlot):
             self.replot()
 
     def active_item_changed(self, plot):
-        items = plot.get_selected_items(IVoiImageItemType)
+        items = plot.get_selected_items(item_type=IVoiImageItemType)
         if not items:
             #XXX: workaround
             return

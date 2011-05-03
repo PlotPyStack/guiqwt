@@ -958,7 +958,7 @@ class ImageStatsTool(RectangularShapeTool):
         self.register_shape(shape, final=True)
         
     def get_associated_item(self, plot):
-        items = plot.get_selected_items(IStatsImageItemType)
+        items = plot.get_selected_items(item_type=IStatsImageItemType)
         if len(items) == 1:
             self._last_item = items[0]
         return self._last_item
@@ -1779,7 +1779,8 @@ class ExportItemDataTool(CommandTool):
         if len(all_items) == 1:
             return all_items
         else:
-            return [item for item in plot.get_selected_items(ICurveItemType)
+            return [item for item in
+                    plot.get_selected_items(item_type=ICurveItemType)
                     if not item.is_empty()]
 
     def update_status(self, plot):
@@ -1892,7 +1893,8 @@ class ColormapTool(CommandTool):
         pass
 
     def get_selected_images(self, plot):
-        items = [it for it in plot.get_selected_items(IColormapImageItemType)]
+        items = [it for it in
+                 plot.get_selected_items(item_type=IColormapImageItemType)]
         if not items:
             active_image = plot.get_last_active_item(IColormapImageItemType)
             if active_image:

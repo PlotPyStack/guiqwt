@@ -343,9 +343,10 @@ class BasePlot(QwtPlot):
         else:
             raise RuntimeError(_("Unknown file extension"))
         
-    def get_selected_items(self, item_type=None):
+    def get_selected_items(self, z_sorted=False, item_type=None):
         """Return selected items"""
-        return [item for item in self.get_items(item_type=item_type)
+        return [item for item in
+                self.get_items(item_type=item_type, z_sorted=z_sorted)
                 if item.selected]
             
     def get_max_z(self):
