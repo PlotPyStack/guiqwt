@@ -37,7 +37,7 @@ from guiqwt.builder import make
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.3'
+VERSION = '0.2.4'
 
 
 def xy_fft(x, y):
@@ -933,8 +933,8 @@ try:
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
         def __init__(self, parent, namespace, message, commands=[]):
-            InternalShell.__init__(self, namespace=namespace, message=message,
-                                   commands=commands)
+            InternalShell.__init__(self, parent=parent, namespace=namespace,
+                                   message=message, commands=commands)
             DockableWidgetMixin.__init__(self, parent)
             self.setup()
             
