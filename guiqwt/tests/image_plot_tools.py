@@ -17,6 +17,7 @@ from guiqwt.tools import (RectangleTool, EllipseTool, HRangeTool, PlaceAxesTool,
                           AnnotatedRectangleTool, AnnotatedEllipseTool,
                           AnnotatedSegmentTool, AnnotatedCircleTool, LabelTool,
                           AnnotatedPointTool, VCursorTool, HCursorTool,
+                          AnnotatedVCursorTool, AnnotatedHCursorTool,
                           ObliqueRectangleTool, AnnotatedObliqueRectangleTool)
 from guiqwt.builder import make
 
@@ -30,7 +31,8 @@ def create_window():
                       AnnotatedRectangleTool, AnnotatedObliqueRectangleTool,
                       AnnotatedCircleTool,
                       AnnotatedEllipseTool, AnnotatedSegmentTool,
-                      AnnotatedPointTool):
+                      AnnotatedPointTool, AnnotatedVCursorTool,
+                      AnnotatedHCursorTool):
         win.add_tool(toolklass)
     return win
 

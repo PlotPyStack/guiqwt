@@ -1109,12 +1109,22 @@ class VCursorTool(BaseCursorTool):
         from guiqwt.shapes import VerticalCursor
         return VerticalCursor(0)
 
+class AnnotatedVCursorTool(VCursorTool):
+    def create_shape(self):
+        from guiqwt.annotations import AnnotatedVCursor
+        return AnnotatedVCursor(0)
+
 class HCursorTool(BaseCursorTool):
     TITLE = _("Horizontal cursor")
     ICON = "hcursor.png"
     def create_shape(self):
         from guiqwt.shapes import HorizontalCursor
         return HorizontalCursor(0)
+
+class AnnotatedHCursorTool(HCursorTool):
+    def create_shape(self):
+        from guiqwt.annotations import AnnotatedHCursor
+        return AnnotatedHCursor(0)
 
 
 class DummySeparatorTool(GuiTool):

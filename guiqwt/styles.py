@@ -1427,7 +1427,7 @@ class AnnotationParam(DataSet):
                                    "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
-    format = StringItem(_("String formatting"), default="%d pixels")
+    format = StringItem(_("String formatting"), default="%d")
     transform_matrix = FloatArrayItem(_("Transform matrix"),
                                       default=np.eye(3, dtype=float))
     
