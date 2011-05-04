@@ -527,7 +527,8 @@ class CrossSectionPlot(CurvePlot):
         
     def toggle_autorefresh(self, state):
         self.autorefresh_mode = state
-        self.update_plot()
+        if state:
+            self.update_plot()
         
     def toggle_apply_lut(self, state):
         self.apply_lut = state
