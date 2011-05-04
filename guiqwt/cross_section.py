@@ -395,12 +395,12 @@ class CrossSectionPlot(CurvePlot):
             self.axis_dir_changed(plot, axis_id)
         self.items_changed(plot)
         
-    def register_shape(self, plot, shape, final):
+    def register_shape(self, plot, shape, final, refresh=True):
         known_shapes = self._shapes.get(plot, [])
         if shape in known_shapes:
             return
         self._shapes[plot] = known_shapes+[shape]
-        self.update_plot(shape)
+        self.update_plot(shape, refresh=refresh and self.autorefresh_mode)
         
     def unregister_shape(self, shape):
         for plot in self._shapes:
@@ -478,7 +478,7 @@ class CrossSectionPlot(CurvePlot):
         if self.last_obj is not None:
             return self.last_obj()
         
-    def update_plot(self, obj=None):
+    def update_plot(self, obj=None, refresh=True):
         """
         Update cross section curve(s) associated to object *obj*
         
@@ -507,7 +507,8 @@ class CrossSectionPlot(CurvePlot):
                 curve.perimage_mode = self.perimage_mode
                 curve.autoscale_mode = self.autoscale_mode
                 curve.apply_lut = self.apply_lut
-                curve.update_item(obj)
+                if refresh:
+                    curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
         if self.apply_lut:
@@ -681,9 +682,9 @@ class CrossSectionWidget(PanelWidget):
         add_actions(self.toolbar, (self.export_ac, self.autoscale_ac,
                                    None, self.refresh_ac, self.autorefresh_ac))
         
-    def register_shape(self, shape, final):
+    def register_shape(self, shape, final, refresh=True):
         plot = self.get_plot()
-        self.cs_plot.register_shape(plot, shape, final)
+        self.cs_plot.register_shape(plot, shape, final, refresh)
         
     def unregister_shape(self, shape):
         self.cs_plot.unregister_shape(shape)
