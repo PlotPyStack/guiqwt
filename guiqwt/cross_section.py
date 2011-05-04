@@ -408,7 +408,7 @@ class CrossSectionPlot(CurvePlot):
             if shape in shapes:
                 shapes.pop(shapes.index(shape))
                 if len(shapes) == 0 or shape is self.get_last_obj():
-                    for curve in self.known_items.itervalues():
+                    for curve in self.get_cross_section_curves():
                         curve.clear_data()
                     self.replot()
                 break
@@ -432,6 +432,9 @@ class CrossSectionPlot(CurvePlot):
         for source in self.known_items.copy():
             if source not in new_sources:
                 curve = self.known_items.pop(source)
+                curve.clear_data() # useful to emit SIG_CS_CURVE_CHANGED
+                                   # (eventually notify other panels that the 
+                                   #  cross section curve is now empty)
                 self.del_item(curve)
         
         if not new_sources:
