@@ -393,7 +393,7 @@ class BaseImageItem(QwtPlotItem):
     def get_coordinates_label(self, xc, yc):
         title = self.title().text()
         z = self.get_data(xc, yc)
-        return "%s:<br>x = %d<br>y = %d<br>z = %f" % (title, xc, yc, z)
+        return "%s:<br>x = %d<br>y = %d<br>z = %g" % (title, xc, yc, z)
     
     def canvas_to_axes(self, pos):
         plot = self.plot()

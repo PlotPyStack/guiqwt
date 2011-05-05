@@ -499,7 +499,7 @@ class SelectPointTool(InteractiveTool):
             else:
                 constraint_cb = None
                 label_cb = lambda marker, x, y: \
-                           "%sx = %f<br>y = %f" % (title, x, y)
+                           "%sx = %g<br>y = %g" % (title, x, y)
             self.marker = Marker(label_cb=label_cb,
                                  constraint_cb=constraint_cb)
             self.set_marker_style(self.marker)

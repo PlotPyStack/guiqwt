@@ -456,7 +456,7 @@ class CurveItem(QwtPlotCurve):
 
     def get_coordinates_label(self, xc, yc):
         title = self.title().text()
-        return "%s:<br>x = %f<br>y = %f" % (title, xc, yc)
+        return "%s:<br>x = %g<br>y = %g" % (title, xc, yc)
 
     def get_closest_x(self, xc):
         # We assume X is sorted, otherwise we'd need :
@@ -1046,7 +1046,7 @@ class CurvePlot(BasePlot):
         item = self.get_last_active_item(ITrackableItemType)
         if item:
             return item.get_coordinates_label(x, y)
-        return "<b>%s</b><br>x = %f<br>y = %f" % (title, x, y)
+        return "<b>%s</b><br>x = %g<br>y = %g" % (title, x, y)
 
     def set_marker_axes(self):
         curve = self.get_last_active_item(ITrackableItemType)

@@ -403,7 +403,7 @@ class Marker(QwtPlotMarker):
             if label is None:
                 return
         else:
-            label = "x = %f<br>y = %f" % (x, y)
+            label = "x = %g<br>y = %g" % (x, y)
         text = self.label()
         text.setText(label)
         self.setLabel(text)
