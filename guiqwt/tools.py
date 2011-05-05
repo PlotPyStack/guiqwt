@@ -1144,7 +1144,7 @@ class DummySeparatorTool(GuiTool):
         
 
 class CommandTool(GuiTool):
-    """Classe de base des outils interactif d'un plot"""
+    """Base class for command tools: action, context menu entry"""
     def __init__(self, manager, title, icon=None, tip=None,
                  toolbar_id=DefaultToolbarID):
         self.title = title
