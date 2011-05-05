@@ -108,6 +108,7 @@ class AnnotatedShape(AbstractShape):
         return (IShapeItemType, ISerializableType)
     
     def __reduce__(self):
+        self.annotationparam.update_param(self)
         state = (self.shape, self.label, self.annotationparam)
         return (self.__class__, (), state)
 

@@ -465,6 +465,7 @@ class PolygonShape(AbstractShape):
         return (IShapeItemType, ISerializableType)
 
     def __reduce__(self):
+        self.shapeparam.update_param(self)
         state = (self.shapeparam, self.points, self.z())
         return (PolygonShape, (None, self.closed), state)
 
@@ -474,6 +475,8 @@ class PolygonShape(AbstractShape):
         self.setZ(z)
         self.shapeparam = param
         self.shapeparam.update_shape(self)
+    
+    #----Public API-------------------------------------------------------------
 
     def set_style(self, section, option):
         self.shapeparam.read_config(CONF, section, option)

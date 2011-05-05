@@ -6,6 +6,8 @@
   * tools.ImageStatsTool/CrossSectionTool.setup_shape / bugfix: parent method was not called
   * Sift/bugfix: Spyder's internal shell was not parented -- this was causing issues with spyderlib v2.0.11
   * Cross section/auto refresh toggle button: do not refresh plot if disabling the auto refresh mode
+  * (Fixes Issue 14) tools.CommandTool: docstring was translated from french
+  * (Fixes Issue 13) Fixed precision/string formatting issue: switched from '%f' to '%g' (on-curve labels, ...)
 
 === Possible API compatibility issues (since v2.1.2) ===
 
@@ -23,6 +25,7 @@
   * Added tool ItemCenterTool: center objects (rectangle, ellipse and their annotated counterparts)
   * Cross section panel: when a cross section shape has been removed, clearing cross section curve before removing it (notify other panels)
   * Cross sections/update_plot: added option 'refresh' (default: True) --> we do not want to refresh the cross section panel systematically after registering a new shape
+  * Annotations/annotationparam: added 'readonly' and 'private' options (bugfix: these parameters are now pickled correctly for shapes)
 
 ----
 

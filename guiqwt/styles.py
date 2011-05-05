@@ -1433,17 +1433,27 @@ class AnnotationParam(DataSet):
                             ).set_pos(col=1)
     transform_matrix = FloatArrayItem(_("Transform matrix"),
                                       default=np.eye(3, dtype=float))
+    readonly = BoolItem(_("Read-only shape"), default=False,
+                        help=_("Read-only shapes can't be removed from "
+                               "the item list panel"))
+    private = BoolItem(_("Private shape"), default=False,
+                        help=_("Private shapes are not shown in "
+                               "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
         self.title = obj.title().text()
+        self.readonly = obj.is_readonly()
+        self.private = obj.is_private()
         
     def update_annotation(self, obj):
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
         obj.area_computations_visible = self.show_computations
         obj.update_label()
+        obj.set_readonly(self.readonly)
+        obj.set_private(self.private)
 
 
 # ===================================================
