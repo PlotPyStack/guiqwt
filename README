@@ -30,7 +30,7 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
             PIL 1.1.x (x>=6)
             
 	Optional modules
-              spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
+            spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
 	    pydicom v0.9.x (x>=4)
 
     Building/Installation
