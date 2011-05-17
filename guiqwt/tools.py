@@ -1766,7 +1766,7 @@ def export_curve_data(item):
 
 def export_image_data(item):
     """Export image item data to file"""
-    from guiqwt.io import exec_image_save_dialog
+    from guiqwt.qthelpers import exec_image_save_dialog
     exec_image_save_dialog(item.data, item.plot())
 
 class ExportItemDataTool(CommandTool):

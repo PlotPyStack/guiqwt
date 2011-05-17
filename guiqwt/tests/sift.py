@@ -861,7 +861,7 @@ class ImageFT(ObjectFT):
     
     def open_image(self):
         """Open image file"""
-        from guiqwt.io import exec_images_open_dialog
+        from guiqwt.qthelpers import exec_images_open_dialog
         for filename, data in exec_images_open_dialog(
                                         self, basedir=self.directory,
                                         app_name=APP_NAME, to_grayscale=True):
@@ -883,7 +883,7 @@ class ImageFT(ObjectFT):
         rows = self._get_selected_rows()
         for row in rows:
             obj = self.objects[row]
-            from guiqwt.io import exec_image_save_dialog
+            from guiqwt.qthelpers import exec_image_save_dialog
             filename = exec_image_save_dialog(obj.data, self,
                                               basedir=self.directory,
                                               app_name=APP_NAME)
