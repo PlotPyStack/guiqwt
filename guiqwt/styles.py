@@ -1427,7 +1427,7 @@ class AnnotationParam(DataSet):
                                    "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
-    format = StringItem(_("String formatting"), default="%d")
+    format = StringItem(_("String formatting"), default="%.1f")
     uncertainty = FloatItem(_("Uncertainty"), default=0., min=0., max=1.,
                             help=_("Measurement relative uncertainty")
                             ).set_pos(col=1)
