@@ -373,7 +373,10 @@ class BasePlot(QwtPlot):
             item.setZ(z)
         else:
             item.setZ(self.get_max_z()+1)
-        self.items.append(item)
+        if item in self.items:
+            print >>sys.stderr, "Warning: item %r is already attached to plot" % item
+        else:
+            self.items.append(item)
         self.emit(SIG_ITEMS_CHANGED, self)
         
     def add_item_with_z_offset(self, item, zoffset):
