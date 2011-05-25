@@ -37,9 +37,9 @@ Reference
 
 import weakref
 
-from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem)
-from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
+from guidata.qt.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
+                              QSpacerItem)
+from guidata.qt.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
 

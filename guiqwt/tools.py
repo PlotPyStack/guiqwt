@@ -239,9 +239,10 @@ except ImportError:
 
 import sys, numpy as np, weakref, os.path as osp
 
-from PyQt4.QtCore import Qt, QObject, SIGNAL
-from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
-                         QMessageBox, QPrintDialog, QFont, QAction, QToolButton)
+from guidata.qt.QtCore import Qt, QObject, SIGNAL
+from guidata.qt.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
+                              QMessageBox, QPrintDialog, QFont, QAction,
+                              QToolButton)
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon

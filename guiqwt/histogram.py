@@ -42,8 +42,8 @@ Reference
    :inherited-members:
 """
 import numpy as np
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
+from guidata.qt.QtCore import Qt
+from guidata.qt.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
 
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem

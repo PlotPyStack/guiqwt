@@ -45,8 +45,8 @@ Reference
 import sys
 import numpy as np
 
-from PyQt4.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
-from PyQt4.QtCore import QSize, Qt
+from guidata.qt.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
+from guidata.qt.QtCore import QSize, Qt
 
 from guidata.configtools import get_font
 

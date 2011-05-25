@@ -13,7 +13,7 @@ The `colormap` module contains definition of common colormaps and tools
 to manipulate and create them
 """
 
-from PyQt4.QtGui import QColor, QIcon, QPixmap
+from guidata.qt.QtGui import QColor, QIcon, QPixmap
 
 from numpy import array, uint8, linspace, zeros, newaxis
 

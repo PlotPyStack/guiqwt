@@ -100,8 +100,9 @@ Reference
 
 import numpy as np
 
-from PyQt4.QtGui import QPen, QBrush, QColor, QFont, QFontDialog, QTransform
-from PyQt4.QtCore import Qt, QSize, QPointF
+from guidata.qt.QtGui import (QPen, QBrush, QColor, QFont, QFontDialog,
+                              QTransform)
+from guidata.qt.QtCore import Qt, QSize, QPointF
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,

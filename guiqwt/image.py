@@ -138,8 +138,8 @@ import sys, os, os.path as osp
 import numpy as np
 from math import fabs
 
-from PyQt4.QtGui import QColor, QImage
-from PyQt4.QtCore import QRectF, QPointF, QRect
+from guidata.qt.QtGui import QColor, QImage
+from guidata.qt.QtCore import QRectF, QPointF, QRect
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 

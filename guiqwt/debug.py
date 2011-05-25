@@ -14,8 +14,8 @@ of Qt Objects).
 """
 
 from StringIO import StringIO
-from PyQt4.QtGui import QImage, QInputEvent
-from PyQt4.QtCore import Qt, QEvent
+from guidata.qt.QtGui import QImage, QInputEvent
+from guidata.qt.QtCore import Qt, QEvent
 
 def buttons_to_str(buttons):
     """Conversion des flags Qt en chaine"""

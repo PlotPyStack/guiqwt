@@ -85,8 +85,8 @@ Reference
 import sys, numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
-from PyQt4.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
-from PyQt4.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
+from guidata.qt.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
+from guidata.qt.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -99,8 +99,7 @@ from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
                             SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
 from guiqwt.geometry import (vector_norm, vector_projection, vector_rotation,
-                             compute_center, compute_rect_size,
-                             compute_distance, compute_angle)
+                             compute_center)
 
 
 class AbstractShape(QwtPlotItem):

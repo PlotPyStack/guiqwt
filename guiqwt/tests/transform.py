@@ -9,8 +9,8 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtCore import QRectF
-from PyQt4.QtGui import QImage
+from guidata.qt.QtCore import QRectF
+from guidata.qt.QtGui import QImage
 
 import numpy as np
 
@@ -22,7 +22,7 @@ from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
 DEFAULT_CHARS = "".join([chr(c) for c in range(32,256)])
 
 def get_font_array(sz, chars=DEFAULT_CHARS):
-    from PyQt4.QtGui import QFont, QPainter, QColor
+    from guidata.qt.QtGui import QFont, QPainter, QColor
     font = QFont()
     font.setFixedPitch(True)
     font.setPixelSize(sz)

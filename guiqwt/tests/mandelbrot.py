@@ -11,7 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
 
-from PyQt4.QtCore import QRectF, QPointF
+from guidata.qt.QtCore import QRectF, QPointF
 
 from guiqwt.config import _
 from guiqwt.plot import ImageDialog

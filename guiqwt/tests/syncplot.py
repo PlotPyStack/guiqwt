@@ -16,7 +16,7 @@
 
 SHOW = False # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import QFont
+from guidata.qt.QtGui import QFont
 
 from guiqwt.baseplot import BasePlot
 from guiqwt.plot import CurvePlotDialog, CurvePlotWidget, PlotManager

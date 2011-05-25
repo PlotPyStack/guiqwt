@@ -44,8 +44,8 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import QPen, QColor, QTextDocument
-from PyQt4.QtCore import QRectF
+from guidata.qt.QtGui import QPen, QColor, QTextDocument
+from guidata.qt.QtCore import QRectF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 

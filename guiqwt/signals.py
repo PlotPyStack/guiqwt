@@ -89,7 +89,7 @@ Signals available:
 
         Arguments: filter
 """
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtCore import SIGNAL
 
 # Emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
 SIG_ITEM_MOVED = SIGNAL("item_moved(PyQt_PyObject,double,double,double,double)")

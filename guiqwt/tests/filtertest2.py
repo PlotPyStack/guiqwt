@@ -10,9 +10,9 @@ filtertest1.py + plot manager"""
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-                         QMainWindow)
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtGui import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+                              QMainWindow)
+from guidata.qt.QtCore import SIGNAL
 
 #---Import plot widget base class
 from guiqwt.curve import CurvePlot
@@ -99,7 +99,7 @@ class TestWindow(QMainWindow):
 
 def test():
     """Testing this simple Qt/guiqwt example"""
-    from PyQt4.QtGui import QApplication
+    from guidata.qt.QtGui import QApplication
     import numpy as np
     import scipy.signal as sps, scipy.ndimage as spi
     

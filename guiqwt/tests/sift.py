@@ -12,10 +12,10 @@ Simple signal and image processing application based on guiqwt and guidata
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                         QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QTabWidget, QMenu, QApplication, QCursor, QFont)
-from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
+                              QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
+                              QTabWidget, QMenu, QApplication, QCursor, QFont)
+from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp, os
 import numpy as np

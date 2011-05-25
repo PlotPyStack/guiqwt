@@ -104,10 +104,11 @@ Reference
 
 import weakref, warnings
 
-from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
-                         QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QSizePolicy, QApplication, QWidget, QMainWindow)
-from PyQt4.QtCore import Qt, SIGNAL, SLOT
+from guidata.qt.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout,
+                              QToolBar, QDialog, QHBoxLayout, QMenu,
+                              QActionGroup, QSplitter, QSizePolicy,
+                              QApplication, QWidget, QMainWindow)
+from guidata.qt.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid

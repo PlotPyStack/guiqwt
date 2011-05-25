@@ -100,9 +100,10 @@ Reference
 
 import sys, numpy as np
 
-from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                         QToolBar, QMessageBox, QBrush)
-from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF, QLine
+from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
+                              QToolBar, QMessageBox, QBrush)
+from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
+                               QLine)
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout

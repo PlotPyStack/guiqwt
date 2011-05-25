@@ -29,7 +29,7 @@ Reference
 """
 
 import sys, os.path as osp
-from PyQt4.QtGui import QFileDialog, QMessageBox
+from guidata.qt.QtGui import QFileDialog, QMessageBox
 
 # Local imports
 from guiqwt.config import _

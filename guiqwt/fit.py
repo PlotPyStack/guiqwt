@@ -41,10 +41,10 @@ Reference
 
 from __future__ import division
 
-from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QLineEdit,
-                         QDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QDialogButtonBox)
-from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
+from guidata.qt.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
+                              QLineEdit, QDialog, QVBoxLayout, QHBoxLayout,
+                              QWidget, QDialogButtonBox)
+from guidata.qt.QtCore import Qt, SIGNAL, QObject, SLOT
 
 import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)

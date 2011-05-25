@@ -9,7 +9,7 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import QFont
+from guidata.qt.QtGui import QFont
 
 from guiqwt.plot import CurveDialog
 from guiqwt.tools import HRangeTool

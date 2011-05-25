@@ -16,7 +16,7 @@ guiqwt.events
 The `event` module handles event management (states, event filter, ...).
 """
 
-from PyQt4.QtCore import QEvent, Qt, QObject, QPoint
+from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
 
 CursorShape = type(Qt.ArrowCursor)
 

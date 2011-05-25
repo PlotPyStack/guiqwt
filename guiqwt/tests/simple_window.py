@@ -9,9 +9,10 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                         QFileDialog)
-from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt, SIGNAL
+from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
+                              QFileDialog)
+from guidata.qt.QtCore import (QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt,
+                               SIGNAL)
 
 import sys, platform
 import numpy as np
