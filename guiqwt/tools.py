@@ -271,7 +271,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
-                            SIG_APPLIED_MASK_TOOL)
+                            SIG_APPLIED_MASK_TOOL, SIG_TOOL_JOB_FINISHED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -354,6 +354,7 @@ class InteractiveTool(GuiTool):
     ICON = None
     TIP = None
     CURSOR = Qt.CrossCursor
+    SWITCH_TO_DEFAULT_TOOL = False # switch to default tool when finished
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
                  title=None, icon=None, tip=None):
@@ -366,6 +367,10 @@ class InteractiveTool(GuiTool):
         super(InteractiveTool, self).__init__(manager, toolbar_id)
         # Starting state for every plotwidget we can act upon
         self.start_state = {}
+        
+        if self.SWITCH_TO_DEFAULT_TOOL:
+            self.connect(self, SIG_TOOL_JOB_FINISHED,
+                         self.manager.activate_default_tool)
                         
     def create_action(self, manager):
         """Create and return tool's action"""
@@ -416,6 +421,7 @@ class InteractiveTool(GuiTool):
 
     def validate(self, filter, event):
         self.emit(SIG_VALIDATE_TOOL, filter)
+        self.emit(SIG_TOOL_JOB_FINISHED)
 
 
 class SelectTool(InteractiveTool):
@@ -699,6 +705,7 @@ class LabelTool(InteractiveTool):
             if self.handle_label_cb is not None:
                 self.handle_label_cb(label)
             plot.replot()
+            self.emit(SIG_TOOL_JOB_FINISHED)
         
 
 class RectangularActionTool(InteractiveTool):
@@ -762,6 +769,7 @@ class RectangularActionTool(InteractiveTool):
     def end_rect(self, filter, p0, p1):
         plot = filter.plot
         self.action_func(plot, p0, p1)
+        self.emit(SIG_TOOL_JOB_FINISHED)
 
 
 class RectangularShapeTool(RectangularActionTool):
@@ -923,6 +931,7 @@ def update_image_tool_status(tool, plot):
     return enabled
 
 class ImageStatsTool(RectangularShapeTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Image statistics")
     ICON = "imagestats.png"
     SHAPE_STYLE_KEY = "shape/image_stats"
@@ -975,6 +984,7 @@ class ImageStatsTool(RectangularShapeTool):
     
         
 class CrossSectionTool(RectangularShapeTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Cross section")
     ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
@@ -1020,6 +1030,7 @@ class CrossSectionTool(RectangularShapeTool):
         self.register_shape(shape, final=True)
 
 class AverageCrossSectionTool(CrossSectionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Average cross section")
     ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
@@ -1028,6 +1039,7 @@ class AverageCrossSectionTool(CrossSectionTool):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
 class ObliqueCrossSectionTool(CrossSectionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Oblique averaged cross section")
     ICON = "csection_oblique.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
@@ -1099,6 +1111,7 @@ class BaseCursorTool(InteractiveTool):
             assert self.shape.plot() == filter.plot
             filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)
             self.shape = None
+            self.emit(SIG_TOOL_JOB_FINISHED)
 
 class HRangeTool(BaseCursorTool):
     TITLE = _("Horizontal selection")
@@ -1530,6 +1543,7 @@ def save_snapshot(plot, p0, p1):
         raise RuntimeError(_("Unknown file extension"))
 
 class SnapshotTool(RectangularActionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Rectangle snapshot")
     ICON = "snapshot.png"
     def __init__(self, manager, toolbar_id=DefaultToolbarID):

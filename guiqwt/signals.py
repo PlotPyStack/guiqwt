@@ -147,6 +147,9 @@ SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")
 # "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
 SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
 
+# Emitted by an interactive tool to notify that it is finished doing its job
+SIG_TOOL_JOB_FINISHED = SIGNAL("tool_job_finished")
+
 # Emitted by cross section plot when cross section curve data has changed
 SIG_CS_CURVE_CHANGED = SIGNAL("cs_curve_changed(PyQt_PyObject)")
 
