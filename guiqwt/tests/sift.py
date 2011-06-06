@@ -40,6 +40,34 @@ Simple signal and image processing application based on guiqwt and guidata""")
 VERSION = '0.2.5'
 
 
+def normalize(yin, parameter='maximum'):
+    """
+    Normalize input array *yin* with respect to parameter *parameter*
+    
+    Support values for *parameter*:
+        'maximum' (default), 'amplitude', 'sum', 'energy'
+    """
+    axis = len(yin.shape)-1
+    if parameter == 'maximum':
+        maximum = np.max(yin, axis)
+        if axis == 1:
+            maximum = maximum.reshape((len(maximum), 1))
+        maxarray = np.tile(maximum, yin.shape[axis]).reshape(yin.shape)
+        return yin / maxarray
+    elif parameter == 'amplitude':
+        ytemp = np.array(yin, copy=True)
+        minimum = np.min(yin, axis)
+        if axis == 1:
+            minimum = minimum.reshape((len(minimum), 1))
+        ytemp -= minimum
+        return normalize(ytemp, parameter='maximum')
+    elif parameter == 'sum':
+        return yin/yin.sum()
+    elif parameter == 'energy':
+        return yin/(yin*yin.conjugate()).sum()
+    else:
+        raise RuntimeError("Unsupported parameter %s" % parameter)
+
 def xy_fft(x, y):
     """Compute FFT on X,Y data"""
     y1 = np.fft.fft(y)
@@ -446,8 +474,18 @@ class SignalFT(ObjectFT):
                                     triggered=self.save_signal)
         self.actlist_1more += [save_action]
         self.file_actions = [new_action, open_action, save_action]
+
+        # Operation actions
+        roi_action = create_action(self, _("ROI extraction"),
+                                   triggered=self.extract_roi)
+        swapaxes_action = create_action(self, _("Swap X/Y axes"),
+                                        triggered=self.swap_axes)
+        self.actlist_1more += [roi_action, swapaxes_action]
+        self.operation_actions += [None, roi_action, swapaxes_action]
         
         # Processing actions
+        normalize_action = create_action(self, _("Normalize"),
+                                         triggered=self.normalize)
         gaussian_action = create_action(self, _("Gaussian filter"),
                                         triggered=self.compute_gaussian)
         wiener_action = create_action(self, _("Wiener filter"),
@@ -458,10 +496,10 @@ class SignalFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [gaussian_action, wiener_action,
+        self.actlist_1more += [normalize_action, gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [gaussian_action, wiener_action, fft_action,
-                                   ifft_action]
+        self.processing_actions = [normalize_action, gaussian_action,
+                                   wiener_action, fft_action, ifft_action]
                                    
         add_actions(toolbar, [new_action, open_action, save_action])
 
@@ -479,6 +517,20 @@ class SignalFT(ObjectFT):
         item.set_data(x, y.real)
         item.curveparam.label = signal.title
         
+    #------Signal operations
+    def extract_roi(self):
+        class ROIParam(DataSet):
+            row1 = IntItem(_("First row index"), default=0, min=-1)
+            row2 = IntItem(_("Last row index"), default=-1, min=-1)
+        param = ROIParam(_("ROI extraction"))
+        self.compute_11("ROI", lambda x, y, p: (x.copy()[p.row1:p.row2],
+                                                y.copy()[p.row1:p.row2]),
+                        param, suffix=lambda p:
+                                      u"rows=%d:%d" % (p.row1, p.row2))
+    
+    def swap_axes(self):
+        self.compute_11("SwapAxes", lambda x, y: (y, x))
+    
     #------Signal Processing
     def apply_11_func(self, obj, orig, func, param):
         xor, yor = orig.xydata
@@ -486,6 +538,19 @@ class SignalFT(ObjectFT):
             obj.xydata = func(xor, yor)
         else:
             obj.xydata = func(xor, yor, param)
+            
+    def normalize(self):
+        methods = ((_("maximum"), 'maximum'),
+                   (_("amplitude"), 'amplitude'),
+                   (_("sum"), 'sum'),
+                   (_("energy"), 'energy'))
+        class NormalizeParam(DataSet):
+            method = ChoiceItem(_("Normalize with respect to"), methods)
+        param = NormalizeParam(_("Normalize"))
+        def func(x, y, p):
+            return x, normalize(y, p.method)
+        self.compute_11("Normalize", func, param,
+                        suffix=lambda p: u"ref=%s" % p.method)
     
     def compute_wiener(self):
         import scipy.signal as sps
@@ -640,17 +705,21 @@ class ImageFT(ObjectFT):
                                       triggered=self.rotate_arbitrarily)
         resize_action = create_action(self, _("Resize"),
                                       triggered=self.resize_image)
-        crop_action = create_action(self, _("Crop"), triggered=self.crop_image)
+        roi_action = create_action(self, _("ROI extraction"),
+                                    triggered=self.extract_roi)
+        swapaxes_action = create_action(self, _("Swap X/Y axes"),
+                                        triggered=self.swap_axes)
         flatfield_action = create_action(self, _("Flat-field correction"),
                                          triggered=self.flat_field_correction)
         self.actlist_1 += [resize_action]
         self.actlist_2 += [flatfield_action]
-        self.actlist_1more += [crop_action, hflip_action, vflip_action,
+        self.actlist_1more += [roi_action, swapaxes_action,
+                               hflip_action, vflip_action,
                                rot90_action, rot270_action, rotate_action]
         add_actions(rotate_menu, [hflip_action, vflip_action,
                                   rot90_action, rot270_action, rotate_action])
         self.operation_actions += [None, rotate_menu, None,
-                                   resize_action, crop_action,
+                                   resize_action, roi_action, swapaxes_action,
                                    None, flatfield_action]
         
         # Processing actions
@@ -768,17 +837,20 @@ class ImageFT(ObjectFT):
                                                prefilter=p.prefilter),
                         param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
                         
-    def crop_image(self):
-        class CropParam(DataSet):
+    def extract_roi(self):
+        class ROIParam(DataSet):
             row1 = IntItem(_("First row index"), default=0, min=-1)
             row2 = IntItem(_("Last row index"), default=-1, min=-1)
             col1 = IntItem(_("First column index"), default=0, min=-1)
             col2 = IntItem(_("Last column index"), default=-1, min=-1)
-        param = CropParam(_("Crop"))
-        self.compute_11("Crop", lambda x, p:
+        param = ROIParam(_("ROI extraction"))
+        self.compute_11("ROI", lambda x, p:
                         x.copy()[p.row1:p.row2, p.col1:p.col2],
-                        param, suffix=lambda p: u"roi=%d:%d,%d:%d" 
+                        param, suffix=lambda p: u"rows=%d:%d,cols=%d:%d" 
                         % (p.row1, p.row2, p.col1, p.col2))
+    
+    def swap_axes(self):
+        self.compute_11("SwapAxes", lambda z: z.T)
         
     def flat_field_correction(self):
         rows = self._get_selected_rows()
