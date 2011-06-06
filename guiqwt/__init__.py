@@ -21,6 +21,14 @@ External resources:
 """
 
 
+# Summer'11 Internal Sprint
+# =========================
+#
+# 1. Merge ImagePlot/CurvePlot widgets (issues: autoscale, aspect ratio, ...)
+# 2. Fix log scale bugs (e.g. default ymin value 1e-100)
+
+
+
 #    Copyright © 2009-2010 CEA
 #    Pierre Raybaut
 #    Licensed under the terms of the CECILL License (see below)

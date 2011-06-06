@@ -360,7 +360,7 @@ class ObjectFT(QSplitter):
         try:
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
-            diffobj.data = obj1.data-obj0.data
+            diffobj.data = obj0.data-obj1.data
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -377,7 +377,7 @@ class ObjectFT(QSplitter):
         try:
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
-            diffobj.data = obj1.data/obj0.data
+            diffobj.data = obj0.data/obj1.data
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -934,7 +934,8 @@ try:
         LOCATION = Qt.BottomDockWidgetArea
         def __init__(self, parent, namespace, message, commands=[]):
             InternalShell.__init__(self, parent=parent, namespace=namespace,
-                                   message=message, commands=commands)
+                                   message=message, commands=commands,
+                                   multithreaded=True)
             DockableWidgetMixin.__init__(self, parent)
             self.setup()
             
