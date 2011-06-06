@@ -37,7 +37,7 @@ from guiqwt.builder import make
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 
 
 def xy_fft(x, y):
@@ -129,8 +129,6 @@ class ObjectFT(QSplitter):
         self.processing_actions = None
         
         self.number = 0
-        
-        self.directory = "" # last browsed directory
 
         # Object selection dependent actions
         self.actlist_1more = []
@@ -547,13 +545,13 @@ class SignalFT(ObjectFT):
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
                   % (_(u"Text files"), _(u"NumPy arrays"))
-        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
-                                               self.directory, filters)
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"), '',
+                                                 filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filenames = list(filenames)
         for filename in filenames:
             filename = unicode(filename)
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             signal = SignalParam()
             signal.title = filename
             try:
@@ -588,12 +586,12 @@ class SignalFT(ObjectFT):
         """Save selected signal"""
         rows = self._get_selected_rows()
         for row in rows:
-            filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                                   self.directory, _(u"CSV files")+" (*.csv)")
+            filename = QFileDialog.getSaveFileName(self, _("Save as"), '',
+                                                   _(u"CSV files")+" (*.csv)")
             if not filename:
                 return
             filename = unicode(filename)
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             obj = self.objects[row]
             try:
                 np.savetxt(filename, obj.xydata, delimiter=',')
@@ -862,10 +860,9 @@ class ImageFT(ObjectFT):
     def open_image(self):
         """Open image file"""
         from guiqwt.qthelpers import exec_images_open_dialog
-        for filename, data in exec_images_open_dialog(
-                                        self, basedir=self.directory,
+        for filename, data in exec_images_open_dialog(self, basedir='',
                                         app_name=APP_NAME, to_grayscale=True):
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             image = ImageParam()
             image.title = filename
             image.data = data
@@ -884,11 +881,10 @@ class ImageFT(ObjectFT):
         for row in rows:
             obj = self.objects[row]
             from guiqwt.qthelpers import exec_image_save_dialog
-            filename = exec_image_save_dialog(obj.data, self,
-                                              basedir=self.directory,
+            filename = exec_image_save_dialog(obj.data, self, basedir='',
                                               app_name=APP_NAME)
             if filename:
-                self.directory = osp.dirname(filename)
+                os.chdir(osp.dirname(filename))
         
 
 class DockablePlotWidget(DockableWidget):
