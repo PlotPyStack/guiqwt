@@ -486,6 +486,8 @@ class SignalFT(ObjectFT):
         # Processing actions
         normalize_action = create_action(self, _("Normalize"),
                                          triggered=self.normalize)
+        lincal_action = create_action(self, _("Linear calibration"),
+                                      triggered=self.calibrate)
         gaussian_action = create_action(self, _("Gaussian filter"),
                                         triggered=self.compute_gaussian)
         wiener_action = create_action(self, _("Wiener filter"),
@@ -496,10 +498,12 @@ class SignalFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [normalize_action, gaussian_action, wiener_action,
+        self.actlist_1more += [normalize_action, lincal_action,
+                               gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [normalize_action, gaussian_action,
-                                   wiener_action, fft_action, ifft_action]
+        self.processing_actions = [normalize_action, lincal_action, None,
+                                   gaussian_action, wiener_action,
+                                   fft_action, ifft_action]
                                    
         add_actions(toolbar, [new_action, open_action, save_action])
 
@@ -551,6 +555,22 @@ class SignalFT(ObjectFT):
             return x, normalize(y, p.method)
         self.compute_11("Normalize", func, param,
                         suffix=lambda p: u"ref=%s" % p.method)
+    
+    def calibrate(self):
+        axes = (('x', _("X-axis")), ('y', _("Y-axis")))
+        class CalibrateParam(DataSet):
+            axis = ChoiceItem(_("Calibrate"), axes, default='y')
+            a = FloatItem('a', default=1.)
+            b = FloatItem('b', default=0.)
+        param = CalibrateParam(_("Linear calibration"), "y = a.x + b")
+        def func(x, y, p):
+            if p.axis == 'x':
+                return p.a*x+p.b, y
+            else:
+                return x, p.a*y+p.b
+        self.compute_11("LinearCal", func, param,
+                        suffix=lambda p: u"%s=%s*%s+%s" % (p.axis, p.a,
+                                                           p.axis, p.b))
     
     def compute_wiener(self):
         import scipy.signal as sps
@@ -723,6 +743,8 @@ class ImageFT(ObjectFT):
                                    None, flatfield_action]
         
         # Processing actions
+        lincal_action = create_action(self, _("Linear calibration"),
+                                      triggered=self.calibrate)
         threshold_action = create_action(self, _("Thresholding"),
                                          triggered=self.compute_threshold)
         clip_action = create_action(self, _("Clipping"),
@@ -737,10 +759,11 @@ class ImageFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [threshold_action, clip_action,
+        self.actlist_1more += [lincal_action, threshold_action, clip_action,
                                gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [threshold_action, clip_action, None,
+        self.processing_actions = [lincal_action, threshold_action,
+                                   clip_action, None,
                                    gaussian_action, wiener_action, fft_action,
                                    ifft_action]
                                    
@@ -869,6 +892,14 @@ class ImageFT(ObjectFT):
         self.add_object(robj)
         
     #------Image Processing
+    def calibrate(self):
+        class CalibrateParam(DataSet):
+            a = FloatItem('a', default=1.)
+            b = FloatItem('b', default=0.)
+        param = CalibrateParam(_("Linear calibration"), "y = a.x + b")
+        self.compute_11("LinearCal", lambda x, p: p.a*x+p.b, param,
+                        suffix=lambda p: u"z=%s*z+%s" % (p.a, p.b))
+    
     def compute_threshold(self):
         class ThresholdParam(DataSet):
             value = FloatItem(_(u"Threshold"))
