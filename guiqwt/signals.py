@@ -35,11 +35,6 @@ Signals available:
         Emitted by plot when a shapes.XRangeSelection range changes
         
         Arguments: range object, lower_bound, upper_bound
-    :py:data:`guiqwt.signals.SIG_CURSOR_MOVED`
-        Emitted by plot when a shapes.VerticalCursor or shapes.HorizontalCursor 
-        position changes
-        
-        Arguments: cursor item, position
     :py:data:`guiqwt.signals.SIG_ITEMS_CHANGED`
         Emitted by plot when item list has changed (item removed, added, ...)
         
@@ -105,9 +100,6 @@ SIG_ANNOTATION_CHANGED = SIGNAL("annotation_changed(PyQt_PyObject)")
 
 # Emitted by plot when the a shapes.XRangeSelection range changes
 SIG_RANGE_CHANGED = SIGNAL("range_changed(PyQt_PyObject,double,double)")
-
-# Emitted by plot when a shapes.VerticalCursor/HorizontalCursor position changes
-SIG_CURSOR_MOVED = SIGNAL("cursor_moved(PyQt_PyObject,double)")
 
 # Emitted by plot when item list has changed (item removed, added, ...)
 SIG_ITEMS_CHANGED = SIGNAL('items_changed(PyQt_PyObject)')

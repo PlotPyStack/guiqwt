@@ -286,7 +286,7 @@ class LabelItem(AbstractLabelItem):
     def __reduce__(self):
         return (self.__class__, (self.text_string, self.labelparam))
 
-    def set_position(self, x, y):
+    def set_pos(self, x, y):
         self.G = x, y
         self.labelparam.xg, self.labelparam.yg = x, y
         
@@ -452,16 +452,6 @@ class SelectedLegendBoxItem(LegendBoxItem):
 class ObjectInfo(object):
     def get_text(self):
         return u""
-
-class CursorComputation(ObjectInfo):
-    def __init__(self, label, cursor, function):
-        self.label = unicode(label)
-        self.cursor = cursor
-        self.func = function
-
-    def get_text(self):
-        pos = self.cursor.get_pos()
-        return self.label % self.func(pos)
 
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):

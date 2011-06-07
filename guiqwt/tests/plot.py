@@ -51,6 +51,8 @@ def test():
                     (x[0], y[0]), (10, 10), "TL"),
          make.label("Absolute position", "R", (0,0), "R"),
          make.legend("TR"),
+         make.marker(position=(5., .8), label_cb=lambda x, y: u"A = %.2f" % x,
+                     markerstyle="|", movable=False)
          )
 
 if __name__ == "__main__":

@@ -501,11 +501,11 @@ class SelectPointTool(InteractiveTool):
                 title = "<b>%s</b><br>" % self.TITLE
             if self.on_active_item:
                 constraint_cb = filter.plot.on_active_curve
-                label_cb = lambda marker, x, y: title + \
-                           filter.plot.get_coordinates_str(marker, x, y)
+                label_cb = lambda x, y: title + \
+                           filter.plot.get_coordinates_str(x, y)
             else:
                 constraint_cb = None
-                label_cb = lambda marker, x, y: \
+                label_cb = lambda x, y: \
                            "%sx = %g<br>y = %g" % (title, x, y)
             self.marker = Marker(label_cb=label_cb,
                                  constraint_cb=constraint_cb)
@@ -700,7 +700,7 @@ class LabelTool(InteractiveTool):
             label.setTitle(self.TITLE)
             x = plot.invTransform(label.xAxis(), event.pos().x())
             y = plot.invTransform(label.yAxis(), event.pos().y())
-            label.set_position(x, y)
+            label.set_pos(x, y)
             plot.add_item_with_z_offset(label, SHAPE_Z_OFFSET)
             if self.handle_label_cb is not None:
                 self.handle_label_cb(label)
@@ -1124,25 +1124,28 @@ class VCursorTool(BaseCursorTool):
     TITLE = _("Vertical cursor")
     ICON = "vcursor.png"
     def create_shape(self):
-        from guiqwt.shapes import VerticalCursor
-        return VerticalCursor(0)
-
-class AnnotatedVCursorTool(VCursorTool):
-    def create_shape(self):
-        from guiqwt.annotations import AnnotatedVCursor
-        return AnnotatedVCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('|')
+        return marker
 
 class HCursorTool(BaseCursorTool):
     TITLE = _("Horizontal cursor")
     ICON = "hcursor.png"
     def create_shape(self):
-        from guiqwt.shapes import HorizontalCursor
-        return HorizontalCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('-')
+        return marker
 
-class AnnotatedHCursorTool(HCursorTool):
+class XCursorTool(BaseCursorTool):
+    TITLE = _("Cross cursor")
+    ICON = "xcursor.png"
     def create_shape(self):
-        from guiqwt.annotations import AnnotatedHCursor
-        return AnnotatedHCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('+')
+        return marker
 
 
 class DummySeparatorTool(GuiTool):

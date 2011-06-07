@@ -808,8 +808,7 @@ class ItemListWidget(QListWidget):
                                         AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
-                                   XRangeSelection, VerticalCursor,
-                                   HorizontalCursor)
+                                   XRangeSelection)
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
@@ -834,8 +833,6 @@ class ItemListWidget(QListWidget):
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
                             (XRangeSelection, 'xrange.png'),
-                            (VerticalCursor, 'vcursor.png'),
-                            (HorizontalCursor, 'hcursor.png'),
                             (PolygonShape, 'freeform.png'),
                             (Histogram2DItem, 'histogram2d.png'),
                             (ImageFilterItem, 'funct.png'),
@@ -1036,13 +1033,13 @@ class CurvePlot(BasePlot):
         return (self.transform(plot_item.xAxis(), x),
                 self.transform(plot_item.yAxis(), y))
 
-    def on_active_curve(self, marker, x, y):
+    def on_active_curve(self, x, y):
         curve = self.get_last_active_item(ITrackableItemType)
         if curve:
             x, y = curve.get_closest_coordinates(x, y)
         return x, y
     
-    def get_coordinates_str(self, marker, x, y):
+    def get_coordinates_str(self, x, y):
         title = _("Grid")
         item = self.get_last_active_item(ITrackableItemType)
         if item:

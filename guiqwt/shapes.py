@@ -18,8 +18,6 @@ The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.EllipseShape`
     * :py:class:`guiqwt.shapes.Axes`
     * :py:class:`guiqwt.shapes.XRangeSelection`
-    * :py:class:`guiqwt.shapes.VerticalCursor`
-    * :py:class:`guiqwt.shapes.HorizontalCursor`
 
 A shape is a plot item (derived from QwtPlotItem) that may be displayed 
 on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
@@ -74,12 +72,6 @@ Reference
 .. autoclass:: XRangeSelection
    :members:
    :inherited-members:
-.. autoclass:: VerticalCursor
-   :members:
-   :inherited-members:
-.. autoclass:: HorizontalCursor
-   :members:
-   :inherited-members:
 """
 
 import sys, numpy as np
@@ -95,9 +87,9 @@ from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
 from guiqwt.config import CONF, _
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
-                           AxesShapeParam, CursorShapeParam)
+                           AxesShapeParam, MARKERSTYLES)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
-                            SIG_AXES_CHANGED, SIG_ITEM_MOVED, SIG_CURSOR_MOVED)
+                            SIG_AXES_CHANGED, SIG_ITEM_MOVED)
 from guiqwt.geometry import (vector_norm, vector_projection, vector_rotation,
                              compute_center)
 
@@ -122,9 +114,7 @@ class AbstractShape(QwtPlotItem):
         super(AbstractShape, self).__init__()
         self.selected = False
     
-    def types(self):
-        return (IShapeItemType, )
-        
+    #------IBasePlotItem API----------------------------------------------------
     def set_selectable(self, state):
         """Set item selectable state"""
         self._can_select = state
@@ -151,6 +141,13 @@ class AbstractShape(QwtPlotItem):
     def can_move(self):
         return self._can_move
 
+    def types(self):
+        """Returns a group or category for this item
+        this should be a class object inheriting from
+        IItemType
+        """
+        return (IShapeItemType, )
+        
     def set_readonly(self, state):
         """Set object readonly state"""
         self._readonly = state
@@ -167,23 +164,47 @@ class AbstractShape(QwtPlotItem):
         """Return True if object is private"""
         return self._private
 
+    def select(self):
+        """Select item"""
+        self.selected = True
+        self.invalidate_plot()
+    
+    def unselect(self):
+        """Unselect item"""
+        self.selected = False
+        self.invalidate_plot()
+        
     def hit_test(self, pos):
-        """return (dist,handle,inside)"""
+        """
+        Return a tuple with four elements:
+        (distance, attach point, inside, other_object)
+        
+        distance : distance in pixels (canvas coordinates)
+                   to the closest attach point
+        attach point: handle of the attach point
+        inside: True if the mouse button has been clicked inside the object
+        other_object: if not None, reference of the object which
+                      will be considered as hit instead of self
+        """
         pass
     
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
-
-    def move_point_to(self, handle, pos, ctrl=None):
+    def get_item_parameters(self, itemparams):
+        """
+        Appends datasets to the list of DataSets describing the parameters
+        used to customize apearance of this item
+        """
         pass
     
+    def set_item_parameters(self, itemparams):
+        """
+        Change the appearance of this item according
+        to the parameter set provided
+        
+        params is a list of Datasets of the same types as those returned
+        by get_item_parameters
+        """
+        pass
+
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
@@ -206,6 +227,20 @@ class AbstractShape(QwtPlotItem):
         """
         self.move_shape([0, 0], [delta_x, delta_y])
 
+    #------Public API-----------------------------------------------------------
+    def canvas_to_axes(self, pos):
+        plot = self.plot()
+        ax = self.xAxis()
+        ay = self.yAxis()
+        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
+
+    def axes_to_canvas(self, x, y):
+        plot = self.plot()
+        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
+
+    def move_point_to(self, handle, pos, ctrl=None):
+        pass
+    
     def move_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in axis coordinates"""
@@ -215,22 +250,6 @@ class AbstractShape(QwtPlotItem):
         plot = self.plot()
         if plot is not None:
             plot.invalidate()
-
-    def select(self):
-        """Select item"""
-        self.selected = True
-        self.invalidate_plot()
-    
-    def unselect(self):
-        """Unselect item"""
-        self.selected = False
-        self.invalidate_plot()
-        
-    def get_item_parameters(self, itemparams):
-        pass
-    
-    def set_item_parameters(self, itemparams):
-        pass
 
 assert_interfaces_valid(AbstractShape)
 
@@ -247,22 +266,33 @@ class Marker(QwtPlotMarker):
     __implements__ = (IBasePlotItem,)
     _readonly = True
     _private = False
+    _can_select = True
+    _can_resize = True
+    _can_rotate = False
+    _can_move = True
 
-    def __init__(self, label_cb=None, constraint_cb=None):
+    def __init__(self, label_cb=None, constraint_cb=None,
+                 markerparam=None):
         super(Marker, self).__init__()
         self.selected = False
         self.label_cb = label_cb
+        if constraint_cb is None:
+            constraint_cb = self.center_handle
         self.constraint_cb = constraint_cb
-        self.markerparam = MarkerParam(_("Marker"))
+        if markerparam is None:
+            self.markerparam = MarkerParam(_("Marker"))
+            self.markerparam.read_config(CONF, "plot", "marker/cursor")
+        else:
+            self.markerparam = markerparam
         self.markerparam.update_marker(self)
 
-    def set_style(self, section, option):
-        self.markerparam.read_config(CONF, section, option)
-        self.markerparam.update_marker(self)
+    #------QwtPlotItem API------------------------------------------------------
+    def draw(self, painter, xmap, ymap, canvasrect):
+        """Reimplemented to update label and (eventually) center handle"""
+        self.update_label()
+        super(Marker, self).draw(painter, xmap, ymap, canvasrect)
 
-    def types(self):
-        return (IShapeItemType,)
-        
+    #------IBasePlotItem API----------------------------------------------------
     def set_selectable(self, state):
         """Set item selectable state"""
         self._can_select = state
@@ -281,14 +311,21 @@ class Marker(QwtPlotMarker):
         self._can_rotate = state
         
     def can_select(self):
-        return True
+        return self._can_select
     def can_resize(self):
-        return True
+        return self._can_resize
     def can_rotate(self):
-        return False
+        return self._can_rotate
     def can_move(self):
-        return True
+        return self._can_move
 
+    def types(self):
+        """Returns a group or category for this item
+        this should be a class object inheriting from
+        IItemType
+        """
+        return (IShapeItemType,)
+        
     def set_readonly(self, state):
         """Set object readonly state"""
         self._readonly = state
@@ -305,49 +342,84 @@ class Marker(QwtPlotMarker):
         """Return True if object is private"""
         return self._private
 
+    def select(self):
+        """
+        Select the object and eventually change its appearance to highlight the
+        fact that it's selected
+        """
+        if self.selected:
+            # Already selected
+            return
+        self.selected = True
+        self.markerparam.update_marker(self)
+        self.invalidate_plot()
+
+    def unselect(self):
+        """
+        Unselect the object and eventually restore its original appearance to
+        highlight the fact that it's not selected anymore
+        """
+        self.selected = False
+        self.markerparam.update_marker(self)
+        self.invalidate_plot()
+        
     def hit_test(self, pos):
-        """return (dist,handle,inside)"""
+        """
+        Return a tuple with four elements:
+        (distance, attach point, inside, other_object)
+        
+        distance : distance in pixels (canvas coordinates)
+                   to the closest attach point
+        attach point: handle of the attach point
+        inside: True if the mouse button has been clicked inside the object
+        other_object: if not None, reference of the object which
+                      will be considered as hit instead of self
+        """
         plot = self.plot()
         xc, yc = pos.x(), pos.y()
         x = plot.transform(self.xAxis(), self.xValue())
         y = plot.transform(self.yAxis(), self.yValue())
-        ls = self.markerparam.linestyle
-        if ls == 0:
+        ms = self.markerparam.markerstyle
+        # The following assert has no purpose except reminding that the 
+        # markerstyle is one of the MARKERSTYLES dictionary values, in case 
+        # this dictionary evolves in the future (this should not fail):
+        assert ms in MARKERSTYLES.values()
+        if ms == "NoLine":
             return sqrt((x-xc)**2 + (y-yc)**2), 0, False, None
-        elif ls == 1:
+        elif ms == "HLine":
             return sqrt((y-yc)**2), 0, False, None
-        elif ls == 2:
+        elif ms == "VLine":
             return sqrt((x-xc)**2), 0, False, None
-        elif ls == 3:
+        elif ms == "Cross":
             return sqrt(min((x-xc)**2,(y-yc)**2) ), 0, False, None
-            
+        
+    def get_item_parameters(self, itemparams):
+        """
+        Appends datasets to the list of DataSets describing the parameters
+        used to customize apearance of this item
+        """
+        self.markerparam.update_param(self)
+        itemparams.add("MarkerParam", self, self.markerparam)
     
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        if plot is None:
-            return
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
-
-    def move_point_to(self, handle, pos, ctrl=None):
-        x, y = pos
-        if self.constraint_cb:
-            x, y = self.constraint_cb(self, x, y)
-        self.setValue(x, y)
-        self.update_label()
-        if self.plot():
-            self.plot().emit(SIG_MARKER_CHANGED, self)
+    def set_item_parameters(self, itemparams):
+        """
+        Change the appearance of this item according
+        to the parameter set provided
+        
+        params is a list of Datasets of the same types as those returned
+        by get_item_parameters
+        """
+        update_dataset(self.markerparam, itemparams.get("MarkerParam"),
+                       visible_only=True)
+        self.markerparam.update_marker(self)
+        if self.selected:
+            self.select()
     
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        pt = self.canvas_to_axes(pos)
-        self.move_point_to(handle, pt)
+        x, y = self.canvas_to_axes(pos)
+        self.set_pos(x, y)
         
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
@@ -363,6 +435,64 @@ class Marker(QwtPlotMarker):
         """
         self.move_shape([0, 0], [delta_x, delta_y])
 
+    #------Public API-----------------------------------------------------------
+    def set_style(self, section, option):
+        self.markerparam.read_config(CONF, section, option)
+        self.markerparam.update_marker(self)
+
+    def canvas_to_axes(self, pos):
+        plot = self.plot()
+        if plot is None:
+            return
+        ax = self.xAxis()
+        ay = self.yAxis()
+        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
+
+    def axes_to_canvas(self, x, y):
+        plot = self.plot()
+        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
+        
+    def set_pos(self, x=None, y=None):
+        if x is None:
+            x = self.xValue()
+        if y is None:
+            y = self.yValue()
+        if self.constraint_cb:
+            x, y = self.constraint_cb(x, y)
+        self.setValue(x, y)
+        if self.plot():
+            self.plot().emit(SIG_MARKER_CHANGED, self)
+            
+    def get_pos(self):
+        return self.xValue(), self.yValue()
+        
+    def set_markerstyle(self, style):
+        param = self.markerparam
+        param.set_markerstyle(style)
+        param.update_marker(self)
+        
+    def is_vertical(self):
+        """Return True if this is a vertical cursor"""
+        return self.lineStyle() == QwtPlotMarker.VLine
+        
+    def is_horizontal(self):
+        """Return True if this is an horizontal cursor"""
+        return self.lineStyle() == QwtPlotMarker.HLine
+        
+    def center_handle(self, x, y):
+        """Center cursor handle depending on marker style (|, -)"""
+        plot = self.plot()
+        if plot is not None:
+            if self.is_vertical():
+                ymap = plot.canvasMap(self.yAxis())
+                y_top, y_bottom = ymap.s1(), ymap.s2()
+                y = .5*(y_top+y_bottom)
+            elif self.is_horizontal():
+                xmap = plot.canvasMap(self.xAxis())
+                x_left, x_right = xmap.s1(), xmap.s2()
+                x = .5*(x_left+x_right)
+        return x, y
+
     def move_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
@@ -375,80 +505,60 @@ class Marker(QwtPlotMarker):
         plot = self.plot()
         if plot is not None:
             plot.invalidate()
-
-    def select(self):
-        if self.selected:
-            # Already selected
-            return
-        self.selected = True
-        symb = self.symbol()
-        pen = symb.pen()
-        pen.setWidth(2)
-        symb.setPen(pen)
-        symb = QwtSymbol(symb.style(), symb.brush(), pen, symb.size())
-        self.setSymbol(symb)
-        self.invalidate_plot()
-
-    def unselect(self):
-        self.selected = False
-        self.markerparam.update_marker(self)
-        self.invalidate_plot()
         
     def update_label(self):
-        x = self.xValue()
-        y = self.yValue()
+        x, y = self.xValue(), self.yValue()
         if self.label_cb:
-            label = self.label_cb(self, x, y)
+            label = self.label_cb(x, y)
             if label is None:
                 return
+        elif self.is_vertical():
+            label = "x = %g" % x
+        elif self.is_horizontal():
+            label = "y = %g" % y
         else:
             label = "x = %g<br>y = %g" % (x, y)
         text = self.label()
         text.setText(label)
         self.setLabel(text)
-        xaxis = self.plot().axisScaleDiv(self.xAxis())
-        if x < (xaxis.upperBound()+xaxis.lowerBound())/2:
-            hor_alignment = Qt.AlignRight
-        else:
-            hor_alignment = Qt.AlignLeft
-        yaxis = self.plot().axisScaleDiv(self.yAxis())
-        ymap = self.plot().canvasMap(self.yAxis())
-        y_top, y_bottom = ymap.s1(), ymap.s2()
-        if y < (yaxis.upperBound()+yaxis.lowerBound())/2:
-            if y_top > y_bottom:
-                ver_alignment = Qt.AlignBottom
+        plot = self.plot()
+        if plot is not None:
+            xaxis = plot.axisScaleDiv(self.xAxis())
+            if x < (xaxis.upperBound()+xaxis.lowerBound())/2:
+                hor_alignment = Qt.AlignRight
             else:
-                ver_alignment = Qt.AlignTop
-        else:
-            if y_top > y_bottom:
-                ver_alignment = Qt.AlignTop
+                hor_alignment = Qt.AlignLeft
+            yaxis = plot.axisScaleDiv(self.yAxis())
+            ymap = plot.canvasMap(self.yAxis())
+            y_top, y_bottom = ymap.s1(), ymap.s2()
+            if y < .5*(yaxis.upperBound()+yaxis.lowerBound()):
+                if y_top > y_bottom:
+                    ver_alignment = Qt.AlignBottom
+                else:
+                    ver_alignment = Qt.AlignTop
             else:
-                ver_alignment = Qt.AlignBottom
-        self.setLabelAlignment(hor_alignment | ver_alignment)
+                if y_top > y_bottom:
+                    ver_alignment = Qt.AlignTop
+                else:
+                    ver_alignment = Qt.AlignBottom
+            self.setLabelAlignment(hor_alignment|ver_alignment)
         
-    def get_item_parameters(self, itemparams):
-        self.markerparam.update_param(self)
-        itemparams.add("MarkerParam", self, self.markerparam)
-    
-    def set_item_parameters(self, itemparams):
-        update_dataset(self.markerparam, itemparams.get("MarkerParam"),
-                       visible_only=True)
-        self.markerparam.update_marker(self)
-        if self.selected:
-            self.select()
-
 assert_interfaces_valid(Marker)
 
 
 class PolygonShape(AbstractShape):
     ADDITIONNAL_POINTS = 0 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = False # Link additionnal points with dotted lines
-    def __init__(self, points, closed=True):
+    def __init__(self, points, closed=True, shapeparam=None):
         super(PolygonShape, self).__init__()
         self.closed = closed
         self.selected = False
         
-        self.shapeparam = ShapeParam(_("Shape"), icon="rectangle.png")
+        if shapeparam is None:
+            self.shapeparam = ShapeParam(_("Shape"), icon="rectangle.png")
+        else:
+            self.shapeparam = shapeparam
+            self.shapeparam.update_shape(self)
         
         self.pen = QPen()
         self.brush = QBrush()
@@ -616,8 +726,9 @@ assert_interfaces_valid(PolygonShape)
 
 
 class PointShape(PolygonShape):
-    def __init__(self, x, y):
-        super(PointShape, self).__init__([], closed=False)
+    def __init__(self, x, y, shapeparam=None):
+        super(PointShape, self).__init__([], closed=False,
+                                         shapeparam=shapeparam)
         self.set_pos(x, y)
         
     def set_pos(self, x, y):
@@ -641,8 +752,9 @@ assert_interfaces_valid(PointShape)
 
 class SegmentShape(PolygonShape):
     ADDITIONNAL_POINTS = 1 # Number of points which are not part of the shape
-    def __init__(self, x1, y1, x2, y2):
-        super(SegmentShape, self).__init__([], closed=False)
+    def __init__(self, x1, y1, x2, y2, shapeparam=None):
+        super(SegmentShape, self).__init__([], closed=False,
+                                           shapeparam=shapeparam)
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
@@ -691,8 +803,9 @@ assert_interfaces_valid(SegmentShape)
 
 
 class RectangleShape(PolygonShape):
-    def __init__(self, x1, y1, x2, y2):
-        super(RectangleShape, self).__init__([], closed=True)
+    def __init__(self, x1, y1, x2, y2, shapeparam=None):
+        super(RectangleShape, self).__init__([], closed=True,
+                                             shapeparam=shapeparam)
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
@@ -739,8 +852,10 @@ def _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
 class ObliqueRectangleShape(PolygonShape):
     ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
-    def __init__(self, x0, y0, x1, y1, x2, y2, x3, y3):
-        super(ObliqueRectangleShape, self).__init__([], closed=True)
+    def __init__(self, x0, y0, x1, y1, x2, y2, x3, y3,
+                 shapeparam=None):
+        super(ObliqueRectangleShape, self).__init__([], closed=True,
+                                                    shapeparam=shapeparam)
         self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
@@ -864,9 +979,10 @@ assert_interfaces_valid(ObliqueRectangleShape)
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1
 class EllipseShape(PolygonShape):
-    def __init__(self, x1, y1, x2, y2, ratio=None):
+    def __init__(self, x1, y1, x2, y2, ratio=None, shapeparam=None):
         self.ratio = ratio
-        super(EllipseShape, self).__init__([], closed=True)
+        super(EllipseShape, self).__init__([], closed=True,
+                                           shapeparam=shapeparam)
         self.is_ellipse = False
         self.set_xdiameter(x1, y1, x2, y2)
         
@@ -1011,8 +1127,8 @@ assert_interfaces_valid(EllipseShape)
 
 class Axes(PolygonShape):
     """Axes( (0,1), (1,1), (0,0) )"""
-    def __init__(self, p0, p1, p2):
-        super(Axes, self).__init__([], closed=True)
+    def __init__(self, p0, p1, p2, axesparam=None, shapeparam=None):
+        super(Axes, self).__init__([], closed=True, shapeparam=shapeparam)
         self.set_rect(p0, p1, p2)
         self.arrow_angle = 15 # degrees
         self.arrow_size = 0.05 # % of axe length
@@ -1020,7 +1136,10 @@ class Axes(PolygonShape):
         self.x_brush = self.brush
         self.y_pen = self.pen
         self.y_brush = self.brush
-        self.axesparam = AxesShapeParam(_("Axes"), icon="gtaxes.png")
+        if axesparam is None:
+            self.axesparam = AxesShapeParam(_("Axes"), icon="gtaxes.png")
+        else:
+            self.axesparam = axesparam
         self.axesparam.update_param(self)
 
     def __reduce__(self):
@@ -1150,12 +1269,15 @@ assert_interfaces_valid(Axes)
 
 
 class XRangeSelection(AbstractShape):
-    def __init__(self, _min, _max):
+    def __init__(self, _min, _max, shapeparam=None):
         super(XRangeSelection, self).__init__()
         self._min = _min
         self._max = _max
-        self.shapeparam = RangeShapeParam(_("Range"), icon="xrange.png")
-        self.shapeparam.read_config(CONF, "histogram", "range")
+        if shapeparam is None:
+            self.shapeparam = RangeShapeParam(_("Range"), icon="xrange.png")
+            self.shapeparam.read_config(CONF, "histogram", "range")
+        else:
+            self.shapeparam = shapeparam
         self.pen = None
         self.sel_pen = None
         self.brush = None
@@ -1262,152 +1384,3 @@ class XRangeSelection(AbstractShape):
         self.sel_brush = QBrush(self.brush)
         
 assert_interfaces_valid(XRangeSelection)
-
-
-class Cursor(AbstractShape):
-    """Horizontal/Vertical cursor base class"""
-    ICON = None
-    
-    def __init__(self, pos, moveable=True):
-        super(Cursor, self).__init__()
-        self.pos = pos
-        self.handle_pos = None
-        self.shapeparam = CursorShapeParam(_("Cursor"), icon=self.ICON)
-        self.shapeparam.read_config(CONF, "histogram", "range")
-        self.pen = None
-        self.sel_pen = None
-        self.handle = None
-        self.symbol = None
-        self.sel_symbol = None
-        self.shapeparam.update_range(self) # creates all the above QObjects
-        self._can_move = moveable
-        self._can_resize = moveable
-        
-    def update_handle_pos(self, xMap, yMap, canvasRect):
-        raise NotImplementedError
-        
-    def get_line(self, xMap, yMap, plot):
-        """Return line to be drawn (QLineF object)"""
-        raise NotImplementedError
-        
-    def draw(self, painter, xMap, yMap, canvasRect):
-        if self.selected:
-            pen = self.sel_pen
-            sym = self.sel_symbol
-        else:
-            pen = self.pen
-            sym = self.symbol
-        painter.setPen(pen)
-        pos1, pos2 = self.get_line(xMap, yMap, canvasRect)
-        painter.drawLine(pos1, pos2)
-        
-        self.update_handle_pos(xMap, yMap, canvasRect) 
-        if self.can_move():
-            painter.setPen(pen)
-            sym.draw(painter, QPoint(*self.handle_pos))
-        
-    def get_distance_from_point(self, point):
-        raise NotImplementedError
-        
-    def hit_test(self, pos):
-        dist = self.get_distance_from_point(pos)
-        handle = 0
-        inside = False
-        return dist, handle, inside, None
-        
-    def move_local_point_to(self, handle, pos, ctrl=None):
-        """Move a handle as returned by hit_test to the new position pos
-        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        raise NotImplementedError
-        
-    def move_point_to(self, hnd, pos, ctrl=None):
-        val, _ = pos
-        self.pos = val
-        if self.plot():
-            self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
-
-    def get_pos(self):
-        return self.pos
-        
-    def set_pos(self, pos, dosignal=True):
-        self.pos = pos
-        if dosignal:
-            self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
-
-    def move_shape(self, old_pos, new_pos):
-        raise NotImplementedError
-        
-    def get_item_parameters(self, itemparams):
-        self.shapeparam.update_param(self)
-        itemparams.add("ShapeParam", self, self.shapeparam)
-    
-    def set_item_parameters(self, itemparams):
-        update_dataset(self.shapeparam, itemparams.get("ShapeParam"),
-                       visible_only=True)
-        self.shapeparam.update_range(self)
-        
-assert_interfaces_valid(Cursor)
-
-class VerticalCursor(Cursor):
-    """Vertical cursor"""
-    ICON = 'vcursor.png'
-    def update_handle_pos(self, xMap, yMap, canvasRect):
-        x = xMap.transform(self.pos)
-        y = canvasRect.center().y()
-        self.handle_pos = x, y
-        
-    def get_line(self, xMap, yMap, canvasRect):
-        """Return line to be drawn (QLineF object)"""
-        rect = QRectF(canvasRect)
-        rect.setLeft(xMap.transform(self.pos))
-        return rect.topLeft(), rect.bottomLeft()
-        
-    def get_distance_from_point(self, point):
-        x, y = self.handle_pos
-        return fabs(x-point.x())
-        
-    def move_local_point_to(self, handle, pos, ctrl=None):
-        """Move a handle as returned by hit_test to the new position pos
-        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        val = self.plot().invTransform(self.xAxis(), pos.x())
-        self.move_point_to(handle, (val, 0))
-
-    def move_shape(self, old_pos, new_pos):
-        dx = new_pos[0]-old_pos[0]
-        self.pos += dx
-        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
-        self.plot().replot()
-        
-assert_interfaces_valid(VerticalCursor)
-
-class HorizontalCursor(Cursor):
-    """Horizontal cursor"""
-    ICON = 'hcursor.png'
-    def update_handle_pos(self, xMap, yMap, canvasRect):
-        x = canvasRect.center().x()
-        y = yMap.transform(self.pos)
-        self.handle_pos = x, y
-        
-    def get_line(self, xMap, yMap, canvasRect):
-        """Return line to be drawn (QLineF object)"""
-        rect = QRectF(canvasRect)
-        rect.setTop(yMap.transform(self.pos))
-        return rect.topLeft(), rect.topRight()
-        
-    def get_distance_from_point(self, point):
-        x, y = self.handle_pos
-        return fabs(y-point.y())
-        
-    def move_local_point_to(self, handle, pos, ctrl=None):
-        """Move a handle as returned by hit_test to the new position pos
-        ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        val = self.plot().invTransform(self.yAxis(), pos.y())
-        self.move_point_to(handle, (val, 0))
-
-    def move_shape(self, old_pos, new_pos):
-        dy = new_pos[0]-old_pos[0]
-        self.pos += dy
-        self.plot().emit(SIG_CURSOR_MOVED, self, self.pos)
-        self.plot().replot()
-        
-assert_interfaces_valid(HorizontalCursor)

@@ -64,19 +64,18 @@ from guiqwt.histogram import HistogramItem, lut_range_threshold
 from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
                           Histogram2DItem, RGBImageItem, MaskedImageItem)
 from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
-                           SegmentShape, VerticalCursor, HorizontalCursor)
+                           SegmentShape, Marker)
 from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
-                                AnnotatedSegment, AnnotatedVCursor,
-                                AnnotatedHCursor)
+                                AnnotatedSegment)
 from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            style_generator, LabelParam, LegendParam, ImageParam,
                            TrImageParam, HistogramParam, Histogram2DParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            ImageFilterParam, MARKERS, COLORS, GridParam,
                            LineStyleParam, AnnotationParam, QuadGridParam,
-                           LabelParamWithContents)
+                           LabelParamWithContents, MarkerParam)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
-                          RangeComputation2d, DataInfoLabel, CursorComputation,
+                          RangeComputation2d, DataInfoLabel,
                           SelectedLegendBoxItem)
 from guiqwt.io import imagefile_to_array
 import os.path as osp
@@ -164,12 +163,10 @@ class PlotItemBuilder(object):
         curve.setXAxis(BasePlot.AXIS_NAMES[xaxis])
         curve.setYAxis(BasePlot.AXIS_NAMES[yaxis])
 
-    def __set_param(self, param, title, color, linestyle, linewidth,
-                    marker, markersize, markerfacecolor, markeredgecolor,
-                    shade, fitted, curvestyle, curvetype, baseline):
-        """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
-        if title:
-            param.label = title
+    def __set_baseparam(self, param, color, linestyle, linewidth,
+                        marker, markersize, markerfacecolor, markeredgecolor):
+        """Apply parameters to a `guiqwt.styles.CurveParam` or 
+        `guiqwt.styles.MarkerParam` instance"""
         if color is not None:
             color = COLORS.get(color, color) # MATLAB-style
             param.line.color = color
@@ -192,6 +189,15 @@ class PlotItemBuilder(object):
             markeredgecolor = COLORS.get(markeredgecolor,
                                          markeredgecolor) # MATLAB-style
             param.symbol.edgecolor = markeredgecolor
+
+    def __set_param(self, param, title, color, linestyle, linewidth,
+                    marker, markersize, markerfacecolor, markeredgecolor,
+                    shade, fitted, curvestyle, curvetype, baseline):
+        """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
+        self.__set_baseparam(param, color, linestyle, linewidth, marker,
+                             markersize, markerfacecolor, markeredgecolor)
+        if title:
+            param.label = title
         if shade is not None:
             param.shade = shade
         if fitted is not None:
@@ -859,19 +865,113 @@ class PlotItemBuilder(object):
     def range(self, xmin, xmax):
         return XRangeSelection(xmin, xmax)
         
-    def vcursor(self, position):
+    def vcursor(self, x, label=None, constraint_cb=None,
+                movable=True, readonly=False):
         """
         Make a vertical cursor `plot item`
-        (:py:class:`guiqwt.shapes.VerticalCursor` object)
+        
+        Convenient function to make a vertical marker
+        (:py:class:`guiqwt.shapes.Marker` object)
         """
-        return VerticalCursor(position)
+        if label is None:
+            label_cb = lambda x, y: ''
+        else:
+            label_cb = lambda x, y: label % x
+        return self.marker(position=(x, 0), markerstyle='|',
+                           label_cb=label_cb, constraint_cb=constraint_cb,
+                           movable=movable, readonly=readonly)
 
-    def hcursor(self, position):
+    def hcursor(self, y, label=None, constraint_cb=None,
+                movable=True, readonly=False):
         """
         Make an horizontal cursor `plot item`
-        (:py:class:`guiqwt.shapes.HorizontalCursor` object)
+        
+        Convenient function to make an horizontal marker
+        (:py:class:`guiqwt.shapes.Marker` object)
         """
-        return HorizontalCursor(position)
+        if label is None:
+            label_cb = lambda x, y: ''
+        else:
+            label_cb = lambda x, y: label % y
+        return self.marker(position=(0, y), markerstyle='-',
+                           label_cb=label_cb, constraint_cb=constraint_cb,
+                           movable=movable, readonly=readonly)
+
+    def xcursor(self, x, y, label=None, constraint_cb=None,
+                movable=True, readonly=False):
+        """
+        Make an cross cursor `plot item`
+        
+        Convenient function to make an cross marker
+        (:py:class:`guiqwt.shapes.Marker` object)
+        """
+        if label is None:
+            label_cb = lambda x, y: ''
+        else:
+            label_cb = lambda x, y: label % (x, y)
+        return self.marker(position=(x, y), markerstyle='+',
+                           label_cb=label_cb, constraint_cb=constraint_cb,
+                           movable=movable, readonly=readonly)
+        
+    def marker(self, position=None, label_cb=None, constraint_cb=None,
+               movable=True, readonly=False,
+               markerstyle=None, markerspacing=None,
+               color=None, linestyle=None, linewidth=None,
+               marker=None, markersize=None, markerfacecolor=None,
+               markeredgecolor=None):
+        """
+        Make a marker `plot item`
+        (:py:class:`guiqwt.shapes.Marker` object)
+            * position: tuple (x, y)
+            * label_cb: function with two arguments (x, y) returning a string
+            * constraint_cb: function with two arguments (x, y) returning a 
+              tuple (x, y) according to the marker constraint
+            * movable: if True (default), marker will be movable
+            * readonly: if False (default), marker can be deleted
+            * markerstyle: '+', '-', '|' or None
+            * markerspacing: spacing between text and marker line
+            * color: marker color name
+            * linestyle: marker line style (MATLAB-like string or attribute name 
+              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
+              (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine", 
+              "DashDotDotLine" or "NoPen")
+            * linewidth: line width (pixels)
+            * marker: marker shape (MATLAB-like string or attribute name from 
+              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
+              "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle", 
+              "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
+            * markersize: marker size (pixels)
+            * markerfacecolor: marker face color name
+            * markeredgecolor: marker edge color name
+        """
+        param = MarkerParam(_("Marker"), icon='marker.png')
+        param.read_config(CONF, "plot", "marker/cursor")
+        if color or linestyle or linewidth or marker or markersize or \
+           markerfacecolor or markeredgecolor:
+            param.line = param.sel_line
+            param.symbol = param.sel_symbol
+            param.text = param.sel_text
+            self.__set_baseparam(param, color, linestyle, linewidth, marker,
+                                 markersize, markerfacecolor, markeredgecolor)
+            param.sel_line = param.line
+            param.sel_symbol = param.symbol
+            param.sel_text = param.text
+        if markerstyle:
+            param.set_markerstyle(markerstyle)
+        if markerspacing:
+            param.spacing = markerspacing
+        if not movable:
+            param.symbol.marker = param.sel_symbol.marker = "NoSymbol"
+        marker = Marker(label_cb=label_cb, constraint_cb=constraint_cb,
+                        markerparam=param)
+        if position is not None:
+            x, y = position
+            marker.set_pos(x, y)
+        marker.set_readonly(readonly)
+        if not movable:
+            marker.set_movable(False)
+            marker.set_resizable(False)
+        return marker
         
     def __shape(self, shapeclass, x0, y0, x1, y1, title=None):
         shape = shapeclass(x0, y0, x1, y1)
@@ -978,30 +1078,6 @@ class PlotItemBuilder(object):
         """
         return self.__annotated_shape(AnnotatedSegment,
                                       x0, y0, x1, y1, title, subtitle)
-                                      
-    def annotated_hcursor(self, pos, title=None, subtitle=None,
-                          infos_format="value = %.2f", moveable=True):
-        """
-        Make an annotated vertical cursor `plot item` 
-        (:py:class:`guiqwt.annotations.AnnotatedHCursor` object)
-            * pos: cursor x coordinate
-            * title, subtitle: strings
-        """
-        param = self.__get_annotationparam(title, subtitle)
-        param.format = infos_format
-        return AnnotatedHCursor(pos, param, moveable)
-                                      
-    def annotated_vcursor(self, pos, title=None, subtitle=None,
-                          infos_format="value = %.2f", moveable=True):
-        """
-        Make an annotated vertical cursor `plot item` 
-        (:py:class:`guiqwt.annotations.AnnotatedVCursor` object)
-            * pos: cursor x coordinate
-            * title, subtitle: strings
-        """
-        param = self.__get_annotationparam(title, subtitle)
-        param.format = infos_format
-        return AnnotatedVCursor(pos, param, moveable)
 
     def info_label(self, anchor, comps, title=""):
         """
@@ -1023,17 +1099,6 @@ class PlotItemBuilder(object):
         c = ANCHOR_OFFSETS[anchor]
         param.xc, param.yc = c
         return DataInfoLabel(param, comps)
-        
-    def info_cursor(self, cursor, anchor, label=None, func=None):
-        if func is None:
-                func = lambda x: x        
-        if label is None:
-            if isinstance(cursor, VerticalCursor):
-                label = 'x = %s'
-            else:
-                label = 'y = %s'
-        comp = CursorComputation(label, cursor, func)
-        return self.info_label(anchor, [comp])
 
     def computation(self, range, anchor, label, curve, function):
         """
