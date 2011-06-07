@@ -1118,7 +1118,7 @@ class PlotItemBuilder(object):
         for curve, label, function in specs:
             comp = RangeComputation(label, curve, range, function)
             comps.append(comp)
-        return self.info_label(anchor, comps)
+        return self.info_label(anchor, comps, title=curve.curveparam.label)
 
     def computation2d(self, rect, anchor, label, image, function):
         """

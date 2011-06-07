@@ -12,14 +12,12 @@ SHOW = True # Show test in GUI-based test launcher
 from guidata.qt.QtGui import QFont
 
 from guiqwt.plot import CurveDialog
-from guiqwt.tools import HRangeTool
 from guiqwt.builder import make
 
 def plot(*items):
     win = CurveDialog(edit=False, toolbar=True, wintitle="CurveDialog test",
                       options=dict(title="Title", xlabel="xlabel",
                                    ylabel="ylabel"))
-    win.add_tool(HRangeTool)
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)

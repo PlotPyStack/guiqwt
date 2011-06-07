@@ -30,6 +30,7 @@
   * Sift: added linear calibration (signals: X/Y axes, images: Z axis)
   * Interactive tools: added signal SIG_TOOL_JOB_FINISHED emitted when tool has finished its job + if SWITCH_TO_DEFAULT_TOOL class attribute is True, switching to the default interactive tool
   * Buider: added cross cursor and marker constructors (builder.make.marker and builder.make.xcursor, see tests/cursors.py)
+  * Added SignalStatsTool (standard curve tool) to show ymin, ymax, ymean, ... on a selected curve ROI
 
 ----
 

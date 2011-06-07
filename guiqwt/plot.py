@@ -126,7 +126,8 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           AspectRatioTool, ContrastPanelTool, XCSPanelTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool,
-                          ImageStatsTool, ExportItemDataTool, ItemCenterTool)
+                          ImageStatsTool, ExportItemDataTool, ItemCenterTool,
+                          SignalStatsTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
@@ -515,6 +516,7 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
+        self.add_tool(SignalStatsTool)
         self.add_tool(AntiAliasingTool)
         self.add_tool(AxisScaleTool)
 

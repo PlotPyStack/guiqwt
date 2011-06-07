@@ -1148,6 +1148,57 @@ class XCursorTool(BaseCursorTool):
         return marker
 
 
+class SignalStatsTool(BaseCursorTool):
+    TITLE = _("Signal statistics")
+    ICON = "xrange.png"
+    SWITCH_TO_DEFAULT_TOOL = True
+    def __init__(self, manager, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        super(SignalStatsTool, self).__init__(manager, toolbar_id, title=title,
+                                              icon=icon, tip=tip)
+        self._last_item = None
+        self.label = None
+        
+    def create_shape(self):
+        from guiqwt.shapes import XRangeSelection
+        return XRangeSelection(0, 0)
+
+    def move(self, filter, event):
+        super(SignalStatsTool, self).move(filter, event)
+        if self.label is None:
+            plot = filter.plot
+            curve = self.get_associated_item(plot)
+            from guiqwt.builder import make
+            self.label = make.computations(self.shape, "TL",
+              [
+               (curve, "y<sub>min</sub>=%g", lambda *args: args[1].min()),
+               (curve, "y<sub>max</sub>=%g", lambda *args: args[1].max()),
+               (curve, "y<sub>mean</sub>=%g", lambda *args: args[1].mean()),
+               (curve, u"σ(y)=%g", lambda *args: args[1].std()),
+               (curve, u"∑(y)=%g", lambda *args: np.trapz(args[1])),
+               (curve, u"∫ydx=%g", lambda *args: np.trapz(args[1], args[0])),
+              ])
+            self.label.attach(plot)
+            self.label.setZ(plot.get_max_z()+1)
+            self.label.setVisible(True)
+            
+    def end_move(self, filter, event):
+        super(SignalStatsTool, self).end_move(filter, event)
+        if self.label is not None:
+            filter.plot.add_item_with_z_offset(self.label, SHAPE_Z_OFFSET)
+            self.label = None
+        
+    def get_associated_item(self, plot):
+        items = plot.get_selected_items(item_type=ICurveItemType)
+        if len(items) == 1:
+            self._last_item = items[0]
+        return self._last_item
+        
+    def update_status(self, plot):
+        item = self.get_associated_item(plot)
+        self.action.setEnabled(item is not None)
+
+
 class DummySeparatorTool(GuiTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(DummySeparatorTool, self).__init__(manager, toolbar_id)

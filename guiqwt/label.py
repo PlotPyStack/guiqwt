@@ -108,7 +108,7 @@ class AbstractLabelItem(QwtPlotItem):
     def types(self):
         return (IShapeItemType,)
     
-    def set_text_style(self, font, color):
+    def set_text_style(self, font=None, color=None):
         raise NotImplementedError
 
     def get_top_left(self, xMap, yMap, canvasRect):
@@ -298,9 +298,11 @@ class LabelItem(AbstractLabelItem):
             self.text_string = text
         self.text.setHtml("<div>%s</div>" % self.text_string)
         
-    def set_text_style(self, font, color):
-        self.text.setDefaultFont(font)
-        self.text.setDefaultStyleSheet('div { color: %s; }' % color)
+    def set_text_style(self, font=None, color=None):
+        if font is not None:
+            self.text.setDefaultFont(font)
+        if color is not None:
+            self.text.setDefaultStyleSheet('div { color: %s; }' % color)
         self.set_text()
 
     def get_text_rect(self):
@@ -376,9 +378,11 @@ class LegendBoxItem(AbstractLabelItem):
         self.sizes = TW, TH, width, height
         return self.sizes
 
-    def set_text_style(self, font, color):
-        self.font = font
-        self.color = color
+    def set_text_style(self, font=None, color=None):
+        if font is not None:
+            self.font = font
+        if color is not None:
+            self.color = color
 
     def get_text_rect(self):
         items = self.get_legend_items()
@@ -511,7 +515,11 @@ class DataInfoLabel(LabelItem):
         return (self.__class__, (self.labelparam, self.infos))
 
     def update_text(self):
-        text = []
+        title = self.labelparam.label
+        if title:
+            text = ["<b>%s</b>" % title]
+        else:
+            text = []
         for info in self.infos:
             text.append(info.get_text())
         self.set_text( u"<br/>".join(text) )
