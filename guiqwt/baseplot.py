@@ -279,7 +279,7 @@ class BasePlot(QwtPlot):
         ax, ay = self.get_active_axes()
         self.set_axis_scale(ax, xscale)
         self.set_axis_scale(ay, yscale)
-        self.replot()
+        self.do_autoscale()
 
     def enable_used_axes(self):
         """
