@@ -371,7 +371,7 @@ class AnnotatedSegment(AnnotatedShape):
         
     def get_length(self):
         """Return segment length"""
-        return compute_distance(*self.get_transformed_coords(0, 2))
+        return compute_distance(*self.get_transformed_coords(0, 1))
     
     #----AnnotatedShape API-----------------------------------------------------
     def set_label_position(self):

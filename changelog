@@ -7,6 +7,7 @@
   * label.RangeComputation: fixed bug if compute function was returning more than one result and when X-range was empty (e.g. selection is outside curve X-axis values)
   * curve.CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
   * baseplot.BasePlot: now performing an autoscale after changing axis lin/log scale (set_axis_scale/set_scales)
+  * annotations.AnnotatedSegment/CRITICAL: fixed an error (introduced in v2.1.0) when computing segment length (returned length was twice lower than the real value)
 
 === Possible API compatibility issues (since v2.1.3) ===
 
