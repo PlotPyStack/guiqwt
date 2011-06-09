@@ -1100,14 +1100,15 @@ class CurvePlot(BasePlot):
         self.setAutoReplot(False)
         axes_to_update = self.get_axes_to_update(dx, dy)
         
-        for (x1, x0, _, w), k in axes_to_update:
-            lbound, hbound = self.get_axis_limits(k)
-            # pour les axes logs on bouge lbound et hbound relativement
-            # à l'inverse du delta aux bords de l'axe
-            # pour des axes lineaires pos0 et pos1 doivent être égaux
-            pos0 = self.invTransform(k, x1-x0)-self.invTransform(k, 0)
-            pos1 = self.invTransform(k, x1-x0+w)-self.invTransform(k, w)
-            self.set_axis_limits(k, lbound-pos0, hbound-pos1)
+        for (x1, x0, _start, _width), axis_id in axes_to_update:
+            lbound, hbound = self.get_axis_limits(axis_id)
+            i_lbound = self.transform(axis_id, lbound)
+            i_hbound = self.transform(axis_id, hbound)
+            delta = x1-x0
+            vmin = self.invTransform(axis_id, i_lbound-delta)
+            vmax = self.invTransform(axis_id, i_hbound-delta)
+            self.set_axis_limits(axis_id, vmin, vmax)
+            
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise
@@ -1120,25 +1121,43 @@ class CurvePlot(BasePlot):
         dx, dy are tuples composed of (initial pos, dest pos)
         We try to keep initial pos fixed on the canvas as the scale changes
         """
+        # See guiqwt/events.py where dx and dy are defined like this:
+        #   dx = (pos.x(), self.last.x(), self.start.x(), rct.width())
+        #   dy = (pos.y(), self.last.y(), self.start.y(), rct.height())
+        # where:
+        #   * self.last is the mouse position seen during last event
+        #   * self.start is the first mouse position (here, this is the 
+        #     coordinate of the point which is at the center of the zoomed area)
+        #   * rct is the plot rect contents
+        #   * pos is the current mouse cursor position
         auto = self.autoReplot()
         self.setAutoReplot(False)
-        dx = (-1,) + dx
-        dy = (1,) + dy
+        dx = (-1,) + dx # adding direction to tuple dx
+        dy = (1,) + dy  # adding direction to tuple dy
         if lock_aspect_ratio:
-            sens, x1, x0, s, w = dx
-            F = 1+3*sens*float(x1-x0)/w
+            direction, x1, x0, start, width = dx
+            F = 1+3*direction*float(x1-x0)/width
         axes_to_update = self.get_axes_to_update(dx, dy)
         
-        for (sens, x1, x0, s, w), k in axes_to_update:
-            lbound, hbound = self.get_axis_limits(k)
-            orig = self.invTransform(k, s)
-            rng = float(hbound-lbound)
+        for (direction, x1, x0, start, width), axis_id in axes_to_update:
+            lbound, hbound = self.get_axis_limits(axis_id)
             if not lock_aspect_ratio:
-                F = 1+3*sens*float(x1-x0)/w
-            l_new = orig-F*(orig-lbound)
-            if F*rng == 0:
+                F = 1+3*direction*float(x1-x0)/width
+            if F*(hbound-lbound) == 0:
                 continue
-            self.set_axis_limits(k, l_new, l_new+F*rng)
+            if self.get_axis_scale(axis_id) == 'lin':
+                orig = self.invTransform(axis_id, start)
+                vmin = orig-F*(orig-lbound)
+                vmax = orig+F*(hbound-orig)
+            else: # log scale
+                i_lbound = self.transform(axis_id, lbound)
+                i_hbound = self.transform(axis_id, hbound)
+                imin = start - F*(start-i_lbound)
+                imax = start + F*(i_hbound-start)
+                vmin = self.invTransform(axis_id, imin)
+                vmax = self.invTransform(axis_id, imax)
+            self.set_axis_limits(axis_id, vmin, vmax)
+
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise

@@ -5,6 +5,7 @@
   * Sift/bugfix: difference/division operations were performed backwards (s001-s000 instead of s000-s001)
   * Sift: working directory is now changed after opening/saving signal/image
   * label.RangeComputation: fixed bug if compute function was returning more than one result and when X-range was empty (e.g. selection is outside curve X-axis values)
+  * curve.CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
 
 === Possible API compatibility issues (since v2.1.3) ===
 
