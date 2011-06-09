@@ -4,6 +4,7 @@
 
   * Sift/bugfix: difference/division operations were performed backwards (s001-s000 instead of s000-s001)
   * Sift: working directory is now changed after opening/saving signal/image
+  * label.RangeComputation: fixed bug if compute function was returning more than one result and when X-range was empty (e.g. selection is outside curve X-axis values)
 
 === Possible API compatibility issues (since v2.1.3) ===
 
@@ -31,6 +32,7 @@
   * Interactive tools: added signal SIG_TOOL_JOB_FINISHED emitted when tool has finished its job + if SWITCH_TO_DEFAULT_TOOL class attribute is True, switching to the default interactive tool
   * Buider: added cross cursor and marker constructors (builder.make.marker and builder.make.xcursor, see tests/cursors.py)
   * Added SignalStatsTool (standard curve tool) to show ymin, ymax, ymean, ... on a selected curve ROI
+  * Sift: added support for curve data with error bars (I/O + operations + processing)
 
 ----
 

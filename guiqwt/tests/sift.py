@@ -509,16 +509,28 @@ class SignalFT(ObjectFT):
 
     def make_item(self, row):
         signal = self.objects[row]
-        x, y = signal.xydata
-        item = make.mcurve(x, y.real, label=signal.title)
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            item = make.mcurve(x, y.real, label=signal.title)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            item = make.merror(x, y.real, dx, dy, label=signal.title)
+        else:
+            raise RuntimeError, "data not supported"
         self.items[row] = item
         return item
         
     def update_item(self, row):
         signal = self.objects[row]
-        x, y = signal.xydata
         item = self.items[row]
-        item.set_data(x, y.real)
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            item.set_data(x, y.real)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            item.set_data(x, y.real, dx, dy)
         item.curveparam.label = signal.title
         
     #------Signal operations
@@ -536,12 +548,23 @@ class SignalFT(ObjectFT):
         self.compute_11("SwapAxes", lambda x, y: (y, x))
     
     #------Signal Processing
-    def apply_11_func(self, obj, orig, func, param):
-        xor, yor = orig.xydata
-        if param is None:
-            obj.xydata = func(xor, yor)
-        else:
-            obj.xydata = func(xor, yor, param)
+    def apply_11_func(self, obj, signal, func, param):
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            if param is None:
+                obj.xydata = func(x, y)
+            else:
+                obj.xydata = func(x, y, param)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            if param is None:
+                x2, y2 = func(x, y)
+                _x3, dy2 = func(x, dy)
+            else:
+                x2, y2 = func(x, y, param)
+                dx2, dy2 = func(dx, dy, param)
+            obj.xydata = x2, y2, dx, dy2
             
     def normalize(self):
         methods = ((_("maximum"), 'maximum'),
@@ -651,6 +674,7 @@ class SignalFT(ObjectFT):
                             continue
                     else:
                         raise
+                assert len(xydata.shape) in (1, 2), "Data not supported"
             except Exception, msg:
                 import traceback
                 traceback.print_exc()
@@ -660,10 +684,17 @@ class SignalFT(ObjectFT):
                 return
             if len(xydata.shape) == 1:
                 xydata = np.vstack( (np.arange(xydata.size), xydata) )
-            elif len(xydata.shape) == 2:
+            else:
                 rows, cols = xydata.shape
-                if cols == 2 and rows > 2:
-                    xydata = xydata.T
+                for colnb in (2, 3, 4):
+                    if cols == colnb and rows > colnb:
+                        xydata = xydata.T
+                        break
+                if cols == 3:
+                    # x, y, dy
+                    xarr, yarr, dyarr = xydata
+                    dxarr = np.zeros_like(dyarr)
+                    xydata = np.vstack((xarr, yarr, dxarr, dyarr))
             signal.xydata = xydata
             self.add_object(signal)
             
