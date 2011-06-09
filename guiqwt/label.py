@@ -473,20 +473,18 @@ class RangeComputation(ObjectInfo):
         X = data[0]
         i0 = X.searchsorted(x0)
         i1 = X.searchsorted(x1)
-        if i0 == i1:
-            from numpy import NaN
-            res = NaN
-        else:
-            if i0 > i1:
-                i0, i1 = i1, i0
-            vectors = []
-            for vector in data:
-                if vector is None:
-                    vectors.append(None)
-                else:
-                    vectors.append(vector[i0:i1])
-            res = self.func(*vectors)
-        return self.label % res
+        if i0 > i1:
+            i0, i1 = i1, i0
+        vectors = []
+        for vector in data:
+            if vector is None:
+                vectors.append(None)
+            elif i0 == i1:
+                import numpy as np
+                vectors.append(np.array([np.NaN]))
+            else:
+                vectors.append(vector[i0:i1])
+        return self.label % self.func(*vectors)
 
 class RangeComputation2d(ObjectInfo):
     def __init__(self, label, image, rect, function):
