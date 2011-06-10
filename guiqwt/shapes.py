@@ -274,6 +274,7 @@ class Marker(QwtPlotMarker):
     def __init__(self, label_cb=None, constraint_cb=None,
                  markerparam=None):
         super(Marker, self).__init__()
+        self._pending_center_handle = None
         self.selected = False
         self.label_cb = label_cb
         if constraint_cb is None:
@@ -289,6 +290,9 @@ class Marker(QwtPlotMarker):
     #------QwtPlotItem API------------------------------------------------------
     def draw(self, painter, xmap, ymap, canvasrect):
         """Reimplemented to update label and (eventually) center handle"""
+        if self._pending_center_handle:
+            x, y = self.center_handle(self.xValue(), self.yValue())
+            self.setValue(x, y)
         self.update_label()
         QwtPlotMarker.draw(self, painter, xmap, ymap, canvasrect)
 
@@ -482,7 +486,10 @@ class Marker(QwtPlotMarker):
     def center_handle(self, x, y):
         """Center cursor handle depending on marker style (|, -)"""
         plot = self.plot()
-        if plot is not None:
+        if plot is None:
+            self._pending_center_handle = True
+        else:
+            self._pending_center_handle = False
             if self.is_vertical():
                 ymap = plot.canvasMap(self.yAxis())
                 y_top, y_bottom = ymap.s1(), ymap.s2()
