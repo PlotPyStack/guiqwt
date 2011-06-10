@@ -40,6 +40,14 @@ def get_package_data(name, extlist):
                 flist.append(join(dirpath, fname)[offset:])
     return flist
 
+def get_subpackages(name):
+    """Return subpackages of package *name*"""
+    splist = []
+    for dirpath, _dirnames, _filenames in os.walk(name):
+        if osp.isfile(osp.join(dirpath, '__init__.py')):
+            splist.append(".".join(dirpath.split(os.sep)))
+    return splist
+
 
 LIBNAME = 'guiqwt'
 import sys
@@ -52,10 +60,6 @@ LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
                'Topic :: Scientific/Engineering']
-
-PACKAGES = [LIBNAME+p for p in ['', '.tests']]
-PACKAGE_DATA = {LIBNAME: get_package_data(LIBNAME,
-                                          ('.png', '.svg', '.mo', '.dcm'))}
 
 if os.name == 'nt':
     SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
@@ -111,7 +115,9 @@ setup(name=LIBNAME, version=version,
       download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
                                                   LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
-      packages=PACKAGES, package_data=PACKAGE_DATA,
+      packages=get_subpackages(LIBNAME),
+      package_data={LIBNAME:
+                    get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm'))},
       requires=["PyQt4 (>4.3)", "NumPy", "guidata (>=1.3.0)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),]),
