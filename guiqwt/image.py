@@ -2103,6 +2103,13 @@ class ImagePlot(CurvePlot):
         self.set_axis_direction('left', yreverse)
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
+        
+    #---- BasePlot API ---------------------------------------------------------
+    def showEvent(self, event):
+        """Override BasePlot method"""
+        if self.lock_aspect_ratio:
+            self._start_autoscaled = True
+        CurvePlot.showEvent(self, event)
 
     #---- CurvePlot API --------------------------------------------------------    
     def do_zoom_view(self, dx, dy):
@@ -2171,11 +2178,6 @@ class ImagePlot(CurvePlot):
             x0 -= delta_x
             x1 += delta_x
         self.set_plot_limits(x0, x1, y0, y1)
-            
-    def setVisible(self, state):
-        CurvePlot.setVisible(self, state)
-        if state and self.lock_aspect_ratio:
-            self.do_autoscale()
 
     #---- LUT/colormap-related API ---------------------------------------------
     def notify_colormap_changed(self):
