@@ -1062,10 +1062,10 @@ try:
 
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
-        def __init__(self, parent=None):#, namespace, message, commands=[]):
-            InternalShell.__init__(self, parent=parent)#, namespace=namespace,
-#                                   message=message, commands=commands,
-#                                   multithreaded=True)
+        def __init__(self, parent, namespace, message, commands=[]):
+            InternalShell.__init__(self, parent=parent, namespace=namespace,
+                                   message=message, commands=commands,
+                                   multithreaded=True)
             DockableWidgetMixin.__init__(self, parent)
             self.setup()
             
@@ -1193,7 +1193,7 @@ class MainWindow(QMainWindow):
                   "Modules imported at startup: "\
                   "os, sys, os.path as osp, time, "\
                   "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
-            self.console = DockableConsole(self)#, namespace=ns, message=msg)
+            self.console = DockableConsole(self, namespace=ns, message=msg)
             self.add_dockwidget(self.console, _(u"Console"))
             self.connect(self.console.interpreter.widget_proxy,
                          SIGNAL("new_prompt(QString)"),
