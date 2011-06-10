@@ -14,7 +14,7 @@ Requirements:
     * PIL 1.1.x (x>=6)
     
 Optional Python modules:
-    * spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
+    * spyderlib 2.1 for Sift embedded Python console
     * pydicom 0.9.x (x>=4) for DICOM files I/O features
 
 Installation
