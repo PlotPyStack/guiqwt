@@ -9,7 +9,7 @@ Requirements:
     * PyQt4 4.x (x>=3 ; recommended x>=4)
     * PyQwt 5.x (x>=2)
     * guidata 1.3.0 or later
-    * NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
+    * NumPy 1.x (x>=3) -- NumPy 1.6 or later is required for Windows binaries
     * SciPy 0.x (x>=7)
     * PIL 1.1.x (x>=6)
     
