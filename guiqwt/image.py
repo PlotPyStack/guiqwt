@@ -1383,7 +1383,7 @@ class XYImageItem(RawImageItem):
                              % (nj, nj+1))
         if y.shape[0] == ni:
             self.y = to_bins(y)
-        elif x.shape[0] == ni+1:
+        elif y.shape[0] == ni+1:
             self.y = y
         else:
             raise IndexError("y must be a 1D array of length %d or %d" \

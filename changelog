@@ -8,6 +8,7 @@
   * curve.CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
   * baseplot.BasePlot: now performing an autoscale after changing axis lin/log scale (set_axis_scale/set_scales)
   * annotations.AnnotatedSegment/CRITICAL: fixed an error (introduced in v2.1.0) when computing segment length (returned length was twice lower than the real value)
+  * image.XYImageItem [Contributor: Carlos Pascual]: fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
 
 === Possible API compatibility issues (since v2.1.3) ===
 
