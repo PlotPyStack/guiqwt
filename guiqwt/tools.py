@@ -1228,7 +1228,6 @@ class CommandTool(GuiTool):
                                      tip=self.tip, triggered=self.activate)
 
     def setup_context_menu(self, menu, plot):
-        self.action.setData(plot)
         menu.addAction(self.action)
 
     def activate(self, checked=True):

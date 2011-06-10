@@ -280,12 +280,12 @@ class AnnotatedShape(AbstractShape):
 
     def select(self):
         """Select item"""
-        super(AnnotatedShape, self).select()
+        AbstractShape.select(self)
         self.shape.select()
     
     def unselect(self):
         """Unselect item"""
-        super(AnnotatedShape, self).unselect()
+        AbstractShape.unselect(self)
         self.shape.unselect()
 
     def get_item_parameters(self, itemparams):

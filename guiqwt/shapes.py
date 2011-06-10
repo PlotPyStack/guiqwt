@@ -290,7 +290,7 @@ class Marker(QwtPlotMarker):
     def draw(self, painter, xmap, ymap, canvasrect):
         """Reimplemented to update label and (eventually) center handle"""
         self.update_label()
-        super(Marker, self).draw(painter, xmap, ymap, canvasrect)
+        QwtPlotMarker.draw(self, painter, xmap, ymap, canvasrect)
 
     #------IBasePlotItem API----------------------------------------------------
     def set_selectable(self, state):
@@ -631,7 +631,12 @@ class PolygonShape(AbstractShape):
         x0, y0 = self.get_reference_point()
         xx0 = xMap.transform(x0)
         yy0 = yMap.transform(y0)
-        t0 = QTransform.fromTranslate(xx0, yy0)
+        try:
+            # Optimized version in PyQt >= v4.5
+            t0 = QTransform.fromTranslate(xx0, yy0) 
+        except AttributeError:
+            # Fallback for PyQt <= v4.4
+            t0 = QTransform().translate(xx0, yy0)
         tr = tr*t0
         brush = QBrush(brush)
         brush.setTransform(tr)
@@ -1167,7 +1172,7 @@ class Axes(PolygonShape):
         self.set_points([p0, p1, (p3x, p3y), p2])
 
     def set_style(self, section, option):
-        super(Axes, self).set_style(section, option+"/border")
+        PolygonShape.set_style(self, section, option+"/border")
         self.axesparam.read_config(CONF, section, option)
         self.axesparam.update_axes(self)
 
@@ -1217,7 +1222,7 @@ class Axes(PolygonShape):
             self.plot().emit(SIG_AXES_CHANGED, self)
 
     def draw(self, painter, xMap, yMap, canvasRect):
-        super(Axes, self).draw(painter, xMap, yMap, canvasRect)
+        PolygonShape.draw(self, painter, xMap, yMap, canvasRect)
         p0, p1, _, p2 = list(self.points)
 
         painter.setPen(self.x_pen)
@@ -1255,12 +1260,12 @@ class Axes(PolygonShape):
         painter.drawPolygon(poly)
         
     def get_item_parameters(self, itemparams):
-        super(Axes, self).get_item_parameters(itemparams)
+        PolygonShape.get_item_parameters(self, itemparams)
         self.axesparam.update_param(self)
         itemparams.add("AxesShapeParam", self, self.axesparam)
     
     def set_item_parameters(self, itemparams):
-        super(Axes, self).set_item_parameters(itemparams)
+        PolygonShape.set_item_parameters(self, itemparams)
         update_dataset(self.axesparam, itemparams.get("AxesShapeParam"),
                        visible_only=True)
         self.axesparam.update_axes(self)

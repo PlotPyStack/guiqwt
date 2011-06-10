@@ -457,7 +457,7 @@ class SignalFT(ObjectFT):
     PREFIX = "s"
     #------ObjectFT API
     def setup(self, toolbar):
-        super(SignalFT, self).setup(toolbar)
+        ObjectFT.setup(self, toolbar)
         
         # File actions
         new_action = create_action(self, _("New signal..."),
@@ -724,7 +724,7 @@ class ImageFT(ObjectFT):
     PREFIX = "i"
     #------ObjectFT API
     def setup(self, toolbar):
-        super(ImageFT, self).setup(toolbar)
+        ObjectFT.setup(self, toolbar)
         
         # File actions
         new_action = create_action(self, _("New image..."),
@@ -1046,7 +1046,7 @@ class DockablePlotWidget(DockableWidget):
     #------DockableWidget API
     def visibility_changed(self, enable):
         """DockWidget visibility has changed"""
-        super(DockablePlotWidget, self).visibility_changed(enable)
+        DockableWidget.visibility_changed(self, enable)
         self.toolbar.setVisible(enable)
             
 
@@ -1062,10 +1062,10 @@ try:
 
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
-        def __init__(self, parent, namespace, message, commands=[]):
-            InternalShell.__init__(self, parent=parent, namespace=namespace,
-                                   message=message, commands=commands,
-                                   multithreaded=True)
+        def __init__(self, parent=None):#, namespace, message, commands=[]):
+            InternalShell.__init__(self, parent=parent)#, namespace=namespace,
+#                                   message=message, commands=commands,
+#                                   multithreaded=True)
             DockableWidgetMixin.__init__(self, parent)
             self.setup()
             
@@ -1193,7 +1193,7 @@ class MainWindow(QMainWindow):
                   "Modules imported at startup: "\
                   "os, sys, os.path as osp, time, "\
                   "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
-            self.console = DockableConsole(self, namespace=ns, message=msg)
+            self.console = DockableConsole(self)#, namespace=ns, message=msg)
             self.add_dockwidget(self.console, _(u"Console"))
             self.connect(self.console.interpreter.widget_proxy,
                          SIGNAL("new_prompt(QString)"),

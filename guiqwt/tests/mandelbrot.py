@@ -69,8 +69,8 @@ class MandelItem(RawImageItem):
         
         srcRect = (0, 0, NX, NY)
         x1, y1, x2, y2 = canvasRect.getCoords()
-        super(MandelItem, self).draw_image(painter, canvasRect, srcRect,
-                                           (x1, y1, x2, y2), xMap, yMap)
+        RawImageItem.draw_image(self, painter, canvasRect,
+                                srcRect, (x1, y1, x2, y2), xMap, yMap)
 
 def mandel():
     win = ImageDialog(edit=True, toolbar=True, wintitle="Mandelbrot",

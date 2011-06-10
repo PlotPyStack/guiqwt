@@ -213,7 +213,7 @@ class GridItem(QwtPlotGrid):
     
     def attach(self, plot):
         """Reimplemented to update plot canvas background"""
-        super(GridItem, self).attach(plot)
+        QwtPlotGrid.attach(self,plot)
         self.update_params()
 
     def set_readonly(self, state):
@@ -541,7 +541,7 @@ class ErrorBarCurveItem(CurveItem):
         
     def unselect(self):
         """Unselect item"""
-        super(ErrorBarCurveItem, self).unselect()
+        CurveItem.unselect(self)
         self.errorbarparam.update_curve(self)
 
     def get_data(self):
@@ -619,7 +619,7 @@ class ErrorBarCurveItem(CurveItem):
         """Return the bounding rectangle of the data, error bars included"""
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         if xmin is None or xmin.size == 0:
-            return super(ErrorBarCurveItem, self).boundingRect()
+            return CurveItem.boundingRect(self)
         return QRectF( xmin.min(), ymin.min(),
                        xmax.max()-xmin.min(), ymax.max()-ymin.min() )
         
@@ -693,16 +693,16 @@ class ErrorBarCurveItem(CurveItem):
         
     def update_params(self):
         self.errorbarparam.update_curve(self)
-        super(ErrorBarCurveItem, self).update_params()
+        CurveItem.update_params(self)
 
     def get_item_parameters(self, itemparams):
-        super(ErrorBarCurveItem, self).get_item_parameters(itemparams)
+        CurveItem.get_item_parameters(self, itemparams)
         itemparams.add("ErrorBarParam", self, self.errorbarparam)
     
     def set_item_parameters(self, itemparams):
         update_dataset(self.errorbarparam, itemparams.get("ErrorBarParam"),
                        visible_only=True)
-        super(ErrorBarCurveItem, self).set_item_parameters(itemparams)
+        CurveItem.set_item_parameters(self, itemparams)
 
 assert_interfaces_valid( ErrorBarCurveItem )
 
@@ -1193,7 +1193,7 @@ class CurvePlot(BasePlot):
         """
         if isinstance(item, QwtPlotCurve):
             item.setRenderHint(QwtPlotItem.RenderAntialiased, self.antialiased)
-        super(CurvePlot,self).add_item(item, z)
+        BasePlot.add_item(self, item, z)
 
     def del_all_items(self, except_grid=True):
         """Del all items, eventually (default) except grid"""
@@ -1205,7 +1205,7 @@ class CurvePlot(BasePlot):
         """Override base set_active_item to change the grid's
         axes according to the selected item"""
         old_active = self.active_item
-        super(CurvePlot, self).set_active_item(item)
+        BasePlot.set_active_item(self, item)
         if item is not None and old_active is not item:
             self.grid.setAxis(item.xAxis(), item.yAxis())
 
@@ -1214,7 +1214,7 @@ class CurvePlot(BasePlot):
             self.grid.gridparam.update_param(self.grid)
             itemparams.add("GridParam", self, self.grid.gridparam)
         else:
-            super(CurvePlot, self).get_plot_parameters(key, itemparams)
+            BasePlot.get_plot_parameters(self, key, itemparams)
 
     def set_item_parameters(self, itemparams):
         # Grid style
@@ -1222,7 +1222,7 @@ class CurvePlot(BasePlot):
         if dataset is not None:
             dataset.update_grid(self.grid)
             self.grid.gridparam = dataset
-        super(CurvePlot, self).set_item_parameters(itemparams)
+        BasePlot.set_item_parameters(self, itemparams)
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
@@ -1269,9 +1269,9 @@ class CurvePlot(BasePlot):
         axis_id = self.get_axis_id(axis_id)
         vmin, vmax = sorted([vmin, vmax])
         if self.get_axis_direction(axis_id):
-            super(CurvePlot, self).set_axis_limits(axis_id, vmax, vmin)
+            BasePlot.set_axis_limits(self, axis_id, vmax, vmin)
         else:
-            super(CurvePlot, self).set_axis_limits(axis_id, vmin, vmax)
+            BasePlot.set_axis_limits(self, axis_id, vmin, vmax)
             
     #---- Public API -----------------------------------------------------------    
     def get_axis_direction(self, axis_id):

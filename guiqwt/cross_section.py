@@ -758,7 +758,7 @@ class XCrossSection(CrossSectionWidget):
         event.ignore()
         
     def setup_actions(self):
-        super(XCrossSection, self).setup_actions()
+        CrossSectionWidget.setup_actions(self)
         self.peritem_ac = create_action(self, _("Per image cross-section"),
                         icon=get_icon('csperimage.png'),
                         toggled=self.cs_plot.toggle_perimage_mode,

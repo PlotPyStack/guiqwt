@@ -308,7 +308,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.setLayout(vlayout)
         
     def create_plot(self, options):
-        super(FitWidgetMixin, self).create_plot(options)
+        CurveWidgetMixin.create_plot(self, options)
         for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
         

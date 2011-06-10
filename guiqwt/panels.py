@@ -80,18 +80,18 @@ class PanelWidget(DockableWidget):
             self.setWindowIcon(get_icon(self.PANEL_ICON))
     
     def showEvent(self, event):
-        super(PanelWidget, self).showEvent(event)
+        DockableWidget.showEvent(self, event)
         if self.dockwidget is None:
             self.emit(SIG_VISIBILITY_CHANGED, True)
         
     def hideEvent(self, event):
-        super(PanelWidget, self).hideEvent(event)
+        DockableWidget.hideEvent(self, event)
         if self.dockwidget is None:
             self.emit(SIG_VISIBILITY_CHANGED, False)
         
     def visibility_changed(self, enable):
         """DockWidget visibility has changed"""
-        super(PanelWidget, self).visibility_changed(enable)
+        DockableWidget.visibility_changed(self, enable)
         # For compatibility with the guiqwt.panels.PanelWidget interface:
         self.emit(SIG_VISIBILITY_CHANGED, self._isvisible)
 

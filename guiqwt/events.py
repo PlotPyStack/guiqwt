@@ -324,7 +324,7 @@ class MenuHandler(ClickHandler):
 
 class QtDragHandler(DragHandler):
     def start_tracking(self, filter, event):
-        super(QtDragHandler, self).start_tracking(filter, event)
+        DragHandler.start_tracking(self, filter, event)
         self.emit(SIG_START_TRACKING, filter, event)
 
     def stop_notmoving(self, filter, event):
