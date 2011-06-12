@@ -1057,9 +1057,9 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
         DockableWidgetMixin.__init__(self, parent)
 
 
-try:
+from guidata.utils import is_compatible_spyderlib_installed
+if is_compatible_spyderlib_installed():
     from spyderlib.widgets.internalshell import InternalShell
-
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
         def __init__(self, parent, namespace, message, commands=[]):
@@ -1077,8 +1077,7 @@ try:
             self.set_calltips(True)
             self.setup_calltips(size=600, font=font)
             self.setup_completion(size=(300, 180), font=font)
-            
-except ImportError:
+else:
     DockableConsole = None
 
 
