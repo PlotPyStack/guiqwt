@@ -271,8 +271,8 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct.PixelRepresentation = ('u', 'i').index(infos.kind)
     dcmstruct.Rows = arr.shape[0]
     dcmstruct.Columns = arr.shape[1]
-    dcmstruct.SmallestImagePixelValue = str(arr.min())
-    dcmstruct.LargestImagePixelValue = str(arr.max())
+    dcmstruct.SmallestImagePixelValue = int(arr.min())
+    dcmstruct.LargestImagePixelValue = int(arr.max())
     if not dcmstruct.PhotometricInterpretation.startswith('MONOCHROME'):
         dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
     dcmstruct.PixelData = arr.tostring()
