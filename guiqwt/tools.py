@@ -663,6 +663,7 @@ class LabelTool(InteractiveTool):
     ICON = "label.png"
     LABEL_STYLE_SECT = "plot"
     LABEL_STYLE_KEY = "label"
+    SWITCH_TO_DEFAULT_TOOL = True
     
     def __init__(self, manager, handle_label_cb=None, label_style=None,
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):

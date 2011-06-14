@@ -25,7 +25,9 @@ External resources:
 # =========================
 #
 # 1. Merge ImagePlot/CurvePlot widgets (issues: autoscale, aspect ratio, ...)
-# 2. Fix log scale bugs (e.g. default ymin value 1e-100)
+# 2. Should we use the middle mouse button for all zoom features (interactive + 
+#    reset) and use the right mouse button for the pan feature?
+# 
 
 
 

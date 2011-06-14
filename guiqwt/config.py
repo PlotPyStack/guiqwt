@@ -36,8 +36,6 @@ DEFAULTS = {
               
               "title/font/size" : 14,
               "title/font/bold" : False,
-              "label/font/size" : 12,
-              "label/font/bold" : False,
 
               "selected_curve_symbol/marker" : 'Rect',
               "selected_curve_symbol/edgecolor" : "gray",
@@ -525,7 +523,7 @@ DEFAULTS = {
               "label/anchor" : "TL",
               "label/xc" : 0,
               "label/yc" : 0,
-              "label/abspos" : True,
+              "label/abspos" : False,
               "label/absg" : "TR",
               "label/xg" : 0.0,
               "label/yg" : 0.0,
