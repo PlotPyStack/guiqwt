@@ -45,8 +45,8 @@ Reference
 import sys
 import numpy as np
 
-from PyQt4.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
-from PyQt4.QtCore import QSize, Qt
+from guidata.qt.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
+from guidata.qt.QtCore import QSize, Qt
 
 from guidata.configtools import get_font
 
@@ -94,6 +94,7 @@ class BasePlot(QwtPlot):
 
     def __init__(self, parent=None, section="plot"):
         super(BasePlot, self).__init__(parent)
+        self._start_autoscaled = True
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
         self.plot_id = None # id assigned by it's manager
@@ -114,6 +115,14 @@ class BasePlot(QwtPlot):
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
         self.connect(self, SIG_ITEM_MOVED, self._move_selected_items_together)
         
+    #---- QwtPlot API ----------------------------------------------------------
+    def showEvent(self, event):
+        """Reimplement Qwt method"""
+        QwtPlot.showEvent(self, event)
+        if self._start_autoscaled:
+            self.do_autoscale()
+
+    #---- Public API -----------------------------------------------------------
     def _move_selected_items_together(self, item, x0, y0, x1, y1):
         """Selected items move together"""
         for selitem in self.get_selected_items():
@@ -246,6 +255,7 @@ class BasePlot(QwtPlot):
         """Set axis limits (minimum and maximum values)"""
         axis_id = self.get_axis_id(axis_id)
         self.setAxisScale(axis_id, vmin, vmax)
+        self._start_autoscaled = False
 
     def set_axis_ticks(self, axis_id, stepsize=0.0, nmajor=None, nminor=None):
         """Set axis major tick step size or maximum number of major ticks
@@ -373,7 +383,10 @@ class BasePlot(QwtPlot):
             item.setZ(z)
         else:
             item.setZ(self.get_max_z()+1)
-        self.items.append(item)
+        if item in self.items:
+            print >>sys.stderr, "Warning: item %r is already attached to plot" % item
+        else:
+            self.items.append(item)
         self.emit(SIG_ITEMS_CHANGED, self)
         
     def add_item_with_z_offset(self, item, zoffset):

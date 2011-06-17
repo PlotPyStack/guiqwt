@@ -42,8 +42,8 @@ Reference
    :inherited-members:
 """
 import numpy as np
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
+from guidata.qt.QtCore import Qt
+from guidata.qt.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
 
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem
@@ -171,17 +171,17 @@ class HistogramItem(CurveItem):
 
     def update_params(self):
         self.histparam.update_hist(self)
-        super(HistogramItem, self).update_params()
+        CurveItem.update_params(self)
 
     def get_item_parameters(self, itemparams):
-        super(HistogramItem, self).get_item_parameters(itemparams)
+        CurveItem.get_item_parameters(self, itemparams)
         itemparams.add("HistogramParam", self, self.histparam)
     
     def set_item_parameters(self, itemparams):
         update_dataset(self.histparam, itemparams.get("HistogramParam"),
                        visible_only=True)
         self.histparam.update_hist(self)
-        super(HistogramItem, self).set_item_parameters(itemparams)
+        CurveItem.set_item_parameters(self, itemparams)
 
 assert_interfaces_valid(HistogramItem)
 

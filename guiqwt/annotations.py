@@ -74,12 +74,10 @@ from guidata.utils import update_dataset
 from guiqwt.config import CONF, _
 from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
-                           SegmentShape, PointShape, VerticalCursor,
-                           HorizontalCursor, ObliqueRectangleShape)
+                           SegmentShape, PointShape, ObliqueRectangleShape)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IShapeItemType, ISerializableType
-from guiqwt.signals import (SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED,
-                            SIG_CURSOR_MOVED)
+from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 from guiqwt.geometry import (compute_center, compute_rect_size,
                              compute_distance, compute_angle)
 
@@ -282,12 +280,12 @@ class AnnotatedShape(AbstractShape):
 
     def select(self):
         """Select item"""
-        super(AnnotatedShape, self).select()
+        AbstractShape.select(self)
         self.shape.select()
     
     def unselect(self):
         """Unselect item"""
-        super(AnnotatedShape, self).unselect()
+        AbstractShape.unselect(self)
         self.shape.unselect()
 
     def get_item_parameters(self, itemparams):
@@ -335,7 +333,7 @@ class AnnotatedPoint(AnnotatedShape):
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x, y = self.shape.points[0]
-        self.label.set_position(x, y)
+        self.label.set_pos(x, y)
         
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
@@ -373,13 +371,13 @@ class AnnotatedSegment(AnnotatedShape):
         
     def get_length(self):
         """Return segment length"""
-        return compute_distance(*self.get_transformed_coords(0, 2))
+        return compute_distance(*self.get_transformed_coords(0, 1))
     
     #----AnnotatedShape API-----------------------------------------------------
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x1, y1, x2, y2 = self.get_rect()
-        self.label.set_position(*compute_center(x1, y1, x2, y2))
+        self.label.set_pos(*compute_center(x1, y1, x2, y2))
         
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
@@ -418,7 +416,7 @@ class AnnotatedRectangle(AnnotatedShape):
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.min(axis=0)
-        self.label.set_position(x_label, y_label)
+        self.label.set_pos(x_label, y_label)
     
     def get_computations_text(self):
         """Return formatted string with informations on current shape"""
@@ -475,7 +473,7 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
     #----AnnotatedShape API-----------------------------------------------------
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
-        self.label.set_position(*self.get_center())
+        self.label.set_pos(*self.get_center())
         
     #----RectangleShape API-----------------------------------------------------
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
@@ -570,7 +568,7 @@ class AnnotatedEllipse(AnnotatedShape):
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.mean(axis=0)
-        self.label.set_position(x_label, y_label)
+        self.label.set_pos(x_label, y_label)
         
     def get_center(self):
         """Return center coordinates: (xc, yc)"""
@@ -619,112 +617,3 @@ class AnnotatedCircle(AnnotatedEllipse):
     #----AnnotatedEllipse API---------------------------------------------------
     def set_rect(self, x0, y0, x1, y1):
         self.shape.set_rect(x0, y0, x1, y1)
-        
-
-
-class AnnotatedCursor(AnnotatedShape):
-    """
-    Construct an annotated vertical cursor in x=pos
-    with properties set with *annotationparam* 
-    (see :py:class:`guiqwt.styles.AnnotationParam`)
-    """
-    LABEL_ANCHOR = "BL"
-
-    def __init__(self, pos=0, annotationparam=None, moveable=True):
-        self._can_move = moveable
-        self._can_resize = moveable
-        
-        AnnotatedShape.__init__(self, annotationparam)
-        self.set_pos(pos)
-        
-    #----IBasePlotItem API------------------------------------------------------
-    def select(self):
-        """Select item"""
-        AnnotatedShape.select(self)
-        param = self.label.labelparam
-        param.color = self.shape.shapeparam.sel_line.color
-        param.update_label(self.label)
-        
-    def unselect(self):
-        """Unselect item"""
-        AnnotatedShape.unselect(self)
-        param = self.label.labelparam
-        param.color = self.shape.shapeparam.line.color
-        param.update_label(self.label)
-        
-    #----AnnotatedShape API-----------------------------------------------------
-    def set_pos(self, pos):
-        self.shape.set_pos(pos, dosignal=False)
-
-    def get_pos(self):
-        return self.shape.get_pos()
-        
-    def set_style(self, section, option):
-        pass
-           
-    def hit_test(self, pos):
-        return self.shape.hit_test(pos)
-        
-    def move_point_to(self, handle, pos, ctrl=None):
-        super(AnnotatedCursor, self).move_point_to(handle, pos, ctrl)
-        if self.plot():
-            self.plot().emit(SIG_CURSOR_MOVED, self, self.get_pos())
-        
-    def draw(self, painter, xMap, yMap, canvasRect):
-        self.set_label_position()
-        super(AnnotatedCursor, self).draw(painter, xMap, yMap, canvasRect)
-        
-    def create_label(self):
-        """Return the label object associated to this annotated shape object"""
-        label_param = LabelParam(_("Label"), icon='label.png')
-        label_param.read_config(CONF, "plot", "shape/cursor_label")
-        label_param.anchor = self.LABEL_ANCHOR
-        label_param.color = self.shape.shapeparam.line.color
-        return DataInfoLabel(label_param, [self])
-        
-    #----AnnotatedShape API-----------------------------------------------------
-    def create_shape(self):
-        """Return the shape object associated to this annotated shape object"""
-        return self.SHAPE_CLASS(0, self.can_move())
-        
-    def get_infos(self):
-        """Return dictionary with measured data on shape"""
-        raise NotImplementedError
-        
-        
-class AnnotatedVCursor(AnnotatedCursor):
-    SHAPE_CLASS = VerticalCursor
-    def move_local_point_to(self, handle, pos, ctrl=None):
-        val = self.plot().invTransform(self.xAxis(), pos.x())
-        self.move_point_to(handle, (val, 0))
-        
-    def set_label_position(self):
-        """Set label position, for instance based on shape position"""
-        plot = self.plot()
-        y = plot.invTransform(self.yAxis(),
-                              plot.canvas().contentsRect().bottomLeft().y())
-        self.label.set_position(self.shape.pos, y)
-        
-    #----AnnotatedShape API-----------------------------------------------------
-    def get_infos(self):
-        """Return dictionary with measured data on shape"""
-        return self.x_to_str(self.get_pos(), 1)
-        
-
-class AnnotatedHCursor(AnnotatedCursor):
-    SHAPE_CLASS = HorizontalCursor
-    def move_local_point_to(self, handle, pos, ctrl=None):
-        val = self.plot().invTransform(self.yAxis(), pos.y())
-        self.move_point_to(handle, (val, 0))
-        
-    def set_label_position(self):
-        """Set label position, for instance based on shape position"""
-        plot = self.plot()
-        x = plot.invTransform(self.xAxis(),
-                              plot.canvas().contentsRect().bottomLeft().x())
-        self.label.set_position(x, self.shape.pos)
-        
-    #----AnnotatedShape API-----------------------------------------------------
-    def get_infos(self):
-        """Return dictionary with measured data on shape"""
-        return self.y_to_str(self.get_pos(), 1)

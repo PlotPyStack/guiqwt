@@ -138,8 +138,8 @@ import sys, os, os.path as osp
 import numpy as np
 from math import fabs
 
-from PyQt4.QtGui import QColor, QImage
-from PyQt4.QtCore import QRectF, QPointF, QRect
+from guidata.qt.QtGui import QColor, QImage
+from guidata.qt.QtCore import QRectF, QPointF, QRect
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -551,7 +551,7 @@ class BaseImageItem(QwtPlotItem):
             self.border_rect.show()
         else:
             self.border_rect.hide()
-        super(BaseImageItem, self).setVisible(enable)
+        QwtPlotItem.setVisible(self, enable)
 
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
@@ -816,7 +816,7 @@ class RawImageItem(BaseImageItem):
                 IExportROIImageItemType, IStatsImageItemType)
 
     def get_item_parameters(self, itemparams):
-        super(RawImageItem, self).get_item_parameters(itemparams)
+        BaseImageItem.get_item_parameters(self, itemparams)
         self.imageparam.update_param(self)
         itemparams.add("ImageParam", self, self.imageparam)
     
@@ -824,7 +824,7 @@ class RawImageItem(BaseImageItem):
         update_dataset(self.imageparam, itemparams.get("ImageParam"),
                        visible_only=True)
         self.imageparam.update_image(self)
-        super(RawImageItem, self).set_item_parameters(itemparams)
+        BaseImageItem.set_item_parameters(self, itemparams)
 
     #---- IBaseImageItem API ---------------------------------------------------
     def can_setfullscale(self):
@@ -1109,7 +1109,7 @@ class TrImageItem(RawImageItem):
 
     #--- RawImageItem API ------------------------------------------------------
     def set_data(self, data, lut_range=None):
-        super(TrImageItem, self).set_data(data, lut_range)
+        RawImageItem.set_data(self, data, lut_range)
         ni, nj = self.data.shape
         self.points = np.array([[0,  0, nj, nj],
                                 [0, ni, ni,  0],
@@ -1383,7 +1383,7 @@ class XYImageItem(RawImageItem):
                              % (nj, nj+1))
         if y.shape[0] == ni:
             self.y = to_bins(y)
-        elif x.shape[0] == ni+1:
+        elif y.shape[0] == ni+1:
             self.y = y
         else:
             raise IndexError("y must be a 1D array of length %d or %d" \
@@ -1721,8 +1721,8 @@ class MaskedImageItem(ImageItem):
             
     #---- BaseImageItem API ----------------------------------------------------
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
-        super(MaskedImageItem, self).draw_image(painter, canvasRect,
-                                                src_rect, dst_rect, xMap, yMap)
+        ImageItem.draw_image(self, painter, canvasRect,
+                             src_rect, dst_rect, xMap, yMap)
         if self.data is None:
             return
         if self.is_mask_visible():
@@ -1749,7 +1749,7 @@ class MaskedImageItem(ImageItem):
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
-        super(MaskedImageItem, self).set_data(data, lut_range)
+        ImageItem.set_data(self, data, lut_range)
         self.orig_data = data
         self.data = data.view(np.ma.MaskedArray)
         self.set_mask(self._mask)
@@ -1810,7 +1810,7 @@ class ImageFilterItem(BaseImageItem):
 
     #---- IBasePlotItem API ----------------------------------------------------
     def get_item_parameters(self, itemparams):
-        super(ImageFilterItem, self).get_item_parameters(itemparams)
+        BaseImageItem.get_item_parameters(self, itemparams)
         self.imagefilterparam.update_param(self)
         itemparams.add("ImageFilterParam", self, self.imagefilterparam)
     
@@ -1819,7 +1819,7 @@ class ImageFilterItem(BaseImageItem):
                        itemparams.get("ImageFilterParam"),
                        visible_only=True)
         self.imagefilterparam.update_imagefilter(self)
-        super(ImageFilterItem, self).set_item_parameters(itemparams)
+        BaseImageItem.set_item_parameters(self, itemparams)
 
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
@@ -1848,25 +1848,25 @@ class ImageFilterItem(BaseImageItem):
             if self.image is not None:
                 self.image.set_color_map(name_or_table)
         else:
-            super(ImageFilterItem, self).set_color_map(name_or_table)
+            BaseImageItem.set_color_map(self, name_or_table)
             
     def get_color_map(self):
         if self.use_source_cmap:
             return self.image.get_color_map()
         else:
-            return super(ImageFilterItem, self).get_color_map()
+            return BaseImageItem.get_color_map(self)
 
     def get_lut_range(self):
         if self.use_source_cmap:
             return self.image.get_lut_range()
         else:
-            return super(ImageFilterItem, self).get_lut_range()
+            return BaseImageItem.get_lut_range(self)
 
     def set_lut_range(self, lut_range):
         if self.use_source_cmap:
             self.image.set_lut_range(lut_range)
         else:
-            super(ImageFilterItem, self).set_lut_range(lut_range)
+            BaseImageItem.set_lut_range(self, lut_range)
     
     #---- IBaseImageItem API ---------------------------------------------------
     def types(self):
@@ -2010,7 +2010,7 @@ class Histogram2DItem(BaseImageItem):
             self.set_lut_range([0, nmax])
             self.plot().update_colormap_axis(self)
         src_rect = (0, 0, self.nx_bins, self.ny_bins)
-        drawfunc = super(Histogram2DItem, self).draw_image
+        drawfunc = lambda *args: BaseImageItem.draw_image(self, *args)
         if self.fill_canvas:
             x1, y1, x2, y2 = canvasRect.getCoords()
             drawfunc(painter, canvasRect, src_rect, (x1, y1, x2, y2), xMap, yMap)
@@ -2023,7 +2023,7 @@ class Histogram2DItem(BaseImageItem):
                 IVoiImageItemType, IColormapImageItemType, ICSImageItemType)
 
     def get_item_parameters(self, itemparams):
-        super(Histogram2DItem, self).get_item_parameters(itemparams)
+        BaseImageItem.get_item_parameters(self, itemparams)
         itemparams.add("Histogram2DParam", self, self.histparam)
     
     def set_item_parameters(self, itemparams):
@@ -2031,7 +2031,7 @@ class Histogram2DItem(BaseImageItem):
                        visible_only=True)
         self.histparam = itemparams.get("Histogram2DParam")
         self.histparam.update_histogram(self)
-        super(Histogram2DItem, self).set_item_parameters(itemparams)
+        BaseImageItem.set_item_parameters(self, itemparams)
 
     #---- IBaseImageItem API ---------------------------------------------------
     def can_setfullscale(self):
@@ -2103,12 +2103,19 @@ class ImagePlot(CurvePlot):
         self.set_axis_direction('left', yreverse)
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
+        
+    #---- BasePlot API ---------------------------------------------------------
+    def showEvent(self, event):
+        """Override BasePlot method"""
+        if self.lock_aspect_ratio:
+            self._start_autoscaled = True
+        CurvePlot.showEvent(self, event)
 
     #---- CurvePlot API --------------------------------------------------------    
     def do_zoom_view(self, dx, dy):
         """Reimplement CurvePlot method"""
-        super(ImagePlot, self).do_zoom_view(dx, dy,
-                                      lock_aspect_ratio=self.lock_aspect_ratio)
+        CurvePlot.do_zoom_view(self, dx, dy,
+                               lock_aspect_ratio=self.lock_aspect_ratio)
     
     #---- Levels histogram-related API -----------------------------------------
     def update_lut_range(self, _min, _max):
@@ -2171,11 +2178,6 @@ class ImagePlot(CurvePlot):
             x0 -= delta_x
             x1 += delta_x
         self.set_plot_limits(x0, x1, y0, y1)
-            
-    def setVisible(self, state):
-        super(ImagePlot, self).setVisible(state)
-        if state and self.lock_aspect_ratio:
-            self.do_autoscale()
 
     #---- LUT/colormap-related API ---------------------------------------------
     def notify_colormap_changed(self):
@@ -2201,7 +2203,7 @@ class ImagePlot(CurvePlot):
     #---- QwtPlot API ----------------------------------------------------------
     def resizeEvent(self, event):
         """Reimplement Qt method to resize widget"""
-        super(ImagePlot, self).resizeEvent(event)
+        CurvePlot.resizeEvent(self, event)
         if self.lock_aspect_ratio:
             self.apply_aspect_ratio()
         self.replot()
@@ -2216,7 +2218,7 @@ class ImagePlot(CurvePlot):
         z: item's z order (None -> z = max(self.get_items())+1)
         autoscale: True -> rescale plot to fit image bounds
         """
-        super(ImagePlot, self).add_item(item, z)
+        CurvePlot.add_item(self, item, z)
         if isinstance(item, BaseImageItem):
             self.update_colormap_axis(item)
             if autoscale:
@@ -2224,7 +2226,7 @@ class ImagePlot(CurvePlot):
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
-        super(ImagePlot, self).do_autoscale(replot=False)
+        CurvePlot.do_autoscale(self, replot=False)
         self.updateAxes()
         if self.lock_aspect_ratio:
             self.apply_aspect_ratio(full_scale=True)
@@ -2236,5 +2238,4 @@ class ImagePlot(CurvePlot):
         if isinstance(item, BaseImageItem):
             return ImageAxesParam
         else:
-            return super(ImagePlot, self).get_axesparam_class(item)
-
+            return CurvePlot.get_axesparam_class(self, item)

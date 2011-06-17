@@ -35,11 +35,6 @@ Signals available:
         Emitted by plot when a shapes.XRangeSelection range changes
         
         Arguments: range object, lower_bound, upper_bound
-    :py:data:`guiqwt.signals.SIG_CURSOR_MOVED`
-        Emitted by plot when a shapes.VerticalCursor or shapes.HorizontalCursor 
-        position changes
-        
-        Arguments: cursor item, position
     :py:data:`guiqwt.signals.SIG_ITEMS_CHANGED`
         Emitted by plot when item list has changed (item removed, added, ...)
         
@@ -89,7 +84,7 @@ Signals available:
 
         Arguments: filter
 """
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtCore import SIGNAL
 
 # Emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
 SIG_ITEM_MOVED = SIGNAL("item_moved(PyQt_PyObject,double,double,double,double)")
@@ -105,9 +100,6 @@ SIG_ANNOTATION_CHANGED = SIGNAL("annotation_changed(PyQt_PyObject)")
 
 # Emitted by plot when the a shapes.XRangeSelection range changes
 SIG_RANGE_CHANGED = SIGNAL("range_changed(PyQt_PyObject,double,double)")
-
-# Emitted by plot when a shapes.VerticalCursor/HorizontalCursor position changes
-SIG_CURSOR_MOVED = SIGNAL("cursor_moved(PyQt_PyObject,double)")
 
 # Emitted by plot when item list has changed (item removed, added, ...)
 SIG_ITEMS_CHANGED = SIGNAL('items_changed(PyQt_PyObject)')
@@ -146,6 +138,9 @@ SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")
 # Emitted by an interactive tool to notify that the tool has just been 
 # "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
 SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
+
+# Emitted by an interactive tool to notify that it is finished doing its job
+SIG_TOOL_JOB_FINISHED = SIGNAL("tool_job_finished")
 
 # Emitted by cross section plot when cross section curve data has changed
 SIG_CS_CURVE_CHANGED = SIGNAL("cs_curve_changed(PyQt_PyObject)")

@@ -99,9 +99,9 @@ Reference
 """
 
 import sys
-from PyQt4.QtGui import (QMainWindow, QPrinter, QPainter, QFrame, QVBoxLayout,
-                         QGridLayout, QToolBar, QPixmap)
-from PyQt4.QtCore import QRect, Qt
+from guidata.qt.QtGui import (QMainWindow, QPrinter, QPainter, QFrame,
+                              QVBoxLayout, QGridLayout, QToolBar, QPixmap)
+from guidata.qt.QtCore import QRect, Qt
 
 import guidata
 from guidata.configtools import get_icon

@@ -21,6 +21,16 @@ External resources:
 """
 
 
+# Summer'11 Internal Sprint
+# =========================
+#
+# 1. Merge ImagePlot/CurvePlot widgets (issues: autoscale, aspect ratio, ...)
+# 2. Should we use the middle mouse button for all zoom features (interactive + 
+#    reset) and use the right mouse button for the pan feature?
+# 
+
+
+
 #    Copyright © 2009-2010 CEA
 #    Pierre Raybaut
 #    Licensed under the terms of the CECILL License (see below)
@@ -536,7 +546,7 @@ External resources:
 #    Version 2.0 dated 2006-09-05.
 
 
-__version__ = '2.1.3'
+__version__ = '2.1.4beta2'
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
 # following path to module's data (images) and translations:

@@ -9,12 +9,12 @@ Requirements:
     * PyQt4 4.x (x>=3 ; recommended x>=4)
     * PyQwt 5.x (x>=2)
     * guidata 1.3.0 or later
-    * NumPy 1.x (x>=3) -- NumPy 1.5 or later is required for Windows binaries
+    * NumPy 1.x (x>=3) -- NumPy 1.6 or later is required for Windows binaries
     * SciPy 0.x (x>=7)
     * PIL 1.1.x (x>=6)
     
 Optional Python modules:
-    * spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
+    * spyderlib 2.1 for Sift embedded Python console
     * pydicom 0.9.x (x>=4) for DICOM files I/O features
 
 Installation

@@ -7,9 +7,9 @@
 
 from __future__ import division
 
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout, QFormLayout,
-                         QLineEdit, QIntValidator, QLabel)
-from PyQt4.QtCore import SIGNAL, SLOT, Qt
+from guidata.qt.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout,
+                              QFormLayout, QLineEdit, QIntValidator, QLabel)
+from guidata.qt.QtCore import SIGNAL, SLOT, Qt
 
 
 from guiqwt.config import _

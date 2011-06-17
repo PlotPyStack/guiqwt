@@ -239,9 +239,10 @@ except ImportError:
 
 import sys, numpy as np, weakref, os.path as osp
 
-from PyQt4.QtCore import Qt, QObject, SIGNAL
-from PyQt4.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
-                         QMessageBox, QPrintDialog, QFont, QAction, QToolButton)
+from guidata.qt.QtCore import Qt, QObject, SIGNAL
+from guidata.qt.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
+                              QMessageBox, QPrintDialog, QFont, QAction,
+                              QToolButton)
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
@@ -270,7 +271,7 @@ from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
-                            SIG_APPLIED_MASK_TOOL)
+                            SIG_APPLIED_MASK_TOOL, SIG_TOOL_JOB_FINISHED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -353,6 +354,7 @@ class InteractiveTool(GuiTool):
     ICON = None
     TIP = None
     CURSOR = Qt.CrossCursor
+    SWITCH_TO_DEFAULT_TOOL = False # switch to default tool when finished
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
                  title=None, icon=None, tip=None):
@@ -365,6 +367,10 @@ class InteractiveTool(GuiTool):
         super(InteractiveTool, self).__init__(manager, toolbar_id)
         # Starting state for every plotwidget we can act upon
         self.start_state = {}
+        
+        if self.SWITCH_TO_DEFAULT_TOOL:
+            self.connect(self, SIG_TOOL_JOB_FINISHED,
+                         self.manager.activate_default_tool)
                         
     def create_action(self, manager):
         """Create and return tool's action"""
@@ -415,6 +421,7 @@ class InteractiveTool(GuiTool):
 
     def validate(self, filter, event):
         self.emit(SIG_VALIDATE_TOOL, filter)
+        self.emit(SIG_TOOL_JOB_FINISHED)
 
 
 class SelectTool(InteractiveTool):
@@ -494,11 +501,11 @@ class SelectPointTool(InteractiveTool):
                 title = "<b>%s</b><br>" % self.TITLE
             if self.on_active_item:
                 constraint_cb = filter.plot.on_active_curve
-                label_cb = lambda marker, x, y: title + \
-                           filter.plot.get_coordinates_str(marker, x, y)
+                label_cb = lambda x, y: title + \
+                           filter.plot.get_coordinates_str(x, y)
             else:
                 constraint_cb = None
-                label_cb = lambda marker, x, y: \
+                label_cb = lambda x, y: \
                            "%sx = %g<br>y = %g" % (title, x, y)
             self.marker = Marker(label_cb=label_cb,
                                  constraint_cb=constraint_cb)
@@ -656,6 +663,7 @@ class LabelTool(InteractiveTool):
     ICON = "label.png"
     LABEL_STYLE_SECT = "plot"
     LABEL_STYLE_KEY = "label"
+    SWITCH_TO_DEFAULT_TOOL = True
     
     def __init__(self, manager, handle_label_cb=None, label_style=None,
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
@@ -693,11 +701,12 @@ class LabelTool(InteractiveTool):
             label.setTitle(self.TITLE)
             x = plot.invTransform(label.xAxis(), event.pos().x())
             y = plot.invTransform(label.yAxis(), event.pos().y())
-            label.set_position(x, y)
+            label.set_pos(x, y)
             plot.add_item_with_z_offset(label, SHAPE_Z_OFFSET)
             if self.handle_label_cb is not None:
                 self.handle_label_cb(label)
             plot.replot()
+            self.emit(SIG_TOOL_JOB_FINISHED)
         
 
 class RectangularActionTool(InteractiveTool):
@@ -761,6 +770,7 @@ class RectangularActionTool(InteractiveTool):
     def end_rect(self, filter, p0, p1):
         plot = filter.plot
         self.action_func(plot, p0, p1)
+        self.emit(SIG_TOOL_JOB_FINISHED)
 
 
 class RectangularShapeTool(RectangularActionTool):
@@ -922,6 +932,7 @@ def update_image_tool_status(tool, plot):
     return enabled
 
 class ImageStatsTool(RectangularShapeTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Image statistics")
     ICON = "imagestats.png"
     SHAPE_STYLE_KEY = "shape/image_stats"
@@ -974,6 +985,7 @@ class ImageStatsTool(RectangularShapeTool):
     
         
 class CrossSectionTool(RectangularShapeTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Cross section")
     ICON = "csection.png"
     SHAPE_STYLE_KEY = "shape/cross_section"
@@ -1019,6 +1031,7 @@ class CrossSectionTool(RectangularShapeTool):
         self.register_shape(shape, final=True)
 
 class AverageCrossSectionTool(CrossSectionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Average cross section")
     ICON = "csection_a.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
@@ -1027,6 +1040,7 @@ class AverageCrossSectionTool(CrossSectionTool):
         return AnnotatedRectangle(0, 0, 1, 1), 0, 2
 
 class ObliqueCrossSectionTool(CrossSectionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Oblique averaged cross section")
     ICON = "csection_oblique.png"
     SHAPE_STYLE_KEY = "shape/average_cross_section"
@@ -1098,6 +1112,7 @@ class BaseCursorTool(InteractiveTool):
             assert self.shape.plot() == filter.plot
             filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)
             self.shape = None
+            self.emit(SIG_TOOL_JOB_FINISHED)
 
 class HRangeTool(BaseCursorTool):
     TITLE = _("Horizontal selection")
@@ -1110,25 +1125,78 @@ class VCursorTool(BaseCursorTool):
     TITLE = _("Vertical cursor")
     ICON = "vcursor.png"
     def create_shape(self):
-        from guiqwt.shapes import VerticalCursor
-        return VerticalCursor(0)
-
-class AnnotatedVCursorTool(VCursorTool):
-    def create_shape(self):
-        from guiqwt.annotations import AnnotatedVCursor
-        return AnnotatedVCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('|')
+        return marker
 
 class HCursorTool(BaseCursorTool):
     TITLE = _("Horizontal cursor")
     ICON = "hcursor.png"
     def create_shape(self):
-        from guiqwt.shapes import HorizontalCursor
-        return HorizontalCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('-')
+        return marker
 
-class AnnotatedHCursorTool(HCursorTool):
+class XCursorTool(BaseCursorTool):
+    TITLE = _("Cross cursor")
+    ICON = "xcursor.png"
     def create_shape(self):
-        from guiqwt.annotations import AnnotatedHCursor
-        return AnnotatedHCursor(0)
+        from guiqwt.shapes import Marker
+        marker = Marker()
+        marker.set_markerstyle('+')
+        return marker
+
+
+class SignalStatsTool(BaseCursorTool):
+    TITLE = _("Signal statistics")
+    ICON = "xrange.png"
+    SWITCH_TO_DEFAULT_TOOL = True
+    def __init__(self, manager, toolbar_id=DefaultToolbarID,
+                 title=None, icon=None, tip=None):
+        super(SignalStatsTool, self).__init__(manager, toolbar_id, title=title,
+                                              icon=icon, tip=tip)
+        self._last_item = None
+        self.label = None
+        
+    def create_shape(self):
+        from guiqwt.shapes import XRangeSelection
+        return XRangeSelection(0, 0)
+
+    def move(self, filter, event):
+        super(SignalStatsTool, self).move(filter, event)
+        if self.label is None:
+            plot = filter.plot
+            curve = self.get_associated_item(plot)
+            from guiqwt.builder import make
+            self.label = make.computations(self.shape, "TL",
+              [
+               (curve, "%g &lt; y &lt; %g", lambda *args: (args[1].min(), args[1].max())),
+               (curve, "&lt;y&gt;=%g", lambda *args: args[1].mean()),
+               (curve, u"σ(y)=%g", lambda *args: args[1].std()),
+               (curve, u"∑(y)=%g", lambda *args: np.trapz(args[1])),
+               (curve, u"∫ydx=%g", lambda *args: np.trapz(args[1], args[0])),
+              ])
+            self.label.attach(plot)
+            self.label.setZ(plot.get_max_z()+1)
+            self.label.setVisible(True)
+            
+    def end_move(self, filter, event):
+        super(SignalStatsTool, self).end_move(filter, event)
+        if self.label is not None:
+            filter.plot.add_item_with_z_offset(self.label, SHAPE_Z_OFFSET)
+            self.label = None
+        
+    def get_associated_item(self, plot):
+        items = plot.get_selected_items(item_type=ICurveItemType)
+        if len(items) == 1:
+            self._last_item = items[0]
+        return self._last_item
+        
+    def update_status(self, plot):
+        item = self.get_associated_item(plot)
+        self.action.setEnabled(item is not None)
 
 
 class DummySeparatorTool(GuiTool):
@@ -1161,7 +1229,6 @@ class CommandTool(GuiTool):
                                      tip=self.tip, triggered=self.activate)
 
     def setup_context_menu(self, menu, plot):
-        self.action.setData(plot)
         menu.addAction(self.action)
 
     def activate(self, checked=True):
@@ -1529,6 +1596,7 @@ def save_snapshot(plot, p0, p1):
         raise RuntimeError(_("Unknown file extension"))
 
 class SnapshotTool(RectangularActionTool):
+    SWITCH_TO_DEFAULT_TOOL = True
     TITLE = _("Rectangle snapshot")
     ICON = "snapshot.png"
     def __init__(self, manager, toolbar_id=DefaultToolbarID):

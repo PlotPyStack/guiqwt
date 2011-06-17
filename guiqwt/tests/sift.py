@@ -12,10 +12,10 @@ Simple signal and image processing application based on guiqwt and guidata
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                         QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QTabWidget, QMenu, QApplication, QCursor, QFont)
-from PyQt4.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
+                              QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
+                              QTabWidget, QMenu, QApplication, QCursor, QFont)
+from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 
 import sys, platform, os.path as osp, os
 import numpy as np
@@ -37,8 +37,36 @@ from guiqwt.builder import make
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 
+
+def normalize(yin, parameter='maximum'):
+    """
+    Normalize input array *yin* with respect to parameter *parameter*
+    
+    Support values for *parameter*:
+        'maximum' (default), 'amplitude', 'sum', 'energy'
+    """
+    axis = len(yin.shape)-1
+    if parameter == 'maximum':
+        maximum = np.max(yin, axis)
+        if axis == 1:
+            maximum = maximum.reshape((len(maximum), 1))
+        maxarray = np.tile(maximum, yin.shape[axis]).reshape(yin.shape)
+        return yin / maxarray
+    elif parameter == 'amplitude':
+        ytemp = np.array(yin, copy=True)
+        minimum = np.min(yin, axis)
+        if axis == 1:
+            minimum = minimum.reshape((len(minimum), 1))
+        ytemp -= minimum
+        return normalize(ytemp, parameter='maximum')
+    elif parameter == 'sum':
+        return yin/yin.sum()
+    elif parameter == 'energy':
+        return yin/(yin*yin.conjugate()).sum()
+    else:
+        raise RuntimeError("Unsupported parameter %s" % parameter)
 
 def xy_fft(x, y):
     """Compute FFT on X,Y data"""
@@ -129,8 +157,6 @@ class ObjectFT(QSplitter):
         self.processing_actions = None
         
         self.number = 0
-        
-        self.directory = "" # last browsed directory
 
         # Object selection dependent actions
         self.actlist_1more = []
@@ -360,7 +386,7 @@ class ObjectFT(QSplitter):
         try:
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
-            diffobj.data = obj1.data-obj0.data
+            diffobj.data = obj0.data-obj1.data
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -377,7 +403,7 @@ class ObjectFT(QSplitter):
         try:
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
-            diffobj.data = obj1.data/obj0.data
+            diffobj.data = obj0.data/obj1.data
         except Exception, msg:
             import traceback
             traceback.print_exc()
@@ -431,7 +457,7 @@ class SignalFT(ObjectFT):
     PREFIX = "s"
     #------ObjectFT API
     def setup(self, toolbar):
-        super(SignalFT, self).setup(toolbar)
+        ObjectFT.setup(self, toolbar)
         
         # File actions
         new_action = create_action(self, _("New signal..."),
@@ -448,8 +474,20 @@ class SignalFT(ObjectFT):
                                     triggered=self.save_signal)
         self.actlist_1more += [save_action]
         self.file_actions = [new_action, open_action, save_action]
+
+        # Operation actions
+        roi_action = create_action(self, _("ROI extraction"),
+                                   triggered=self.extract_roi)
+        swapaxes_action = create_action(self, _("Swap X/Y axes"),
+                                        triggered=self.swap_axes)
+        self.actlist_1more += [roi_action, swapaxes_action]
+        self.operation_actions += [None, roi_action, swapaxes_action]
         
         # Processing actions
+        normalize_action = create_action(self, _("Normalize"),
+                                         triggered=self.normalize)
+        lincal_action = create_action(self, _("Linear calibration"),
+                                      triggered=self.calibrate)
         gaussian_action = create_action(self, _("Gaussian filter"),
                                         triggered=self.compute_gaussian)
         wiener_action = create_action(self, _("Wiener filter"),
@@ -460,34 +498,102 @@ class SignalFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [gaussian_action, wiener_action,
+        self.actlist_1more += [normalize_action, lincal_action,
+                               gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [gaussian_action, wiener_action, fft_action,
-                                   ifft_action]
+        self.processing_actions = [normalize_action, lincal_action, None,
+                                   gaussian_action, wiener_action,
+                                   fft_action, ifft_action]
                                    
         add_actions(toolbar, [new_action, open_action, save_action])
 
     def make_item(self, row):
         signal = self.objects[row]
-        x, y = signal.xydata
-        item = make.mcurve(x, y.real, label=signal.title)
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            item = make.mcurve(x, y.real, label=signal.title)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            item = make.merror(x, y.real, dx, dy, label=signal.title)
+        else:
+            raise RuntimeError, "data not supported"
         self.items[row] = item
         return item
         
     def update_item(self, row):
         signal = self.objects[row]
-        x, y = signal.xydata
         item = self.items[row]
-        item.set_data(x, y.real)
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            item.set_data(x, y.real)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            item.set_data(x, y.real, dx, dy)
         item.curveparam.label = signal.title
         
+    #------Signal operations
+    def extract_roi(self):
+        class ROIParam(DataSet):
+            row1 = IntItem(_("First row index"), default=0, min=-1)
+            row2 = IntItem(_("Last row index"), default=-1, min=-1)
+        param = ROIParam(_("ROI extraction"))
+        self.compute_11("ROI", lambda x, y, p: (x.copy()[p.row1:p.row2],
+                                                y.copy()[p.row1:p.row2]),
+                        param, suffix=lambda p:
+                                      u"rows=%d:%d" % (p.row1, p.row2))
+    
+    def swap_axes(self):
+        self.compute_11("SwapAxes", lambda x, y: (y, x))
+    
     #------Signal Processing
-    def apply_11_func(self, obj, orig, func, param):
-        xor, yor = orig.xydata
-        if param is None:
-            obj.xydata = func(xor, yor)
-        else:
-            obj.xydata = func(xor, yor, param)
+    def apply_11_func(self, obj, signal, func, param):
+        data = signal.xydata
+        if len(data) == 2: # x, y signal
+            x, y = data
+            if param is None:
+                obj.xydata = func(x, y)
+            else:
+                obj.xydata = func(x, y, param)
+        elif len(data) == 4: # x, y, dx, dy error bar signal
+            x, y, dx, dy = data
+            if param is None:
+                x2, y2 = func(x, y)
+                _x3, dy2 = func(x, dy)
+            else:
+                x2, y2 = func(x, y, param)
+                dx2, dy2 = func(dx, dy, param)
+            obj.xydata = x2, y2, dx, dy2
+            
+    def normalize(self):
+        methods = ((_("maximum"), 'maximum'),
+                   (_("amplitude"), 'amplitude'),
+                   (_("sum"), 'sum'),
+                   (_("energy"), 'energy'))
+        class NormalizeParam(DataSet):
+            method = ChoiceItem(_("Normalize with respect to"), methods)
+        param = NormalizeParam(_("Normalize"))
+        def func(x, y, p):
+            return x, normalize(y, p.method)
+        self.compute_11("Normalize", func, param,
+                        suffix=lambda p: u"ref=%s" % p.method)
+    
+    def calibrate(self):
+        axes = (('x', _("X-axis")), ('y', _("Y-axis")))
+        class CalibrateParam(DataSet):
+            axis = ChoiceItem(_("Calibrate"), axes, default='y')
+            a = FloatItem('a', default=1.)
+            b = FloatItem('b', default=0.)
+        param = CalibrateParam(_("Linear calibration"), "y = a.x + b")
+        def func(x, y, p):
+            if p.axis == 'x':
+                return p.a*x+p.b, y
+            else:
+                return x, p.a*y+p.b
+        self.compute_11("LinearCal", func, param,
+                        suffix=lambda p: u"%s=%s*%s+%s" % (p.axis, p.a,
+                                                           p.axis, p.b))
     
     def compute_wiener(self):
         import scipy.signal as sps
@@ -547,13 +653,13 @@ class SignalFT(ObjectFT):
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
                   % (_(u"Text files"), _(u"NumPy arrays"))
-        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"),
-                                               self.directory, filters)
+        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"), '',
+                                                 filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filenames = list(filenames)
         for filename in filenames:
             filename = unicode(filename)
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             signal = SignalParam()
             signal.title = filename
             try:
@@ -568,6 +674,7 @@ class SignalFT(ObjectFT):
                             continue
                     else:
                         raise
+                assert len(xydata.shape) in (1, 2), "Data not supported"
             except Exception, msg:
                 import traceback
                 traceback.print_exc()
@@ -577,10 +684,17 @@ class SignalFT(ObjectFT):
                 return
             if len(xydata.shape) == 1:
                 xydata = np.vstack( (np.arange(xydata.size), xydata) )
-            elif len(xydata.shape) == 2:
+            else:
                 rows, cols = xydata.shape
-                if cols == 2 and rows > 2:
-                    xydata = xydata.T
+                for colnb in (2, 3, 4):
+                    if cols == colnb and rows > colnb:
+                        xydata = xydata.T
+                        break
+                if cols == 3:
+                    # x, y, dy
+                    xarr, yarr, dyarr = xydata
+                    dxarr = np.zeros_like(dyarr)
+                    xydata = np.vstack((xarr, yarr, dxarr, dyarr))
             signal.xydata = xydata
             self.add_object(signal)
             
@@ -588,12 +702,12 @@ class SignalFT(ObjectFT):
         """Save selected signal"""
         rows = self._get_selected_rows()
         for row in rows:
-            filename = QFileDialog.getSaveFileName(self, _("Save as"), 
-                                   self.directory, _(u"CSV files")+" (*.csv)")
+            filename = QFileDialog.getSaveFileName(self, _("Save as"), '',
+                                                   _(u"CSV files")+" (*.csv)")
             if not filename:
                 return
             filename = unicode(filename)
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             obj = self.objects[row]
             try:
                 np.savetxt(filename, obj.xydata, delimiter=',')
@@ -610,7 +724,7 @@ class ImageFT(ObjectFT):
     PREFIX = "i"
     #------ObjectFT API
     def setup(self, toolbar):
-        super(ImageFT, self).setup(toolbar)
+        ObjectFT.setup(self, toolbar)
         
         # File actions
         new_action = create_action(self, _("New image..."),
@@ -642,20 +756,26 @@ class ImageFT(ObjectFT):
                                       triggered=self.rotate_arbitrarily)
         resize_action = create_action(self, _("Resize"),
                                       triggered=self.resize_image)
-        crop_action = create_action(self, _("Crop"), triggered=self.crop_image)
+        roi_action = create_action(self, _("ROI extraction"),
+                                    triggered=self.extract_roi)
+        swapaxes_action = create_action(self, _("Swap X/Y axes"),
+                                        triggered=self.swap_axes)
         flatfield_action = create_action(self, _("Flat-field correction"),
                                          triggered=self.flat_field_correction)
         self.actlist_1 += [resize_action]
         self.actlist_2 += [flatfield_action]
-        self.actlist_1more += [crop_action, hflip_action, vflip_action,
+        self.actlist_1more += [roi_action, swapaxes_action,
+                               hflip_action, vflip_action,
                                rot90_action, rot270_action, rotate_action]
         add_actions(rotate_menu, [hflip_action, vflip_action,
                                   rot90_action, rot270_action, rotate_action])
         self.operation_actions += [None, rotate_menu, None,
-                                   resize_action, crop_action,
+                                   resize_action, roi_action, swapaxes_action,
                                    None, flatfield_action]
         
         # Processing actions
+        lincal_action = create_action(self, _("Linear calibration"),
+                                      triggered=self.calibrate)
         threshold_action = create_action(self, _("Thresholding"),
                                          triggered=self.compute_threshold)
         clip_action = create_action(self, _("Clipping"),
@@ -670,10 +790,11 @@ class ImageFT(ObjectFT):
         ifft_action = create_action(self, _("Inverse FFT"),
                                    tip=_("Warning: only real part is plotted"),
                                     triggered=self.compute_ifft)
-        self.actlist_1more += [threshold_action, clip_action,
+        self.actlist_1more += [lincal_action, threshold_action, clip_action,
                                gaussian_action, wiener_action,
                                fft_action, ifft_action]
-        self.processing_actions = [threshold_action, clip_action, None,
+        self.processing_actions = [lincal_action, threshold_action,
+                                   clip_action, None,
                                    gaussian_action, wiener_action, fft_action,
                                    ifft_action]
                                    
@@ -770,17 +891,20 @@ class ImageFT(ObjectFT):
                                                prefilter=p.prefilter),
                         param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
                         
-    def crop_image(self):
-        class CropParam(DataSet):
+    def extract_roi(self):
+        class ROIParam(DataSet):
             row1 = IntItem(_("First row index"), default=0, min=-1)
             row2 = IntItem(_("Last row index"), default=-1, min=-1)
             col1 = IntItem(_("First column index"), default=0, min=-1)
             col2 = IntItem(_("Last column index"), default=-1, min=-1)
-        param = CropParam(_("Crop"))
-        self.compute_11("Crop", lambda x, p:
+        param = ROIParam(_("ROI extraction"))
+        self.compute_11("ROI", lambda x, p:
                         x.copy()[p.row1:p.row2, p.col1:p.col2],
-                        param, suffix=lambda p: u"roi=%d:%d,%d:%d" 
+                        param, suffix=lambda p: u"rows=%d:%d,cols=%d:%d" 
                         % (p.row1, p.row2, p.col1, p.col2))
+    
+    def swap_axes(self):
+        self.compute_11("SwapAxes", lambda z: z.T)
         
     def flat_field_correction(self):
         rows = self._get_selected_rows()
@@ -799,6 +923,14 @@ class ImageFT(ObjectFT):
         self.add_object(robj)
         
     #------Image Processing
+    def calibrate(self):
+        class CalibrateParam(DataSet):
+            a = FloatItem('a', default=1.)
+            b = FloatItem('b', default=0.)
+        param = CalibrateParam(_("Linear calibration"), "y = a.x + b")
+        self.compute_11("LinearCal", lambda x, p: p.a*x+p.b, param,
+                        suffix=lambda p: u"z=%s*z+%s" % (p.a, p.b))
+    
     def compute_threshold(self):
         class ThresholdParam(DataSet):
             value = FloatItem(_(u"Threshold"))
@@ -862,10 +994,9 @@ class ImageFT(ObjectFT):
     def open_image(self):
         """Open image file"""
         from guiqwt.qthelpers import exec_images_open_dialog
-        for filename, data in exec_images_open_dialog(
-                                        self, basedir=self.directory,
+        for filename, data in exec_images_open_dialog(self, basedir='',
                                         app_name=APP_NAME, to_grayscale=True):
-            self.directory = osp.dirname(filename)
+            os.chdir(osp.dirname(filename))
             image = ImageParam()
             image.title = filename
             image.data = data
@@ -884,11 +1015,10 @@ class ImageFT(ObjectFT):
         for row in rows:
             obj = self.objects[row]
             from guiqwt.qthelpers import exec_image_save_dialog
-            filename = exec_image_save_dialog(obj.data, self,
-                                              basedir=self.directory,
+            filename = exec_image_save_dialog(obj.data, self, basedir='',
                                               app_name=APP_NAME)
             if filename:
-                self.directory = osp.dirname(filename)
+                os.chdir(osp.dirname(filename))
         
 
 class DockablePlotWidget(DockableWidget):
@@ -916,7 +1046,7 @@ class DockablePlotWidget(DockableWidget):
     #------DockableWidget API
     def visibility_changed(self, enable):
         """DockWidget visibility has changed"""
-        super(DockablePlotWidget, self).visibility_changed(enable)
+        DockableWidget.visibility_changed(self, enable)
         self.toolbar.setVisible(enable)
             
 
@@ -927,14 +1057,15 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
         DockableWidgetMixin.__init__(self, parent)
 
 
-try:
+from guidata.utils import is_compatible_spyderlib_installed
+if is_compatible_spyderlib_installed():
     from spyderlib.widgets.internalshell import InternalShell
-
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
         def __init__(self, parent, namespace, message, commands=[]):
             InternalShell.__init__(self, parent=parent, namespace=namespace,
-                                   message=message, commands=commands)
+                                   message=message, commands=commands,
+                                   multithreaded=True)
             DockableWidgetMixin.__init__(self, parent)
             self.setup()
             
@@ -946,8 +1077,7 @@ try:
             self.set_calltips(True)
             self.setup_calltips(size=600, font=font)
             self.setup_completion(size=(300, 180), font=font)
-            
-except ImportError:
+else:
     DockableConsole = None
 
 

@@ -9,17 +9,15 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import QFont
+from guidata.qt.QtGui import QFont
 
 from guiqwt.plot import CurveDialog
-from guiqwt.tools import HRangeTool
 from guiqwt.builder import make
 
 def plot(*items):
     win = CurveDialog(edit=False, toolbar=True, wintitle="CurveDialog test",
                       options=dict(title="Title", xlabel="xlabel",
                                    ylabel="ylabel"))
-    win.add_tool(HRangeTool)
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)
@@ -51,6 +49,8 @@ def test():
                     (x[0], y[0]), (10, 10), "TL"),
          make.label("Absolute position", "R", (0,0), "R"),
          make.legend("TR"),
+         make.marker(position=(5., .8), label_cb=lambda x, y: u"A = %.2f" % x,
+                     markerstyle="|", movable=False)
          )
 
 if __name__ == "__main__":

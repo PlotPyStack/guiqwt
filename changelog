@@ -1,3 +1,52 @@
+== Version 2.1.4 ==
+
+Since this version, `guiqwt` is compatible with PyQt4 API #1 *and* API #2.
+Please read carefully the coding guidelines which have been recently added to 
+the documentation.
+
+=== Bug fixes (since v2.1.3) ===
+
+  * Sift/bugfix: difference/division operations were performed backwards (s001-s000 instead of s000-s001)
+  * Sift: working directory is now changed after opening/saving signal/image
+  * label.!RangeComputation: fixed bug if compute function was returning more than one result and when X-range was empty (e.g. selection is outside curve X-axis values)
+  * curve.!CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
+  * baseplot.!BasePlot: now performing an autoscale after changing axis lin/log scale (set_axis_scale/set_scales)
+  * annotations.!AnnotatedSegment/CRITICAL: fixed an error (introduced in v2.1.0) when computing segment length (returned length was twice lower than the real value)
+  * image.!XYImageItem [Contributor: Carlos Pascual]: fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
+  * Fixed compatiblity issues with !PyQt v4.4 [Contributor: Carlos Pascual]
+  * (minor) Fixed label text (too long) of 2D-Histogram items background color in shown !DataSet
+
+=== Possible API compatibility issues (since v2.1.3) ===
+
+  * Moved functions from guiqwt.io to new module guiqwt.qthelpers: exec_image_save_dialog, exec_image_open_dialog, exec_images_open_dialog
+  * Markers:
+    * label and constraint callbacks take now 2 arguments (the marker's coordinates) instead of 3
+    * removed method 'move_point_to': use new method 'set_pos' instead (takes two arguments: x, y)
+  * Removed cursors introduced in v2.1.0:
+    * These cursors have been replaced by shapes.Marker (i.e. objects derived from !QwtPlotMarker)
+    * Removed signals.SIG_CURSOR_MOVED, shapes.!HorizontalCursor, shapes.!VerticalCursor, annotations.!AnnotatedHCursor, annotations.!AnnotatedVCursor and associated builder methods (annotated_vcursor, annotated_hcursor)
+    * Builder methods vcursor and hcursor were slightly changed (see tests/cursors.py to adapt your code)
+    * Use markers instead of cursors (and SIG_MARKER_CHANGED instead of SIG_CURSOR_MOVED -- arguments are not identical, see signals.py):
+      * base object: shapes.Marker
+      * associated builder methods: marker, vcursor, hcursor, xcursor (see tests/cursors.py)
+  * label.!LabelItem: renamed method 'set_position' to 'set_pos' (consistency with shapes.!PointShape, ...)
+
+=== Other changes (since v2.1.3) ===
+
+  * Added module qthelpers: image open/save dialog helpers (moved from guiqwt.io to avoid using GUIs in this module)
+  * Annotation/default style: changed string formatting from '%d' to '%.1f'
+  * baseplot.!BasePlot.add_item: when adding the same item twice, printing a warning message
+  * Using new guidata.qt !PyQt4->!PySide transitional package
+  * Sift: ROI extraction ("Crop"-->"ROI extraction" + added the same feature for signals), added "swap axes" operation for signals/images, added "normalize" processing for signals only
+  * Sift: added linear calibration (signals: X/Y axes, images: Z axis)
+  * Interactive tools: added signal SIG_TOOL_JOB_FINISHED emitted when tool has finished its job + if SWITCH_TO_DEFAULT_TOOL class attribute is True, switching to the default interactive tool
+  * Buider: added cross cursor and marker constructors (builder.make.marker and builder.make.xcursor, see tests/cursors.py)
+  * Added !SignalStatsTool (standard curve tool) to show ymin, ymax, ymean, ... on a selected curve ROI
+  * Sift: added support for curve data with error bars (I/O + operations + processing)
+  * Added coding guidelines to the documentation
+
+----
+
 == Version 2.1.3 ==
 
 === Bug fixes (since v2.1.2) ===

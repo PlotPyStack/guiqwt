@@ -11,7 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp
 
-from PyQt4.QtGui import QMainWindow, QWidget, QGridLayout
+from guidata.qt.QtGui import QMainWindow, QWidget, QGridLayout
 
 from guiqwt.image import ImagePlot
 from guiqwt.curve import PlotItemList
