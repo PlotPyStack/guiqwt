@@ -948,18 +948,10 @@ class ImageStatsTool(RectangularShapeTool):
         return ImageStatsRectangle(0, 0, 1, 1), 0, 2
         
     def setup_shape(self, shape):
-        self.setup_shape_appearance(shape)
         super(ImageStatsTool, self).setup_shape(shape)
-        self.register_shape(shape, final=False)
-        
-    def setup_shape_appearance(self, shape):        
+        shape.setTitle('')
         self.set_shape_style(shape)
-        param = shape.annotationparam
-        if self._last_item is not None:
-            title = self._last_item.imageparam.label
-            if title:
-                param.title = title
-        param.update_annotation(shape)
+        self.register_shape(shape, final=False)
         
     def register_shape(self, shape, final=False):
         plot = shape.plot()

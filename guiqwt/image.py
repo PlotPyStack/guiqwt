@@ -698,6 +698,7 @@ class BaseImageItem(QwtPlotItem):
         yfmt = self.imageparam.yformat
         zfmt = self.imageparam.zformat
         return "<br>".join([
+                            u"<b>%s</b>" % self.imageparam.label,
                             u"%sx%s %s" % (self.data.shape[1],
                                            self.data.shape[0],
                                            str(self.data.dtype)),
