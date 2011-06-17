@@ -1100,44 +1100,62 @@ class PlotItemBuilder(object):
         param.xc, param.yc = c
         return DataInfoLabel(param, comps)
 
-    def computation(self, range, anchor, label, curve, function):
+    def computation(self, range, anchor, label, curve, function, title=None):
         """
         Make a computation label `plot item` 
         (:py:class:`guiqwt.label.DataInfoLabel` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
-        return self.computations(range, anchor, [ (curve, label, function) ])
+        if title is None:
+            title = curve.curveparam.label
+        return self.computations(range, anchor, [ (curve, label, function) ],
+                                 title=title)
 
-    def computations(self, range, anchor, specs):
+    def computations(self, range, anchor, specs, title=None):
         """
         Make computation labels  `plot item` 
         (:py:class:`guiqwt.label.DataInfoLabel` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         comps = []
+        same_curve = True
+        curve0 = None
         for curve, label, function in specs:
             comp = RangeComputation(label, curve, range, function)
             comps.append(comp)
-        return self.info_label(anchor, comps, title=curve.curveparam.label)
+            if curve0 is None:
+                curve0 = curve
+            same_curve = same_curve and curve is curve0
+        if title is None and same_curve:
+            title = curve.curveparam.label
+        return self.info_label(anchor, comps, title=title)
 
-    def computation2d(self, rect, anchor, label, image, function):
+    def computation2d(self, rect, anchor, label, image, function, title=None):
         """
         Make a 2D computation label `plot item` 
         (:py:class:`guiqwt.label.RangeComputation2d` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
-        return self.computations2d(rect, anchor, [ (image, label, function) ])
+        return self.computations2d(rect, anchor, [ (image, label, function) ],
+                                   title=title)
 
-    def computations2d(self, rect, anchor, specs):
+    def computations2d(self, rect, anchor, specs, title=None):
         """
         Make 2D computation labels `plot item` 
         (:py:class:`guiqwt.label.RangeComputation2d` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
         comps = []
+        same_image = True
+        image0 = None
         for image, label, function in specs:
             comp = RangeComputation2d(label, image, rect, function)
             comps.append(comp)
-        return self.info_label(anchor, comps)
+            if image0 is None:
+                image0 = image
+            same_image = same_image and image is image0
+        if title is None and same_image:
+            title = image.imageparam.label
+        return self.info_label(anchor, comps, title=title)
 
 make = PlotItemBuilder()
