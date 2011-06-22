@@ -21,7 +21,8 @@ def test():
     import numpy as np
     x = np.linspace(1, 10, 200)
     y = np.exp(-x)
-    item = make.curve(y, x, color="b")
+    y[0] = 0
+    item = make.curve(x, y, color="b")
     
     win = CurveDialog()
     plot = win.get_plot()

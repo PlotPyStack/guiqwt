@@ -312,6 +312,24 @@ class CurveItem(QwtPlotCurve):
         self._x = None
         self._y = None
         self.update_params()
+
+    def boundingRect(self):
+        """Return the bounding rectangle of the data"""
+        plot = self.plot()
+        if plot is not None and (plot.get_axis_scale(self.xAxis()) == 'log' \
+           or plot.get_axis_scale(self.yAxis()) == 'log'):
+            x, y = self._x, self._y
+            if plot.get_axis_scale(self.xAxis()) == 'log':
+                xmin = x[x > 0].min()
+            else:
+                xmin = x.min()
+            if plot.get_axis_scale(self.yAxis()) == 'log':
+                ymin = y[y > 0].min()
+            else:
+                ymin = y.min()
+            return QRectF(xmin, ymin, x.max()-xmin, y.max()-ymin)
+        else:
+            return QwtPlotCurve.boundingRect(self)
         
     def types(self):
         return (ICurveItemType, ITrackableItemType, ISerializableType)
