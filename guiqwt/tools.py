@@ -1717,13 +1717,17 @@ class AxisScaleTool(CommandTool):
         menu = QMenu()
         group = QActionGroup(manager.get_main())
         lin_lin = manager.create_action("Lin Lin", icon=get_icon("lin_lin.png"),
-                                        toggled=self.set_scale_lin_lin)
+                                        toggled=lambda state, x="lin", y="lin":
+                                        self.set_scale(state, x, y))
         lin_log = manager.create_action("Lin Log", icon=get_icon("lin_log.png"),
-                                        toggled=self.set_scale_lin_log)
+                                        toggled=lambda state, x="lin", y="log":
+                                        self.set_scale(state, x, y))
         log_lin = manager.create_action("Log Lin", icon=get_icon("log_lin.png"),
-                                        toggled=self.set_scale_log_lin)
+                                        toggled=lambda state, x="log", y="lin":
+                                        self.set_scale(state, x, y))
         log_log = manager.create_action("Log Log", icon=get_icon("log_log.png"),
-                                        toggled=self.set_scale_log_log)
+                                        toggled=lambda state, x="log", y="log":
+                                        self.set_scale(state, x, y))
         self.scale_menu = {("lin", "lin"): lin_lin, ("lin", "log"): lin_log,
                            ("log", "lin"): log_lin, ("log", "log"): log_log}
         for obj in (group, menu):
@@ -1747,33 +1751,14 @@ class AxisScaleTool(CommandTool):
                 else:
                     scale_action.setChecked(False)
         
-    def set_scale_lin_lin(self, checked):
+    def set_scale(self, checked, xscale, yscale):
         if not checked:
             return
         plot = self.get_active_plot()
         if plot is not None:
-            plot.set_scales("lin", "lin")
-        
-    def set_scale_lin_log(self, checked):
-        if not checked:
-            return
-        plot = self.get_active_plot()
-        if plot is not None:
-            plot.set_scales("lin", "log")
-        
-    def set_scale_log_lin(self, checked):
-        if not checked:
-            return
-        plot = self.get_active_plot()
-        if plot is not None:
-            plot.set_scales("log", "lin")
-        
-    def set_scale_log_log(self, checked):
-        if not checked:
-            return
-        plot = self.get_active_plot()
-        if plot is not None:
-            plot.set_scales("log", "log")
+            cur_xscale, cur_yscale = plot.get_scales()
+            if cur_xscale != xscale or cur_yscale != yscale:
+                plot.set_scales(xscale, yscale)
 
 
 class HelpTool(CommandTool):

@@ -284,6 +284,11 @@ class BasePlot(QwtPlot):
         self.setAxisScaleEngine(axis_id, self.AXIS_TYPES[scale]())
         self.do_autoscale(replot=False)
 
+    def get_scales(self):
+        """Return active curve scales"""
+        ax, ay = self.get_active_axes()
+        return self.get_axis_scale(ax), self.get_axis_scale(ay)
+
     def set_scales(self, xscale, yscale):
         """Set active curve scales
         Example: self.set_scales('lin', 'lin')"""
