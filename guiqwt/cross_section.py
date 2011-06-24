@@ -893,7 +893,7 @@ class ObliqueCrossSectionItem(CrossSectionItem):
         rect = obj.get_bounding_rect_coords()
         if rect is not None and source.data is not None:
 #            x0, y0, x1, y1 = rect
-#            angle = obj.get_angle()
+#            angle = obj.get_tr_angle()
             sectx, secty = compute_oblique_section(source, obj)
             if secty.size == 0 or np.all(np.isnan(secty)):
                 sectx, secty = np.array([]), np.array([])

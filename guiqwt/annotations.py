@@ -211,20 +211,24 @@ class AnnotatedShape(AbstractShape):
                 
     def get_center(self):
         """Return shape center coordinates: (xc, yc)"""
+        return self.shape.get_center()
+        
+    def get_tr_center(self):
+        """Return shape center coordinates after applying transform matrix"""
         raise NotImplementedError
         
-    def get_center_str(self):
+    def get_tr_center_str(self):
         """Return center coordinates as a string (with units)"""
-        xc, yc = self.get_center()
+        xc, yc = self.get_tr_center()
         return "( %s ; %s )" % (self.x_to_str(xc, 1), self.y_to_str(yc, 1))
         
-    def get_size(self):
-        """Return shape size: (width, height)"""
+    def get_tr_size(self):
+        """Return shape size after applying transform matrix"""
         raise NotImplementedError
         
-    def get_size_str(self):
+    def get_tr_size_str(self):
         """Return size as a string (with units)"""
-        xs, ys = self.get_size()
+        xs, ys = self.get_tr_size()
         return "%s x %s" % (self.x_to_str(xs, 2), self.y_to_str(ys, 2))
         
     def get_infos(self):
@@ -369,8 +373,8 @@ class AnnotatedSegment(AnnotatedShape):
         """
         return self.shape.get_rect()
         
-    def get_length(self):
-        """Return segment length"""
+    def get_tr_length(self):
+        """Return segment length after applying transform matrix"""
         return compute_distance(*self.get_transformed_coords(0, 1))
     
     #----AnnotatedShape API-----------------------------------------------------
@@ -382,7 +386,7 @@ class AnnotatedSegment(AnnotatedShape):
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
         """Return formatted string with informations on current shape"""
-        return _("Distance:") + " " + self.x_to_str(self.get_length(), 2)
+        return _("Distance:") + " " + self.x_to_str(self.get_tr_length(), 2)
 
 
 class AnnotatedRectangle(AnnotatedShape):
@@ -423,19 +427,19 @@ class AnnotatedRectangle(AnnotatedShape):
         tdict = self.get_string_dict()
         return u"%(center_n)s ( %(center)s )<br>%(size_n)s %(size)s" % tdict
         
-    def get_center(self):
-        """Return center coordinates: (xc, yc)"""
+    def get_tr_center(self):
+        """Return shape center coordinates after applying transform matrix"""
         return compute_center(*self.get_transformed_coords(0, 2))
         
-    def get_size(self):
-        """Return rectangle size: (width, height)"""
+    def get_tr_size(self):
+        """Return shape size after applying transform matrix"""
         return compute_rect_size(*self.get_transformed_coords(0, 2))
         
     def get_infos(self):
         """Return formatted string with informations on current shape"""
         return "<br>".join([
-                            _("Center:") + " " + self.get_center_str(),
-                            _("Size:") + " " + self.get_size_str(),
+                            _("Center:") + " " + self.get_tr_center_str(),
+                            _("Size:") + " " + self.get_tr_size_str(),
                             ])
 
 
@@ -453,8 +457,9 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
         self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         
     #----Public API-------------------------------------------------------------
-    def get_angle(self):
-        """Return X-diameter angle with horizontal direction"""
+    def get_tr_angle(self):
+        """Return X-diameter angle with horizontal direction,
+        after applying transform matrix"""
         xcoords = self.get_transformed_coords(0, 1)
         _x, yr1 = self.apply_transform_matrix(1., 1.)
         _x, yr2 = self.apply_transform_matrix(1., 2.)
@@ -497,8 +502,8 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
         self.shape.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         self.set_label_position()
         
-    def get_size(self):
-        """Return rectangle size: (width, height)"""
+    def get_tr_size(self):
+        """Return shape size after applying transform matrix"""
         dx = compute_distance(*self.get_transformed_coords(0, 1))
         dy = compute_distance(*self.get_transformed_coords(0, 3))
         return dx, dy
@@ -507,9 +512,9 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
     def get_infos(self):
         """Return formatted string with informations on current shape"""
         return "<br>".join([
-                            _("Center:") + " " + self.get_center_str(),
-                            _("Size:") + " " + self.get_size_str(),
-                            _(u"Angle:") + u" %.1f°" % self.get_angle(),
+                            _("Center:") + " " + self.get_tr_center_str(),
+                            _("Size:") + " " + self.get_tr_size_str(),
+                            _(u"Angle:") + u" %.1f°" % self.get_tr_angle(),
                             ])
     
 
@@ -529,21 +534,25 @@ class AnnotatedEllipse(AnnotatedShape):
 
     #----Public API-------------------------------------------------------------
     def set_xdiameter(self, x0, y0, x1, y1):
-        """Set the coordinates of the ellipse's X-axis diameter"""
+        """Set the coordinates of the ellipse's X-axis diameter
+        Warning: transform matrix is not applied here"""
         self.shape.set_xdiameter(x0, y0, x1, y1)
         self.set_label_position()
                          
     def get_xdiameter(self):
-        """Return the coordinates of the ellipse's X-axis diameter"""
+        """Return the coordinates of the ellipse's X-axis diameter
+        Warning: transform matrix is not applied here"""
         return self.shape.get_xdiameter()
                          
     def set_ydiameter(self, x2, y2, x3, y3):
-        """Set the coordinates of the ellipse's Y-axis diameter"""
+        """Set the coordinates of the ellipse's Y-axis diameter
+        Warning: transform matrix is not applied here"""
         self.shape.set_ydiameter(x2, y2, x3, y3)
         self.set_label_position()
                          
     def get_ydiameter(self):
-        """Return the coordinates of the ellipse's Y-axis diameter"""
+        """Return the coordinates of the ellipse's Y-axis diameter
+        Warning: transform matrix is not applied here"""
         return self.shape.get_ydiameter()
 
     def get_rect(self):
@@ -552,8 +561,9 @@ class AnnotatedEllipse(AnnotatedShape):
     def set_rect(self, x0, y0, x1, y1):
         raise NotImplementedError
         
-    def get_angle(self):
-        """Return X-diameter angle with horizontal direction"""
+    def get_tr_angle(self):
+        """Return X-diameter angle with horizontal direction,
+        after applying transform matrix"""
         xcoords = self.get_transformed_coords(0, 1)
         _x, yr1 = self.apply_transform_matrix(1., 1.)
         _x, yr2 = self.apply_transform_matrix(1., 2.)
@@ -570,26 +580,26 @@ class AnnotatedEllipse(AnnotatedShape):
         x_label, y_label = self.shape.points.mean(axis=0)
         self.label.set_pos(x_label, y_label)
         
-    def get_center(self):
+    def get_tr_center(self):
         """Return center coordinates: (xc, yc)"""
         return compute_center(*self.get_transformed_coords(0, 1))
         
-    def get_size(self):
-        """Return ellipse size: (width, height)"""
+    def get_tr_size(self):
+        """Return shape size after applying transform matrix"""
         xcoords = self.get_transformed_coords(0, 1)
         ycoords = self.get_transformed_coords(2, 3)
         dx = compute_distance(*xcoords)
         dy = compute_distance(*ycoords)
-        if np.fabs(self.get_angle()) > 45:
+        if np.fabs(self.get_tr_angle()) > 45:
             dx, dy = dy, dx
         return dx, dy
         
     def get_infos(self):
         """Return formatted string with informations on current shape"""
         return "<br>".join([
-                            _("Center:") + " " + self.get_center_str(),
-                            _("Size:") + " " + self.get_size_str(),
-                            _(u"Angle:") + u" %.1f°" % self.get_angle(),
+                            _("Center:") + " " + self.get_tr_center_str(),
+                            _("Size:") + " " + self.get_tr_size_str(),
+                            _(u"Angle:") + u" %.1f°" % self.get_tr_angle(),
                             ])
         
 
@@ -602,16 +612,16 @@ class AnnotatedCircle(AnnotatedEllipse):
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedEllipse.__init__(self, x1, y1, x2, y2, 1., annotationparam)
         
-    def get_diameter(self):
-        """Return circle diameter"""
+    def get_tr_diameter(self):
+        """Return circle diameter after applying transform matrix"""
         return compute_distance(*self.get_transformed_coords(0, 1))
         
     #----AnnotatedShape API-------------------------------------------------
     def get_infos(self):
         """Return formatted string with informations on current shape"""
         return "<br>".join([
-                    _("Center:")+" "+self.get_center_str(),
-                    _("Diameter:")+" "+self.x_to_str(self.get_diameter(), 2),
+                    _("Center:")+" "+self.get_tr_center_str(),
+                    _("Diameter:")+" "+self.x_to_str(self.get_tr_diameter(), 2),
                             ])
 
     #----AnnotatedEllipse API---------------------------------------------------

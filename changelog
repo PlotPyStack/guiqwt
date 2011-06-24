@@ -15,6 +15,12 @@ the documentation.
   * image.!XYImageItem [Contributor: Carlos Pascual]: fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
   * Fixed compatiblity issues with !PyQt v4.4 [Contributor: Carlos Pascual]
   * (minor) Fixed label text (too long) of 2D-Histogram items background color in shown !DataSet
+  * guiqwt.io.array_to_dicomfile/bugfix: Smallest/LargestImagePixelValue fields had wrong type (str instead of int)
+  * LabelTool: label was not moved as expected (default: now, label is *not* attached to canvas)
+  * tools.ImageStatsTool/bugfix: image title was not shown
+  * CurvePlot: autoscale for log scales / bugfix: handling zero values
+  * tools.AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
+  * ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
 
 === Possible API compatibility issues (since v2.1.3) ===
 
@@ -30,6 +36,14 @@ the documentation.
       * base object: shapes.Marker
       * associated builder methods: marker, vcursor, hcursor, xcursor (see tests/cursors.py)
   * label.!LabelItem: renamed method 'set_position' to 'set_pos' (consistency with shapes.!PointShape, ...)
+  * Annotations:
+    * method `get_center` now returns coordinates *without* applying the transform matrix, i.e. in pure plot coordinates
+    * the following methods were renamed to highlight the fact that the transform matrix is applied in those computations:
+      * `get_center` was renamed to `get_tr_center`
+      * `get_size` was renamed to `get_tr_size`
+      * `get_angle` was renamed to `get_tr_angle`
+      * `get_diameter` was renamed to `get_tr_diameter`
+      * `get_length` was renamed to `get_tr_length`
 
 === Other changes (since v2.1.3) ===
 
@@ -44,6 +58,7 @@ the documentation.
   * Added !SignalStatsTool (standard curve tool) to show ymin, ymax, ymean, ... on a selected curve ROI
   * Sift: added support for curve data with error bars (I/O + operations + processing)
   * Added coding guidelines to the documentation
+  * builder/make.computation/computation2d: added title option (defaults to object's (curve or image) label)
 
 ----
 
