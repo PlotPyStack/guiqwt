@@ -1,6 +1,6 @@
 == Version 2.1.4 ==
 
-Since this version, `guiqwt` is compatible with PyQt4 API #1 *and* API #2.
+Since this version, `guiqwt` is compatible with !PyQt4 API #1 *and* API #2.
 Please read carefully the coding guidelines which have been recently added to 
 the documentation.
 
@@ -15,12 +15,13 @@ the documentation.
   * image.!XYImageItem [Contributor: Carlos Pascual]: fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
   * Fixed compatiblity issues with !PyQt v4.4 [Contributor: Carlos Pascual]
   * (minor) Fixed label text (too long) of 2D-Histogram items background color in shown !DataSet
-  * guiqwt.io.array_to_dicomfile/bugfix: Smallest/LargestImagePixelValue fields had wrong type (str instead of int)
-  * LabelTool: label was not moved as expected (default: now, label is *not* attached to canvas)
+  * guiqwt.io.array_to_dicomfile/bugfix: Smallest/!LargestImagePixelValue fields had wrong type (str instead of int)
+  * !LabelTool: label was not moved as expected (default: now, label is *not* attached to canvas)
   * tools.ImageStatsTool/bugfix: image title was not shown
-  * CurvePlot: autoscale for log scales / bugfix: handling zero values
-  * tools.AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
-  * ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
+  * !CurvePlot: autoscale for log scales / bugfix: handling zero values
+  * tools.!AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
+  * !ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
+  * !XYImageItem objects: re-added cross-section support (removed accidently)
 
 === Possible API compatibility issues (since v2.1.3) ===
 

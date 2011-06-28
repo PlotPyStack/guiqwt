@@ -1427,7 +1427,7 @@ class XYImageItem(RawImageItem):
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
-                ITrackableItemType, ISerializableType)
+                ITrackableItemType, ISerializableType, ICSImageItemType)
                 
     #---- IBaseImageItem API ---------------------------------------------------
     def can_setfullscale(self):
