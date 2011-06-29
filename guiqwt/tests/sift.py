@@ -37,7 +37,7 @@ from guiqwt.builder import make
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.5'
+VERSION = '0.2.6'
 
 
 def normalize(yin, parameter='maximum'):
@@ -1057,8 +1057,7 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
         DockableWidgetMixin.__init__(self, parent)
 
 
-from guidata.utils import is_compatible_spyderlib_installed
-if is_compatible_spyderlib_installed():
+try:
     from spyderlib.widgets.internalshell import InternalShell
     class DockableConsole(InternalShell, DockableWidgetMixin):
         LOCATION = Qt.BottomDockWidgetArea
@@ -1077,7 +1076,7 @@ if is_compatible_spyderlib_installed():
             self.set_calltips(True)
             self.setup_calltips(size=600, font=font)
             self.setup_completion(size=(300, 180), font=font)
-else:
+except ImportError:
     DockableConsole = None
 
 
