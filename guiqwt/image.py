@@ -2073,6 +2073,7 @@ class ImagePlot(CurvePlot):
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
           (strings)
+        * xunit, yunit, zunit: resp. bottom, left and right axis units (strings)
         * yreverse: reversing y-axis direction of increasing values (bool)
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
@@ -2081,19 +2082,23 @@ class ImagePlot(CurvePlot):
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)
     def __init__(self, parent=None,
                  title=None, xlabel=None, ylabel=None, zlabel=None,
-                 yreverse=True, aspect_ratio=1.0, lock_aspect_ratio=True,
+                 xunit=None, yunit=None, zunit=None, yreverse=True,
+                 aspect_ratio=1.0, lock_aspect_ratio=True,
                  gridparam=None, section="plot"):
         
         self.lock_aspect_ratio = lock_aspect_ratio
 
         if zlabel is not None:
-            if ylabel is None:
-                ylabel = ""
-            if not isinstance(ylabel, basestring):
+            if ylabel is not None and not isinstance(ylabel, basestring):
                 ylabel = ylabel[0]
             ylabel = (ylabel, zlabel)
+        if zunit is not None:
+            if yunit is not None and not isinstance(yunit, basestring):
+                yunit = yunit[0]
+            yunit = (yunit, zunit)
         super(ImagePlot, self).__init__(parent=parent, title=title,
                                         xlabel=xlabel, ylabel=ylabel,
+                                        xunit=xunit, yunit=yunit,
                                         gridparam=gridparam, section=section)
 
         self.colormap_axis = self.Y_RIGHT

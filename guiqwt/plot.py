@@ -682,14 +682,15 @@ class BaseCurveWidget(QSplitter):
     connected to each other.
     See children class :py:class:`guiqwt.plot.CurveWidget`
     """
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+    def __init__(self, parent=None, title=None,
+                 xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-        self.plot = CurvePlot(parent=self,
-                              title=title, xlabel=xlabel, ylabel=ylabel,
+        self.plot = CurvePlot(parent=self, title=title, xlabel=xlabel,
+                              ylabel=ylabel, xunit=xunit, yunit=yunit,
                               section=section, gridparam=gridparam)
         self.addWidget(self.plot)
         self.itemlist = PlotItemList(self)
@@ -705,13 +706,17 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
+        * xunit: (bottom axis unit, top axis unit) or bottom axis unit only
+        * yunit: (left axis unit, right axis unit) or left axis unit only
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+    def __init__(self, parent=None, title=None,
+                 xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None,
                  panels=None):
-        BaseCurveWidget.__init__(self, parent, title, xlabel, ylabel,
-                                     section, show_itemlist, gridparam)
+        BaseCurveWidget.__init__(self, parent, title,
+                                 xlabel, ylabel, xunit, yunit,
+                                 section, show_itemlist, gridparam)
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
@@ -887,7 +892,8 @@ class BaseImageWidget(QSplitter):
     See children class :py:class:`guiqwt.plot.ImageWidget`
     """
     def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
+                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
@@ -899,6 +905,7 @@ class BaseImageWidget(QSplitter):
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
         self.plot = ImagePlot(parent=self, title=title,
                               xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
+                              xunit=xunit, yunit=yunit, zunit=zunit,
                               yreverse=yreverse, aspect_ratio=aspect_ratio,
                               lock_aspect_ratio=lock_aspect_ratio,
                               gridparam=gridparam)
@@ -974,6 +981,7 @@ class ImageWidget(BaseImageWidget, PlotManager):
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
           (strings)
+        * xunit, yunit, zunit: resp. bottom, left and right axis units (strings)
         * yreverse: reversing Y-axis (bool)
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
@@ -987,15 +995,17 @@ class ImageWidget(BaseImageWidget, PlotManager):
         * panels (optional): additionnal panels (list, tuple)
     """
     def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
+                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None, panels=None):
-        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel,
-                 zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
-                 show_contrast, show_itemlist, show_xsection, show_ysection,
-                 xsection_pos, ysection_pos, gridparam)
+        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
+                 xunit, yunit, zunit, yreverse, colormap, aspect_ratio,
+                 lock_aspect_ratio, show_contrast, show_itemlist,
+                 show_xsection, show_ysection, xsection_pos, ysection_pos,
+                 gridparam)
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager

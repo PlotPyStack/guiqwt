@@ -987,18 +987,22 @@ class CurvePlot(BasePlot):
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
+        * xunit: (bottom axis unit, top axis unit) or bottom axis unit only
+        * yunit: (left axis unit, right axis unit) or left axis unit only
         * gridparam: GridParam instance
         * axes_synchronised: keep all x and y axes synchronised when zomming or
                              panning
     """
     AUTOSCALE_TYPES = (CurveItem,)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 gridparam=None, section="plot", axes_synchronised=False):
+                 xunit=None, yunit=None, gridparam=None,
+                 section="plot", axes_synchronised=False):
         super(CurvePlot, self).__init__(parent, section)
 
         self.axes_reverse = [False]*4
         
-        self.set_titles(title=title, xlabel=xlabel, ylabel=ylabel)
+        self.set_titles(title=title, xlabel=xlabel, ylabel=ylabel,
+                        xunit=xunit, yunit=yunit)
                 
         self.antialiased = False
 
@@ -1322,7 +1326,8 @@ class CurvePlot(BasePlot):
             self.updateAxes()
             self.emit(SIG_AXIS_DIRECTION_CHANGED, self, axis_id)
             
-    def set_titles(self, title=None, xlabel=None, ylabel=None):
+    def set_titles(self, title=None, xlabel=None, ylabel=None,
+                   xunit=None, yunit=None):
         """
         Set plot and axes titles at once
             * title: plot title
@@ -1330,6 +1335,10 @@ class CurvePlot(BasePlot):
               or bottom axis title only
             * ylabel: (left axis title, right axis title) 
               or left axis title only
+            * xunit: (bottom axis unit, top axis unit) 
+              or bottom axis unit only
+            * yunit: (left axis unit, right axis unit) 
+              or left axis unit only
         """
         if title is not None:
             self.set_title(title)
@@ -1337,14 +1346,26 @@ class CurvePlot(BasePlot):
             if isinstance(xlabel, basestring):
                 xlabel = (xlabel, "")
             for label, axis in zip(xlabel, ("bottom", "top")):
-                if label:
+                if label is not None:
                     self.set_axis_title(axis, label)
         if ylabel is not None:
             if isinstance(ylabel, basestring):
                 ylabel = (ylabel, "")
             for label, axis in zip(ylabel, ("left", "right")):
-                if label:
+                if label is not None:
                     self.set_axis_title(axis, label)
+        if xunit is not None:
+            if isinstance(xunit, basestring):
+                xunit = (xunit, "")
+            for unit, axis in zip(xunit, ("bottom", "top")):
+                if unit is not None:
+                    self.set_axis_unit(axis, unit)
+        if yunit is not None:
+            if isinstance(yunit, basestring):
+                yunit = (yunit, "")
+            for unit, axis in zip(yunit, ("left", "right")):
+                if unit is not None:
+                    self.set_axis_unit(axis, unit)
     
     def set_pointer(self, pointer_type):
         """
