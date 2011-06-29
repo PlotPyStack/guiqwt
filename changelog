@@ -62,6 +62,7 @@ the documentation.
   * builder/make.computation/computation2d: added title option (defaults to object's (curve or image) label)
   * plot.!CurvePlot, plot.!CurveWidget: added keyword arguments 'xunit' and 'yunit' to set axes units (same syntax as labels)
   * plot.!ImagePlot, plot.!ImageWidget: added keyword arguments 'xunit', 'yunit' and 'zunit' to set axes units (same syntax as labels)
+  * pyplot.imshow: added keyword argument 'mask' to support masked arrays display
 
 ----
 

@@ -581,7 +581,7 @@ def imread(fname, to_grayscale=False):
     from guiqwt.io import imagefile_to_array
     return imagefile_to_array(fname, to_grayscale=to_grayscale)
 
-def imshow(data):
+def imshow(data, mask=None):
     """
     Display the image in *data* to current axes
     
@@ -596,7 +596,14 @@ def imshow(data):
     show()
     """
     axe = gca()
-    img = make.image(data)
+    import numpy as np
+    if isinstance(data, np.ma.MaskedArray) and mask is None:
+        mask = data.mask
+        data = data.data
+    if mask is None:
+        img = make.image(data)
+    else:
+        img = make.maskedimage(data, mask, show_mask=True)
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()
