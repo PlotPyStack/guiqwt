@@ -22,7 +22,9 @@ the documentation.
   * tools.!AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
   * !ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
   * !XYImageItem objects: re-added cross-section support (removed accidently)
-  * Curve autoscale method (curve.!CurvePlot/!ErrorBarCurvePlot) now handles non-finite values (NaNs and infs)
+  * Curve autoscale method (curve.!CurvePlot/!ErrorBarCurvePlot):
+    * now handles non-finite values (NaNs and infs)
+    * logarithmic scales: now excludes zero/negative values to avoid confusing the autoscale algorithm
 
 === Possible API compatibility issues (since v2.1.3) ===
 

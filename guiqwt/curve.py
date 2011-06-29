@@ -312,22 +312,24 @@ class CurveItem(QwtPlotCurve):
         self._x = None
         self._y = None
         self.update_params()
-
+        
+    def _get_visible_axis_min(self, axis_id, axis_data):
+        """Return axis minimum excluding zero and negative values when
+        corresponding plot axis scale is logarithmic"""
+        if self.plot().get_axis_scale(axis_id) == 'log':
+            return axis_data[axis_data > 0].min()
+        else:
+            return axis_data[axis_data].min()
+        
     def boundingRect(self):
         """Return the bounding rectangle of the data"""
         plot = self.plot()
-        if plot is not None and (plot.get_axis_scale(self.xAxis()) == 'log' \
-           or plot.get_axis_scale(self.yAxis()) == 'log'):
+        if plot is not None and 'log' in (plot.get_axis_scale(self.xAxis()),
+                                          plot.get_axis_scale(self.yAxis())):
             x, y = self._x, self._y
             xf, yf = x[np.isfinite(x)], y[np.isfinite(y)]
-            if plot.get_axis_scale(self.xAxis()) == 'log':
-                xmin = xf[x > 0].min()
-            else:
-                xmin = xf.min()
-            if plot.get_axis_scale(self.yAxis()) == 'log':
-                ymin = yf[y > 0].min()
-            else:
-                ymin = yf.min()
+            xmin = self._get_visible_axis_min(self.xAxis(), xf)
+            ymin = self._get_visible_axis_min(self.yAxis(), yf)
             return QRectF(xmin, ymin, xf.max()-xmin, yf.max()-ymin)
         else:
             return QwtPlotCurve.boundingRect(self)
@@ -639,10 +641,17 @@ class ErrorBarCurveItem(CurveItem):
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         if xmin is None or xmin.size == 0:
             return CurveItem.boundingRect(self)
+        plot = self.plot()
         xminf, yminf = xmin[np.isfinite(xmin)], ymin[np.isfinite(ymin)]
         xmaxf, ymaxf = xmax[np.isfinite(xmax)], ymax[np.isfinite(ymax)]
-        return QRectF( xminf.min(), yminf.min(),
-                       xmaxf.max()-xminf.min(), ymaxf.max()-yminf.min() )
+        if plot is not None and 'log' in (plot.get_axis_scale(self.xAxis()),
+                                          plot.get_axis_scale(self.yAxis())):
+            xmin = self._get_visible_axis_min(self.xAxis(), xminf)
+            ymin = self._get_visible_axis_min(self.yAxis(), yminf)
+        else:
+            xmin = xminf.min()
+            ymin = yminf.min()
+        return QRectF(xmin, ymin, xmaxf.max()-xmin, ymaxf.max()-ymin)
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x

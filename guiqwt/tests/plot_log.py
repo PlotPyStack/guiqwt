@@ -23,6 +23,7 @@ def test():
     y = np.exp(-x)
     y[0] = 0
     item = make.curve(x, y, color="b")
+    item = make.error(x, y, None, y*.23)
     
     win = CurveDialog()
     plot = win.get_plot()
