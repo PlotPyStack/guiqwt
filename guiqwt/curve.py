@@ -319,15 +319,16 @@ class CurveItem(QwtPlotCurve):
         if plot is not None and (plot.get_axis_scale(self.xAxis()) == 'log' \
            or plot.get_axis_scale(self.yAxis()) == 'log'):
             x, y = self._x, self._y
+            xf, yf = x[np.isfinite(x)], y[np.isfinite(y)]
             if plot.get_axis_scale(self.xAxis()) == 'log':
-                xmin = x[x > 0].min()
+                xmin = xf[x > 0].min()
             else:
-                xmin = x.min()
+                xmin = xf.min()
             if plot.get_axis_scale(self.yAxis()) == 'log':
-                ymin = y[y > 0].min()
+                ymin = yf[y > 0].min()
             else:
-                ymin = y.min()
-            return QRectF(xmin, ymin, x.max()-xmin, y.max()-ymin)
+                ymin = yf.min()
+            return QRectF(xmin, ymin, xf.max()-xmin, yf.max()-ymin)
         else:
             return QwtPlotCurve.boundingRect(self)
         
@@ -638,8 +639,10 @@ class ErrorBarCurveItem(CurveItem):
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         if xmin is None or xmin.size == 0:
             return CurveItem.boundingRect(self)
-        return QRectF( xmin.min(), ymin.min(),
-                       xmax.max()-xmin.min(), ymax.max()-ymin.min() )
+        xminf, yminf = xmin[np.isfinite(xmin)], ymin[np.isfinite(ymin)]
+        xmaxf, ymaxf = xmax[np.isfinite(xmax)], ymax[np.isfinite(ymax)]
+        return QRectF( xminf.min(), yminf.min(),
+                       xmaxf.max()-xminf.min(), ymaxf.max()-yminf.min() )
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
