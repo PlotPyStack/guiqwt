@@ -48,6 +48,11 @@ the documentation.
       * `get_angle` was renamed to `get_tr_angle`
       * `get_diameter` was renamed to `get_tr_diameter`
       * `get_length` was renamed to `get_tr_length`
+  * Removed the following deprecated classes in `guiqwt.plot`:
+      * !CurvePlotWidget (renamed to !CurveWidget)
+      * !CurvePlotDialog (renamed to !CurveDialog)
+      * !ImagePlotWidget (renamed to !ImageWidget)
+      * !ImagePlotDialog (renamed to !ImageDialog)
 
 === Other changes (since v2.1.3) ===
 
