@@ -319,7 +319,7 @@ class CurveItem(QwtPlotCurve):
         if self.plot().get_axis_scale(axis_id) == 'log':
             return axis_data[axis_data > 0].min()
         else:
-            return axis_data[axis_data].min()
+            return axis_data.min()
         
     def boundingRect(self):
         """Return the bounding rectangle of the data"""
