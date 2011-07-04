@@ -19,15 +19,15 @@ SHOW = False # Show test in GUI-based test launcher
 from guidata.qt.QtGui import QFont
 
 from guiqwt.baseplot import BasePlot
-from guiqwt.plot import CurvePlotDialog, CurvePlotWidget, PlotManager
+from guiqwt.plot import CurveDialog, CurveWidget, PlotManager
 from guiqwt.builder import make
 from guiqwt.curve import CurvePlot
 
 
-class MyPlotDialog(CurvePlotDialog):
+class MyPlotDialog(CurveDialog):
     def create_plot(self, options):
         manager = PlotManager(None)
-        self.plotwidget = CurvePlotWidget(self, manager=manager, **options)
+        self.plotwidget = CurveWidget(self, manager=manager, **options)
         manager.set_main(self.plotwidget)
         plot1 = CurvePlot(title="TL")
         plot2 = CurvePlot(title="TR")
