@@ -40,6 +40,13 @@ following recommendations should be followed:
   in the Qt version used in PyQt4 v4.4) -- if not, a workaround should be 
   implemented to avoid breaking compatibility
 
+* do not use the PyQt-specific QFileDialog static methods (not present in Qt) 
+  which were introduced in PyQt v4.6: `getOpenFileNameAndFilter`, 
+  `getOpenFileNamesAndFilter` and `getSaveFileNameAndFilter` (`guidata` 
+  provides wrappers around `QFileDialog` static methods handling the selected 
+  filter which were taken from the `spyderlib` library (from module 
+  `spyderlib.qt.compat`): they are available in `guidata.qt.compat`)
+
 PyQt / PySide compatibility
 ---------------------------
 
