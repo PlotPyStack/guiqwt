@@ -1,3 +1,18 @@
+== Version 2.1.5 ==
+
+=== Bug fixes (since v2.1.4) ===
+
+  * 
+
+=== Possible API compatibility issues (since v2.1.4) ===
+
+  * 
+
+=== Other changes (since v2.1.4) ===
+
+  * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
+
+
 == Version 2.1.4 ==
 
 Since this version, `guiqwt` is compatible with !PyQt4 API #1 *and* API #2.
@@ -12,18 +27,18 @@ the documentation.
   * curve.!CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
   * baseplot.!BasePlot: now performing an autoscale after changing axis lin/log scale (set_axis_scale/set_scales)
   * annotations.!AnnotatedSegment/CRITICAL: fixed an error (introduced in v2.1.0) when computing segment length (returned length was twice lower than the real value)
-  * image.!XYImageItem [Contributor: Carlos Pascual]: fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
-  * Fixed compatiblity issues with !PyQt v4.4 [Contributor: Carlos Pascual]
+  * image.XYImageItem (Contributor: Carlos Pascual): fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
+  * Fixed compatiblity issues with !PyQt v4.4 (Contributor: Carlos Pascual)
   * (minor) Fixed label text (too long) of 2D-Histogram items background color in shown !DataSet
   * guiqwt.io.array_to_dicomfile/bugfix: Smallest/!LargestImagePixelValue fields had wrong type (str instead of int)
   * !LabelTool: label was not moved as expected (default: now, label is *not* attached to canvas)
-  * tools.ImageStatsTool/bugfix: image title was not shown
+  * tools.!ImageStatsTool/bugfix: image title was not shown
   * !CurvePlot: autoscale for log scales / bugfix: handling zero values
   * tools.!AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
   * !ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
-  * !XYImageItem objects: re-added cross-section support (removed accidently)
+  * XYImageItem objects: re-added cross-section support (removed accidently)
   * Curve autoscale method (curve.!CurvePlot/!ErrorBarCurvePlot):
-    * now handles non-finite values (NaNs and infs)
+    * now handles non-finite values (!NaNs and infs)
     * logarithmic scales: now excludes zero/negative values to avoid confusing the autoscale algorithm
 
 === Possible API compatibility issues (since v2.1.3) ===
@@ -34,7 +49,7 @@ the documentation.
     * removed method 'move_point_to': use new method 'set_pos' instead (takes two arguments: x, y)
   * Removed cursors introduced in v2.1.0:
     * These cursors have been replaced by shapes.Marker (i.e. objects derived from !QwtPlotMarker)
-    * Removed signals.SIG_CURSOR_MOVED, shapes.!HorizontalCursor, shapes.!VerticalCursor, annotations.!AnnotatedHCursor, annotations.!AnnotatedVCursor and associated builder methods (annotated_vcursor, annotated_hcursor)
+    * Removed signals.SIG_CURSOR_MOVED, shapes.!HorizontalCursor, shapes.!VerticalCursor, annotations.AnnotatedHCursor, annotations.AnnotatedVCursor and associated builder methods (annotated_vcursor, annotated_hcursor)
     * Builder methods vcursor and hcursor were slightly changed (see tests/cursors.py to adapt your code)
     * Use markers instead of cursors (and SIG_MARKER_CHANGED instead of SIG_CURSOR_MOVED -- arguments are not identical, see signals.py):
       * base object: shapes.Marker

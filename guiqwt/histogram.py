@@ -84,13 +84,16 @@ class HistDataSource(object):
 assert_interfaces_valid(HistDataSource)
 
 
-def lut_range_threshold(item, bins, percent):
-    hist, bin_edges = item.get_histogram(bins)
+def hist_range_threshold(hist, bin_edges, percent):
     hist = np.concatenate((hist, [0]))
     threshold = .5*percent/100*hist.sum()
     i_bin_min = np.cumsum(hist).searchsorted(threshold)
     i_bin_max = -1-np.cumsum(np.flipud(hist)).searchsorted(threshold)
     return bin_edges[i_bin_min], bin_edges[i_bin_max]
+
+def lut_range_threshold(item, bins, percent):
+    hist, bin_edges = item.get_histogram(bins)
+    return hist_range_threshold(hist, bin_edges, percent)
 
 
 class HistogramItem(CurveItem):

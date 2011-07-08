@@ -117,6 +117,13 @@ def set_dynamic_range_from_mode(data, mode):
               MODE_INTENSITY_S16: np.int16,
              }
     return set_dynamic_range_from_dtype(data, dtypes[mode])
+    
+def eliminate_outliers(data, percent=2., bins=256):
+    """Eliminate data histogram outliers"""
+    hist, bin_edges = np.histogram(data, bins)
+    from guiqwt.histogram import hist_range_threshold
+    vmin, vmax = hist_range_threshold(hist, bin_edges, percent)
+    return data.clip(vmin, vmax)
 
 
 IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
