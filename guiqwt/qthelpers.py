@@ -29,7 +29,8 @@ Reference
 """
 
 import sys, os.path as osp
-from guidata.qt.QtGui import QFileDialog, QMessageBox
+from guidata.qt.QtGui import QMessageBox
+from guidata.qt.compat import getsavefilename, getopenfilename, getopenfilenames
 
 # Local imports
 from guiqwt.config import _
@@ -53,8 +54,8 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filename = QFileDialog.getSaveFileName(parent, _("Save as"), 
-                                           basedir, IMAGE_SAVE_FILTERS)
+    filename, _filter = getsavefilename(parent, _("Save as"), basedir,
+                                        IMAGE_SAVE_FILTERS)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
         filename = unicode(filename)
@@ -84,8 +85,8 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filename = QFileDialog.getOpenFileName(parent, _("Open"),
-                                           basedir, IMAGE_LOAD_FILTERS)
+    filename, _filter = getopenfilename(parent, _("Open"), basedir,
+                                        IMAGE_LOAD_FILTERS)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filename = unicode(filename)
     try:
@@ -114,8 +115,8 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filenames = QFileDialog.getOpenFileNames(parent, _("Open"),
-                                             basedir, IMAGE_LOAD_FILTERS)
+    filenames, _filter = getopenfilenames(parent, _("Open"), basedir,
+                                          IMAGE_LOAD_FILTERS)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filenames = [unicode(fname) for fname in list(filenames)]
     for filename in filenames:

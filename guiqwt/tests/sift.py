@@ -13,9 +13,10 @@ Simple signal and image processing application based on guiqwt and guidata
 SHOW = True # Show test in GUI-based test launcher
 
 from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                              QFileDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                              QTabWidget, QMenu, QApplication, QCursor, QFont)
+                              QVBoxLayout, QHBoxLayout, QWidget, QTabWidget,
+                              QMenu, QApplication, QCursor, QFont)
 from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+from guidata.qt.compat import getopenfilenames, getsavefilename
 
 import sys, platform, os.path as osp, os
 import numpy as np
@@ -653,8 +654,8 @@ class SignalFT(ObjectFT):
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
                   % (_(u"Text files"), _(u"NumPy arrays"))
-        filenames = QFileDialog.getOpenFileNames(self.parent(), _("Open"), '',
-                                                 filters)
+        filenames, _filter = getopenfilenames(self.parent(), _("Open"), '',
+                                              filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filenames = list(filenames)
         for filename in filenames:
@@ -702,8 +703,8 @@ class SignalFT(ObjectFT):
         """Save selected signal"""
         rows = self._get_selected_rows()
         for row in rows:
-            filename = QFileDialog.getSaveFileName(self, _("Save as"), '',
-                                                   _(u"CSV files")+" (*.csv)")
+            filename, _filter = getsavefilename(self, _("Save as"), '',
+                                                _(u"CSV files")+" (*.csv)")
             if not filename:
                 return
             filename = unicode(filename)

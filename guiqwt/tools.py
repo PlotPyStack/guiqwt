@@ -240,9 +240,9 @@ except ImportError:
 import sys, numpy as np, weakref, os.path as osp
 
 from guidata.qt.QtCore import Qt, QObject, SIGNAL
-from guidata.qt.QtGui import (QMenu, QActionGroup, QFileDialog, QPrinter,
-                              QMessageBox, QPrintDialog, QFont, QAction,
-                              QToolButton)
+from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
+                              QPrintDialog, QFont, QAction, QToolButton)
+from guidata.qt.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
@@ -1450,15 +1450,6 @@ class ItemListPanelTool(PanelTool):
     panel_id = ID_ITEMLIST
         
 
-def get_save_filename(plot, title, defaultname, types):
-    saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
-    sys.stdout = None
-    try:
-        fname = QFileDialog.getSaveFileName(plot, title, defaultname, types)
-    finally:
-        sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-    return unicode(fname)
-
 class SaveAsTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(SaveAsTool,self).__init__(manager, _("Save as..."),
@@ -1476,7 +1467,7 @@ class SaveAsTool(CommandTool):
                 break
         else:
             formats += '\n%s (*.pdf)' % _('PDF document')
-        fname = get_save_filename(plot,  _("Save as"), _('untitled'), formats)
+        fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'), formats)
         if fname:
             plot.save_widget(fname)
 
@@ -1557,7 +1548,7 @@ def save_snapshot(plot, p0, p1):
         formats = ''
     formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
     formats += '\n%s (*.png)' % _('8-bits PNG image')
-    fname = get_save_filename(plot,  _("Save as"), _('untitled'), formats)
+    fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'), formats)
     _base, ext = osp.splitext(fname)
     if not fname:
         return
@@ -1652,8 +1643,8 @@ class OpenFileTool(CommandTool):
     def get_filename(self, plot):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(plot, _("Open"),
-                                               self.directory, self.formats)
+        filename, _f = getopenfilename(plot, _("Open"),
+                                       self.directory, self.formats)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filename = unicode(filename)
         if filename:
@@ -1674,8 +1665,8 @@ class SaveItemsTool(CommandTool):
                              toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
-        fname = get_save_filename(plot, _("Save items as"), _('untitled'),
-                                  '%s (*.gui)' % _("guiqwt items"))
+        fname, _f = getsavefilename(plot, _("Save items as"), _('untitled'),
+                                    '%s (*.gui)' % _("guiqwt items"))
         if not fname:
             return
         itemfile = file(fname, "wb")
@@ -1798,8 +1789,7 @@ def export_curve_data(item):
     title = _("Export")
     if item.curveparam.label:
         title += (' (%s)' % item.curveparam.label)
-    fname = QFileDialog.getSaveFileName(plot, title, "",
-                                        _("Text file")+" (*.txt)")
+    fname, _f = getsavefilename(plot, title, "", _("Text file")+" (*.txt)")
     if fname:
         try:
             np.savetxt(unicode(fname), data, delimiter=',')
