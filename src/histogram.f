@@ -50,8 +50,19 @@ c Apply log if needed and compute max value at the same time
       end subroutine
 
       subroutine hist2d_func(X, Y, Z, n, i0, i1, j0, j1, R, V,
-     +     nx, ny, do_func, nmax)
+     +     nx, ny, nk, do_func, nmax)
 c Compute a 2-D Histogram from data X(i),Y(i)
+c do_func is a parameter selecting the computation to do
+c if not specified, R receives the number of points in the bin
+c    0 : V1 contains the maximum of the Z values in the bin,
+c    1 : V1 contains the minimum of the Z values in the bin,
+c    2 : V1 contains the sum of the Z values in the bin,
+c    3 : V1 contains the product of the Z values in the bin, (V should be initialized to 1)
+c    4 : V1 contains the average of the Z values in the bin,
+c    5 : R contains the index of the minimum of the Z values in the bin, V1 the corresponding min
+c    6 : R contains the index of the maximum of the Z values in the bin, V1 the corresponding max
+c TODO : provide V1 V2 to compute min/max mean/std together
+
 cf2py intent(in) X, Y, Z, do_func
 cf2py intent(in,out) R,V
 cf2py intent(out) nmax
@@ -70,18 +81,32 @@ cf2py intent(out) nmax
         iy = 1+ NInt( (Y(i)-j0)*cy )
         if ((ix .GE. 1) .AND. (ix .LE. nx) .AND. (iy .GE. 1)
      +      .AND. (iy .LE. ny)) then
-            R(ix,iy)=R(ix,iy)+1
             select case (do_func)
             case (0) ! max
+               R(ix,iy)=R(ix,iy)+1
                V(ix,iy) = max(V(ix,iy), Z(i))
             case (1) ! min
+               R(ix,iy)=R(ix,iy)+1
                V(ix,iy) = min(V(ix,iy), Z(i))
             case (2) ! sum
+               R(ix,iy)=R(ix,iy)+1
                V(ix,iy) = V(ix,iy) + Z(i)
             case (3) ! prod
+               R(ix,iy)=R(ix,iy)+1
                V(ix,iy) = V(ix,iy) * Z(i)
             case (4) ! avg
+               R(ix,iy)=R(ix,iy)+1
                V(ix,iy) = V(ix,iy) + (Z(i)-V(ix,iy))/R(ix,iy)
+            case (5) ! argmin
+               if (V(ix,iy) .GT. Z(i)) then
+                  R(ix,iy) = i
+                  V(ix,iy) = Z(i)
+               end if
+            case (6) ! argmax
+               if (V(ix,iy) .LT. Z(i)) then
+                  R(ix,iy) = i
+                  V(ix,iy) = Z(i)
+               end if
             end select
         end if
       end do
