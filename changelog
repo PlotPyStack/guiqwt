@@ -11,7 +11,7 @@
 === Other changes (since v2.1.4) ===
 
   * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
-
+  * baseplot: added method 'copy_to_clipboard' + tools: added CopyToClipboardTool (copy canevas window to clipboard)
 
 == Version 2.1.4 ==
 

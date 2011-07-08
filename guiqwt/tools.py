@@ -42,6 +42,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.CrossSectionTool`
     * :py:class:`guiqwt.tools.AverageCrossSectionTool`
     * :py:class:`guiqwt.tools.SaveAsTool`
+    * :py:class:`guiqwt.tools.CopyToClipboardTool`
     * :py:class:`guiqwt.tools.OpenFileTool`
     * :py:class:`guiqwt.tools.OpenImageTool`
     * :py:class:`guiqwt.tools.SnapshotTool`
@@ -188,6 +189,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: SaveAsTool
+   :members:
+   :inherited-members:
+.. autoclass:: CopyToClipboardTool
    :members:
    :inherited-members:
 .. autoclass:: OpenFileTool
@@ -1470,6 +1474,16 @@ class SaveAsTool(CommandTool):
         fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'), formats)
         if fname:
             plot.save_widget(fname)
+
+class CopyToClipboardTool(CommandTool):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+        super(CopyToClipboardTool,self).__init__(manager,
+                                        _("Copy to clipboard"),
+                                        get_icon('copytoclipboard.png'),
+                                        toolbar_id=toolbar_id)
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        plot.copy_to_clipboard()
 
     
 def save_snapshot(plot, p0, p1):

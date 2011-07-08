@@ -45,7 +45,8 @@ Reference
 import sys
 import numpy as np
 
-from guidata.qt.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
+from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
+                              QApplication)
 from guidata.qt.QtCore import QSize, Qt
 
 from guidata.configtools import get_font
@@ -342,6 +343,11 @@ class BasePlot(QwtPlot):
         return [item for item in self.get_items(z_sorted=z_sorted,
                                                 item_type=item_type)
                 if item.is_private()]
+                
+    def copy_to_clipboard(self):
+        """Copy widget's window to clipboard"""
+        clipboard = QApplication.clipboard()
+        clipboard.setPixmap(QPixmap.grabWidget(self))
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""

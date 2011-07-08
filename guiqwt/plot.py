@@ -102,7 +102,7 @@ Reference
    :members:
 """
 
-import weakref, warnings
+import weakref
 
 from guidata.qt.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout,
                               QToolBar, QDialog, QHBoxLayout, QMenu,
@@ -127,7 +127,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool,
                           ImageStatsTool, ExportItemDataTool, ItemCenterTool,
-                          SignalStatsTool)
+                          SignalStatsTool, CopyToClipboardTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
@@ -554,6 +554,7 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
         self.add_tool(SaveAsTool)
+        self.add_tool(CopyToClipboardTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
         
