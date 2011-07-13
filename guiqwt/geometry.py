@@ -3,6 +3,8 @@
 Basic geometry functions
 """
 
+# pylint: disable=C0103
+
 from numpy import (matrix, array, arccos, sign, cos, sin, linalg, vdot,
                    pi, sqrt, fabs, arctan)
 

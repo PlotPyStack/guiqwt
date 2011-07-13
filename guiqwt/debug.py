@@ -19,14 +19,14 @@ from guidata.qt.QtCore import Qt, QEvent
 
 def buttons_to_str(buttons):
     """Conversion des flags Qt en chaine"""
-    s = ""
+    string = ""
     if buttons & Qt.LeftButton:
-        s += "L"
+        string += "L"
     if buttons & Qt.MidButton:
-        s += "M"
+        string += "M"
     if buttons & Qt.RightButton:
-        s += "R"
-    return s
+        string += "R"
+    return string
 
 
 def evt_type_to_str( type ):
@@ -45,19 +45,19 @@ def evt_type_to_str( type ):
     
 def print_event(evt):
     """Représentation textuelle d'un événement (debug)"""
-    s = ""
+    string = ""
     if isinstance(evt, QInputEvent):
-        s += evt_type_to_str( evt.type() )
-        s += "%08x:" % evt.modifiers()
+        string += evt_type_to_str( evt.type() )
+        string += "%08x:" % evt.modifiers()
         if hasattr(evt, "buttons"):
             buttons = evt.buttons()
         elif hasattr(evt, "buttons"):
             buttons = evt.button()
         else:
             buttons = 0
-        s += buttons_to_str(buttons)
-    if s:
-        print s
+        string += buttons_to_str(buttons)
+    if string:
+        print string
     else:
         print evt
 
@@ -71,10 +71,10 @@ def qimage_format( fmt ):
     return str(fmt)
     
 def qimage_to_str( img, indent="" ):
-    s = StringIO()
-    print >>s, indent, img
+    fd = StringIO()
+    print >>fd, indent, img
     indent += "  "
-    print >>s, indent, "Size:", img.width(), "x", img.height()
-    print >>s, indent, "Depth:", img.depth()
-    print >>s, indent, "Format", qimage_format(img.format())
-    return s.getvalue()
+    print >>fd, indent, "Size:", img.width(), "x", img.height()
+    print >>fd, indent, "Depth:", img.depth()
+    print >>fd, indent, "Format", qimage_format(img.format())
+    return fd.getvalue()
