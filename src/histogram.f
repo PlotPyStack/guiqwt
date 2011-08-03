@@ -50,7 +50,7 @@ c Apply log if needed and compute max value at the same time
       end subroutine
 
       subroutine hist2d_func(X, Y, Z, n, i0, i1, j0, j1, R, V,
-     +     nx, ny, nk, do_func, nmax)
+     +     nx, ny, do_func, nmax)
 c Compute a 2-D Histogram from data X(i),Y(i)
 c do_func is a parameter selecting the computation to do
 c if not specified, R receives the number of points in the bin
