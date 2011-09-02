@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.baseplot
 ---------------
@@ -45,8 +47,9 @@ Reference
 import sys
 import numpy as np
 
-from PyQt4.QtGui import QSizePolicy, QColor, QPixmap, QPrinter
-from PyQt4.QtCore import QSize, Qt
+from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
+                              QApplication)
+from guidata.qt.QtCore import QSize, Qt
 
 from guidata.configtools import get_font
 
@@ -94,6 +97,7 @@ class BasePlot(QwtPlot):
 
     def __init__(self, parent=None, section="plot"):
         super(BasePlot, self).__init__(parent)
+        self._start_autoscaled = True
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
         self.plot_id = None # id assigned by it's manager
@@ -114,6 +118,14 @@ class BasePlot(QwtPlot):
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
         self.connect(self, SIG_ITEM_MOVED, self._move_selected_items_together)
         
+    #---- QwtPlot API ----------------------------------------------------------
+    def showEvent(self, event):
+        """Reimplement Qwt method"""
+        QwtPlot.showEvent(self, event)
+        if self._start_autoscaled:
+            self.do_autoscale()
+
+    #---- Public API -----------------------------------------------------------
     def _move_selected_items_together(self, item, x0, y0, x1, y1):
         """Selected items move together"""
         for selitem in self.get_selected_items():
@@ -147,9 +159,12 @@ class BasePlot(QwtPlot):
         return self.AXIS_NAMES.get(axis_name, axis_name)
 
     def read_axes_styles(self, section, options):
-        """Read axes styles from section and options (one option
-        for each axis in the order left,right,bottom,top).
-        skip axis if option is None"""
+        """
+        Read axes styles from section and options (one option
+        for each axis in the order left, right, bottom, top)
+        
+        Skip axis if option is None
+        """
         for prm, option in zip(self.axes_styles, options):
             if option is None:
                 continue
@@ -165,6 +180,17 @@ class BasePlot(QwtPlot):
         """Set axis title"""
         axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
+        self.update_axis_style(axis_id)
+        
+    def get_axis_unit(self, axis_id):
+        """Get axis unit"""
+        axis_id = self.get_axis_id(axis_id)
+        return self.axes_styles[axis_id].unit
+        
+    def set_axis_unit(self, axis_id, text):
+        """Set axis unit"""
+        axis_id = self.get_axis_id(axis_id)
+        self.axes_styles[axis_id].unit = text
         self.update_axis_style(axis_id)
 
     def get_axis_font(self, axis_id):
@@ -204,9 +230,15 @@ class BasePlot(QwtPlot):
         ticks_font = style.ticks_font.build_font()
         self.setAxisFont(axis_id, ticks_font)
         
+        if style.title and style.unit:
+            title = "%s (%s)" % (style.title, style.unit)
+        elif style.title:
+            title = style.title
+        else:
+            title = style.unit
         axis_text = self.axisTitle(axis_id)
         axis_text.setFont(title_font)
-        axis_text.setText(style.title)
+        axis_text.setText(title)
         axis_text.setColor(QColor(style.color))
         self.setAxisTitle(axis_id, axis_text)
         self.emit(SIG_PLOT_LABELS_CHANGED, self)
@@ -227,6 +259,7 @@ class BasePlot(QwtPlot):
         step size"""
         axis_id = self.get_axis_id(axis_id)
         self.setAxisScale(axis_id, vmin, vmax, stepsize)
+        self._start_autoscaled = False
 
     def set_axis_ticks(self, axis_id, nmajor=None, nminor=None):
         """Set axis maximum number of major ticks
@@ -237,18 +270,26 @@ class BasePlot(QwtPlot):
         if nminor is not None:
             self.setAxisMaxMinor(axis_id, nminor)
 
-    def get_axis_scale(self, axis):
+    def get_axis_scale(self, axis_id):
         """Return the name ('lin' or 'log') of the scale used by axis"""
-        engine = self.axisScaleEngine(axis)
+        axis_id = self.get_axis_id(axis_id)
+        engine = self.axisScaleEngine(axis_id)
         for axis_label, axis_type in self.AXIS_TYPES.items():
             if isinstance(engine, axis_type):
                 return axis_label
         return "lin"  # unknown default to linear
 
-    def set_axis_scale(self, axis, scale):
+    def set_axis_scale(self, axis_id, scale):
         """Set axis scale
         Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
-        self.setAxisScaleEngine(axis, self.AXIS_TYPES[scale]())
+        axis_id = self.get_axis_id(axis_id)
+        self.setAxisScaleEngine(axis_id, self.AXIS_TYPES[scale]())
+        self.do_autoscale(replot=False)
+
+    def get_scales(self):
+        """Return active curve scales"""
+        ax, ay = self.get_active_axes()
+        return self.get_axis_scale(ax), self.get_axis_scale(ay)
 
     def set_scales(self, xscale, yscale):
         """Set active curve scales
@@ -303,6 +344,11 @@ class BasePlot(QwtPlot):
         return [item for item in self.get_items(z_sorted=z_sorted,
                                                 item_type=item_type)
                 if item.is_private()]
+                
+    def copy_to_clipboard(self):
+        """Copy widget's window to clipboard"""
+        clipboard = QApplication.clipboard()
+        clipboard.setPixmap(QPixmap.grabWidget(self))
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""
@@ -320,9 +366,10 @@ class BasePlot(QwtPlot):
         else:
             raise RuntimeError(_("Unknown file extension"))
         
-    def get_selected_items(self, item_type=None):
+    def get_selected_items(self, z_sorted=False, item_type=None):
         """Return selected items"""
-        return [item for item in self.get_items(item_type=item_type)
+        return [item for item in
+                self.get_items(item_type=item_type, z_sorted=z_sorted)
                 if item.selected]
             
     def get_max_z(self):
@@ -349,7 +396,10 @@ class BasePlot(QwtPlot):
             item.setZ(z)
         else:
             item.setZ(self.get_max_z()+1)
-        self.items.append(item)
+        if item in self.items:
+            print >>sys.stderr, "Warning: item %r is already attached to plot" % item
+        else:
+            self.items.append(item)
         self.emit(SIG_ITEMS_CHANGED, self)
         
     def add_item_with_z_offset(self, item, zoffset):

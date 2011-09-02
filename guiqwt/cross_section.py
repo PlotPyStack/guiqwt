@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.cross_section
 --------------------
@@ -37,9 +39,9 @@ Reference
 
 import weakref
 
-from PyQt4.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
-                         QSpacerItem, QFileDialog, QMessageBox)
-from PyQt4.QtCore import QSize, QPoint, Qt, SIGNAL
+from guidata.qt.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
+                              QSpacerItem)
+from guidata.qt.QtCore import QSize, QPoint, Qt, SIGNAL
 
 import numpy as np
 
@@ -49,13 +51,14 @@ from guidata.qthelpers import create_action, add_actions
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import (ICSImageItemType, IPanel, IBasePlotItem,
-                               ICurveItemType)
-from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS
+from guiqwt.interfaces import ICSImageItemType, IPanel, IBasePlotItem
+from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_OCS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
 from guiqwt.image import ImagePlot, LUT_MAX
 from guiqwt.styles import CurveParam
 from guiqwt.tools import ExportItemDataTool
+from guiqwt.geometry import translate, rotate, vector_norm, vector_angle
+from guiqwt.image import _scale_tr, INTERP_LINEAR
 from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
                             SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
@@ -350,6 +353,7 @@ class CrossSectionPlot(CurvePlot):
         self.autoscale_mode = True
         self.autorefresh_mode = True
         self.apply_lut = False
+        self.single_source = False
         
         self.last_obj = None
         self.known_items = {}
@@ -393,12 +397,12 @@ class CrossSectionPlot(CurvePlot):
             self.axis_dir_changed(plot, axis_id)
         self.items_changed(plot)
         
-    def register_shape(self, plot, shape, final):
+    def register_shape(self, plot, shape, final, refresh=True):
         known_shapes = self._shapes.get(plot, [])
         if shape in known_shapes:
             return
         self._shapes[plot] = known_shapes+[shape]
-        self.update_plot(shape)
+        self.update_plot(shape, refresh=refresh and self.autorefresh_mode)
         
     def unregister_shape(self, shape):
         for plot in self._shapes:
@@ -406,7 +410,7 @@ class CrossSectionPlot(CurvePlot):
             if shape in shapes:
                 shapes.pop(shapes.index(shape))
                 if len(shapes) == 0 or shape is self.get_last_obj():
-                    for curve in self.known_items.itervalues():
+                    for curve in self.get_cross_section_curves():
                         curve.clear_data()
                     self.replot()
                 break
@@ -430,6 +434,9 @@ class CrossSectionPlot(CurvePlot):
         for source in self.known_items.copy():
             if source not in new_sources:
                 curve = self.known_items.pop(source)
+                curve.clear_data() # useful to emit SIG_CS_CURVE_CHANGED
+                                   # (eventually notify other panels that the 
+                                   #  cross section curve is now empty)
                 self.del_item(curve)
         
         if not new_sources:
@@ -439,7 +446,8 @@ class CrossSectionPlot(CurvePlot):
         self.curveparam.shade = self.SHADE/len(new_sources)
         for source in new_sources:
             if source not in self.known_items and source.isVisible():
-                self.add_cross_section_item(source=source)
+                if not self.single_source or not self.known_items:
+                    self.add_cross_section_item(source=source)
 
     def active_item_changed(self, plot):
         """Active item has just changed"""
@@ -472,7 +480,7 @@ class CrossSectionPlot(CurvePlot):
         if self.last_obj is not None:
             return self.last_obj()
         
-    def update_plot(self, obj=None):
+    def update_plot(self, obj=None, refresh=True):
         """
         Update cross section curve(s) associated to object *obj*
         
@@ -501,7 +509,8 @@ class CrossSectionPlot(CurvePlot):
                 curve.perimage_mode = self.perimage_mode
                 curve.autoscale_mode = self.autoscale_mode
                 curve.apply_lut = self.apply_lut
-                curve.update_item(obj)
+                if refresh:
+                    curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
         if self.apply_lut:
@@ -520,7 +529,8 @@ class CrossSectionPlot(CurvePlot):
         
     def toggle_autorefresh(self, state):
         self.autorefresh_mode = state
-        self.update_plot()
+        if state:
+            self.update_plot()
         
     def toggle_apply_lut(self, state):
         self.apply_lut = state
@@ -675,9 +685,9 @@ class CrossSectionWidget(PanelWidget):
         add_actions(self.toolbar, (self.export_ac, self.autoscale_ac,
                                    None, self.refresh_ac, self.autorefresh_ac))
         
-    def register_shape(self, shape, final):
+    def register_shape(self, shape, final, refresh=True):
         plot = self.get_plot()
-        self.cs_plot.register_shape(plot, shape, final)
+        self.cs_plot.register_shape(plot, shape, final, refresh)
         
     def unregister_shape(self, shape):
         self.cs_plot.unregister_shape(shape)
@@ -695,8 +705,11 @@ class CrossSectionWidget(PanelWidget):
         self.cs_plot.update_plot(obj)
 
 assert_interfaces_valid(CrossSectionWidget)
-        
 
+
+#===============================================================================
+# X-Y cross sections
+#===============================================================================
 class XCrossSection(CrossSectionWidget):
     """X-axis cross section widget"""
     PANEL_ID = ID_XCS
@@ -747,7 +760,7 @@ class XCrossSection(CrossSectionWidget):
         event.ignore()
         
     def setup_actions(self):
-        super(XCrossSection, self).setup_actions()
+        CrossSectionWidget.setup_actions(self)
         self.peritem_ac = create_action(self, _("Per image cross-section"),
                         icon=get_icon('csperimage.png'),
                         toggled=self.cs_plot.toggle_perimage_mode,
@@ -799,3 +812,120 @@ class YCrossSection(XCrossSection):
     def adjust_height(self, height):
         self.spacer.changeSize(0, height, QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout().invalidate()
+
+
+#===============================================================================
+# Oblique cross sections
+#===============================================================================
+DEBUG = False
+TEMP_ITEM = None
+
+def compute_oblique_section(item, obj):
+    """Return oblique averaged cross section"""
+    global TEMP_ITEM
+    
+    xa, ya, xb, yb = obj.get_bounding_rect_coords()
+    x0, y0, x1, y1, x2, y2, x3, y3 = obj.get_rect()
+
+    getcpi = item.get_closest_pixel_indexes
+    ixa, iya = getcpi(xa, ya)
+    ixb, iyb = getcpi(xb, yb)
+    ix0, iy0 = getcpi(x0, y0)
+    ix1, iy1 = getcpi(x1, y1)
+    ix3, iy3 = getcpi(x3, y3)
+    
+    destw = vector_norm(ix0, iy0, ix1, iy1)
+    desth = vector_norm(ix0, iy0, ix3, iy3)
+    ysign = -1 if obj.plot().get_axis_direction('left') else 1
+    angle = vector_angle(ix1-ix0, (iy1-iy0)*ysign)
+    
+    dst_rect = (0, 0, int(destw), int(desth))
+    dst_image = np.empty((desth, destw), dtype=np.float64)
+    
+    if isinstance(item.data, np.ma.MaskedArray):
+        if item.data.dtype in (np.float32, np.float64):
+            item_data = item.data
+        else:
+            item_data = np.ma.array(item.data, dtype=np.float32, copy=True)
+        data = np.ma.filled(item_data, np.nan)
+    else:
+        data = item.data
+    
+    ixr = .5*(ixb+ixa)
+    iyr = .5*(iyb+iya)
+    mat = translate(ixr, iyr)*rotate(-angle)*translate(-.5*destw, -.5*desth)
+    _scale_tr(data, mat, dst_image, dst_rect,
+              (1., 0., np.nan), (INTERP_LINEAR,))
+
+    if DEBUG:
+        plot = obj.plot()
+        if TEMP_ITEM is None:
+            from guiqwt.builder import make
+            TEMP_ITEM = make.image(dst_image)
+            plot.add_item(TEMP_ITEM)
+        else:
+            TEMP_ITEM.set_data(dst_image)
+        if False:
+            TEMP_ITEM.imageparam.alpha_mask = True
+            xmin, ymin = ixa, iya
+            xmax, ymax = xmin+destw, ymin+desth
+            TEMP_ITEM.imageparam.xmin = xmin
+            TEMP_ITEM.imageparam.xmax = xmax
+            TEMP_ITEM.imageparam.ymin = ymin
+            TEMP_ITEM.imageparam.ymax = ymax
+            TEMP_ITEM.imageparam.update_image(TEMP_ITEM)
+        plot.replot()
+    
+    ydata = np.ma.fix_invalid(dst_image, copy=DEBUG).mean(axis=1)
+    xdata = item.get_x_values(0, ydata.size)[:ydata.size]
+    try:
+        xdata -= xdata[0]
+    except IndexError:
+        print xdata, ydata
+    return xdata, ydata
+
+# Oblique cross section item
+class ObliqueCrossSectionItem(CrossSectionItem):
+    """A Qwt item representing radially-averaged cross section data"""
+    def __init__(self, curveparam=None, errorbarparam=None):
+        CrossSectionItem.__init__(self, curveparam, errorbarparam)
+        
+    def update_curve_data(self, obj):
+        source = self.get_source_image()
+        rect = obj.get_bounding_rect_coords()
+        if rect is not None and source.data is not None:
+#            x0, y0, x1, y1 = rect
+#            angle = obj.get_tr_angle()
+            sectx, secty = compute_oblique_section(source, obj)
+            if secty.size == 0 or np.all(np.isnan(secty)):
+                sectx, secty = np.array([]), np.array([])
+            self.process_curve_data(sectx, secty, None, None)
+            
+    def update_scale(self):
+        pass
+
+# Oblique cross section plot
+class ObliqueCrossSectionPlot(HorizontalCrossSectionPlot):
+    """Oblique averaged cross section plot"""
+    PLOT_TITLE = _("Oblique averaged cross section")
+    CURVE_LABEL = _("Oblique averaged cross section")
+    LABEL_TEXT = _("Activate the oblique cross section tool")
+    def __init__(self, parent=None):
+        super(ObliqueCrossSectionPlot, self).__init__(parent)
+        self.set_title(self.PLOT_TITLE)
+        self.single_source = True
+        
+    def create_cross_section_item(self):
+        return ObliqueCrossSectionItem(self.curveparam)
+        
+    def axis_dir_changed(self, plot, axis_id):
+        """An axis direction has changed"""
+        pass
+
+# Oblique cross section panel
+class ObliqueCrossSection(CrossSectionWidget):
+    """Oblique averaged cross section widget"""
+    PANEL_ID = ID_OCS
+    CrossSectionPlotKlass = ObliqueCrossSectionPlot
+    PANEL_ICON = "csection_oblique.png"
+

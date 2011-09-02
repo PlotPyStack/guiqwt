@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.histogram
 ----------------
@@ -42,8 +44,8 @@ Reference
    :inherited-members:
 """
 import numpy as np
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
+from guidata.qt.QtCore import Qt
+from guidata.qt.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
 
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem
@@ -84,13 +86,16 @@ class HistDataSource(object):
 assert_interfaces_valid(HistDataSource)
 
 
-def lut_range_threshold(item, bins, percent):
-    hist, bin_edges = item.get_histogram(bins)
+def hist_range_threshold(hist, bin_edges, percent):
     hist = np.concatenate((hist, [0]))
     threshold = .5*percent/100*hist.sum()
     i_bin_min = np.cumsum(hist).searchsorted(threshold)
     i_bin_max = -1-np.cumsum(np.flipud(hist)).searchsorted(threshold)
     return bin_edges[i_bin_min], bin_edges[i_bin_max]
+
+def lut_range_threshold(item, bins, percent):
+    hist, bin_edges = item.get_histogram(bins)
+    return hist_range_threshold(hist, bin_edges, percent)
 
 
 class HistogramItem(CurveItem):
@@ -171,17 +176,17 @@ class HistogramItem(CurveItem):
 
     def update_params(self):
         self.histparam.update_hist(self)
-        super(HistogramItem, self).update_params()
+        CurveItem.update_params(self)
 
     def get_item_parameters(self, itemparams):
-        super(HistogramItem, self).get_item_parameters(itemparams)
+        CurveItem.get_item_parameters(self, itemparams)
         itemparams.add("HistogramParam", self, self.histparam)
     
     def set_item_parameters(self, itemparams):
         update_dataset(self.histparam, itemparams.get("HistogramParam"),
                        visible_only=True)
         self.histparam.update_hist(self)
-        super(HistogramItem, self).set_item_parameters(itemparams)
+        CurveItem.set_item_parameters(self, itemparams)
 
 assert_interfaces_valid(HistogramItem)
 
@@ -241,7 +246,7 @@ class LevelsHistogram(CurvePlot):
         self.del_items(del_curves)
 
     def selection_changed(self, plot):
-        items = plot.get_selected_items(IVoiImageItemType)
+        items = plot.get_selected_items(item_type=IVoiImageItemType)
         known_items = self._tracked_items.setdefault(plot, {})
 
         if items:
@@ -250,14 +255,15 @@ class LevelsHistogram(CurvePlot):
                 # Removing any cached item for other plots
                 for other_plot, _items in self._tracked_items.items():
                     if other_plot is not plot:
-                        if not other_plot.get_selected_items(IVoiImageItemType):
+                        if not other_plot.get_selected_items(
+                                                item_type=IVoiImageItemType):
                             other_known_items = self._tracked_items[other_plot]
                             self.__del_known_items(other_known_items, [])
         else:
             # if all items are deselected we keep the last known
             # selection (for one plot only)
             for other_plot, _items in self._tracked_items.items():
-                if other_plot.get_selected_items(IVoiImageItemType):
+                if other_plot.get_selected_items(item_type=IVoiImageItemType):
                     self.__del_known_items(known_items, [])
                     break
                 
@@ -293,7 +299,7 @@ class LevelsHistogram(CurvePlot):
             self.replot()
 
     def active_item_changed(self, plot):
-        items = plot.get_selected_items(IVoiImageItemType)
+        items = plot.get_selected_items(item_type=IVoiImageItemType)
         if not items:
             #XXX: workaround
             return

@@ -11,8 +11,8 @@ SHOW = False # Do not show test in GUI-based test launcher
 
 import unittest
 
-from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QPen, QBrush
+from guidata.qt.QtCore import Qt, QSize
+from guidata.qt.QtGui import QPen, QBrush
 
 from guiqwt.transitional import QwtSymbol
 

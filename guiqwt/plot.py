@@ -102,12 +102,13 @@ Reference
    :members:
 """
 
-import weakref, warnings
+import weakref
 
-from PyQt4.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout, QToolBar,
-                         QDialog, QHBoxLayout, QMenu, QActionGroup, QSplitter,
-                         QSizePolicy, QApplication, QWidget, QMainWindow)
-from PyQt4.QtCore import Qt, SIGNAL, SLOT
+from guidata.qt.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout,
+                              QToolBar, QDialog, QHBoxLayout, QMenu,
+                              QActionGroup, QSplitter, QSizePolicy,
+                              QApplication, QWidget, QMainWindow)
+from guidata.qt.QtCore import Qt, SIGNAL, SLOT
 
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid
@@ -125,7 +126,8 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           AspectRatioTool, ContrastPanelTool, XCSPanelTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool,
-                          ImageStatsTool, ExportItemDataTool)
+                          ImageStatsTool, ExportItemDataTool, ItemCenterTool,
+                          SignalStatsTool, CopyToClipboardTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
@@ -495,6 +497,7 @@ class PlotManager(object):
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
         self.add_tool(ExportItemDataTool)
+        self.add_tool(ItemCenterTool)
         self.add_tool(DeleteItemTool)
         self.add_separator_tool()
         self.add_tool(BasePlotMenuTool, "grid")
@@ -513,6 +516,7 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
         :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
+        self.add_tool(SignalStatsTool)
         self.add_tool(AntiAliasingTool)
         self.add_tool(AxisScaleTool)
 
@@ -550,6 +554,7 @@ class PlotManager(object):
         :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
         self.add_tool(SaveAsTool)
+        self.add_tool(CopyToClipboardTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
         
@@ -678,14 +683,15 @@ class BaseCurveWidget(QSplitter):
     connected to each other.
     See children class :py:class:`guiqwt.plot.CurveWidget`
     """
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+    def __init__(self, parent=None, title=None,
+                 xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-        self.plot = CurvePlot(parent=self,
-                              title=title, xlabel=xlabel, ylabel=ylabel,
+        self.plot = CurvePlot(parent=self, title=title, xlabel=xlabel,
+                              ylabel=ylabel, xunit=xunit, yunit=yunit,
                               section=section, gridparam=gridparam)
         self.addWidget(self.plot)
         self.itemlist = PlotItemList(self)
@@ -701,13 +707,17 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
+        * xunit: (bottom axis unit, top axis unit) or bottom axis unit only
+        * yunit: (left axis unit, right axis unit) or left axis unit only
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
+    def __init__(self, parent=None, title=None,
+                 xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None,
                  panels=None):
-        BaseCurveWidget.__init__(self, parent, title, xlabel, ylabel,
-                                     section, show_itemlist, gridparam)
+        BaseCurveWidget.__init__(self, parent, title,
+                                 xlabel, ylabel, xunit, yunit,
+                                 section, show_itemlist, gridparam)
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
@@ -883,7 +893,8 @@ class BaseImageWidget(QSplitter):
     See children class :py:class:`guiqwt.plot.ImageWidget`
     """
     def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
+                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
@@ -895,6 +906,7 @@ class BaseImageWidget(QSplitter):
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
         self.plot = ImagePlot(parent=self, title=title,
                               xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
+                              xunit=xunit, yunit=yunit, zunit=zunit,
                               yreverse=yreverse, aspect_ratio=aspect_ratio,
                               lock_aspect_ratio=lock_aspect_ratio,
                               gridparam=gridparam)
@@ -970,6 +982,7 @@ class ImageWidget(BaseImageWidget, PlotManager):
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
           (strings)
+        * xunit, yunit, zunit: resp. bottom, left and right axis units (strings)
         * yreverse: reversing Y-axis (bool)
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
@@ -983,15 +996,17 @@ class ImageWidget(BaseImageWidget, PlotManager):
         * panels (optional): additionnal panels (list, tuple)
     """
     def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
+                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
+                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None, panels=None):
-        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel,
-                 zlabel, yreverse, colormap, aspect_ratio, lock_aspect_ratio,
-                 show_contrast, show_itemlist, show_xsection, show_ysection,
-                 xsection_pos, ysection_pos, gridparam)
+        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
+                 xunit, yunit, zunit, yreverse, colormap, aspect_ratio,
+                 lock_aspect_ratio, show_contrast, show_itemlist,
+                 show_xsection, show_ysection, xsection_pos, ysection_pos,
+                 gridparam)
         PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
@@ -1065,99 +1080,3 @@ class ImageWindow(CurveWindow, ImageWidgetMixin):
         * panels (optional): additionnal panels (list, tuple)
     """
     pass
-
-
-#===============================================================================
-# The following classes will be removed in future versions
-#===============================================================================
-class CurvePlotWidget(CurveWidget):
-    """
-    Construct a CurveWidget object: plotting widget with integrated 
-    plot manager
-        * parent: parent widget
-        * title: plot title
-        * xlabel: (bottom axis title, top axis title) or bottom axis title only
-        * ylabel: (left axis title, right axis title) or left axis title only
-    """
-    def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 section="plot", show_itemlist=False, gridparam=None):
-        CurveWidget.__init__(self, parent, title, xlabel, ylabel, section,
-                             show_itemlist, gridparam)
-        self.manager = self
-        warnings.warn("For clarity's sake, the 'CurvePlotWidget' class has "
-                      "been renamed to 'CurveWidget' (this will raise an "
-                      "exception in future versions)", FutureWarning)
-class CurvePlotDialog(CurveDialog):
-    """
-    Construct a CurveDialog object: plotting dialog box with integrated 
-    plot manager
-        * wintitle: window title
-        * icon: window icon
-        * edit: editable state
-        * toolbar: show/hide toolbar
-        * options: options sent to the :py:class:`guiqwt.curve.CurvePlot` object
-          (dictionary)
-        * parent: parent widget
-    """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
-        CurveDialog.__init__(self, wintitle, icon, edit, toolbar, options,
-                             parent)
-        self.manager = self
-        warnings.warn("For clarity's sake, the 'CurvePlotDialog' class has "
-                      "been renamed to 'CurveDialog' (this will raise an "
-                      "exception in future versions)", FutureWarning)
-class ImagePlotWidget(ImageWidget):
-    """
-    Construct a ImageWidget object: plotting widget with integrated 
-    plot manager
-        * parent: parent widget
-        * title: plot title (string)
-        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
-          (strings)
-        * yreverse: reversing Y-axis (bool)
-        * aspect_ratio: height to width ratio (float)
-        * lock_aspect_ratio: locking aspect ratio (bool)
-        * show_contrast: showing contrast adjustment tool (bool)
-        * show_xsection: showing x-axis cross section plot (bool)
-        * show_ysection: showing y-axis cross section plot (bool)
-        * xsection_pos: x-axis cross section plot position 
-          (striImageDialogng: "top", "bottom")
-        * ysection_pos: y-axis cross section plot position 
-          (string: "left", "right")
-    """
-    def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None, yreverse=True,
-                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
-                 show_contrast=False, show_itemlist=False, show_xsection=False,
-                 show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None):
-        ImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
-                             yreverse, colormap, aspect_ratio,
-                             lock_aspect_ratio, show_contrast, show_itemlist,
-                             show_xsection, show_ysection, xsection_pos,
-                             ysection_pos, gridparam)
-        self.manager = self
-        warnings.warn("For clarity's sake, the 'ImagePlotWidget' class has "
-                      "been renamed to 'ImageWidget' (this will raise an "
-                      "exception in future versions)", FutureWarning)
-class ImagePlotDialog(ImageDialog):
-    """
-    Construct a ImageDialog object: plotting dialog box with integrated 
-    plot manager
-        * wintitle: window title
-        * icon: window icon
-        * edit: editable state
-        * toolbar: show/hide toolbar
-        * options: options sent to the :py:class:`guiqwt.image.ImagePlot` object
-          (dictionary)
-        * parent: parent widget
-    """
-    def __init__(self, wintitle="guiqwt imshow", icon="guiqwt.png",
-                 edit=False, toolbar=False, options=None, parent=None):
-        ImageDialog.__init__(self, wintitle, icon, edit, toolbar, options,
-                             parent)
-        self.manager = self
-        warnings.warn("For clarity's sake, the 'ImagePlotDialog' class has "
-                      "been renamed to 'ImageDialog' (this will raise an "
-                      "exception in future versions)", FutureWarning)

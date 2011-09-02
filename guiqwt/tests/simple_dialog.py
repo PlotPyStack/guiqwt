@@ -9,7 +9,7 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtCore import SIGNAL
 
 import scipy.ndimage
 

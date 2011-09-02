@@ -1,0 +1,260 @@
+== Version 2.1.5 ==
+
+=== Bug fixes (since v2.1.4) ===
+
+  * 
+
+=== Possible API compatibility issues (since v2.1.4) ===
+
+  * 
+
+=== Other changes (since v2.1.4) ===
+
+  * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
+  * baseplot: added method 'copy_to_clipboard' + tools: added CopyToClipboardTool (copy canevas window to clipboard)
+
+== Version 2.1.4 ==
+
+Since this version, `guiqwt` is compatible with !PyQt4 API #1 *and* API #2.
+Please read carefully the coding guidelines which have been recently added to 
+the documentation.
+
+=== Bug fixes (since v2.1.3) ===
+
+  * Sift/bugfix: difference/division operations were performed backwards (s001-s000 instead of s000-s001)
+  * Sift: working directory is now changed after opening/saving signal/image
+  * label.!RangeComputation: fixed bug if compute function was returning more than one result and when X-range was empty (e.g. selection is outside curve X-axis values)
+  * curve.!CurvePlot: fixed pan/zoom erratic behavior for curves associated with log-scale axes
+  * baseplot.!BasePlot: now performing an autoscale after changing axis lin/log scale (set_axis_scale/set_scales)
+  * annotations.!AnnotatedSegment/CRITICAL: fixed an error (introduced in v2.1.0) when computing segment length (returned length was twice lower than the real value)
+  * image.XYImageItem (Contributor: Carlos Pascual): fixed bug when Y-axis array is of dimension Ni+1 (where Ni is the number of rows of the image pixel data array)
+  * Fixed compatiblity issues with !PyQt v4.4 (Contributor: Carlos Pascual)
+  * (minor) Fixed label text (too long) of 2D-Histogram items background color in shown !DataSet
+  * guiqwt.io.array_to_dicomfile/bugfix: Smallest/!LargestImagePixelValue fields had wrong type (str instead of int)
+  * !LabelTool: label was not moved as expected (default: now, label is *not* attached to canvas)
+  * tools.!ImageStatsTool/bugfix: image title was not shown
+  * !CurvePlot: autoscale for log scales / bugfix: handling zero values
+  * tools.!AxisScaleTool/bugfix: when updating its status, the tool was setting the axes scales even when not necessary, hence causing an autoscale since changeset 1159 (687e22074f8d)
+  * !ItemCenterTool was not working as expected when centering annotated shapes having a specific transform matrix
+  * XYImageItem objects: re-added cross-section support (removed accidently)
+  * Curve autoscale method (curve.!CurvePlot/!ErrorBarCurvePlot):
+    * now handles non-finite values (!NaNs and infs)
+    * logarithmic scales: now excludes zero/negative values to avoid confusing the autoscale algorithm
+
+=== Possible API compatibility issues (since v2.1.3) ===
+
+  * Moved functions from guiqwt.io to new module guiqwt.qthelpers: exec_image_save_dialog, exec_image_open_dialog, exec_images_open_dialog
+  * Markers:
+    * label and constraint callbacks take now 2 arguments (the marker's coordinates) instead of 3
+    * removed method 'move_point_to': use new method 'set_pos' instead (takes two arguments: x, y)
+  * Removed cursors introduced in v2.1.0:
+    * These cursors have been replaced by shapes.Marker (i.e. objects derived from !QwtPlotMarker)
+    * Removed signals.SIG_CURSOR_MOVED, shapes.!HorizontalCursor, shapes.!VerticalCursor, annotations.AnnotatedHCursor, annotations.AnnotatedVCursor and associated builder methods (annotated_vcursor, annotated_hcursor)
+    * Builder methods vcursor and hcursor were slightly changed (see tests/cursors.py to adapt your code)
+    * Use markers instead of cursors (and SIG_MARKER_CHANGED instead of SIG_CURSOR_MOVED -- arguments are not identical, see signals.py):
+      * base object: shapes.Marker
+      * associated builder methods: marker, vcursor, hcursor, xcursor (see tests/cursors.py)
+  * label.!LabelItem: renamed method 'set_position' to 'set_pos' (consistency with shapes.!PointShape, ...)
+  * Annotations:
+    * method `get_center` now returns coordinates *without* applying the transform matrix, i.e. in pure plot coordinates
+    * the following methods were renamed to highlight the fact that the transform matrix is applied in those computations:
+      * `get_center` was renamed to `get_tr_center`
+      * `get_size` was renamed to `get_tr_size`
+      * `get_angle` was renamed to `get_tr_angle`
+      * `get_diameter` was renamed to `get_tr_diameter`
+      * `get_length` was renamed to `get_tr_length`
+  * Removed the following deprecated classes in `guiqwt.plot`:
+      * !CurvePlotWidget (renamed to !CurveWidget)
+      * !CurvePlotDialog (renamed to !CurveDialog)
+      * !ImagePlotWidget (renamed to !ImageWidget)
+      * !ImagePlotDialog (renamed to !ImageDialog)
+
+=== Other changes (since v2.1.3) ===
+
+  * Added module qthelpers: image open/save dialog helpers (moved from guiqwt.io to avoid using GUIs in this module)
+  * Annotation/default style: changed string formatting from '%d' to '%.1f'
+  * baseplot.!BasePlot.add_item: when adding the same item twice, printing a warning message
+  * Using new guidata.qt !PyQt4->!PySide transitional package
+  * Sift: ROI extraction ("Crop"-->"ROI extraction" + added the same feature for signals), added "swap axes" operation for signals/images, added "normalize" processing for signals only
+  * Sift: added linear calibration (signals: X/Y axes, images: Z axis)
+  * Interactive tools: added signal SIG_TOOL_JOB_FINISHED emitted when tool has finished its job + if SWITCH_TO_DEFAULT_TOOL class attribute is True, switching to the default interactive tool
+  * Buider: added cross cursor and marker constructors (builder.make.marker and builder.make.xcursor, see tests/cursors.py)
+  * Added !SignalStatsTool (standard curve tool) to show ymin, ymax, ymean, ... on a selected curve ROI
+  * Sift: added support for curve data with error bars (I/O + operations + processing)
+  * Added coding guidelines to the documentation
+  * builder/make.computation/computation2d: added title option (defaults to object's (curve or image) label)
+  * plot.!CurvePlot, plot.!CurveWidget: added keyword arguments 'xunit' and 'yunit' to set axes units (same syntax as labels)
+  * plot.!ImagePlot, plot.!ImageWidget: added keyword arguments 'xunit', 'yunit' and 'zunit' to set axes units (same syntax as labels)
+  * pyplot.imshow: added keyword argument 'mask' to support masked arrays display
+
+----
+
+== Version 2.1.3 ==
+
+=== Bug fixes (since v2.1.2) ===
+
+  * tools.!RectangularActionTool: removed unnecessary calls to setup_shape_appearance
+  * tools.!ImageStatsTool/!CrossSectionTool.setup_shape / bugfix: parent method was not called
+  * Sift/bugfix: Spyder's internal shell was not parented -- this was causing issues with spyderlib v2.0.11
+  * Cross section/auto refresh toggle button: do not refresh plot if disabling the auto refresh mode
+  * (Fixes Issue 14) tools.!CommandTool: docstring was translated from french
+  * (Fixes Issue 13) Fixed precision/string formatting issue: switched from '%f' to '%g' (on-curve labels, ...)
+
+=== Possible API compatibility issues (since v2.1.2) ===
+
+  * baseplot.!BasePlot.get_selected_items: added argument 'z_sorted' in first position (like in get_items)
+
+=== Other changes (since v2.1.2) ===
+
+  * added *this* changelog
+  * baseplot/plot axes styles: added support for physical unit
+  * annotations/attached label: added automatic axes unit support
+  * annotations: added support for measurement relative uncertainty
+  * fit/Fit param widgets: added suffix label + code cleaning
+  * guiqwt.io/sift: open/save image dialog code refactoring
+  * tools.!ExportItemDataTool: added support for images
+  * Added tool !ItemCenterTool: center objects (rectangle, ellipse and their annotated counterparts)
+  * Cross section panel: when a cross section shape has been removed, clearing cross section curve before removing it (notify other panels)
+  * Cross sections/update_plot: added option 'refresh' (default: True) --> we do not want to refresh the cross section panel systematically after registering a new shape
+  * Annotations/annotationparam: added 'readonly' and 'private' options (bugfix: these parameters are now pickled correctly for shapes)
+
+----
+
+== Version 2.1.2 ==
+
+=== Bug fixes (since v2.1.1) ===
+
+  * 1D Computations: now support error bar curves as well as simple curves
+  * test_line test: this test should have been excluded from test list + it should be possible to import it without executing it... fixed!
+
+=== Other changes (since v2.1.1) ===
+
+  * guiqwt.fit: code cleaning / reimplementing !FitParam.create_widgets is now supported
+
+----
+
+== Version 2.1.1 ==
+
+=== Bug fixes (since v2.1.0) ===
+
+  * Distributed source package: unwanted Sift build/dist files were eventually included in the package
+  * setup.py: fixed sphinx !ImportError issue when building autodoc from source package (not finding the just built extension module)
+  * !ErrorBarCurveItem/bugfix: did not support empty data
+  * Cross section panel: do not compute cross section each time a plot item is added/deleted
+  * annotations/Annotated cursor: couple of bugfixes + label color is changed when selecting/unselecting annotation
+  * annotations/tools: code cleaning + minor bugfixes (styles were not applied as expected)
+  * scaler.cpp/bugfix for float source images: values were converted to integers
+  * Sift/arbitrary rotation: added option "reshape" (default: True)
+  * Fix building the f90 extension on some systems
+  * Curve plots: fixed autoscale behavior for logarithmic scales
+  * fit/bugfix: when the fit params number was not a multiple of the layout column count, the last parameters were not shown
+
+=== Other changes (since v2.1.0) ===
+
+  * shapes: added !ObliqueRectangleShape
+  * tools: added !ObliqueRectangleTool and !AnnotatedObliqueRectangleTool
+  * Added averaged oblique cross section (panel and tools)
+  * plot items/Refactoring: methods 'set_selectable', 'set_resizable', 'set_movable' and 'set_rotatable' are now mandatory for all plot items (not only the image items as before)
+  * tools.!ImageMaskTool/icon: more contrasted icon (in order to discriminate easily the disabled icon from the enabled one)
+  * plot.!PlotManager: added method 'get_tool' (returns tool's instance from its class, if added to manager...)
+  * tools / New !ExportItemData tool: supports only curve items (for now)
+  * tools.!CrossSectionTool/!AverageCrossSectionTool -- shape setup: added class attribute SHAPE_TITLE + do not hide computations anymore
+  * pyplot/Axes: added methods 'set_xlim' and 'set_ylim'
+  * shapes.py/image.py: code refactoring/cleaning --> geometry.py
+  * Rectangular shapes/annotations: added method get_bounding_rect_coords
+  * cross_section.!CrossSectionPlot: added attribute 'single_source' / if True, only one image source is processed
+  * Improve pcolor, refactor scaler sources
+  * Handle Nan's quietly while computing lut min/max
+  * Added basic function computation on hist2d
+  * Allowed Histogram2DItems to have VOI, palettes and transparent backgrounds
+
+----
+
+== Version 2.1.0 ==
+
+=== Bug fixes (since v2.0.8) ===
+
+  * cross_section: !CrossSectionWidget.update_plot argument 'obj' was not optional as in !CrossSectionPlot.update_plot
+  * Contrast adjustment panel: when setting range (i.e. possible change of image data), levels histogram was not updated
+  * Tests: handling I/O errors occuring when user has no write permission on current directory
+  * Image items: bugfixes in !ImageItem (scale issues: replaced x0,y0,dx,dy by xmin,xmax,ymin,ymax) + added intermediate class !RawImageItem (!ImageItem without scale)
+  * Image module: fixed pixel alignment issues (get_closest_indexes, ...)
+  * !TrImageParam: fixed wrong class inheritance
+  * !LegendBoxItem/bugfix: missing argument for include_item
+  * guiqwt.image.get_filename: bugfix when filename is None
+  * !ErrorBarCurveItem.set_data: now accepts None for both dx and dy (interface consistency with its parent class, !CurveItem)
+  * Image items/Align rectangular shape to image pixels/bugfix: this feature was not working for scaled images (!ImageItem, !MaskImageItem, ...)
+  * guiqwt.curve/image: improved autoscale method (now works with curves plotted on two different Y-axes)
+  * guiqwt.image: fixed issues related to empty filename/data when pickling/unpickling items
+  * !OpenFileTool: now remembers the previously browsed directory
+  * Fixed !PyQt >=v4.8 compatibility issue: !PyQt is less permissive with signal string syntax (!PyQt_PyObject is mandatory for passing a Python/C++ object)
+  * guiqwt.fit: fixed rounding error due to slider's non-continuous behaviour
+  * guiqwt.label/bugfix: text label was reset to '' when redrawn
+  * guiqwt.fit: bugfixes when using logscale
+  * guiqwt.io.array_to_imagefile/text files: format is now '%d' for integer data types
+  * (Fixes Issue 7) guifit: standard fit boundary excludes rightmost value
+  * guiqwt/curve.py: added workaround to avoid division by zero when clicking between curves
+  * guiqwt/io.py-array_to_dicomfile: fixed ambiguous VR for !PixelData when changing DICOM data (forced to 'OB')
+  * Bugfix: recent versions of !PyQt don't like the QApplication reference to be stored in modules (why is that?!)
+  * Annotation/get_infos: fixed unicode error occuring with py2exe distribution only
+
+=== Possible API compatibility issues (since v2.0.8) ===
+
+  * Panel interface: added mandatory method 'configure_panel' which is called just before adding the very first tool to the manager
+  * baseplot: renamed guiqwt.baseplot.!EnhancedQwtPlot to !BasePlot
+
+=== Other changes (since v2.0.8) ===
+
+  * Cross sections/apply lut option turned on: now clipping data between 0 and LUT_MAX (0-1023), as it is done for displayed data
+  * Added RGBImageItem
+  * Scaler extension: added support for boolean arrays (e.g. for showing masks)
+  * Added !DeleteItemTool (add an entry "Remove" in plot item context menu)
+  * Plot items/introduced notion of "private items": new item methods: (is_private, set_private), new plot methods: (get_private_items, get_public_items)
+  * !BaseImageItem.get_closest_indexes (+code refactoring): added argument 'corner' -> see new method 'get_closest_index_rect'
+  * Shapes/Annotations: code cleaning/refactoring + implemented 'get_rect' method for !EllipseShape
+  * Tools deriving from !InteractiveTool: added arguments 'title', 'icon' and 'tip' to customize the tool's action
+  * !MaskedImageItem: added !ImageMaskTool to edit image's mask interactively
+  * !ShapeParam: added attributes "private" and "readonly"
+  * interfaces.IBasePlotItem: added argument 'ctrl=None' to 'move_local_point_to' (ctrl is True when 'Ctrl' button is pressed)
+  * Ellipse/Circle shapes: when pressing 'Ctrl' button while resizing the shape, its center position will remain unchanged
+  * guiqwt.plot: added classes !CurveWindow/!ImageWindow (derived from QMainWindow)
+  * Added transitional package guiqwt.transitional (regroup all Qwt5 import statements)
+  * !BasePlot: added class attributes AXIS_IDS, AXIS_NAMES (removed AXES)
+  * !BasePlot: added methods 'set_axis_limits' and 'get_axis_limits'
+  * !BasePlot: added method 'set_axis_ticks' to set axis major tick step size or maximum number of major ticks and maximum of minor ticks
+  * Cross section panels: added interface to handle the cross section curve data when updated
+  * Panel widgets are now dockable
+  * guiqwt.fit: code cleaning/refactoring + added !FitWidget (similar to !FitDialog but inherits directly from QWidget)
+  * guiqwt.fit: fit params may now be changed as often as needed (the param widgets are reconstructed then)
+  * guiqwt.fit: replaced set_fit_func and set_fit_params by set_fit_data (non sense to be setting one without the other)
+  * Added vertical/horizontal cursor plot items (+ tools + cursor info label): see builder.make.vcursor, hcursor and info_cursor
+  * Cross section panel: added button "auto refresh" (enabled by default) (e.g. may be disabled for large images)
+  * Added signal SIG_MASK_CHANGED, emitted by plot when an image mask has changed
+  * guiqwt.fit.!FitWidget/!FitDialog: now working with no fit param
+  * guiqwt.signals.SIG_ITEM_REMOVED is now emitted by plot when an item is removed from the item list panel (as before) or using the delete item tool (new)
+  * Cross section plot: added tool '!DeleteItemTool'
+  * guiqwt.builder/scaled image items (!ImageItem, RGBImageItem, ...): added option 'pixel_size' (alternative to xdata and ydata)
+  * guiqwt.fit: added option 'param_cols' to regroup N fit parameters on each row
+  * !SnapshotTool: added options to add images together (instead of the default replace behavior) + bugfixes
+  * Renamed signal_app.py to sift.py (Sifia -> Sift)
+  * Sift: added support for image processing
+  * Image levels histogram (contrast panel): replaced the 'remove first bin' feature by an intelligent Y-axis scaling
+  * guifit: reorganized layout to gain some space + added option 'size_offset' to change param label's size
+  * guiqwt.plot.!CurveDialog: added attribute 'button_box' (reference to the QDialogButtonBox instance)
+  * guiqwt.io: added open/save filedialog filters 'IMAGE_LOAD_FILTERS' (types supported by 'imagefile_to_array') and 'IMAGE_SAVE_FILTERS' (types supported by 'array_to_imagefile')
+  * guiqwt.io: added support for "I;16B" images
+  * Sift/added image operations (+ various bugfixes/enhancements): resize and rotate (90°, -90°, H/V flipping, arbritrarily rotation)
+  * Sift: added run scripts + py2exe setup script + icon
+  * !PanelWidget: added class attributes PANEL_TITLE and PANEL_ICON
+  * guiqwt.cross_section.!CrossSectionItem: added method 'process_curve_data' (called when cross section data has changed instead of calling 'set_data' directly)
+  * Tools: added 'toolbar_id' argument to all tools deriving from !CommandTool
+  * setup.py: removed the hard-coded -msse2 compile flag --> added extra options --sse2 and --sse3 as a replacement
+  * Added !ImageStatsTool: show statistics on selected image item's rectangular area
+  * builder/images: added option 'interpolation' for all image item types (default=linear)
+  * builder/images: added option 'eliminate_outliers' for some image item types (default=None)
+  * Sift: added image cropping and flat-field correction features
+  * Sift: added average operation + threshold/clip features to image processing menu
+  * !ImageMaskTool: now emits SIG_APPLIED_MASK_TOOL when mask is applied from defined shapes + other API details
+  * Sift: added support for DICOM metadata (shown as a dictionnary in a GUI-based editor)
+  * Sift: new embedded Python console with a proxy to manipulate signal/image data directly!
+ 

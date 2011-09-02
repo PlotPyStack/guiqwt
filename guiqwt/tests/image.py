@@ -18,7 +18,8 @@ from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 
 def imshow( data ):
-    win = ImageDialog(edit=False, toolbar=True, wintitle="ImageDialog test")
+    win = ImageDialog(edit=False, toolbar=True, wintitle="ImageDialog test",
+                      options=dict(xlabel='Concentration', xunit='ppm'))
     item = make.image(data)
     plot = win.get_plot()
     plot.add_item(item)

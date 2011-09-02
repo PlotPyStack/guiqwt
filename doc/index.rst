@@ -8,6 +8,7 @@ Contents:
     
     overview
     installation
+    development
     examples
     sift
     disthelpers

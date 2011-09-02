@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.io
 ---------
@@ -23,6 +25,8 @@ Reference
 .. autofunction:: array_to_imagefile
 .. autofunction:: array_to_dicomfile
 """
+
+#TODO: Implement an XML-based serialize/deserialize mechanism for plot items
 
 import sys, os.path as osp, numpy as np, os, time, re
 
@@ -115,6 +119,13 @@ def set_dynamic_range_from_mode(data, mode):
               MODE_INTENSITY_S16: np.int16,
              }
     return set_dynamic_range_from_dtype(data, dtypes[mode])
+    
+def eliminate_outliers(data, percent=2., bins=256):
+    """Eliminate data histogram outliers"""
+    hist, bin_edges = np.histogram(data, bins)
+    from guiqwt.histogram import hist_range_threshold
+    vmin, vmax = hist_range_threshold(hist, bin_edges, percent)
+    return data.clip(vmin, vmax)
 
 
 IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
@@ -269,8 +280,8 @@ def array_to_dicomfile(arr, dcmstruct, filename, dtype=None, max_range=False):
     dcmstruct.PixelRepresentation = ('u', 'i').index(infos.kind)
     dcmstruct.Rows = arr.shape[0]
     dcmstruct.Columns = arr.shape[1]
-    dcmstruct.SmallestImagePixelValue = str(arr.min())
-    dcmstruct.LargestImagePixelValue = str(arr.max())
+    dcmstruct.SmallestImagePixelValue = int(arr.min())
+    dcmstruct.LargestImagePixelValue = int(arr.max())
     if not dcmstruct.PhotometricInterpretation.startswith('MONOCHROME'):
         dcmstruct.PhotometricInterpretation = 'MONOCHROME1'
     dcmstruct.PixelData = arr.tostring()

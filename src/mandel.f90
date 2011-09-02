@@ -9,10 +9,10 @@ contains
 
 subroutine mandelbrot( orig, dx, dy, R, NX, NY, NMAX )
   complex,intent(in) :: orig, dx, dy
-  integer,intent(in) :: NX, NY, NMAX
+  integer*2,intent(in) :: NX, NY, NMAX
   integer*2,intent(inout) :: R(NX,NY)
   complex(kind=kind(0d0)) :: point, z, zn
-  integer :: i,j,k
+  integer*2 :: i,j,k
 
   point = orig
   do i=1,NX

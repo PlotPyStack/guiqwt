@@ -16,7 +16,7 @@ guiqwt.events
 The `event` module handles event management (states, event filter, ...).
 """
 
-from PyQt4.QtCore import QEvent, Qt, QObject, QPoint
+from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
 
 CursorShape = type(Qt.ArrowCursor)
 
@@ -324,7 +324,7 @@ class MenuHandler(ClickHandler):
 
 class QtDragHandler(DragHandler):
     def start_tracking(self, filter, event):
-        super(QtDragHandler, self).start_tracking(filter, event)
+        DragHandler.start_tracking(self, filter, event)
         self.emit(SIG_START_TRACKING, filter, event)
 
     def stop_notmoving(self, filter, event):
@@ -469,13 +469,16 @@ class ObjectHandler(object):
 class RectangularSelectionHandler(DragHandler):
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(RectangularSelectionHandler, self).__init__(filter, btn, mods,
-                                                        start_state)
+                                                          start_state)
+        self.avoid_null_shape = False
         
-    def set_shape(self, shape, h0, h1, setup_shape_cb=None):
+    def set_shape(self, shape, h0, h1,
+                  setup_shape_cb=None, avoid_null_shape=False):
         self.shape = shape
         self.shape_h0 = h0
         self.shape_h1 = h1
         self.setup_shape_cb = setup_shape_cb
+        self.avoid_null_shape = avoid_null_shape
 
     def start_tracking(self, filter, event):
         self.start = self.last = QPoint(event.pos())
@@ -483,6 +486,8 @@ class RectangularSelectionHandler(DragHandler):
     def start_moving(self, filter, event):
         self.shape.attach(filter.plot)
         self.shape.setZ(filter.plot.get_max_z()+1)
+        if self.avoid_null_shape:
+            self.start -= QPoint(1, 1)
         self.shape.move_local_point_to(self.shape_h0, self.start)
         self.shape.move_local_point_to(self.shape_h1, event.pos())
         self.start_moving_action(filter, event)

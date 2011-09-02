@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.curve
 ------------
@@ -100,9 +102,10 @@ Reference
 
 import sys, numpy as np
 
-from PyQt4.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                         QToolBar, QMessageBox, QBrush, QColor, QPen, QPolygonF)
-from PyQt4.QtCore import Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF, QLine
+from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
+                              QToolBar, QMessageBox, QBrush, QColor, QPen, QPolygonF)
+from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
+                               QLine)
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
@@ -233,7 +236,7 @@ class GridItem(QwtPlotGrid):
     
     def attach(self, plot):
         """Reimplemented to update plot canvas background"""
-        super(GridItem, self).attach(plot)
+        QwtPlotGrid.attach(self,plot)
         self.update_params()
 
     def set_readonly(self, state):
@@ -332,6 +335,27 @@ class CurveItem(QwtPlotCurve):
         self._x = None
         self._y = None
         self.update_params()
+        
+    def _get_visible_axis_min(self, axis_id, axis_data):
+        """Return axis minimum excluding zero and negative values when
+        corresponding plot axis scale is logarithmic"""
+        if self.plot().get_axis_scale(axis_id) == 'log':
+            return axis_data[axis_data > 0].min()
+        else:
+            return axis_data.min()
+        
+    def boundingRect(self):
+        """Return the bounding rectangle of the data"""
+        plot = self.plot()
+        if plot is not None and 'log' in (plot.get_axis_scale(self.xAxis()),
+                                          plot.get_axis_scale(self.yAxis())):
+            x, y = self._x, self._y
+            xf, yf = x[np.isfinite(x)], y[np.isfinite(y)]
+            xmin = self._get_visible_axis_min(self.xAxis(), xf)
+            ymin = self._get_visible_axis_min(self.yAxis(), yf)
+            return QRectF(xmin, ymin, xf.max()-xmin, yf.max()-ymin)
+        else:
+            return QwtPlotCurve.boundingRect(self)
         
     def types(self):
         return (ICurveItemType, ITrackableItemType, ISerializableType)
@@ -477,7 +501,7 @@ class CurveItem(QwtPlotCurve):
 
     def get_coordinates_label(self, xc, yc):
         title = self.title().text()
-        return "%s:<br>x = %f<br>y = %f" % (title, xc, yc)
+        return "%s:<br>x = %g<br>y = %g" % (title, xc, yc)
 
     def get_closest_x(self, xc):
         # We assume X is sorted, otherwise we'd need :
@@ -773,7 +797,7 @@ class ErrorBarCurveItem(CurveItem):
         
     def unselect(self):
         """Unselect item"""
-        super(ErrorBarCurveItem, self).unselect()
+        CurveItem.unselect(self)
         self.errorbarparam.update_curve(self)
 
     def get_data(self):
@@ -851,9 +875,18 @@ class ErrorBarCurveItem(CurveItem):
         """Return the bounding rectangle of the data, error bars included"""
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         if xmin is None or xmin.size == 0:
-            return super(ErrorBarCurveItem, self).boundingRect()
-        return QRectF( xmin.min(), ymin.min(),
-                       xmax.max()-xmin.min(), ymax.max()-ymin.min() )
+            return CurveItem.boundingRect(self)
+        plot = self.plot()
+        xminf, yminf = xmin[np.isfinite(xmin)], ymin[np.isfinite(ymin)]
+        xmaxf, ymaxf = xmax[np.isfinite(xmax)], ymax[np.isfinite(ymax)]
+        if plot is not None and 'log' in (plot.get_axis_scale(self.xAxis()),
+                                          plot.get_axis_scale(self.yAxis())):
+            xmin = self._get_visible_axis_min(self.xAxis(), xminf)
+            ymin = self._get_visible_axis_min(self.yAxis(), yminf)
+        else:
+            xmin = xminf.min()
+            ymin = yminf.min()
+        return QRectF(xmin, ymin, xmaxf.max()-xmin, ymaxf.max()-ymin)
         
     def draw(self, painter, xMap, yMap, canvasRect):
         x = self._x
@@ -925,16 +958,16 @@ class ErrorBarCurveItem(CurveItem):
         
     def update_params(self):
         self.errorbarparam.update_curve(self)
-        super(ErrorBarCurveItem, self).update_params()
+        CurveItem.update_params(self)
 
     def get_item_parameters(self, itemparams):
-        super(ErrorBarCurveItem, self).get_item_parameters(itemparams)
+        CurveItem.get_item_parameters(self, itemparams)
         itemparams.add("ErrorBarParam", self, self.errorbarparam)
     
     def set_item_parameters(self, itemparams):
         update_dataset(self.errorbarparam, itemparams.get("ErrorBarParam"),
                        visible_only=True)
-        super(ErrorBarCurveItem, self).set_item_parameters(itemparams)
+        CurveItem.set_item_parameters(self, itemparams)
 
 assert_interfaces_valid( ErrorBarCurveItem )
 
@@ -1040,8 +1073,7 @@ class ItemListWidget(QListWidget):
                                         AnnotatedPoint, AnnotatedSegment)
         from guiqwt.shapes import (SegmentShape, RectangleShape, EllipseShape,
                                    PointShape, PolygonShape, Axes,
-                                   XRangeSelection, VerticalCursor,
-                                   HorizontalCursor)
+                                   XRangeSelection)
         from guiqwt.image import (BaseImageItem, Histogram2DItem,
                                   ImageFilterItem)
         from guiqwt.histogram import HistogramItem
@@ -1066,8 +1098,6 @@ class ItemListWidget(QListWidget):
                             (Axes, 'gtaxes.png'),
                             (Marker, 'marker.png'),
                             (XRangeSelection, 'xrange.png'),
-                            (VerticalCursor, 'vcursor.png'),
-                            (HorizontalCursor, 'hcursor.png'),
                             (PolygonShape, 'freeform.png'),
                             (Histogram2DItem, 'histogram2d.png'),
                             (ImageFilterItem, 'funct.png'),
@@ -1204,18 +1234,22 @@ class CurvePlot(BasePlot):
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
         * ylabel: (left axis title, right axis title) or left axis title only
+        * xunit: (bottom axis unit, top axis unit) or bottom axis unit only
+        * yunit: (left axis unit, right axis unit) or left axis unit only
         * gridparam: GridParam instance
         * axes_synchronised: keep all x and y axes synchronised when zomming or
                              panning
     """
     AUTOSCALE_TYPES = (CurveItem,PolygonMapItem)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
-                 gridparam=None, section="plot", axes_synchronised=False):
+                 xunit=None, yunit=None, gridparam=None,
+                 section="plot", axes_synchronised=False):
         super(CurvePlot, self).__init__(parent, section)
 
         self.axes_reverse = [False]*4
         
-        self.set_titles(title=title, xlabel=xlabel, ylabel=ylabel)
+        self.set_titles(title=title, xlabel=xlabel, ylabel=ylabel,
+                        xunit=xunit, yunit=yunit)
                 
         self.antialiased = False
 
@@ -1268,18 +1302,18 @@ class CurvePlot(BasePlot):
         return (self.transform(plot_item.xAxis(), x),
                 self.transform(plot_item.yAxis(), y))
 
-    def on_active_curve(self, marker, x, y):
+    def on_active_curve(self, x, y):
         curve = self.get_last_active_item(ITrackableItemType)
         if curve:
             x, y = curve.get_closest_coordinates(x, y)
         return x, y
     
-    def get_coordinates_str(self, marker, x, y):
+    def get_coordinates_str(self, x, y):
         title = _("Grid")
         item = self.get_last_active_item(ITrackableItemType)
         if item:
             return item.get_coordinates_label(x, y)
-        return "<b>%s</b><br>x = %f<br>y = %f" % (title, x, y)
+        return "<b>%s</b><br>x = %g<br>y = %g" % (title, x, y)
 
     def set_marker_axes(self):
         curve = self.get_last_active_item(ITrackableItemType)
@@ -1335,16 +1369,15 @@ class CurvePlot(BasePlot):
         self.setAutoReplot(False)
         axes_to_update = self.get_axes_to_update(dx, dy)
         
-        for (x1, x0, _, w), k in axes_to_update:
-            axis = self.axisScaleDiv(k)
-            # pour les axes logs on bouge lbound et hbound relativement
-            # à l'inverse du delta aux bords de l'axe
-            # pour des axes lineaires pos0 et pos1 doivent être égaux
-            pos0 = self.invTransform(k, x1-x0)-self.invTransform(k, 0)
-            pos1 = self.invTransform(k, x1-x0+w)-self.invTransform(k, w)
-            lbound = axis.lowerBound()
-            hbound = axis.upperBound()
-            self.setAxisScale(k, lbound-pos0, hbound-pos1)
+        for (x1, x0, _start, _width), axis_id in axes_to_update:
+            lbound, hbound = self.get_axis_limits(axis_id)
+            i_lbound = self.transform(axis_id, lbound)
+            i_hbound = self.transform(axis_id, hbound)
+            delta = x1-x0
+            vmin = self.invTransform(axis_id, i_lbound-delta)
+            vmax = self.invTransform(axis_id, i_hbound-delta)
+            self.set_axis_limits(axis_id, vmin, vmax)
+            
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise
@@ -1357,27 +1390,43 @@ class CurvePlot(BasePlot):
         dx, dy are tuples composed of (initial pos, dest pos)
         We try to keep initial pos fixed on the canvas as the scale changes
         """
+        # See guiqwt/events.py where dx and dy are defined like this:
+        #   dx = (pos.x(), self.last.x(), self.start.x(), rct.width())
+        #   dy = (pos.y(), self.last.y(), self.start.y(), rct.height())
+        # where:
+        #   * self.last is the mouse position seen during last event
+        #   * self.start is the first mouse position (here, this is the 
+        #     coordinate of the point which is at the center of the zoomed area)
+        #   * rct is the plot rect contents
+        #   * pos is the current mouse cursor position
         auto = self.autoReplot()
         self.setAutoReplot(False)
-        dx = (-1,) + dx
-        dy = (1,) + dy
+        dx = (-1,) + dx # adding direction to tuple dx
+        dy = (1,) + dy  # adding direction to tuple dy
         if lock_aspect_ratio:
-            sens, x1, x0, s, w = dx
-            F = 1+3*sens*float(x1-x0)/w
+            direction, x1, x0, start, width = dx
+            F = 1+3*direction*float(x1-x0)/width
         axes_to_update = self.get_axes_to_update(dx, dy)
-                                    
-        for (sens, x1, x0, s, w), k in axes_to_update:
-            axis = self.axisScaleDiv(k)
-            lbound = axis.lowerBound()
-            hbound = axis.upperBound()
-            orig = self.invTransform(k, s)
-            rng = float(hbound-lbound)
+        
+        for (direction, x1, x0, start, width), axis_id in axes_to_update:
+            lbound, hbound = self.get_axis_limits(axis_id)
             if not lock_aspect_ratio:
-                F = 1+3*sens*float(x1-x0)/w
-            l_new = orig-F*(orig-lbound)
-            if F*rng == 0:
+                F = 1+3*direction*float(x1-x0)/width
+            if F*(hbound-lbound) == 0:
                 continue
-            self.setAxisScale(k, l_new, l_new + F*rng)
+            if self.get_axis_scale(axis_id) == 'lin':
+                orig = self.invTransform(axis_id, start)
+                vmin = orig-F*(orig-lbound)
+                vmax = orig+F*(hbound-orig)
+            else: # log scale
+                i_lbound = self.transform(axis_id, lbound)
+                i_hbound = self.transform(axis_id, hbound)
+                imin = start - F*(start-i_lbound)
+                imax = start + F*(i_hbound-start)
+                vmin = self.invTransform(axis_id, imin)
+                vmax = self.invTransform(axis_id, imax)
+            self.set_axis_limits(axis_id, vmin, vmax)
+
         self.setAutoReplot(auto)
         self.replot()
         # the signal MUST be emitted after replot, otherwise
@@ -1413,7 +1462,7 @@ class CurvePlot(BasePlot):
         """
         if isinstance(item, QwtPlotCurve):
             item.setRenderHint(QwtPlotItem.RenderAntialiased, self.antialiased)
-        super(CurvePlot,self).add_item(item, z)
+        BasePlot.add_item(self, item, z)
 
     def del_all_items(self, except_grid=True):
         """Del all items, eventually (default) except grid"""
@@ -1425,7 +1474,7 @@ class CurvePlot(BasePlot):
         """Override base set_active_item to change the grid's
         axes according to the selected item"""
         old_active = self.active_item
-        super(CurvePlot, self).set_active_item(item)
+        BasePlot.set_active_item(self, item)
         if item is not None and old_active is not item:
             self.grid.setAxis(item.xAxis(), item.yAxis())
 
@@ -1434,7 +1483,7 @@ class CurvePlot(BasePlot):
             self.grid.gridparam.update_param(self.grid)
             itemparams.add("GridParam", self, self.grid.gridparam)
         else:
-            super(CurvePlot, self).get_plot_parameters(key, itemparams)
+            BasePlot.get_plot_parameters(self, key, itemparams)
 
     def set_item_parameters(self, itemparams):
         # Grid style
@@ -1442,7 +1491,7 @@ class CurvePlot(BasePlot):
         if dataset is not None:
             dataset.update_grid(self.grid)
             self.grid.gridparam = dataset
-        super(CurvePlot, self).set_item_parameters(itemparams)
+        BasePlot.set_item_parameters(self, itemparams)
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
@@ -1472,10 +1521,14 @@ class CurvePlot(BasePlot):
             if vmin == vmax: # same behavior as MATLAB
                 vmin -= 1
                 vmax += 1
-            else:
+            elif self.get_axis_scale(axis_id) == 'lin':
                 dv = vmax-vmin
                 vmin -= .002*dv
                 vmax += .002*dv
+            elif vmin > 0 and vmax > 0: # log scale
+                dv = np.log10(vmax)-np.log10(vmin)
+                vmin = 10**(np.log10(vmin)-.002*dv)
+                vmax = 10**(np.log10(vmax)+.002*dv)
             self.set_axis_limits(axis_id, vmin, vmax)
         if replot:
             self.replot()
@@ -1484,11 +1537,10 @@ class CurvePlot(BasePlot):
         """Set axis limits (minimum and maximum values)"""
         axis_id = self.get_axis_id(axis_id)
         vmin, vmax = sorted([vmin, vmax])
-        dv = vmax-vmin
         if self.get_axis_direction(axis_id):
-            self.setAxisScale(axis_id, vmin+dv, vmin, stepsize)
+            BasePlot.set_axis_limits(self, axis_id, vmax, vmin, stepsize)
         else:
-            self.setAxisScale(axis_id, vmin, vmin+dv, stepsize)
+            BasePlot.set_axis_limits(self, axis_id, vmin, vmax, stepsize)
 
     #---- Public API -----------------------------------------------------------
     def get_axis_direction(self, axis_id):
@@ -1521,7 +1573,8 @@ class CurvePlot(BasePlot):
             self.updateAxes()
             self.emit(SIG_AXIS_DIRECTION_CHANGED, self, axis_id)
             
-    def set_titles(self, title=None, xlabel=None, ylabel=None):
+    def set_titles(self, title=None, xlabel=None, ylabel=None,
+                   xunit=None, yunit=None):
         """
         Set plot and axes titles at once
             * title: plot title
@@ -1529,6 +1582,10 @@ class CurvePlot(BasePlot):
               or bottom axis title only
             * ylabel: (left axis title, right axis title) 
               or left axis title only
+            * xunit: (bottom axis unit, top axis unit) 
+              or bottom axis unit only
+            * yunit: (left axis unit, right axis unit) 
+              or left axis unit only
         """
         if title is not None:
             self.set_title(title)
@@ -1536,14 +1593,26 @@ class CurvePlot(BasePlot):
             if isinstance(xlabel, basestring):
                 xlabel = (xlabel, "")
             for label, axis in zip(xlabel, ("bottom", "top")):
-                if label:
+                if label is not None:
                     self.set_axis_title(axis, label)
         if ylabel is not None:
             if isinstance(ylabel, basestring):
                 ylabel = (ylabel, "")
             for label, axis in zip(ylabel, ("left", "right")):
-                if label:
+                if label is not None:
                     self.set_axis_title(axis, label)
+        if xunit is not None:
+            if isinstance(xunit, basestring):
+                xunit = (xunit, "")
+            for unit, axis in zip(xunit, ("bottom", "top")):
+                if unit is not None:
+                    self.set_axis_unit(axis, unit)
+        if yunit is not None:
+            if isinstance(yunit, basestring):
+                yunit = (yunit, "")
+            for unit, axis in zip(yunit, ("left", "right")):
+                if unit is not None:
+                    self.set_axis_unit(axis, unit)
     
     def set_pointer(self, pointer_type):
         """

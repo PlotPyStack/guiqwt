@@ -11,7 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
 
-from PyQt4.QtCore import QRectF, QPointF
+from guidata.qt.QtCore import QRectF, QPointF
 
 from guiqwt.config import _
 from guiqwt.plot import ImageDialog
@@ -69,8 +69,8 @@ class MandelItem(RawImageItem):
         
         srcRect = (0, 0, NX, NY)
         x1, y1, x2, y2 = canvasRect.getCoords()
-        super(MandelItem, self).draw_image(painter, canvasRect, srcRect,
-                                           (x1, y1, x2, y2), xMap, yMap)
+        RawImageItem.draw_image(self, painter, canvasRect,
+                                srcRect, (x1, y1, x2, y2), xMap, yMap)
 
 def mandel():
     win = ImageDialog(edit=True, toolbar=True, wintitle="Mandelbrot",

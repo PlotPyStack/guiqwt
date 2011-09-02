@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.fit
 ----------
@@ -41,15 +43,16 @@ Reference
 
 from __future__ import division
 
-from PyQt4.QtGui import (QGridLayout, QLabel, QSlider, QPushButton, QLineEdit,
-                         QDialog, QVBoxLayout, QHBoxLayout, QWidget,
-                         QDialogButtonBox)
-from PyQt4.QtCore import Qt, SIGNAL, QObject, SLOT
+from guidata.qt.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
+                              QLineEdit, QDialog, QVBoxLayout, QHBoxLayout,
+                              QWidget, QDialogButtonBox)
+from guidata.qt.QtCore import Qt, SIGNAL, QObject, SLOT
 
 import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)
 
 import guidata
+from guidata.utils import update_dataset, restore_dataset
 from guidata.qthelpers import create_groupbox
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
@@ -83,7 +86,7 @@ class AutoFitParam(DataSet):
                       help=_("for cg, bfgs. inf is max, -inf is min"))
 
 
-class FitParam(DataSet):
+class FitParamDataSet(DataSet):
     name = StringItem(_("Name"))
     value = FloatItem(_("Value"), default=0.0)
     min = FloatItem(_("Min"), default=-1.0)
@@ -91,10 +94,11 @@ class FitParam(DataSet):
     steps = IntItem(_("Steps"), default=5000)
     format = StringItem(_("Format"), default="%.3f").set_pos(col=1)
     logscale = BoolItem(_("Logarithmic"), _("Scale"))
+    unit = StringItem(_("Unit"), default="").set_pos(col=1)
 
+class FitParam(object):
     def __init__(self, name, value, min, max, logscale=False,
-                 steps=5000, format='%.3f', size_offset=0):
-        DataSet.__init__(self, title=_("Curve fitting parameter"))
+                 steps=5000, format='%.3f', size_offset=0, unit=''):
         self.name = name
         self.value = value
         self.min = min
@@ -102,23 +106,29 @@ class FitParam(DataSet):
         self.logscale = logscale
         self.steps = steps
         self.format = format
-        self.label = None
+        self.unit = unit
+        self.prefix_label = None
         self.lineedit = None
+        self.unit_label = None
         self.slider = None
         self.button = None
+        self._widgets = []
         self._size_offset = size_offset
+        self._refresh_callback = None
+        self.dataset = FitParamDataSet(title=_("Curve fitting parameter"))
         
     def copy(self):
         """Return a copy of this fitparam"""
-        return FitParam(self.name, self.value, self.min, self.max,
-                        self.logscale, self.steps, self.format,
-                        self._size_offset)
+        return self.__class__(self.name, self.value, self.min, self.max,
+                              self.logscale, self.steps, self.format,
+                              self._size_offset, self.unit)
         
-    def create_widgets(self, parent):
-        self.label = QLabel()
-        font = self.label.font()
+    def create_widgets(self, parent, refresh_callback):
+        self._refresh_callback = refresh_callback
+        self.prefix_label = QLabel()
+        font = self.prefix_label.font()
         font.setPointSize(font.pointSize()+self._size_offset)
-        self.label.setFont(font)
+        self.prefix_label.setFont(font)
         self.button = QPushButton()
         self.button.setIcon(get_icon('settings.png'))
         self.button.setToolTip(
@@ -128,37 +138,46 @@ class FitParam(DataSet):
         self.lineedit = QLineEdit()
         QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
                         self.line_editing_finished)
+        self.unit_label = QLabel(self.unit)
         self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setRange(0, self.steps-1)
         QObject.connect(self.slider, SIGNAL("valueChanged(int)"),
                         self.slider_value_changed)
-        self.set_text()
-        self.update()
-        return self.get_widgets()
+        self.update(refresh=False)
+        self.add_widgets([self.prefix_label, self.lineedit, self.unit_label,
+                          self.slider, self.button])
+        
+    def add_widgets(self, widgets):
+        self._widgets += widgets
         
     def get_widgets(self):
-        return self.label, self.lineedit, self.slider, self.button
+        return self._widgets
         
     def set_scale(self, state):
         self.logscale = state > 0
         self.update_slider_value()
         
-    def set_text(self):
+    def set_text(self, fmt=None):
         style = "<span style=\'color: #444444\'><b>%s</b></span>"
-        self.label.setText(style % self.name)
+        self.prefix_label.setText(style % self.name)
         if self.value is None:
             value_str = ''
         else:
-            value_str = self.format % self.value
+            if fmt is None:
+                fmt = self.format
+            value_str = fmt % self.value
         self.lineedit.setText(value_str)
+        self.lineedit.setDisabled(
+                            self.value == self.min and self.max == self.min)
         
     def line_editing_finished(self):
         try:
             self.value = float(self.lineedit.text())
         except ValueError:
             self.set_text()
-            self.update_slider_value()
+        self.update_slider_value()
+        self._refresh_callback()
         
     def slider_value_changed(self, int_value):
         if self.logscale:
@@ -168,12 +187,19 @@ class FitParam(DataSet):
             total_delta = self.max-self.min
             self.value = self.min+total_delta*int_value/(self.steps-1)
         self.set_text()
+        self._refresh_callback()
     
     def update_slider_value(self):
-        if self.value is None or self.min is None or self.max is None:
+        if (self.value is None or self.min is None or self.max is None):
             self.slider.setEnabled(False)
+            if self.slider.parent() and self.slider.parent().isVisible():
+                self.slider.show()
+        elif self.value == self.min and self.max == self.min:
+            self.slider.hide()
         else:
             self.slider.setEnabled(True)
+            if self.slider.parent() and self.slider.parent().isVisible():
+                self.slider.show()
             if self.logscale:
                 value_delta = max([np.log10(1+self.value-self.min), 0.])
                 total_delta = np.log10(1+self.max-self.min)
@@ -186,15 +212,22 @@ class FitParam(DataSet):
             self.slider.blockSignals(False)
 
     def edit_param(self, parent):
-        if self.edit(parent=parent):
+        update_dataset(self.dataset, self)
+        if self.dataset.edit(parent=parent):
+            restore_dataset(self.dataset, self)
+            if self.value > self.max:
+                self.max = self.value
+            if self.value < self.min:
+                self.min = self.value
             self.update()
 
-    def update(self):
+    def update(self, refresh=True):
+        self.unit_label.setText(self.unit)
         self.slider.setRange(0, self.steps-1)
         self.update_slider_value()
         self.set_text()
-        # Force the QLineEdit to emit the editingFinished() signal
-        self.lineedit.emit(SIGNAL('editingFinished()'))
+        if refresh:
+            self._refresh_callback()
 
 
 def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
@@ -202,21 +235,17 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
     row_nb = 0
     col_nb = 0
     for i, param in enumerate(fitparams):
-        widgets = param.create_widgets(layout.parent())
+        param.create_widgets(layout.parent(), refresh_callback)
+        widgets = param.get_widgets()
         w_colums = len(widgets)+1
-        label, lineedit, slider, button = widgets
-        QObject.connect(slider, SIGNAL("valueChanged(int)"), refresh_callback)
-        QObject.connect(lineedit, SIGNAL("editingFinished()"), refresh_callback)
-        row_contents += [(label,    row_nb, 0+col_nb*w_colums),
-                         (slider,   row_nb, 1+col_nb*w_colums),
-                         (lineedit, row_nb, 2+col_nb*w_colums),
-                         (button,   row_nb, 3+col_nb*w_colums),]
+        row_contents += [(widget, row_nb, j+col_nb*w_colums)
+                         for j, widget in enumerate(widgets)]
         col_nb += 1
         if col_nb == param_cols:
             row_nb += 1
             col_nb = 0
-            for widget, row, col in row_contents:
-                layout.addWidget(widget, row, col)
+    for widget, row, col in row_contents:
+        layout.addWidget(widget, row, col)
     if fitparams:
         for col_nb in range(param_cols):
             layout.setColumnStretch(1+col_nb*w_colums, 5)
@@ -258,6 +287,11 @@ class FitWidgetMixin(CurveWidgetMixin):
         
         self.refresh()
         
+    # QWidget API --------------------------------------------------------------
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+        self.get_plot().replot()
+        
     # CurveWidgetMixin API -----------------------------------------------------
     def setup_widget_layout(self):
         self.fit_layout = QHBoxLayout()
@@ -276,7 +310,7 @@ class FitWidgetMixin(CurveWidgetMixin):
         self.setLayout(vlayout)
         
     def create_plot(self, options):
-        super(FitWidgetMixin, self).create_plot(options)
+        CurveWidgetMixin.create_plot(self, options)
         for plot in self.get_plots():
             self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
         

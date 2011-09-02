@@ -9,9 +9,10 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
-                         QFileDialog)
-from PyQt4.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt, SIGNAL
+from guidata.qt.QtGui import QMainWindow, QMessageBox, QSplitter, QListWidget
+from guidata.qt.QtCore import (QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt,
+                               SIGNAL)
+from guidata.qt.compat import getopenfilename
 
 import sys, platform
 import numpy as np
@@ -228,8 +229,8 @@ class MainWindow(QMainWindow):
         """Open image file"""
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
-        filename = QFileDialog.getOpenFileName(self, _("Open"), "",
-                                               IMAGE_LOAD_FILTERS)
+        filename, _filter = getopenfilename(self, _("Open"), "",
+                                            IMAGE_LOAD_FILTERS)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

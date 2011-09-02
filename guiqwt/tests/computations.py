@@ -32,7 +32,7 @@ def test():
 
     curve = make.curve(x, y, "ab", "b")
     range = make.range(-2, 2)
-    disp1 = make.computation(range, "BL", "trapz=%f",
+    disp1 = make.computation(range, "BL", "trapz=%g",
                              curve, lambda x,y: trapz(y,x))
     disp2 = make.computations(range, "TL",
                               [(curve, "min=%.5f", lambda x,y: y.min()),

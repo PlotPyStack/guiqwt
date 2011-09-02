@@ -15,48 +15,76 @@ signals at connect and emit sites.
 
 Signals available:
     :py:data:`guiqwt.signals.SIG_ITEM_MOVED`
-        Emitted by plot when an IBasePlotItem-like object was moved 
-        (args: x0, y0, x1, y1)
+        Emitted by plot when an IBasePlotItem-like object was moved from 
+        (x0, y0) to (x1, y1)
+        
+        Arguments: item object, x0, y0, x1, y1
     :py:data:`guiqwt.signals.SIG_MARKER_CHANGED`
-        Emitted by plot when a shapes.Marker position changes
+        Emitted by plot when a `guiqwt.shapes.Marker` position changes
+        
+        Arguments: `guiqwt.shapes.Marker` object
     :py:data:`guiqwt.signals.SIG_AXES_CHANGED`
-        Emitted by plot when a shapes.Axes position (or angle) changes
+        Emitted by plot when a `guiqwt.shapes.Axes` position (or angle) changes
+        
+        Arguments: `guiqwt.shapes.Axes` object
     :py:data:`guiqwt.signals.SIG_ANNOTATION_CHANGED`
-        Emitted by plot when an annotation.AnnotatedShape position changes
+        Emitted by plot when an annotations.AnnotatedShape position changes
+        
+        Arguments: annotation item
     :py:data:`guiqwt.signals.SIG_RANGE_CHANGED`
         Emitted by plot when a shapes.XRangeSelection range changes
-    :py:data:`guiqwt.signals.SIG_CURSOR_MOVED`
-        Emitted by plot when a shapes.VerticalCursor or shapes.HorizontalCursor 
-        position changes
+        
+        Arguments: range object, lower_bound, upper_bound
     :py:data:`guiqwt.signals.SIG_ITEMS_CHANGED`
         Emitted by plot when item list has changed (item removed, added, ...)
+        
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_ACTIVE_ITEM_CHANGED`
         Emitted by plot when selected item has changed
+        
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_ITEM_REMOVED`
         Emitted by plot when an item was deleted from the itemlist or using 
         the delete item tool
+        
+        Arguments: removed item
     :py:data:`guiqwt.signals.SIG_ITEM_SELECTION_CHANGED`
         Emitted by plot when an item is selected
+
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_PLOT_LABELS_CHANGED`
         Emitted (by plot) when plot's title or any axis label has changed
+        
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_AXIS_DIRECTION_CHANGED`
         Emitted (by plot) when any plot axis direction has changed
+        
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_VOI_CHANGED`
         Emitted by "contrast" panel's histogram when the lut range of some items
         changed (for now, this signal is for guiqwt.histogram module's internal 
         use only - the 'public' counterpart of this signal is SIG_LUT_CHANGED, 
         see below)
+        
     :py:data:`guiqwt.signals.SIG_LUT_CHANGED`
         Emitted by plot when LUT has been changed by the user
+
+        Arguments: plot
     :py:data:`guiqwt.signals.SIG_MASK_CHANGED`
         Emitted by plot when image mask has changed
+
+        Arguments: MaskedImageItem object
     :py:data:`guiqwt.signals.SIG_VISIBILITY_CHANGED`
         Emitted for example by panels when their visibility has changed
+
+        Arguments: state (boolean)
     :py:data:`guiqwt.signals.SIG_VALIDATE_TOOL`
         Emitted by an interactive tool to notify that the tool has just been 
         "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
+
+        Arguments: filter
 """
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtCore import SIGNAL
 
 # Emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
 SIG_ITEM_MOVED = SIGNAL("item_moved(PyQt_PyObject,double,double,double,double)")
@@ -72,9 +100,6 @@ SIG_ANNOTATION_CHANGED = SIGNAL("annotation_changed(PyQt_PyObject)")
 
 # Emitted by plot when the a shapes.XRangeSelection range changes
 SIG_RANGE_CHANGED = SIGNAL("range_changed(PyQt_PyObject,double,double)")
-
-# Emitted by plot when a shapes.VerticalCursor/HorizontalCursor position changes
-SIG_CURSOR_MOVED = SIGNAL("cursor_moved(PyQt_PyObject,double)")
 
 # Emitted by plot when item list has changed (item removed, added, ...)
 SIG_ITEMS_CHANGED = SIGNAL('items_changed(PyQt_PyObject)')
@@ -113,6 +138,9 @@ SIG_VISIBILITY_CHANGED = SIGNAL("visibility_changed(bool)")
 # Emitted by an interactive tool to notify that the tool has just been 
 # "validated", i.e. <ENTER>, <RETURN> or <SPACE> was pressed
 SIG_VALIDATE_TOOL = SIGNAL("validate_tool")
+
+# Emitted by an interactive tool to notify that it is finished doing its job
+SIG_TOOL_JOB_FINISHED = SIGNAL("tool_job_finished")
 
 # Emitted by cross section plot when cross section curve data has changed
 SIG_CS_CURVE_CHANGED = SIGNAL("cs_curve_changed(PyQt_PyObject)")

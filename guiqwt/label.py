@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.label
 ------------
@@ -44,8 +46,8 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import QPen, QColor, QTextDocument
-from PyQt4.QtCore import QRectF
+from guidata.qt.QtGui import QPen, QColor, QTextDocument
+from guidata.qt.QtCore import QRectF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -108,7 +110,7 @@ class AbstractLabelItem(QwtPlotItem):
     def types(self):
         return (IShapeItemType,)
     
-    def set_text_style(self, font, color):
+    def set_text_style(self, font=None, color=None):
         raise NotImplementedError
 
     def get_top_left(self, xMap, yMap, canvasRect):
@@ -286,7 +288,7 @@ class LabelItem(AbstractLabelItem):
     def __reduce__(self):
         return (self.__class__, (self.text_string, self.labelparam))
 
-    def set_position(self, x, y):
+    def set_pos(self, x, y):
         self.G = x, y
         self.labelparam.xg, self.labelparam.yg = x, y
         
@@ -298,9 +300,11 @@ class LabelItem(AbstractLabelItem):
             self.text_string = text
         self.text.setHtml("<div>%s</div>" % self.text_string)
         
-    def set_text_style(self, font, color):
-        self.text.setDefaultFont(font)
-        self.text.setDefaultStyleSheet('div { color: %s; }' % color)
+    def set_text_style(self, font=None, color=None):
+        if font is not None:
+            self.text.setDefaultFont(font)
+        if color is not None:
+            self.text.setDefaultStyleSheet('div { color: %s; }' % color)
         self.set_text()
 
     def get_text_rect(self):
@@ -376,9 +380,11 @@ class LegendBoxItem(AbstractLabelItem):
         self.sizes = TW, TH, width, height
         return self.sizes
 
-    def set_text_style(self, font, color):
-        self.font = font
-        self.color = color
+    def set_text_style(self, font=None, color=None):
+        if font is not None:
+            self.font = font
+        if color is not None:
+            self.color = color
 
     def get_text_rect(self):
         items = self.get_legend_items()
@@ -453,16 +459,6 @@ class ObjectInfo(object):
     def get_text(self):
         return u""
 
-class CursorComputation(ObjectInfo):
-    def __init__(self, label, cursor, function):
-        self.label = unicode(label)
-        self.cursor = cursor
-        self.func = function
-
-    def get_text(self):
-        pos = self.cursor.get_pos()
-        return self.label % self.func(pos)
-
 class RangeComputation(ObjectInfo):
     def __init__(self, label, curve, range, function):
         self.label = unicode(label)
@@ -475,17 +471,22 @@ class RangeComputation(ObjectInfo):
 
     def get_text(self):
         x0, x1 = self.range.get_range()
-        X, Y = self.curve.get_data()
+        data = self.curve.get_data()
+        X = data[0]
         i0 = X.searchsorted(x0)
         i1 = X.searchsorted(x1)
-        if i0 == i1:
-            from numpy import NaN
-            res = NaN
-        else:
-            if i0 > i1:
-                i0, i1 = i1, i0
-            res = self.func(X[i0:i1], Y[i0:i1])
-        return self.label % res
+        if i0 > i1:
+            i0, i1 = i1, i0
+        vectors = []
+        for vector in data:
+            if vector is None:
+                vectors.append(None)
+            elif i0 == i1:
+                import numpy as np
+                vectors.append(np.array([np.NaN]))
+            else:
+                vectors.append(vector[i0:i1])
+        return self.label % self.func(*vectors)
 
 class RangeComputation2d(ObjectInfo):
     def __init__(self, label, image, rect, function):
@@ -514,7 +515,11 @@ class DataInfoLabel(LabelItem):
         return (self.__class__, (self.labelparam, self.infos))
 
     def update_text(self):
-        text = []
+        title = self.labelparam.label
+        if title:
+            text = ["<b>%s</b>" % title]
+        else:
+            text = []
         for info in self.infos:
             text.append(info.get_text())
         self.set_text( u"<br/>".join(text) )

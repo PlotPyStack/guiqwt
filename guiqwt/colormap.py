@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.colormap
 ---------------
@@ -13,7 +15,7 @@ The `colormap` module contains definition of common colormaps and tools
 to manipulate and create them
 """
 
-from PyQt4.QtGui import QColor, QIcon, QPixmap
+from guidata.qt.QtGui import QColor, QIcon, QPixmap
 
 from numpy import array, uint8, linspace, zeros, newaxis
 

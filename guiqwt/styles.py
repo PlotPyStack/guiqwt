@@ -5,6 +5,8 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+# pylint: disable=C0103
+
 """
 guiqwt.styles
 -------------
@@ -100,8 +102,9 @@ Reference
 
 import numpy as np
 
-from PyQt4.QtGui import QPen, QBrush, QColor, QFont, QFontDialog, QTransform
-from PyQt4.QtCore import Qt, QSize, QPointF
+from guidata.qt.QtGui import (QPen, QBrush, QColor, QFont, QFontDialog,
+                              QTransform)
+from guidata.qt.QtCore import Qt, QSize, QPointF
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,
@@ -189,9 +192,10 @@ class ItemParameters(object):
             self.update(plot)
 
 
-LINESTYLES = {"-" : "SolidLine",
-              "--": "DashLine",
-              ":": "DotLine",
+LINESTYLES = {
+              "-"  : "SolidLine",
+              "--" : "DashLine",
+              ":"  : "DotLine",
               "-." : "DashDotLine",
               }
 COLORS = {
@@ -220,6 +224,13 @@ MARKERS = {
           "<" : QwtSymbol.LTriangle,
           "h" : QwtSymbol.Star2,
           }
+MARKERSTYLES = {
+                None: "NoLine",
+                "-" : "HLine",
+                "|" : "VLine",
+                "+" : "Cross",
+                }
+
 
 def style_generator(color_keys="bgrcmykG"):
     """Cycling through curve styles"""
@@ -312,22 +323,19 @@ BRUSHSTYLE_CHOICES = [
 #    ("TexturePattern", _("Custom pattern (see QBrush::setTexture())"), "none.png"),
 ]
 
+MARKERSTYLE_CHOICES = [("NoLine", _("None"), "none.png"),
+                       ("HLine",  _("Horizontal"), "horiz_marker.png"),
+                       ("VLine",  _("Vertical"), "vert_marker.png"),
+                       ("Cross",  _("Cross"), "cross_marker.png"),
+                       ]
+
 MARKER_NAME = build_reverse_map(MARKER_CHOICES, QwtSymbol)
-#for _name in dir(QwtSymbol):
-#    _val = getattr(QwtSymbol, _name)
-#    if isinstance(_val, QwtSymbol.Style):
-#        MARKER_NAME[_val] = _name
-
 CURVESTYLE_NAME = build_reverse_map(CURVESTYLE_CHOICES, QwtPlotCurve)
-
 CURVETYPE_NAME = build_reverse_map(CURVETYPE_CHOICES, QwtPlotCurve)
-
 LINESTYLE_NAME = build_reverse_map(LINESTYLE_CHOICES, Qt)
-#for _name in dir(Qt):
-#    _val = getattr(Qt, _name)
-#    if isinstance(_val, Qt.PenStyle):
-#        LINESTYLE_NAME[_val] = _name
 BRUSHSTYLE_NAME = build_reverse_map(BRUSHSTYLE_CHOICES, Qt)
+MARKERSTYLE_NAME = build_reverse_map(MARKERSTYLE_CHOICES, QwtPlotMarker)
+
 
 # ===================================================
 # Common font parameters
@@ -578,6 +586,7 @@ class GridParam(DataSet):
 # ===================================================
 class AxeStyleParam(DataSet):
     title = StringItem(_("Title"), default=u"")
+    unit = StringItem(_("Unit"), default=u"")
     color = ColorItem(_("Color"), default="black").set_pos(col=1)
     title_font = FontItem(_("Title font"))
     ticks_font = FontItem(_("Values font"))
@@ -669,48 +678,10 @@ class ImageAxesParam(DataSet):
         item.set_lut_range([self.zmin, self.zmax])
         plot.update_colormap_axis(item)
 
-# ===================================================
-# Marker parameters
-# ===================================================
-MARKER_LINE_STYLE = [ QwtPlotMarker.NoLine,
-                      QwtPlotMarker.HLine,
-                      QwtPlotMarker.VLine,
-                      QwtPlotMarker.Cross ]
-class MarkerParam(DataSet):
-    symbol = SymbolItem(_("Symbol"))
-    text = TextStyleItem(_("Text"))
-    pen = LineStyleItem(_("Line"))
-    linestyle = ChoiceItem(_("Line style"),
-                       [(0, _("None")),
-                        (1, _("Horizontal")),
-                        (2, _("Vertical")),
-                        (3, _("Both")),
-                        ],  default=0)
-    spacing = IntItem(_("Spacing"), default=10, min=0)
-    
-    def update_param(self, obj):
-        self.symbol.update_param(obj.symbol())
-        self.text.update_param(obj.label())
-        self.pen.update_param(obj.linePen())
-        ls = obj.lineStyle()
-        self.linestyle = MARKER_LINE_STYLE.index( ls )
-        self.spacing = obj.spacing()
-
-    def update_marker(self, obj):
-        self.symbol.update_symbol(obj)
-        label = obj.label()
-        self.text.update_text(label)
-        obj.setLabel(label)
-        pen = self.pen.build_pen()
-        obj.setLinePen(pen)
-        obj.setLineStyle( MARKER_LINE_STYLE[self.linestyle] )
-        obj.setSpacing(self.spacing)
-
 
 # ===================================================
 # Label parameters
 # ===================================================
-
 class LabelParam(DataSet):
     _multiselection = False
     _legend = False
@@ -907,8 +878,7 @@ class CurveParam(DataSet):
         if not self._multiselection:
             # Non common parameters
             curve.setTitle(self.label)
-        pen = self.line.build_pen()
-        curve.setPen(pen)
+        curve.setPen(self.line.build_pen())
         # Brush
         linecolor = QColor(self.line.color)
         linecolor.setAlphaF(self.shade)
@@ -1046,9 +1016,13 @@ class QuadGridParam(DataSet):
                                  (1, _("Flat")),
                                  ],
                                default=0,
-                               help=_("Image interpolation type, Flat mode use fixed u,v interpolation parameters"))
-    uflat = FloatItem(_("Fixed U interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
-    vflat = FloatItem(_("Fixed V interpolation parameter"), default=0.5,min=0.,max=1., help=_("For flat mode only"))
+                               help=_("Image interpolation type, "
+                                      "Flat mode use fixed u,v "
+                                      "interpolation parameters"))
+    uflat = FloatItem(_("Fixed U interpolation parameter"),
+                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
+    vflat = FloatItem(_("Fixed V interpolation parameter"),
+                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
     grid = BoolItem(_("Show grid"), default=False)
     gridcolor = ColorItem(_("Grid lines color"), default="black")
                                
@@ -1303,17 +1277,22 @@ class Histogram2DParam(BaseImageParam):
     logscale = BoolItem(_("logarithmic"), _("Z-axis scale"), default=False)
     
     computation = ChoiceItem(_("Computation"),
-                             [(-1, _("Bin count")),
-                              (0, _("Max value")),
-                              (1, _("Min value")),
-                              (2, _("Sum")),
-                              (3, _("Product")),
-                              (4, _("Average")),
-                              ],
-                       default=-1, help=_("Bin count : counts the number of points per bin,\n"
-                                          "For max, min, sum, product, average, compute the function of a third parameter (one by default)"))
-    auto_lut = BoolItem(_("Automatic LUT range"), default=True, help=_("Automatically adapt color scale when panning, zooming"))
-    background = ColorItem(_("Background color when no data is present"), default="transparent")
+                         [(-1, _("Bin count")),
+                          (0, _("Maximum value")),
+                          (1, _("Mininum value")),
+                          (2, _("Sum")),
+                          (3, _("Product")),
+                          (4, _("Average")),
+                          ],
+                   default=-1,
+                   help=_("Bin count : counts the number of points per bin,\n"
+                          "For max, min, sum, product, average, compute the "
+                          "function of a third parameter (one by default)"))
+    auto_lut = BoolItem(_("Automatic LUT range"), default=True,
+                        help=_("Automatically adapt color scale "
+                               "when panning, zooming"))
+    background = ColorItem(_("Background color"), default="transparent",
+                           help=_("Background color when no data is present"))
 
     def update_param(self, obj):
         super(Histogram2DParam, self).update_param(obj)
@@ -1333,8 +1312,65 @@ ItemParameters.register_multiselection(Histogram2DParam, Histogram2DParam_MS)
     
 
 # ===================================================
-# Common shape parameters
+# Shape parameters
 # ===================================================
+class MarkerParam(DataSet):
+    _styles = BeginTabGroup("Styles")
+    #------------------------------------------------------------------ Line tab
+    ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
+    line = LineStyleItem(_("Line (not selected)"))
+    sel_line = LineStyleItem(_("Line (selected)"))
+    ___eline = EndGroup(_("Line"))
+    #---------------------------------------------------------------- Symbol tab
+    ___sym = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
+    symbol = SymbolItem(_("Symbol (not selected)"))
+    sel_symbol = SymbolItem(_("Symbol (selected)"))
+    ___esym = EndGroup(_("Symbol"))
+    #------------------------------------------------------------------ Text tab
+    ___text = BeginGroup(_("Text")).set_prop("display", icon="font.png")
+    text = TextStyleItem(_("Text (not selected)"))
+    sel_text = TextStyleItem(_("Text (selected)"))
+    ___etext = EndGroup(_("Text"))
+    #----------------------------------------------------------------------- End
+    _endstyles = EndTabGroup("Styles")
+    markerstyle = ImageChoiceItem(_("Line style"), MARKERSTYLE_CHOICES,
+                                  default="NoLine")
+    spacing = IntItem(_("Spacing"), default=10, min=0)
+    
+    def update_param(self, obj):
+        self.symbol.update_param(obj.symbol())
+        self.text.update_param(obj.label())
+        self.line.update_param(obj.linePen())
+        self.markerstyle = MARKERSTYLE_NAME[obj.lineStyle()]
+        self.spacing = obj.spacing()
+
+    def update_marker(self, obj):
+        if obj.selected:
+            line = self.sel_line
+            symb = self.sel_symbol
+            text = self.sel_text
+        else:
+            line = self.line
+            symb = self.symbol
+            text = self.text
+        symb.update_symbol(obj)
+        label = obj.label()
+        text.update_text(label)
+        obj.setLabel(label)
+        obj.setLinePen(line.build_pen())
+        obj.setLineStyle(getattr(QwtPlotMarker, self.markerstyle))
+        obj.setSpacing(self.spacing)
+        obj.update_label()
+        
+    def set_markerstyle(self, style):
+        """
+        Set marker line style
+        style:
+            * convenient values: '+', '-', '|' or None
+            * QwtPlotMarker.NoLine, QwtPlotMarker.Vertical, ...
+        """
+        self.markerstyle = MARKERSTYLES.get(style, style)
+
 class ShapeParam(DataSet):
     _styles = BeginTabGroup("Styles")
     #------------------------------------------------------------------ Line tab
@@ -1422,20 +1458,33 @@ class AnnotationParam(DataSet):
                                    "covered by this shape"), default=True)
     title = StringItem(_("Title"), default=u"")
     subtitle = StringItem(_("Subtitle"), default=u"")
-    format = StringItem(_("String formatting"), default="%d pixels")
+    format = StringItem(_("String formatting"), default="%.1f")
+    uncertainty = FloatItem(_("Uncertainty"), default=0., min=0., max=1.,
+                            help=_("Measurement relative uncertainty")
+                            ).set_pos(col=1)
     transform_matrix = FloatArrayItem(_("Transform matrix"),
                                       default=np.eye(3, dtype=float))
+    readonly = BoolItem(_("Read-only shape"), default=False,
+                        help=_("Read-only shapes can't be removed from "
+                               "the item list panel"))
+    private = BoolItem(_("Private shape"), default=False,
+                        help=_("Private shapes are not shown in "
+                               "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
         self.title = obj.title().text()
+        self.readonly = obj.is_readonly()
+        self.private = obj.is_private()
         
     def update_annotation(self, obj):
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
         obj.area_computations_visible = self.show_computations
         obj.update_label()
+        obj.set_readonly(self.readonly)
+        obj.set_private(self.private)
 
 
 # ===================================================
@@ -1478,34 +1527,3 @@ class RangeShapeParam(DataSet):
         range.brush = QBrush(col)
         range.symbol = self.symbol.build_symbol()
         range.sel_symbol = self.sel_symbol.build_symbol()
-
-
-# ===================================================
-# Range selection parameters
-# ===================================================
-class CursorShapeParam(DataSet):
-    _styles = BeginTabGroup("Styles")
-    #------------------------------------------------------------------ Line tab
-    ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
-    line = LineStyleItem(_("Line (not selected)"))
-    sel_line = LineStyleItem(_("Line (selected)"))
-    ___eline = EndGroup(_("Line"))
-    #---------------------------------------------------------------- Symbol tab
-    ___symbol = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
-    symbol = SymbolItem(_("Symbol (not selected)"))
-    sel_symbol = SymbolItem(_("Symbol (selected)"))
-    ___esymbol = EndGroup(_("Symbol"))
-    #----------------------------------------------------------------------- End
-    _endstyles = EndTabGroup("Styles")
-    
-    def update_param(self, cursor):
-        self.line.update_param(cursor.pen)
-        self.sel_line.update_param(cursor.sel_pen)
-        self.symbol.update_param(cursor.symbol)
-        self.sel_symbol.update_param(cursor.sel_symbol)
-        
-    def update_range(self, cursor):
-        cursor.pen = self.line.build_pen()
-        cursor.sel_pen = self.sel_line.build_pen()
-        cursor.symbol = self.symbol.build_symbol()
-        cursor.sel_symbol = self.sel_symbol.build_symbol()
