@@ -175,14 +175,9 @@ class AnnotatedShape(AbstractShape):
                 text += infos
         return text
 
-    def x_to_str(self, x, k):
-        """
-        Convert x (float) to a string (with associated unit and uncertainty)
-        k: uncertainty factor
-        Examples:
-            coordinate: k == 1
-            distance:   k == 2 (uncertainty is doubled)
-        """
+    def x_to_str(self, x):
+        """Convert x (float) to a string
+        (with associated unit and uncertainty)"""
         param = self.annotationparam
         if self.plot() is None:
             return ''
@@ -190,17 +185,12 @@ class AnnotatedShape(AbstractShape):
             xunit = self.plot().get_axis_unit(self.xAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u" ± "+(fmt % (.5*x*k*param.uncertainty))
+                fmt += u" ± "+(fmt % (x*param.uncertainty))
             return (fmt+" "+xunit) % x
 
-    def y_to_str(self, y, k):
-        """
-        Convert y (float) to a string (with associated unit and uncertainty)
-        k: uncertainty factor
-        Examples:
-            coordinate: k == 1
-            distance:   k == 2 (uncertainty is doubled)
-        """
+    def y_to_str(self, y):
+        """Convert y (float) to a string
+        (with associated unit and uncertainty)"""
         param = self.annotationparam
         if self.plot() is None:
             return ''
@@ -208,7 +198,7 @@ class AnnotatedShape(AbstractShape):
             yunit = self.plot().get_axis_unit(self.yAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u" ± "+(fmt % (.5*y*k*param.uncertainty))
+                fmt += u" ± "+(fmt % (y*param.uncertainty))
             return (fmt+" "+yunit) % y
                 
     def get_center(self):
@@ -222,7 +212,7 @@ class AnnotatedShape(AbstractShape):
     def get_tr_center_str(self):
         """Return center coordinates as a string (with units)"""
         xc, yc = self.get_tr_center()
-        return "( %s ; %s )" % (self.x_to_str(xc, 1), self.y_to_str(yc, 1))
+        return "( %s ; %s )" % (self.x_to_str(xc), self.y_to_str(yc))
         
     def get_tr_size(self):
         """Return shape size after applying transform matrix"""
@@ -231,7 +221,7 @@ class AnnotatedShape(AbstractShape):
     def get_tr_size_str(self):
         """Return size as a string (with units)"""
         xs, ys = self.get_tr_size()
-        return "%s x %s" % (self.x_to_str(xs, 2), self.y_to_str(ys, 2))
+        return "%s x %s" % (self.x_to_str(xs), self.y_to_str(ys))
         
     def get_infos(self):
         """Return formatted string with informations on current shape"""
@@ -345,7 +335,7 @@ class AnnotatedPoint(AnnotatedShape):
     def get_infos(self):
         """Return formatted string with informations on current shape"""
         xt, yt = self.apply_transform_matrix(*self.shape.points[0])
-        return "( %s ; %s )" % (self.x_to_str(xt, 1), self.y_to_str(yt, 1))
+        return "( %s ; %s )" % (self.x_to_str(xt), self.y_to_str(yt))
         
 
 class AnnotatedSegment(AnnotatedShape):
@@ -388,7 +378,7 @@ class AnnotatedSegment(AnnotatedShape):
     #----AnnotatedShape API-----------------------------------------------------
     def get_infos(self):
         """Return formatted string with informations on current shape"""
-        return _("Distance:") + " " + self.x_to_str(self.get_tr_length(), 2)
+        return _("Distance:") + " " + self.x_to_str(self.get_tr_length())
 
 
 class AnnotatedRectangle(AnnotatedShape):
@@ -623,7 +613,7 @@ class AnnotatedCircle(AnnotatedEllipse):
         """Return formatted string with informations on current shape"""
         return "<br>".join([
                     _("Center:")+" "+self.get_tr_center_str(),
-                    _("Diameter:")+" "+self.x_to_str(self.get_tr_diameter(), 2),
+                    _("Diameter:")+" "+self.x_to_str(self.get_tr_diameter()),
                             ])
 
     #----AnnotatedEllipse API---------------------------------------------------
