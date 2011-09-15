@@ -260,7 +260,6 @@ class BaseImageItem(QwtPlotItem):
         self.lut = (1.0, 0.0, None, np.zeros((LUT_SIZE, ), np.uint32))
 
         self.set_lut_range([0., 255.])
-        self.imageparam.update_image(self)
         self.setItemAttribute(QwtPlotItem.AutoScale)
         self.setItemAttribute(QwtPlotItem.Legend, True)
         self._filename = None # The file this image comes from
@@ -268,7 +267,7 @@ class BaseImageItem(QwtPlotItem):
         self.histogram_cache = None
         if data is not None:
             self.set_data(data)
-            self.imageparam.update_image(self)
+        self.imageparam.update_image(self)
 
     #---- Public API -----------------------------------------------------------
     def set_filename(self, fname):
