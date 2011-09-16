@@ -1474,7 +1474,7 @@ class AnnotationParam(DataSet):
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
-        self.title = obj.title().text()
+        self.title = unicode(obj.title().text())
         self.readonly = obj.is_readonly()
         self.private = obj.is_private()
         
