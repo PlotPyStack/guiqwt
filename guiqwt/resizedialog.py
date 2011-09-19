@@ -17,7 +17,10 @@ from guiqwt.config import _
 
 def is_edit_valid(edit):
     text = edit.text()
-    state, _t = edit.validator().validate(text, 0)
+    state = edit.validator().validate(text, 0)
+    if isinstance(state, (tuple, list)):
+        # PyQt API v1
+        state, _t = state
     return state == QIntValidator.Acceptable
 
 
