@@ -253,19 +253,18 @@ class BasePlot(QwtPlot):
         axis_id = self.get_axis_id(axis_id)
         sdiv = self.axisScaleDiv(axis_id)
         return sdiv.lowerBound(), sdiv.upperBound()
-            
-    def set_axis_limits(self, axis_id, vmin, vmax):
-        """Set axis limits (minimum and maximum values)"""
+
+    def set_axis_limits(self, axis_id, vmin, vmax, stepsize=0):
+        """Set axis limits (minimum and maximum values) and optional
+        step size"""
         axis_id = self.get_axis_id(axis_id)
-        self.setAxisScale(axis_id, vmin, vmax)
+        self.setAxisScale(axis_id, vmin, vmax, stepsize)
         self._start_autoscaled = False
 
-    def set_axis_ticks(self, axis_id, stepsize=0.0, nmajor=None, nminor=None):
-        """Set axis major tick step size or maximum number of major ticks
+    def set_axis_ticks(self, axis_id, nmajor=None, nminor=None):
+        """Set axis maximum number of major ticks
         and maximum of minor ticks"""
         axis_id = self.get_axis_id(axis_id)
-        vmin, vmax = self.get_axis_limits(axis_id)
-        self.setAxisScale(axis_id, vmin, vmax, stepsize)
         if nmajor is not None:
             self.setAxisMaxMajor(axis_id, nmajor)
         if nminor is not None:

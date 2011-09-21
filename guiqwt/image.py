@@ -153,7 +153,7 @@ from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IColormapImageItemType, IVoiImageItemType,
                                ISerializableType, ICSImageItemType,
                                IExportROIImageItemType, IStatsImageItemType)
-from guiqwt.curve import CurvePlot, CurveItem
+from guiqwt.curve import CurvePlot, CurveItem, PolygonMapItem
 from guiqwt.colormap import FULLRANGE, get_cmap, get_cmap_name
 from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
@@ -993,7 +993,7 @@ class QuadGridItem(RawImageItem):
         ymax = self.Y.max()
         self.bounds = QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
 
-    def set_data(self, data, lut_range=None):
+    def set_data(self, data, X=None, Y=None, lut_range=None):
         """
         Set Image item data
             * data: 2D NumPy array
@@ -1006,6 +1006,10 @@ class QuadGridItem(RawImageItem):
 
         self.data = data
         self.histogram_cache = None
+        if X is not None:
+            assert Y is not None
+            self.X = X
+            self.Y = Y
         self.update_bounds()
         self.update_border()
         self.set_lut_range([_min, _max])
@@ -2079,7 +2083,7 @@ class ImagePlot(CurvePlot):
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
     """
-    AUTOSCALE_TYPES = (CurveItem, BaseImageItem)
+    AUTOSCALE_TYPES = (CurveItem, BaseImageItem, PolygonMapItem)
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)
     def __init__(self, parent=None,
                  title=None, xlabel=None, ylabel=None, zlabel=None,
