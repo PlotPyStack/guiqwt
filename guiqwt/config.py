@@ -34,7 +34,7 @@ DEFAULTS = {
               "selection/distance" : 6,
               "antialiasing" : False,
               
-              "title/font/size" : 14,
+              "title/font/size" : 12,
               "title/font/bold" : False,
 
               "selected_curve_symbol/marker" : 'Rect',
