@@ -102,8 +102,9 @@ Reference
 
 import sys
 from guidata.qt.QtGui import (QMainWindow, QPrinter, QPainter, QFrame,
-                              QVBoxLayout, QGridLayout, QToolBar, QPixmap)
-from guidata.qt.QtCore import QRect, Qt
+                              QVBoxLayout, QGridLayout, QToolBar, QPixmap,
+                              QImageWriter)
+from guidata.qt.QtCore import QRect, Qt, QBuffer, QIODevice
 
 import guidata
 from guidata.configtools import get_icon
@@ -223,25 +224,38 @@ class Figure(object):
             self.build_window()
         self.win.display()
         
-    def save(self, fname, draft):
-        ext = fname.rsplit(".", 1)[-1].lower()
-        if ext == "pdf":
-            self.app = guidata.qapplication()
-            if draft:
-                mode = QPrinter.ScreenResolution
+    def save(self, fname, format, draft):
+        if isinstance(fname, basestring):
+            if format == "pdf":
+                self.app = guidata.qapplication()
+                if draft:
+                    mode = QPrinter.ScreenResolution
+                else:
+                    mode = QPrinter.HighResolution
+                printer = QPrinter(mode)
+                printer.setOutputFormat(QPrinter.PdfFormat)
+                printer.setOrientation(QPrinter.Landscape)
+                printer.setOutputFileName(fname)
+                printer.setCreator('guiqwt.pyplot')
+                self.print_(printer)
             else:
-                mode = QPrinter.HighResolution
-            printer = QPrinter(mode)
-            printer.setOutputFormat(QPrinter.PdfFormat)
-            printer.setOrientation(QPrinter.Landscape)
-            printer.setOutputFileName(fname)
-            printer.setCreator('guiqwt.pyplot')
-            self.print_(printer)
-        elif ext == "png":
+                if self.win is None:
+                    self.show()
+                pixmap = QPixmap.grabWidget(self.win.centralWidget())
+                pixmap.save(fname, format.upper())
+        else:
+            # Buffer
+            fd = fname
+            assert hasattr(fd, 'write'), "object is not file-like as expected"
             if self.win is None:
                 self.show()
             pixmap = QPixmap.grabWidget(self.win.centralWidget())
-            pixmap.save(fname, 'PNG')
+            buff = QBuffer()
+            buff.open(QIODevice.ReadWrite)
+            pixmap.save(buff, format.upper())
+            fd.write(buff.data())
+            buff.close()
+            fd.seek(0)
         
     def print_(self, device):
         if not self.win:
@@ -726,16 +740,23 @@ def close(N=None, all=False):
         fig = figure(N)
     fig.close()
 
-def savefig(fname, draft=False):
+def savefig(fname, format=None, draft=False):
     """
     Save figure
     
     Currently supports PDF and PNG formats only
     """
-    ext = fname.rsplit(".", 1)[-1].lower()
-    fig = gcf()
-    if ext in ("pdf", "png"):
-        fig.save(fname, draft)
+    if not isinstance(fname, basestring) and format is None:
+        # Buffer/fd
+        format = 'png'
+    if format is None:
+        format = fname.rsplit(".", 1)[-1].lower()
+        fmts = [str(fmt).lower()
+                for fmt in QImageWriter.supportedImageFormats()]
+        assert format in fmts, _("Function 'savefig' currently supports the "
+                                 "following formats:\n%s"
+                                 ) % ','.join(fmts)
     else:
-        raise RuntimeError(_("Function 'savefig' currently supports "
-                             ".pdf and .png formats only"))
+        format = format.lower()
+    fig = gcf()
+    fig.save(fname, format, draft)
