@@ -805,7 +805,7 @@ class ErrorBarCurveItem(CurveItem):
         super(ErrorBarCurveItem, self).__init__(curveparam)
         self._dx = None
         self._dy = None
-        self._minmaxarrays = None
+        self._minmaxarrays = {}
         
     def unselect(self):
         """Unselect item"""
