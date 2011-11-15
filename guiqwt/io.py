@@ -133,7 +133,11 @@ IMAGE_LOAD_FILTERS = '%s (*.png *.jpg *.gif *.tif *.tiff)\n'\
                      % (_(u"Images"), _(u"NumPy arrays"), _(u"Text files"))
 IMAGE_SAVE_FILTERS = IMAGE_LOAD_FILTERS
 try:
+    import logging
+    logger = logging.getLogger("pydicom")
+    logger.setLevel(logging.CRITICAL)
     import dicom
+    logger.setLevel(logging.WARNING)
     IMAGE_LOAD_FILTERS += ('\n%s (*.dcm)' % _(u"DICOM images"))
 except ImportError:
     pass
