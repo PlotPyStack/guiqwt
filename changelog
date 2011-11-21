@@ -10,9 +10,15 @@
     * !QuadGridItem: allow set_data to update X,Y along with Z
     * new item !PolygonMapItem: PolygonMapItem is intended to display maps i.e. items containing several hundreds of independent polygons
   * guiqwt.builder.make.error: added options 'errorbarwidth', 'errorbarcap', 'errorbarmode' and 'errorbaralpha' (avoid having to tweak the ErrorBarParam to customize these settings)
+  * guiqwt.pyplot/pydicom: avoid the annoying warning message about the DICOM dictionnary revert
+  * guiqwt.tools:
+    * !EditItemDataTool: new tool for editing displayed curve/image data using a GUI-based array editor (this feature requires the `spyderlib` library)
 
 === Bug fixes (since v2.1.5) ===
 
+  * !ErrorBarCurveItem (error bar curves):
+    * now handling NaNs uncertainties properly
+    * handling runtime warnings that could end badly in draw method (example: transforming a zero in log scale)
   * Annotations/pickle bugfix: a !QString (instead of unicode) was pickled for annotation title, hence leading to compatiblity issues with !PyQt API v2
   * guiqwt.io.array_to_dicomfile: fixed value representation error for smallest/largest pixel value parameters
   * guiqwt.resizedialog.is_edit_valid: fixed compatibility issue with !PyQt API v2

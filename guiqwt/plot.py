@@ -126,8 +126,8 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           AspectRatioTool, ContrastPanelTool, XCSPanelTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
                           CrossSectionTool, AverageCrossSectionTool,
-                          ImageStatsTool, ExportItemDataTool, ItemCenterTool,
-                          SignalStatsTool, CopyToClipboardTool)
+                          ImageStatsTool, ExportItemDataTool, EditItemDataTool,
+                          ItemCenterTool, SignalStatsTool, CopyToClipboardTool)
 from guiqwt.interfaces import IPlotManager
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
@@ -497,6 +497,11 @@ class PlotManager(object):
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
         self.add_tool(ExportItemDataTool)
+        try:
+            import spyderlib.widgets.objecteditor  # analysis:ignore
+            self.add_tool(EditItemDataTool)
+        except ImportError:
+            pass
         self.add_tool(ItemCenterTool)
         self.add_tool(DeleteItemTool)
         self.add_separator_tool()

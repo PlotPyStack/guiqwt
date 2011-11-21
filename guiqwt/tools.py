@@ -54,6 +54,7 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.AxisScaleTool`
     * :py:class:`guiqwt.tools.HelpTool`
     * :py:class:`guiqwt.tools.ExportItemDataTool`
+    * :py:class:`guiqwt.tools.EditItemDataTool`
     * :py:class:`guiqwt.tools.ItemCenterTool`
     * :py:class:`guiqwt.tools.DeleteItemTool`
 
@@ -221,6 +222,9 @@ Reference
    :members:
    :inherited-members:
 .. autoclass:: ExportItemDataTool
+   :members:
+   :inherited-members:
+.. autoclass:: EditItemDataTool
    :members:
    :inherited-members:
 .. autoclass:: ItemCenterTool
@@ -1787,6 +1791,40 @@ class HelpTool(CommandTool):
   - right-click + mouse move: zoom"""))
 
 
+class ItemManipulationBaseTool(CommandTool):
+    TITLE = None
+    ICON = None
+    TIP = None
+    def __init__(self, manager, toolbar_id, curve_func, image_func):
+        super(ItemManipulationBaseTool, self).__init__(manager, self.TITLE,
+                        icon=self.ICON, tip=self.TIP, toolbar_id=toolbar_id)
+        self.curve_func = curve_func
+        self.image_func = image_func
+
+    def get_supported_items(self, plot):
+        all_items = [item for item in plot.get_items(item_type=ICurveItemType)
+                     if not item.is_empty()]
+        from guiqwt.image import ImageItem
+        all_items += [item for item in plot.get_items()
+                      if isinstance(item, ImageItem) and not item.is_empty()]
+        if len(all_items) == 1:
+            return all_items
+        else:
+            return [item for item in all_items
+                    if item in plot.get_selected_items()]
+
+    def update_status(self, plot):
+        self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
+            
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        for item in self.get_supported_items(plot):
+            if ICurveItemType in item.types():
+                self.curve_func(item)
+            else:
+                self.image_func(item)
+        plot.replot()
+
 def export_curve_data(item):
     """Export curve item data to text file"""
     item_data = item.get_data()
@@ -1820,33 +1858,55 @@ def export_image_data(item):
     from guiqwt.qthelpers import exec_image_save_dialog
     exec_image_save_dialog(item.data, item.plot())
 
-class ExportItemDataTool(CommandTool):
+class ExportItemDataTool(ItemManipulationBaseTool):
+    TITLE = _("Export data...")
+    ICON = "export.png"
     def __init__(self, manager, toolbar_id=None):
-        super(ExportItemDataTool,self).__init__(manager, _("Export data..."),
-                                          "export.png", toolbar_id=toolbar_id)
-        
-    def get_supported_items(self, plot):
-        all_items = [item for item in plot.get_items(item_type=ICurveItemType)
-                     if not item.is_empty()]
-        from guiqwt.image import ImageItem
-        all_items += [item for item in plot.get_items()
-                      if isinstance(item, ImageItem) and not item.is_empty()]
-        if len(all_items) == 1:
-            return all_items
-        else:
-            return [item for item in all_items
-                    if item in plot.get_selected_items()]
+        super(ExportItemDataTool,self).__init__(manager, toolbar_id,
+                curve_func=export_curve_data, image_func=export_image_data)
 
-    def update_status(self, plot):
-        self.action.setEnabled(len(self.get_supported_items(plot)) > 0)
-            
-    def activate_command(self, plot, checked):
-        """Activate tool"""
-        for item in self.get_supported_items(plot):
-            if ICurveItemType in item.types():
-                export_curve_data(item)
+def edit_curve_data(item):
+    """Edit curve item data to text file"""
+    item_data = item.get_data()
+    if len(item_data) > 2:
+        x, y, dx, dy = item_data
+        array_list = [x, y]
+        if dx is not None:
+            array_list.append(dx)
+        if dy is not None:
+            array_list.append(dy)
+        data = np.array(array_list).T
+    else:
+        x, y = item_data
+        data = np.array([x, y]).T
+    from spyderlib.widgets.objecteditor import oedit
+    if oedit(data):
+        if data.shape[1] > 2:
+            if data.shape[1] == 3:
+                x, y, tmp = data.T
+                if dx is not None:
+                    dx = tmp
+                else:
+                    dy = tmp
             else:
-                export_image_data(item)
+                x, y, dx, dy = data.T
+            item.set_data(x, y, dx, dy)
+        else:
+            x, y = data.T
+            item.set_data(x, y)
+
+def edit_image_data(item):
+    """Edit image item data to file"""
+    from spyderlib.widgets.objecteditor import oedit
+    oedit(item.data)
+
+class EditItemDataTool(ItemManipulationBaseTool):
+    """Edit item data (requires `spyderlib`)"""
+    TITLE = _("Edit data...")
+    ICON = "arredit.png"
+    def __init__(self, manager, toolbar_id=None):
+        super(EditItemDataTool,self).__init__(manager, toolbar_id,
+                curve_func=edit_curve_data, image_func=edit_image_data)
 
 
 class ItemCenterTool(CommandTool):
