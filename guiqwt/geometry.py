@@ -33,8 +33,7 @@ def rotate(alpha):
 
 def colvector(x, y):
     """Return vector (NumPy matrix object) from coordinates"""
-    # z component must be null, otherwise the vector norm would be incorrect
-    return matrix([x, y, 0]).T
+    return matrix([x, y, 1]).T
 
 
 #===============================================================================
