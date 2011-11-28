@@ -23,6 +23,7 @@
   * guiqwt.io.array_to_dicomfile: fixed value representation error for smallest/largest pixel value parameters
   * guiqwt.resizedialog.is_edit_valid: fixed compatibility issue with !PyQt API v2
   * Sift: upgraded deployment script for compatibility with guidata v1.4+
+  * geometry.colvector: fixed major regression in coordinates calculations (significative impact on !TrImageItem related features)
 
 ----
 
