@@ -249,7 +249,7 @@ except ImportError:
 
 import sys, numpy as np, weakref, os.path as osp
 
-from guidata.qt.QtCore import Qt, QObject, SIGNAL
+from guidata.qt.QtCore import Qt, QObject, SIGNAL, QPoint
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
                               QPrintDialog, QFont, QAction, QToolButton)
 from guidata.qt.compat import getsavefilename, getopenfilename
@@ -724,8 +724,10 @@ class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_KEY = "shape/drag"
     AVOID_NULL_SHAPE = False
     def __init__(self, manager, func, shape_style=None,
-                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
+                 fix_orientation=False):
         self.action_func = func
+        self.fix_orientation = fix_orientation
         InteractiveTool.__init__(self, manager, toolbar_id,
                                  title=title, icon=icon, tip=tip)
         if shape_style is not None:
@@ -779,7 +781,12 @@ class RectangularActionTool(InteractiveTool):
 
     def end_rect(self, filter, p0, p1):
         plot = filter.plot
-        self.action_func(plot, p0, p1)
+        if self.fix_orientation:
+            left, right = min(p0.x(), p1.x()), max(p0.x(), p1.x())
+            top, bottom = min(p0.y(), p1.y()), max(p0.y(), p1.y())
+            self.action_func(plot, QPoint(left, top), QPoint(right, bottom))
+        else:
+            self.action_func(plot, p0, p1)
         self.emit(SIG_TOOL_JOB_FINISHED)
 
 
@@ -1604,7 +1611,8 @@ class SnapshotTool(RectangularActionTool):
     ICON = "snapshot.png"
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         RectangularActionTool.__init__(self, manager, save_snapshot,
-                                       toolbar_id=toolbar_id)
+                                       toolbar_id=toolbar_id,
+                                       fix_orientation=True)
 
 
 class PrintFilter(QwtPlotPrintFilter):
