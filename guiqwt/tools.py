@@ -1549,8 +1549,12 @@ def save_snapshot(plot, p0, p1):
     param = SnapshotParam(_("Rectangle snapshot"))
     if not param.edit(parent=plot):
         return
-        
-    data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height,
+    
+    if dlg.keep_original_size:
+        destw, desth = original_size
+    else:
+        destw, desth = dlg.width, dlg.height
+    data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
                                apply_lut=param.apply_contrast,
                                add_images=param.add_images)
 
