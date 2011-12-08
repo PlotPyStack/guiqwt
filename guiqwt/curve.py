@@ -466,8 +466,13 @@ class CurveItem(QwtPlotCurve):
         py = plot.invTransform(ay, pos.y())
         # On cherche les 4 points qui sont les plus proches en X et en Y
         # avant et après ie tels que p1x < x < p2x et p3y < y < p4y
-        dx = 1/(self._x-px)
-        dy = 1/(self._y-py)
+        tmpx = self._x - px
+        tmpy = self._y - py
+        if not tmpx or not tmpy:
+            # Avoid dividing by zero warning when computing dx or dy
+            return sys.maxint, 0, False, None
+        dx = 1/tmpx
+        dy = 1/tmpy
         i0 = dx.argmin()
         i1 = dx.argmax()
         i2 = dy.argmin()
