@@ -2240,6 +2240,7 @@ class ImagePlot(CurvePlot):
         CurvePlot.do_autoscale(self, replot=False)
         self.updateAxes()
         if self.lock_aspect_ratio:
+            self.replot()
             self.apply_aspect_ratio(full_scale=True)
         if replot:
             self.replot()
