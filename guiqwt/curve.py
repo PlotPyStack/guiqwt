@@ -468,7 +468,8 @@ class CurveItem(QwtPlotCurve):
         # avant et après ie tels que p1x < x < p2x et p3y < y < p4y
         tmpx = self._x - px
         tmpy = self._y - py
-        if not tmpx or not tmpy:
+        if np.count_nonzero(tmpx) != len(tmpx) or\
+           np.count_nonzero(tmpy) != len(tmpy):
             # Avoid dividing by zero warning when computing dx or dy
             return sys.maxint, 0, False, None
         dx = 1/tmpx
