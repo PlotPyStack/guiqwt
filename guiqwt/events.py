@@ -450,6 +450,8 @@ class ObjectHandler(object):
             self.__unselect_objects(filter)
     
     def move(self, filter, event):
+        if self.active is None:
+            return
         self.unselection_pending = False
         if self.inside:
             self.active.move_local_shape(self.last_pos, event.pos())
