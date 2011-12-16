@@ -100,7 +100,11 @@ Reference
    :members:
 """
 
-import sys, numpy as np
+from __future__ import with_statement
+
+import sys
+import warnings
+import numpy as np
 
 from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
                               QToolBar, QMessageBox, QBrush, QColor, QPen, QPolygonF)
@@ -775,9 +779,16 @@ class PolygonMapItem(QwtPlotItem):
 assert_interfaces_valid(PolygonMapItem)
 
 
-def _transform(map,v):
-    return QwtScaleMap.transform(map,v)
-vmap = np.vectorize(_transform)
+def _transform(map, v):
+    return QwtScaleMap.transform(map, v)
+def vmap(map, v):
+    """Transform coordinates while handling RuntimeWarning 
+    that could be raised by NumPy when trying to transform 
+    a zero in logarithmic scale for example"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        output = np.vectorize(_transform)(map, v)
+    return output
 
 class ErrorBarCurveItem(CurveItem):
     """
@@ -794,6 +805,7 @@ class ErrorBarCurveItem(CurveItem):
         super(ErrorBarCurveItem, self).__init__(curveparam)
         self._dx = None
         self._dy = None
+        self._minmaxarrays = {}
         
     def unselect(self):
         """Unselect item"""
@@ -829,25 +841,43 @@ class ErrorBarCurveItem(CurveItem):
                 dy = None
         self._dx = dx
         self._dy = dy
+        self._minmaxarrays = {}
 
-    def get_minmax_arrays(self):
-        x = self._x
-        y = self._y
-        dx = self._dx
-        dy = self._dy
-        if dx is None:
-            xmin = x
-            xmax = x
-        else:
-            xmin = x - dx
-            xmax = x + dx
-        if dy is None:
-            ymin = y
-            ymax = y
-        else:
-            ymin = y - dy
-            ymax = y + dy
-        return xmin, xmax, ymin, ymax
+    def get_minmax_arrays(self, all_values=True):
+        if self._minmaxarrays.get(all_values) is None:
+            x = self._x
+            y = self._y
+            dx = self._dx
+            dy = self._dy
+            if all_values:
+                if dx is None:
+                    xmin = xmax = x
+                else:
+                    xmin, xmax = x - dx, x + dx
+                if dy is None:
+                    ymin = ymax = y
+                else:
+                    ymin, ymax = y - dy, y + dy
+                self._minmaxarrays.setdefault(all_values,
+                                              (xmin, xmax, ymin, ymax))
+            else:
+                isf = np.logical_and(np.isfinite(x), np.isfinite(y))
+                if dx is not None:
+                    isf = np.logical_and(isf, np.isfinite(dx))
+                if dy is not None:
+                    isf = np.logical_and(isf, np.isfinite(dy))
+                if dx is None:
+                    xmin = xmax = x[isf]
+                else:
+                    xmin, xmax = x[isf] - dx[isf], x[isf] + dx[isf]
+                if dy is None:
+                    ymin = ymax = y[isf]
+                else:
+                    ymin, ymax = y[isf] - dy[isf], y[isf] + dy[isf]
+                self._minmaxarrays.setdefault(all_values,
+                                              (x[isf], y[isf],
+                                               xmin, xmax, ymin, ymax))
+        return self._minmaxarrays[all_values]
         
     def get_closest_coordinates(self, x, y):
         # Surcharge d'une méthode de base de CurveItem
@@ -889,13 +919,11 @@ class ErrorBarCurveItem(CurveItem):
         return QRectF(xmin, ymin, xmaxf.max()-xmin, ymaxf.max()-ymin)
         
     def draw(self, painter, xMap, yMap, canvasRect):
-        x = self._x
-        if x is None or x.size == 0:
+        if self._x is None or self._x.size == 0:
             return
-        y = self._y
+        x, y, xmin, xmax, ymin, ymax = self.get_minmax_arrays(all_values=False)
         tx = vmap(xMap, x)
         ty = vmap(yMap, y)
-        xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         RN = xrange(len(tx))
         if self.errorOnTop:
             QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
@@ -947,7 +975,7 @@ class ErrorBarCurveItem(CurveItem):
                     xi = tx[i]
                     points.append(QPoint(xi, tymin[i]))
                     rpoints.append(QPoint(xi, tymax[i]))
-                points+=reversed(rpoints)
+                points += reversed(rpoints)
                 painter.setBrush(QBrush(self.errorBrush))
                 painter.drawPolygon(*points)
 

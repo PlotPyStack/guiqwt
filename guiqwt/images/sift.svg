@@ -15,7 +15,7 @@
    height="150"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="sift.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="D:\Python\spyder\doc_src\_static\spyder.png"
@@ -29,7 +29,25 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/3.0/" />
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/3.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
@@ -42,10 +60,10 @@
      pagecolor="#ffffff"
      id="base"
      inkscape:zoom="1.8528087"
-     inkscape:cx="-58.374798"
+     inkscape:cx="-207.60769"
      inkscape:cy="69.622169"
-     inkscape:window-x="2173"
-     inkscape:window-y="66"
+     inkscape:window-x="103"
+     inkscape:window-y="214"
      inkscape:current-layer="svg2"
      showgrid="false"
      fit-margin-top="0"

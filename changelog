@@ -1,9 +1,40 @@
+== Version 2.1.6 ==
+
+=== Other changes (since v2.1.5) ===
+
+  * guiqwt.pyplot.savefig:
+    * added support for all image types supported by Qt (JPEG, TIFF, PNG, ...)
+    * first argument (`fname`) may now be a file-like object (e.g. !StringIO)
+  * guiqwt.baseplot/curve: added stepsize in `set_axis_limits` and removed from `set_axis_ticks`
+  * guiqwt.image:
+    * !QuadGridItem: allow set_data to update X,Y along with Z
+    * new item !PolygonMapItem: PolygonMapItem is intended to display maps i.e. items containing several hundreds of independent polygons
+  * guiqwt.builder.make.error: added options 'errorbarwidth', 'errorbarcap', 'errorbarmode' and 'errorbaralpha' (avoid having to tweak the ErrorBarParam to customize these settings)
+  * guiqwt.pyplot/pydicom: avoid the annoying warning message about the DICOM dictionnary revert
+  * guiqwt.tools:
+    * !EditItemDataTool: new tool for editing displayed curve/image data using a GUI-based array editor (this feature requires the `spyderlib` library)
+
+=== Bug fixes (since v2.1.5) ===
+
+  * !ErrorBarCurveItem (error bar curves):
+    * now handling NaNs uncertainties properly
+    * handling runtime warnings that could end badly in draw method (example: transforming a zero in log scale)
+  * Annotations/pickle bugfix: a !QString (instead of unicode) was pickled for annotation title, hence leading to compatiblity issues with !PyQt API v2
+  * guiqwt.io.array_to_dicomfile: fixed value representation error for smallest/largest pixel value parameters
+  * guiqwt.resizedialog.is_edit_valid: fixed compatibility issue with !PyQt API v2
+  * Sift: upgraded deployment script for compatibility with guidata v1.4+
+  * geometry.colvector: fixed major regression in coordinates calculations (significative impact on !TrImageItem related features)
+
+----
+
 == Version 2.1.5 ==
 
 === Other changes (since v2.1.4) ===
 
   * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
   * baseplot: added method 'copy_to_clipboard' + tools: added CopyToClipboardTool (copy canevas window to clipboard)
+
+----
 
 == Version 2.1.4 ==
 

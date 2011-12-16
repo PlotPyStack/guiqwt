@@ -79,7 +79,6 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
                           RangeComputation2d, DataInfoLabel,
                           SelectedLegendBoxItem)
-from guiqwt.io import imagefile_to_array
 import os.path as osp
 
 # default offset positions for anchors
@@ -426,7 +425,9 @@ class PlotItemBuilder(object):
         return curve
         
     def error(self, x, y, dx, dy, title=u"",
-              color=None, linestyle=None, linewidth=None, marker=None,
+              color=None, linestyle=None, linewidth=None,
+              errorbarwidth=None, errorbarcap=None, errorbarmode=None,
+              errorbaralpha=None, marker=None,
               markersize=None, markerfacecolor=None, markeredgecolor=None,
               shade=None, fitted=None, curvestyle=None, curvetype=None,
               baseline=None, xaxis="bottom", yaxis="left"):
@@ -481,6 +482,14 @@ class PlotItemBuilder(object):
                          markersize, markerfacecolor, markeredgecolor,
                          shade, fitted, curvestyle, curvetype, baseline)
         errorbarparam.color = curveparam.line.color
+        if errorbarwidth is not None:
+            errorbarparam.width = errorbarwidth
+        if errorbarcap is not None:
+            errorbarparam.cap = errorbarcap
+        if errorbarmode is not None:
+            errorbarparam.mode = errorbarmode
+        if errorbaralpha is not None:
+            errorbarparam.alpha = errorbaralpha
         return self.perror(x, y, dx, dy, curveparam, errorbarparam,
                            xaxis, yaxis)
     
@@ -549,6 +558,7 @@ class PlotItemBuilder(object):
     def _get_image_data(self, data, filename, title, to_grayscale):
         if data is None:
             assert filename is not None
+            from guiqwt.io import imagefile_to_array
             data = imagefile_to_array(filename, to_grayscale=to_grayscale)
         if title is None and filename is not None:
             title = osp.basename(filename)
