@@ -75,6 +75,22 @@ class KeyEventMatch(EventMatch):
                     return True
         return False
 
+class StandardKeyMatch(EventMatch):
+    """
+    A callable returning True if it matches a key event
+    keysequence: QKeySequence.StandardKey integer
+    """
+    def __init__(self, keysequence):
+        super(StandardKeyMatch, self).__init__()
+        assert isinstance(keysequence, int)
+        self.keyseq = keysequence
+
+    def get_event_types(self):
+        return frozenset((QEvent.KeyPress,))
+
+    def __call__(self, event):
+        return event.type() == QEvent.KeyPress and event.matches(self.keyseq)
+
 class MouseEventMatch(EventMatch):
     """Base class for matching mouse events"""
     def __init__(self, evt_type, btn, modifiers = Qt.NoModifier):
