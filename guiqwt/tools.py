@@ -456,8 +456,7 @@ class SelectTool(InteractiveTool):
                          KeyEventMatch((Qt.Key_Enter, Qt.Key_Return,
                                         Qt.Key_Space)),
                          self.validate, start_state)
-        filter.add_event(start_state,
-                         StandardKeyMatch(QKeySequence.SelectAll),
+        filter.add_event(start_state, StandardKeyMatch(QKeySequence.SelectAll),
                          self.select_all_items, start_state)
         return setup_standard_tool_filter(filter, start_state)
 

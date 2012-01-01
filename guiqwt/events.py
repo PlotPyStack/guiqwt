@@ -17,6 +17,7 @@ The `event` module handles event management (states, event filter, ...).
 """
 
 from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
+from guidata.qt.QtGui import QKeySequence
 
 CursorShape = type(Qt.ArrowCursor)
 
@@ -367,6 +368,42 @@ class MoveHandler(object):
         filter.plot.do_move_marker(event)
 
 
+class UndoMoveObject(object):
+    def __init__(self, obj, pos1, pos2):
+        self.obj = obj
+        self.coords1 = obj.canvas_to_axes(pos1)
+        self.coords2 = obj.canvas_to_axes(pos2)
+        
+    def is_valid(self):
+        return self.obj.plot() is not None
+    
+    def compute_positions(self):
+        pos1 = QPoint(*self.obj.axes_to_canvas(*self.coords1))
+        pos2 = QPoint(*self.obj.axes_to_canvas(*self.coords2))
+        return pos1, pos2
+    
+    def undo(self):
+        pos1, pos2 = self.compute_positions()
+        self.obj.move_local_shape(pos1, pos2)
+    
+    def redo(self):
+        pos1, pos2 = self.compute_positions()
+        self.obj.move_local_shape(pos2, pos1)
+
+class UndoMovePoint(UndoMoveObject):
+    def __init__(self, obj, pos1, pos2, handle, ctrl):
+        super(UndoMovePoint, self).__init__(obj, pos1, pos2)
+        self.handle = handle
+        self.ctrl = ctrl
+        
+    def undo(self):
+        pos1, pos2 = self.compute_positions()
+        self.obj.move_local_point_to(self.handle, pos1, self.ctrl)
+    
+    def redo(self):
+        pos1, pos2 = self.compute_positions()
+        self.obj.move_local_point_to(self.handle, pos2, self.ctrl)
+
 class ObjectHandler(object):
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0,
                  multiselection=False):
@@ -379,29 +416,64 @@ class ObjectHandler(object):
                          self.move, self.state0)
         filter.add_event(self.state0, filter.mouse_release(btn, mods),
                          self.stop_tracking, start_state)
+        filter.add_event(start_state, StandardKeyMatch(QKeySequence.Undo),
+                         self.undo, start_state)
+        filter.add_event(start_state, StandardKeyMatch(QKeySequence.Redo),
+                         self.redo, start_state)
         self.handle = None  # first mouse position
         self.inside = False
         self.active = None  # mouse position seen during last event
         self.last_pos = None
         self.unselection_pending = None
+
+        self.undo_stack = [None]
+        self.undo_index = 0
+        self.first_pos = None
+        self.undo_action = None
+        
+    def add_undo_move_action(self, undo_action):
+        self.undo_stack = self.undo_stack[:self.undo_index+1]
+        self.undo_stack.append(undo_action)
+        self.undo_index = len(self.undo_stack) - 1
+    
+    def undo(self, filter, event):
+        action = self.undo_stack[self.undo_index]
+        if action is not None:
+            if action.is_valid():
+                action.undo()
+                filter.plot.replot()
+            else:
+                self.undo_stack.remove(action)
+            self.undo_index -= 1
+    
+    def redo(self, filter, event):
+        if self.undo_index < len(self.undo_stack) - 1:
+            action = self.undo_stack[self.undo_index + 1]
+            if action.is_valid():
+                action.redo()
+                filter.plot.replot()
+                self.undo_index += 1
+            else:
+                self.undo_stack.remove(action)
         
     def start_tracking(self, filter, event):
         plot = filter.plot
         self.inside = False
         self.active = None
         self.handle = None
-        self.last_pos = QPoint(event.pos())
+        self.first_pos = pos = event.pos()
+        self.last_pos = QPoint(pos)
         selected = plot.get_active_item()
         distance = CONF.get("plot", "selection/distance", 6)
 
         (nearest, nearest_dist, nearest_handle,
-         nearest_inside) = plot.get_nearest_object(event.pos(), distance)
+         nearest_inside) = plot.get_nearest_object(pos, distance)
         if nearest is not None:
             # Is the nearest object the real deal?
             if not nearest.can_select() or nearest_dist >= distance:
                 # Looking for the nearest object in z containing cursor position
                 (nearest, nearest_dist, nearest_handle,
-                 nearest_inside) = plot.get_nearest_object_in_z(event.pos())
+                 nearest_inside) = plot.get_nearest_object_in_z(pos)
         
         # This will unselect active item only if it's not moved afterwards:
         self.unselection_pending = selected is nearest
@@ -409,7 +481,7 @@ class ObjectHandler(object):
             # An item is selected
             self.active = selected
             (dist, self.handle, self.inside,
-             other_object) = self.active.hit_test(event.pos())
+             other_object) = self.active.hit_test(pos)
             if other_object is not None:
                 # e.g. LegendBoxItem: 'other_object' is the selected curve
                 plot.set_active_item(other_object)
@@ -420,7 +492,7 @@ class ObjectHandler(object):
                 other_selitems = [_it for _it in plot.get_selected_items()
                                   if _it is not self.active and _it.can_move()]
                 for selitem in other_selitems:
-                    dist, handle, inside, _other = selitem.hit_test(event.pos())
+                    dist, handle, inside, _other = selitem.hit_test(pos)
                     if dist < distance or inside:
                         self.inside = inside
                         break
@@ -471,13 +543,18 @@ class ObjectHandler(object):
         self.unselection_pending = False
         if self.inside:
             self.active.move_local_shape(self.last_pos, event.pos())
+            self.undo_action = UndoMoveObject(self.active, event.pos(),
+                                              self.first_pos)
         else:
             ctrl = event.modifiers() & Qt.ControlModifier == Qt.ControlModifier
             self.active.move_local_point_to(self.handle, event.pos(), ctrl)
+            self.undo_action = UndoMovePoint(self.active, self.first_pos,
+                                             event.pos(), self.handle, ctrl)
         self.last_pos = QPoint(event.pos())
         filter.plot.replot()
         
-    def stop_tracking(self, filter, _event):
+    def stop_tracking(self, filter, event):
+        self.add_undo_move_action(self.undo_action)
         if self.unselection_pending:
             self.__unselect_objects(filter)
         self.handle = None

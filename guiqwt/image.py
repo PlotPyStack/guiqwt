@@ -402,6 +402,10 @@ class BaseImageItem(QwtPlotItem):
         ay = self.yAxis()
         return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
 
+    def axes_to_canvas(self, x, y):
+        plot = self.plot()
+        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
+
     def set_background_color(self, qcolor):
         #mask = np.uint32(255*self.imageparam.alpha+0.5).clip(0,255) << 24
         self.bg_qcolor = qcolor
