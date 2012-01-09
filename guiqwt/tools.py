@@ -1863,7 +1863,7 @@ def export_curve_data(item):
             QMessageBox.critical(plot, _("Export"),
                                  _("Unable to export item data.")+\
                                  "<br><br>"+_("Error message:")+"<br>"+\
-                                 str(error))
+                                 unicode(error))
 
 def export_image_data(item):
     """Export image item data to file"""
