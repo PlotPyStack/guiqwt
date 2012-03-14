@@ -77,8 +77,12 @@ struct LinearInterpolation {
 	double v = src.value(nx, ny);
 	double a=0;
 
-	if (nx==0||nx==src.nj-1) return (T)v;
-	if (ny==0||ny==src.ni-1) return (T)v;
+      // The following couple of lines were commented out to avoid disabling 
+      // the linear interpolation on image edges. Demonstrating the effect of 
+      // this change is quite easy: just try to show a very small image 
+      // (e.g. 10x10) with guiqwt.pyplot.imshow for example.
+//	if (nx==0||nx==src.nj-1) return (T)v;
+//	if (ny==0||ny==src.ni-1) return (T)v;
 
 	if (nx<src.nj-1) {
 	    a = p.x()-nx;
