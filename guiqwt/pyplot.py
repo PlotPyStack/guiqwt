@@ -112,7 +112,7 @@ from guidata.configtools import get_icon
 # Local imports
 from guiqwt.config import _
 from guiqwt.plot import PlotManager
-from guiqwt.image import ImagePlot
+from guiqwt.image import ImagePlot, INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.histogram import ContrastAdjustment
 from guiqwt.cross_section import XCrossSection, YCrossSection
@@ -597,9 +597,10 @@ def imread(fname, to_grayscale=False):
     from guiqwt.io import imagefile_to_array
     return imagefile_to_array(fname, to_grayscale=to_grayscale)
 
-def imshow(data, mask=None):
+def imshow(data, interpolation=None, mask=None):
     """
     Display the image in *data* to current axes
+    interpolation: 'nearest', 'linear' (default), 'antialiasing'
     
     Example:
         
@@ -620,6 +621,12 @@ def imshow(data, mask=None):
         img = make.image(data)
     else:
         img = make.maskedimage(data, mask, show_mask=True)
+    if interpolation is not None:
+        interp_dict = {'nearest': INTERP_NEAREST,
+                       'linear': INTERP_LINEAR,
+                       'antialiasing': INTERP_AA}
+        assert interpolation in interp_dict, "invalid interpolation option"
+        img.set_interpolation(interp_dict[interpolation], size=5)
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()

@@ -447,7 +447,7 @@ class BaseImageItem(QwtPlotItem):
         Set image interpolation mode
         
         interp_mode: INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
-        size: (for anti-aliasing only) AA matrix size
+        size (integer): (for anti-aliasing only) AA matrix size
         """
         if interp_mode in (INTERP_NEAREST, INTERP_LINEAR):
             self.interpolate = (interp_mode,)
