@@ -28,7 +28,12 @@ Reference
 
 #TODO: Implement an XML-based serialize/deserialize mechanism for plot items
 
-import sys, os.path as osp, numpy as np, os, time, re
+import sys
+import os.path as osp
+import numpy as np
+import os
+import time
+import re
 
 # Local imports
 from guiqwt.config import _
@@ -160,6 +165,8 @@ def imagefile_to_array(filename, to_grayscale=False):
     if ext.lower() in (".jpg", ".png", ".gif", ".tif", ".tiff", ".jp2"):
         import PIL.Image
         import PIL.TiffImagePlugin # py2exe
+        PIL.TiffImagePlugin.OPEN_INFO[(PIL.TiffImagePlugin.II,
+                                       0, 1, 1, (16,), ())] = ("I;16", "I;16")
         img = PIL.Image.open(filename)
         if img.mode in ("CMYK", "YCbCr"):
             # Converting to RGB
