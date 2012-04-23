@@ -2231,9 +2231,14 @@ class ImagePlot(CurvePlot):
         """
         CurvePlot.add_item(self, item, z)
         if isinstance(item, BaseImageItem):
+            parent = self.parent()
+            if parent is not None:
+                parent.setUpdatesEnabled(False)
             self.update_colormap_axis(item)
             if autoscale:
                 self.do_autoscale()
+            if parent is not None:
+                parent.setUpdatesEnabled(True)
     
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
