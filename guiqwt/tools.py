@@ -1619,6 +1619,37 @@ class SnapshotTool(RectangularActionTool):
                                        fix_orientation=True)
 
 
+class RotateCropTool(CommandTool):
+    """Rotate & Crop tool
+    
+    See :py:class:`guiqwt.rotatecrop.RotateCropDialog` dialog."""
+    def __init__(self, manager, toolbar_id=DefaultToolbarID, options=None):
+        CommandTool.__init__(self, manager, title=_("Rotate and crop"),
+                             icon=get_icon('rotate.png'), toolbar_id=toolbar_id)
+        self.options = options
+
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        from guiqwt.image import TrImageItem
+        from guiqwt.rotatecrop import RotateCropDialog
+        for item in plot.get_selected_items():
+            if isinstance(item, TrImageItem):
+                z = item.z()
+                plot.del_item(item)
+                dlg = RotateCropDialog(plot.parent(), options=self.options)
+                dlg.set_item(item)
+                ok = dlg.exec_()
+                plot.add_item(dlg.get_item(), z=z)
+                if not ok:
+                    break
+
+    def update_status(self, plot):
+        from guiqwt.image import TrImageItem
+        status = any([isinstance(item, TrImageItem)
+                      for item in plot.get_selected_items()])
+        self.action.setEnabled(status)
+
+
 class PrintFilter(QwtPlotPrintFilter):
     def __init__(self):
         QwtPlotPrintFilter.__init__(self)
