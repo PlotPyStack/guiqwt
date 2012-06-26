@@ -151,7 +151,7 @@ class Window(QMainWindow):
         self.frame = frame
 
         self.setWindowTitle(wintitle)
-        self.setWindowIcon(get_icon('guiqwt.png'))
+        self.setWindowIcon(get_icon('guiqwt.svg'))
 
     def closeEvent(self, event):
         global _figures, _current_fig, _current_axes

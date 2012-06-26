@@ -43,7 +43,7 @@ class FilterParam(DataSet):
     
 class ExampleDialog(ImageDialog):
     def __init__(self, wintitle=_("Example dialog box"),
-                 icon="guidata.png", options=dict(show_contrast=True),
+                 icon="guidata.svg", options=dict(show_contrast=True),
                  edit=False):
         self.filter_gbox = None
         self.data = None
