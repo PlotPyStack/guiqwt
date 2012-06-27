@@ -2083,6 +2083,7 @@ class ImagePlot(CurvePlot):
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
     """
+    DEFAULT_ITEM_TYPE = IImageItemType
     AUTOSCALE_TYPES = (CurveItem, BaseImageItem, PolygonMapItem)
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)
     def __init__(self, parent=None,
@@ -2115,7 +2116,7 @@ class ImagePlot(CurvePlot):
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
         
-    #---- BasePlot API ---------------------------------------------------------
+    #---- QwtPlot API ----------------------------------------------------------
     def showEvent(self, event):
         """Override BasePlot method"""
         if self.lock_aspect_ratio:

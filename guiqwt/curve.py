@@ -1274,6 +1274,7 @@ class CurvePlot(BasePlot):
         * axes_synchronised: keep all x and y axes synchronised when zomming or
                              panning
     """
+    DEFAULT_ITEM_TYPE = ICurveItemType
     AUTOSCALE_TYPES = (CurveItem,PolygonMapItem)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  xunit=None, yunit=None, gridparam=None,
@@ -1485,6 +1486,16 @@ class CurvePlot(BasePlot):
                 o1, o2 = o2, o1
             self.setAxisScale(k, o1, o2)
         self.replot()
+
+    def get_default_item(self):
+        """Return default item, depending on plot's default item type
+        (e.g. for a curve plot, this is a curve item type).
+        
+        Return nothing if there is more than one item matching 
+        the default item type."""
+        items = self.get_items(item_type=self.DEFAULT_ITEM_TYPE)
+        if len(items) == 1:
+            return items[0]
 
     #---- BasePlot API ---------------------------------------------------------
     def add_item(self, item, z=None):

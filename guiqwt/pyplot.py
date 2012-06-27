@@ -173,6 +173,10 @@ class Window(QMainWindow):
     def replot(self):
         for plot in self.plots:
             plot.replot()
+            item = plot.get_default_item()
+            if item is not None:
+                plot.set_active_item(item)
+                item.unselect()
             
     def add_panels(self, images=False):
         self.manager.add_panel(self.itemlist)
@@ -191,6 +195,7 @@ class Window(QMainWindow):
         self.show()
         self.replot()
         self.manager.get_default_tool().activate()
+        self.manager.update_tools_status()
 
 
 class Figure(object):
