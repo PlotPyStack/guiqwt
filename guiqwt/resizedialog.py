@@ -54,7 +54,7 @@ class ResizeDialog(QDialog):
         h_valid.setBottom(1)
         h_edit.setValidator(h_valid)
         
-        self.no_zoom_box = zbox = QCheckBox(_("Keep the original size"), self)
+        zbox = QCheckBox(_("Original size"), self)
 
         formlayout.addRow(_("Width (pixels)"), w_edit)
         formlayout.addRow(_("Height (pixels)"), h_edit)

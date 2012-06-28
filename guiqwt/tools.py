@@ -1498,30 +1498,24 @@ class CopyToClipboardTool(CommandTool):
         """Activate tool"""
         plot.copy_to_clipboard()
 
-    
+
 def save_snapshot(plot, p0, p1):
     """
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import TrImageItem, get_image_from_plot, get_plot_qrect
+    from guiqwt.image import (get_image_from_plot, get_plot_qrect,
+                              get_items_in_rectangle,
+                              compute_trimageitems_original_size)
     from guiqwt.io import (array_to_imagefile, array_to_dicomfile,
                            MODE_INTENSITY_U8, set_dynamic_range_from_dtype)
-    items = plot.get_items(item_type=IExportROIImageItemType)
-    src_qrect = get_plot_qrect(plot, p0, p1)
-    src_x, src_y, src_w, src_h = src_qrect.getRect()
-    items = [it for it in items if src_qrect.intersects(it.boundingRect())]
+    items = get_items_in_rectangle(plot, p0, p1)
     if not items:
         QMessageBox.critical(plot, _("Rectangle snapshot"),
                  _("There is no supported image item in current selection."))
         return
-    original_size = (src_w, src_h)
-    trparams = [item.get_transform() for item in items
-                if isinstance(item, TrImageItem)]
-    if trparams:
-        dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
-        dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
-        original_size = (src_w/dx_max, src_h/dy_max)
+    src_x, src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
+    original_size = compute_trimageitems_original_size(items, src_w, src_h)
     screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
     
     from guiqwt.resizedialog import ResizeDialog
@@ -1536,6 +1530,8 @@ def save_snapshot(plot, p0, p1):
         _levels = BeginGroup(_("Image levels adjustments"))
         apply_contrast = BoolItem(_("Apply contrast settings"),
                                   default=False)
+        apply_interpolation = BoolItem(_("Apply interpolation algorithm"),
+                                       default=True)
         norm_range = BoolItem(_("Scale levels to maximum range"),
                               default=False)
         _end_levels = EndGroup(_("Image levels adjustments"))
@@ -1555,8 +1551,10 @@ def save_snapshot(plot, p0, p1):
     else:
         destw, desth = dlg.width, dlg.height
     data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
+                               add_images=param.add_images,
                                apply_lut=param.apply_contrast,
-                               add_images=param.add_images)
+                               apply_interpolation=param.apply_interpolation,
+                               original_resolution=dlg.keep_original_size)
 
     dtype = None
     for item in items:

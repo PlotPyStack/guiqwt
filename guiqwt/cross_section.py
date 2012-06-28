@@ -54,7 +54,7 @@ from guiqwt.config import CONF, _
 from guiqwt.interfaces import ICSImageItemType, IPanel, IBasePlotItem
 from guiqwt.panels import PanelWidget, ID_XCS, ID_YCS, ID_OCS
 from guiqwt.curve import CurvePlot, ErrorBarCurveItem
-from guiqwt.image import ImagePlot, LUT_MAX
+from guiqwt.image import ImagePlot, LUT_MAX, get_image_from_qrect
 from guiqwt.styles import CurveParam
 from guiqwt.tools import ExportItemDataTool
 from guiqwt.geometry import translate, rotate, vector_norm, vector_angle
@@ -132,24 +132,6 @@ class CrossSectionItem(ErrorBarCurveItem):
         raise NotImplementedError
 
 
-def get_image_data(plot, p0, p1, apply_lut=False):
-    """
-    Save rectangular plot area
-    p0, p1: resp. top left and bottom right points (QPoint objects)
-    """
-    from guiqwt.image import TrImageItem, get_image_from_plot, get_plot_qrect
-    items = plot.get_items(item_type=ICSImageItemType)
-    if not items:
-        raise TypeError, _("There is no supported image item in current plot.")
-    _src_x, _src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
-    trparams = [item.get_transform() for item in items
-                if isinstance(item, TrImageItem)]
-    if trparams:
-        src_w /= max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
-        src_h /= max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
-    return get_image_from_plot(plot, p0, p1, src_w, src_h, apply_lut=apply_lut)
-
-
 def get_rectangular_area(obj):
     """
     Return rectangular area covered by object
@@ -182,8 +164,10 @@ def get_plot_x_section(obj, apply_lut=False):
     else:
         yc1 = yc0-1
     try:
-        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
-                              apply_lut=apply_lut)
+        #TODO: eventually add an option to apply interpolation algorithm
+        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    apply_lut=apply_lut,
+                                    apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
@@ -206,8 +190,9 @@ def get_plot_y_section(obj, apply_lut=False):
     xc0, _yc0 = obj.axes_to_canvas(x0, 0)
     xc1 = xc0+1
     try:
-        data = get_image_data(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
-                              apply_lut=apply_lut)
+        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    apply_lut=apply_lut,
+                                    apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
@@ -234,8 +219,9 @@ def get_plot_average_x_section(obj, apply_lut=False):
     if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):
         yc1, yc0 = yc0, yc1
     try:
-        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
-                              apply_lut=apply_lut)
+        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    apply_lut=apply_lut,
+                                    apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
@@ -261,8 +247,9 @@ def get_plot_average_y_section(obj, apply_lut=False):
     if xc0 > xc1:
         xc1, xc0 = xc0, xc1
     try:
-        data = get_image_data(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
-                              apply_lut=apply_lut)
+        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    apply_lut=apply_lut,
+                                    apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)

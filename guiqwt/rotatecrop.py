@@ -17,7 +17,7 @@ from guiqwt.config import _
 from guiqwt.builder import make
 from guiqwt.plot import ImageDialog
 from guiqwt.histogram import lut_range_threshold
-from guiqwt.image import INTERP_LINEAR
+from guiqwt.image import INTERP_LINEAR, get_image_in_shape
 
 
 class RotateCropDialog(ImageDialog):
@@ -37,6 +37,7 @@ class RotateCropDialog(ImageDialog):
         if resize_to is not None:
             width, height = resize_to
             self.resize(width, height)
+        self.cropped_array = None
 
     def set_item(self, item):
         self.item = item
@@ -53,13 +54,21 @@ class RotateCropDialog(ImageDialog):
         self.item.set_rotatable(True)
         
         plot = self.get_plot()
-        item.set_lut_range(lut_range_threshold(item, 256, 2.))        
+        item.set_lut_range(lut_range_threshold(item, 256, 2.))
         item.set_interpolation(INTERP_LINEAR)
         plot.add_item(self.item)
+        
+        # Setting the item as active item (even if the cropping rectangle item
+        # will also be set as active item just below), for the image tools to
+        # register this item (contrast, ...):
+        plot.set_active_item(self.item)
+        self.item.unselect()
+        
         self.crop_rect = make.annotated_rectangle(0, 0, 1, 1,
                                                   _(u"Cropping rectangle"))
         self.crop_rect.annotationparam.format = "%.1f cm"
         plot.add_item(self.crop_rect)
+        plot.set_active_item(self.crop_rect)
         x0, y0, x1, y1 = self.item.get_crop_coordinates()
         self.crop_rect.set_rect(x0, y0, x1, y1)
         plot.replot()
@@ -135,6 +144,8 @@ class RotateCropDialog(ImageDialog):
     def accept(self):
         """Reimplement Qt method"""
         self.__restore_original_state()
+        self.cropped_array = get_image_in_shape(self.crop_rect,
+                                                apply_interpolation=False)
         self.crop()
         # Ignoring image position changes
         pos_x0, pos_y0, _angle, sx, sy, hf, vf = self.item_original_transform
