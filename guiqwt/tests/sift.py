@@ -863,7 +863,7 @@ class ImageFT(ObjectFT):
         rows = self._get_selected_rows()
         obj = self.objects[rows[0]]
         original_size = obj.data.shape[1], obj.data.shape[0]
-        from guiqwt.resizedialog import ResizeDialog
+        from guiqwt.widgets.resizedialog import ResizeDialog
         dlg = ResizeDialog(self.plot, new_size=original_size,
                            old_size=original_size,
                            text=_("Destination size:"))

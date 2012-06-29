@@ -1518,7 +1518,7 @@ def save_snapshot(plot, p0, p1):
     original_size = compute_trimageitems_original_size(items, src_w, src_h)
     screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
     
-    from guiqwt.resizedialog import ResizeDialog
+    from guiqwt.widgets.resizedialog import ResizeDialog
     dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
                        text=_("Destination size:"))
     if not dlg.exec_():
@@ -1637,7 +1637,7 @@ class RotateCropTool(CommandTool):
     def activate_command(self, plot, checked):
         """Activate tool"""
         from guiqwt.image import TrImageItem
-        from guiqwt.rotatecrop import RotateCropDialog
+        from guiqwt.widgets.rotatecrop import RotateCropDialog
         for item in plot.get_selected_items():
             if isinstance(item, TrImageItem):
                 z = item.z()

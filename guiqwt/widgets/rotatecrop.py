@@ -5,6 +5,17 @@
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+"""
+rotatecrop
+----------
+
+The `rotatecrop` module provides a dialog box providing essential GUI elements 
+for rotating (arbitrary angle) and cropping an image:
+    
+    * :py:class:`guiqwt.widgets.rotatecrop.RotateCropDialog`: dialog box
+    * :py:class:`guiqwt.widgets.rotatecrop.RotateCropWidget`: equivalent widget
+"""
+
 
 from PyQt4.QtGui import QCheckBox, QDialog, QWidget, QVBoxLayout, QHBoxLayout
 from PyQt4.QtCore import SIGNAL

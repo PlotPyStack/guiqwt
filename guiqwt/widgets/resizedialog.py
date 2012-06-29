@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
+# Copyright © 2009-2012 CEA
 # Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
+
+"""
+resizedialog
+------------
+
+The `resizedialog` module provides a dialog box providing essential GUI 
+for entering parameters needed to resize an image:
+:py:class:`guiqwt.widgets.resizedialog.ResizeDialog`.
+"""
 
 from __future__ import division
 

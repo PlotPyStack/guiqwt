@@ -13,7 +13,7 @@ import os.path as osp
 
 from guiqwt.builder import make
 from guiqwt.plot import ImageDialog
-from guiqwt.rotatecrop import RotateCropDialog, RotateCropWidget
+from guiqwt.widgets.rotatecrop import RotateCropDialog, RotateCropWidget
 from guiqwt.io import imagefile_to_array
 
 
