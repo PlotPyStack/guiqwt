@@ -1550,21 +1550,29 @@ def save_snapshot(plot, p0, p1):
         destw, desth = original_size
     else:
         destw, desth = dlg.width, dlg.height
-    data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
+    
+    try:
+        data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
                                add_images=param.add_images,
                                apply_lut=param.apply_contrast,
                                apply_interpolation=param.apply_interpolation,
                                original_resolution=dlg.keep_original_size)
-
-    dtype = None
-    for item in items:
-        if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
-            dtype = item.data.dtype
-    if param.norm_range:
-        data = set_dynamic_range_from_dtype(data, dtype=dtype)
-    else:
-        data = np.array(data, dtype=dtype)
-            
+    
+        dtype = None
+        for item in items:
+            if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
+                dtype = item.data.dtype
+        if param.norm_range:
+            data = set_dynamic_range_from_dtype(data, dtype=dtype)
+        else:
+            data = np.array(data, dtype=dtype)
+    except MemoryError:
+        mbytes = int(destw*desth*32./(8*1024**2))
+        QMessageBox.critical(plot, _("Memory error"),
+                             _("There is not enough memory left to process "
+                               "this %d x %d image (%d MB would be required)."
+                             ) % (destw, desth, mbytes))
+        return
     for model_item in items:
         model_fname = model_item.get_filename()
         if model_fname is not None and model_fname.lower().endswith(".dcm"):

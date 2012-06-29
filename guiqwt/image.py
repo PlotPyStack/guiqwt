@@ -1288,7 +1288,10 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
     aligned_destw = align*((int(destw)+align-1)/align)
     aligned_desth = int(desth*aligned_destw/destw)
 
-    output = np.zeros((aligned_desth, aligned_destw), np.float32)
+    try:
+        output = np.zeros((aligned_desth, aligned_destw), np.float32)
+    except ValueError:
+        raise MemoryError
     if not add_images:
         dst_image = output
 
