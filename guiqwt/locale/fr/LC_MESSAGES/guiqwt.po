@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2012-06-29 11:52+Paris, Madrid (heure dt)\n"
+"POT-Creation-Date: 2012-06-29 16:16+Paris, Madrid (heure dt)\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -259,116 +259,6 @@ msgstr "Souhaitez-vous vraiment supprimer les objets sélectionnés ?"
 msgid "Item list"
 msgstr "Liste des objets"
 
-#: guiqwt\fit.py:71
-msgid "Method"
-msgstr "Méthode"
-
-#: guiqwt\fit.py:74
-msgid "Conjugate Gradient"
-msgstr "Gradient conjugué"
-
-#: guiqwt\fit.py:75
-msgid "Least squares"
-msgstr "Moindres carrés"
-
-#: guiqwt\fit.py:78
-msgid "for simplex, powel, cg and bfgs norm used by the error function"
-msgstr ""
-
-#: guiqwt\fit.py:81 guiqwt\fit.py:83
-msgid "for simplex, powel, least squares"
-msgstr ""
-
-#: guiqwt\fit.py:84
-msgid "for cg, bfgs"
-msgstr ""
-
-#: guiqwt\fit.py:86
-msgid "for cg, bfgs. inf is max, -inf is min"
-msgstr ""
-
-#: guiqwt\fit.py:90
-msgid "Name"
-msgstr "Nom"
-
-#: guiqwt\fit.py:91
-msgid "Value"
-msgstr "Valeur"
-
-#: guiqwt\fit.py:92
-msgid "Min"
-msgstr "Min"
-
-#: guiqwt\fit.py:93
-msgid "Max"
-msgstr "Max"
-
-#: guiqwt\fit.py:94 guiqwt\styles.py:296
-msgid "Steps"
-msgstr "Pas"
-
-#: guiqwt\fit.py:95
-msgid "Format"
-msgstr "Format"
-
-#: guiqwt\fit.py:96
-msgid "Logarithmic"
-msgstr "logarithmique"
-
-#: guiqwt\fit.py:96 guiqwt\styles.py:604 guiqwt\styles.py:615
-#: guiqwt\tools.py:1770
-msgid "Scale"
-msgstr "Échelle"
-
-#: guiqwt\fit.py:97 guiqwt\styles.py:589
-msgid "Unit"
-msgstr "Unité"
-
-#: guiqwt\fit.py:118
-msgid "Curve fitting parameter"
-msgstr "Paramètre d'ajustement"
-
-#: guiqwt\fit.py:135
-msgid "Edit '%s' fit parameter properties"
-msgstr "Modifier les propriétés du paramètre d'ajustement '%s'"
-
-#: guiqwt\fit.py:260
-msgid "Curve fitting"
-msgstr "Ajustement de courbes"
-
-#: guiqwt\fit.py:299
-msgid "Fit parameters"
-msgstr "Paramètres d'ajustement"
-
-#: guiqwt\fit.py:332
-msgid "Automatic fitting options"
-msgstr "Options d'ajustement automatique"
-
-#: guiqwt\fit.py:362
-msgid "Run"
-msgstr "Ajuster"
-
-#: guiqwt\fit.py:364
-msgid "Settings"
-msgstr "Options"
-
-#: guiqwt\fit.py:367 guiqwt\styles.py:1154
-msgid "Bounds"
-msgstr "Bornes"
-
-#: guiqwt\fit.py:375
-msgid "Automatic fit"
-msgstr "Ajustement automatique"
-
-#: guiqwt\fit.py:419 guiqwt\tests\sift.py:94 guiqwt\tests\sift.py:119
-#: guiqwt\tests\simple_window.py:41
-msgid "Data"
-msgstr "Données"
-
-#: guiqwt\fit.py:425
-msgid "Fit"
-msgstr "Ajustement"
-
 #: guiqwt\histogram.py:393 guiqwt\histogram.py:487
 msgid "Eliminate outliers"
 msgstr "Éliminer les bords"
@@ -471,50 +361,6 @@ msgstr "Ouvrir"
 msgid "%s could not be opened:"
 msgstr "%s n'a pas pu être ouvert:"
 
-#: guiqwt\resizedialog.py:57
-msgid "Original size"
-msgstr "Taille d'origine"
-
-#: guiqwt\resizedialog.py:59
-msgid "Width (pixels)"
-msgstr "Largeur (pixels)"
-
-#: guiqwt\resizedialog.py:60
-msgid "Height (pixels)"
-msgstr "Hauteur (pixels)"
-
-#: guiqwt\resizedialog.py:63
-msgid "Original size:"
-msgstr "Taille d'origine :"
-
-#: guiqwt\resizedialog.py:65
-msgid "Zoom factor:"
-msgstr "Facteur de zoom :"
-
-#: guiqwt\resizedialog.py:78 guiqwt\tests\sift.py:758 guiqwt\tests\sift.py:887
-msgid "Resize"
-msgstr "Redimensionner"
-
-#: guiqwt\rotatecrop.py:39
-msgid "Show cropping rectangle"
-msgstr "Afficher le rectangle de rognage"
-
-#: guiqwt\rotatecrop.py:45
-msgid "Reset"
-msgstr "Réinitialiser"
-
-#: guiqwt\rotatecrop.py:53
-msgid "Apply"
-msgstr "Appliquer"
-
-#: guiqwt\rotatecrop.py:86
-msgid "Cropping rectangle"
-msgstr "Rectangle de rognage"
-
-#: guiqwt\rotatecrop.py:158
-msgid "Rotate & Crop"
-msgstr "Rotation & rognage"
-
 #: guiqwt\shapes.py:565
 msgid "Shape"
 msgstr "Forme"
@@ -591,6 +437,10 @@ msgstr "Lignes"
 #: guiqwt\styles.py:295
 msgid "Sticks"
 msgstr "Bâtonnets"
+
+#: guiqwt\styles.py:296 guiqwt\widgets\fit.py:94
+msgid "Steps"
+msgstr "Pas"
 
 #: guiqwt\styles.py:297
 msgid "Dots"
@@ -788,6 +638,10 @@ msgstr "Quadrillage secondaire"
 msgid "Title"
 msgstr "Titre"
 
+#: guiqwt\styles.py:589 guiqwt\widgets\fit.py:97
+msgid "Unit"
+msgstr "Unité"
+
 #: guiqwt\styles.py:591
 msgid "Title font"
 msgstr "Police du titre"
@@ -812,6 +666,11 @@ msgstr "haut"
 #: guiqwt\styles.py:603
 msgid "X-axis position"
 msgstr "Position de l'axe des abscisses"
+
+#: guiqwt\styles.py:604 guiqwt\styles.py:615 guiqwt\tools.py:1770
+#: guiqwt\widgets\fit.py:96
+msgid "Scale"
+msgstr "Échelle"
 
 #: guiqwt\styles.py:605 guiqwt\styles.py:616
 msgid "linear"
@@ -1192,6 +1051,10 @@ msgstr "Zone masquée (alpha)"
 msgid "Unmasked area alpha"
 msgstr "Zone non masquée (alpha)"
 
+#: guiqwt\styles.py:1154 guiqwt\widgets\fit.py:367
+msgid "Bounds"
+msgstr "Bornes"
+
 #: guiqwt\styles.py:1160
 msgid "Use image colormap and level"
 msgstr "Utiliser l'échelle de couleur de l'image"
@@ -1476,6 +1339,11 @@ msgstr ""
 msgid "Untitled"
 msgstr "Sans titre"
 
+#: guiqwt\tests\sift.py:94 guiqwt\tests\sift.py:119
+#: guiqwt\tests\simple_window.py:41 guiqwt\widgets\fit.py:419
+msgid "Data"
+msgstr "Données"
+
 #: guiqwt\tests\sift.py:110
 msgid "Signal size (total number of points)"
 msgstr "Nombre de points"
@@ -1702,6 +1570,11 @@ msgstr "Rotation directe de 90°"
 #: guiqwt\tests\sift.py:756
 msgid "Rotate arbitrarily..."
 msgstr "Rotation arbitraire..."
+
+#: guiqwt\tests\sift.py:758 guiqwt\tests\sift.py:887
+#: guiqwt\widgets\resizedialog.py:94
+msgid "Resize"
+msgstr "Redimensionner"
 
 #: guiqwt\tests\sift.py:764
 msgid "Flat-field correction"
@@ -2127,7 +2000,9 @@ msgstr "Mémoire insuffisante"
 msgid ""
 "There is not enough memory left to process this %d x %d image (%d MB would "
 "be required)."
-msgstr "La quantité de mémoire disponible n'est pas suffisante pour traiter cette image de %d x %d pixels (%d Mo seraient nécessaires)"
+msgstr ""
+"La quantité de mémoire disponible n'est pas suffisante pour traiter cette "
+"image de %d x %d pixels (%d Mo seraient nécessaires)"
 
 #: guiqwt\tools.py:1583
 msgid "16-bits DICOM image"
@@ -2266,6 +2141,142 @@ msgstr "Souhaitez-vous vraiment supprimer toutes les formes de masquage ?"
 #: guiqwt\tools.py:2286
 msgid "Do you really want to clear the mask?"
 msgstr "Souhaitez-vous vraiment effacer le masque ?"
+
+#: guiqwt\widgets\base.py:45
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: guiqwt\widgets\base.py:54
+msgid "Apply"
+msgstr "Appliquer"
+
+#: guiqwt\widgets\base.py:144
+msgid "Rotate & Crop"
+msgstr "Rotation & rognage"
+
+#: guiqwt\widgets\fit.py:71
+msgid "Method"
+msgstr "Méthode"
+
+#: guiqwt\widgets\fit.py:74
+msgid "Conjugate Gradient"
+msgstr "Gradient conjugué"
+
+#: guiqwt\widgets\fit.py:75
+msgid "Least squares"
+msgstr "Moindres carrés"
+
+#: guiqwt\widgets\fit.py:78
+msgid "for simplex, powel, cg and bfgs norm used by the error function"
+msgstr ""
+
+#: guiqwt\widgets\fit.py:81 guiqwt\widgets\fit.py:83
+msgid "for simplex, powel, least squares"
+msgstr ""
+
+#: guiqwt\widgets\fit.py:84
+msgid "for cg, bfgs"
+msgstr ""
+
+#: guiqwt\widgets\fit.py:86
+msgid "for cg, bfgs. inf is max, -inf is min"
+msgstr ""
+
+#: guiqwt\widgets\fit.py:90
+msgid "Name"
+msgstr "Nom"
+
+#: guiqwt\widgets\fit.py:91
+msgid "Value"
+msgstr "Valeur"
+
+#: guiqwt\widgets\fit.py:92
+msgid "Min"
+msgstr "Min"
+
+#: guiqwt\widgets\fit.py:93
+msgid "Max"
+msgstr "Max"
+
+#: guiqwt\widgets\fit.py:95
+msgid "Format"
+msgstr "Format"
+
+#: guiqwt\widgets\fit.py:96
+msgid "Logarithmic"
+msgstr "logarithmique"
+
+#: guiqwt\widgets\fit.py:118
+msgid "Curve fitting parameter"
+msgstr "Paramètre d'ajustement"
+
+#: guiqwt\widgets\fit.py:135
+msgid "Edit '%s' fit parameter properties"
+msgstr "Modifier les propriétés du paramètre d'ajustement '%s'"
+
+#: guiqwt\widgets\fit.py:260
+msgid "Curve fitting"
+msgstr "Ajustement de courbes"
+
+#: guiqwt\widgets\fit.py:299
+msgid "Fit parameters"
+msgstr "Paramètres d'ajustement"
+
+#: guiqwt\widgets\fit.py:332
+msgid "Automatic fitting options"
+msgstr "Options d'ajustement automatique"
+
+#: guiqwt\widgets\fit.py:362
+msgid "Run"
+msgstr "Ajuster"
+
+#: guiqwt\widgets\fit.py:364
+msgid "Settings"
+msgstr "Options"
+
+#: guiqwt\widgets\fit.py:375
+msgid "Automatic fit"
+msgstr "Ajustement automatique"
+
+#: guiqwt\widgets\fit.py:425
+msgid "Fit"
+msgstr "Ajustement"
+
+#: guiqwt\widgets\fliprotate.py:51
+msgid "Angle (°):"
+msgstr "Angle (°) :"
+
+#: guiqwt\widgets\fliprotate.py:62
+msgid "Flip:"
+msgstr "Retournement :"
+
+#: guiqwt\widgets\resizedialog.py:73
+msgid "Original size"
+msgstr "Taille d'origine"
+
+#: guiqwt\widgets\resizedialog.py:75
+msgid "Width (pixels)"
+msgstr "Largeur (pixels)"
+
+#: guiqwt\widgets\resizedialog.py:76
+msgid "Height (pixels)"
+msgstr "Hauteur (pixels)"
+
+#: guiqwt\widgets\resizedialog.py:79
+msgid "Original size:"
+msgstr "Taille d'origine :"
+
+#: guiqwt\widgets\resizedialog.py:81
+msgid "Zoom factor:"
+msgstr "Facteur de zoom :"
+
+#: guiqwt\widgets\rotatecrop.py:51
+msgid "Show cropping rectangle"
+msgstr "Afficher le rectangle de rognage"
+
+#: guiqwt\widgets\rotatecrop.py:61
+msgid "Cropping rectangle"
+msgstr "Rectangle de rognage"
 
 #~ msgid "Keep the original size"
 #~ msgstr "Conserver la taille d'origine"

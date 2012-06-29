@@ -1645,7 +1645,7 @@ class RotateCropTool(CommandTool):
                 dlg = RotateCropDialog(plot.parent(), options=self.options)
                 dlg.set_item(item)
                 ok = dlg.exec_()
-                plot.add_item(dlg.get_item(), z=z)
+                plot.add_item(item, z=z)
                 if not ok:
                     break
 

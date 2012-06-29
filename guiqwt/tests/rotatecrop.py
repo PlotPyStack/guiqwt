@@ -51,7 +51,7 @@ def dialog_test(fname, interactive=True):
         dlg.accept()
         ok = True
     if ok:
-        array1 = dlg.cropped_array
+        array1 = dlg.output_array
         if array0.shape == array1.shape:
             if (array1 == array0).all() and not interactive:
                 print "Test passed successfully."
