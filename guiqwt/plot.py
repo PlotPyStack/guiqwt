@@ -817,6 +817,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         QDialog.__init__(self, parent)
         self.edit = edit
         self.button_box = None
+        self.button_layout = None
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
                                   toolbar=toolbar, options=options,
                                   panels=panels)

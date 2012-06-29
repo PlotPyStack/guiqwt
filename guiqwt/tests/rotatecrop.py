@@ -13,7 +13,7 @@ import os.path as osp
 
 from guiqwt.builder import make
 from guiqwt.plot import ImageDialog
-from guiqwt.rotatecrop import RotateCropDialog
+from guiqwt.rotatecrop import RotateCropDialog, RotateCropWidget
 from guiqwt.io import imagefile_to_array
 
 
@@ -25,11 +25,23 @@ def imshow(data, title=None, hold=False):
     else:
         dlg.exec_()
 
-def test(interactive=True, fname="brain.png"):
+def create_test_data(fname):
     array0 = imagefile_to_array(osp.join(osp.dirname(__file__), fname),
                                 to_grayscale=True)
-    
     item = make.trimage(array0, dx=.1, dy=.1)
+    return array0, item
+    
+def widget_test(fname, qapp):
+    """Test the rotate/crop widget"""
+    array0, item = create_test_data(fname)
+    widget = RotateCropWidget(None)
+    widget.set_item(item)
+    widget.show()
+    qapp.exec_()
+
+def dialog_test(fname, interactive=True):
+    """Test the rotate/crop dialog"""
+    array0, item = create_test_data(fname)
     dlg = RotateCropDialog(None)
     dlg.set_item(item)
     if interactive:
@@ -55,7 +67,9 @@ if __name__ == '__main__':
     from guidata import qapplication
     qapp = qapplication()  # analysis:ignore
     
-    test(interactive=False, fname="brain.png")
-#    test(interactive=False, fname="contrast.png")
-    test(interactive=True)
+    widget_test("brain.png", qapp)
+
+    dialog_test(fname="brain.png", interactive=False)
+#    dialog_test(fname="contrast.png", interactive=False)
+    dialog_test(fname="brain.png", interactive=True)
     
