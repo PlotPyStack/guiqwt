@@ -8,10 +8,10 @@
 # pylint: disable=C0103
 
 """
-guiqwt.fit
-----------
+guiqwt.widgets.fit
+------------------
 
-The `fit` module provides an interactive curve fitting tool allowing:
+The `fit` module provides an interactive curve fitting widget/dialog allowing:
     * to fit data manually (by moving sliders)
     * or automatically (with standard optimization algorithms 
       provided by :py:mod:`scipy`).

@@ -12,6 +12,13 @@ resizedialog
 The `resizedialog` module provides a dialog box providing essential GUI 
 for entering parameters needed to resize an image:
 :py:class:`guiqwt.widgets.resizedialog.ResizeDialog`.
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: ResizeDialog
+   :members:
+   :inherited-members:
 """
 
 from __future__ import division

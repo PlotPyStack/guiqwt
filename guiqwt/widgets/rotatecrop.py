@@ -14,6 +14,16 @@ for rotating (arbitrary angle) and cropping an image:
     
     * :py:class:`guiqwt.widgets.rotatecrop.RotateCropDialog`: dialog box
     * :py:class:`guiqwt.widgets.rotatecrop.RotateCropWidget`: equivalent widget
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: RotateCropDialog
+   :members:
+   :inherited-members:
+.. autoclass:: RotateCropWidget
+   :members:
+   :inherited-members:
 """
 
 

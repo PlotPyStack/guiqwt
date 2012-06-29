@@ -12,6 +12,10 @@ guiqwt.widgets
 The ``guiqwt.widgets`` package provides ready-to-use widgets for creating 
 signal/image processing GUI applications.
 
+.. automodule:: guiqwt.widgets.fit
+   :members:
+   :inherited-members:
+
 .. automodule:: guiqwt.widgets.resizedialog
    :members:
    :inherited-members:
