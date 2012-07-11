@@ -219,7 +219,8 @@ def get_plot_average_x_section(obj, apply_lut=False):
     if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):
         yc1, yc0 = yc0, yc1
     try:
-        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+        data = get_image_from_qrect(obj.plot(),
+                                    QPoint(xc0, yc0), QPoint(xc1, yc1),
                                     apply_lut=apply_lut,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
@@ -247,7 +248,8 @@ def get_plot_average_y_section(obj, apply_lut=False):
     if xc0 > xc1:
         xc1, xc0 = xc0, xc1
     try:
-        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+        data = get_image_from_qrect(obj.plot(),
+                                    QPoint(xc0, yc0), QPoint(xc1, yc1),
                                     apply_lut=apply_lut,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
