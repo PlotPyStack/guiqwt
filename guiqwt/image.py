@@ -159,7 +159,7 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            RawImageParam)
 from guiqwt.shapes import RectangleShape
-from guiqwt.io import imagefile_to_array
+from guiqwt import io
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 from guiqwt.geometry import translate, scale, rotate, colvector
 
@@ -789,7 +789,7 @@ class RawImageItem(BaseImageItem):
         Load data from *filename* and eventually apply specified lut_range
         *filename* has been set using method 'set_filename'
         """
-        data = imagefile_to_array(self.get_filename(), to_grayscale=True)
+        data = io.imread(self.get_filename(), to_grayscale=True)
         self.set_data(data, lut_range=lut_range)
         
     def set_data(self, data, lut_range=None):
@@ -1385,7 +1385,7 @@ def get_image_from_qrect(plot, p0, p1, src_size=None,
             dtype = item.data.dtype
     if adjust_range == 'normalize':
         from guiqwt import io
-        data = io.set_dynamic_range_from_dtype(data, dtype=dtype)
+        data = io.scale_data_to_dtype(data, dtype=dtype)
     else:
         data = np.array(data, dtype=dtype)
     return data
@@ -1631,7 +1631,7 @@ class RGBImageItem(ImageItem):
         Load data from *filename*
         *filename* has been set using method 'set_filename'
         """
-        data = imagefile_to_array(self.get_filename(), to_grayscale=False)
+        data = io.imread(self.get_filename(), to_grayscale=False)
         self.set_data(data)
         
     def set_data(self, data):
@@ -1735,7 +1735,7 @@ class MaskedImageItem(ImageItem):
         return self._mask_filename
 
     def load_mask_data(self):
-        data = imagefile_to_array(self.get_mask_filename(), to_grayscale=True)
+        data = io.imread(self.get_mask_filename(), to_grayscale=True)
         self.set_mask(data)
         self._mask_changed()
         

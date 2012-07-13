@@ -599,8 +599,8 @@ def errorbar(*args, **kwargs):
 
 def imread(fname, to_grayscale=False):
     """Read data from *fname*"""
-    from guiqwt.io import imagefile_to_array
-    return imagefile_to_array(fname, to_grayscale=to_grayscale)
+    from guiqwt import io
+    return io.imread(fname, to_grayscale=to_grayscale)
 
 def imshow(data, interpolation=None, mask=None):
     """

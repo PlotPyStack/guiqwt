@@ -1507,8 +1507,7 @@ def save_snapshot(plot, p0, p1):
     from guiqwt.image import (get_image_from_plot, get_plot_qrect,
                               get_items_in_rectangle,
                               compute_trimageitems_original_size)
-    from guiqwt.io import (array_to_imagefile, array_to_dicomfile,
-                           MODE_INTENSITY_U8, set_dynamic_range_from_dtype)
+    from guiqwt import io
     items = get_items_in_rectangle(plot, p0, p1)
     if not items:
         QMessageBox.critical(plot, _("Rectangle snapshot"),
@@ -1563,7 +1562,7 @@ def save_snapshot(plot, p0, p1):
             if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
                 dtype = item.data.dtype
         if param.norm_range:
-            data = set_dynamic_range_from_dtype(data, dtype=dtype)
+            data = io.scale_data_to_dtype(data, dtype=dtype)
         else:
             data = np.array(data, dtype=dtype)
     except MemoryError:
@@ -1585,14 +1584,14 @@ def save_snapshot(plot, p0, p1):
         formats = ''
     formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
     formats += '\n%s (*.png)' % _('8-bits PNG image')
-    fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'), formats)
+    fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'),
+                                io.iohandler.save_filters)
     _base, ext = osp.splitext(fname)
+    options = {}
     if not fname:
         return
     elif ext.lower() == ".png":
-        array_to_imagefile(data, fname, MODE_INTENSITY_U8, max_range=True)
-    elif ext.lower() in (".tif", ".tiff"):
-        array_to_imagefile(data, fname)
+        options.update(dict(dtype=np.uint8, max_range=True))
     elif ext.lower() == ".dcm":
         import dicom
         model_dcm = dicom.read_file(model_fname)
@@ -1610,10 +1609,8 @@ def save_snapshot(plot, p0, p1):
         new_ps_x = ps_x*src_w/(model_dx*dest_width)
         new_ps_y = ps_y*src_h/(model_dy*dest_height)
         setattr(model_dcm, ps_attr, [new_ps_x, new_ps_y])
-        
-        array_to_dicomfile(data, model_dcm, fname)
-    else:
-        raise RuntimeError(_("Unknown file extension"))
+        options.update(dict(template=model_dcm))
+    io.imwrite(fname, data, **options)
 
 class SnapshotTool(RectangularActionTool):
     SWITCH_TO_DEFAULT_TOOL = True
@@ -1760,8 +1757,8 @@ class LoadItemsTool(OpenFileTool):
 
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        from guiqwt.io import IMAGE_LOAD_FILTERS
-        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS,
+        from guiqwt import io
+        OpenFileTool.__init__(self, manager, formats=io.iohandler.load_filters,
                               toolbar_id=toolbar_id)
     
 

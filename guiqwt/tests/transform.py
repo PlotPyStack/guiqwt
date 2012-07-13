@@ -17,7 +17,7 @@ import numpy as np
 from guiqwt.image import assemble_imageitems
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
-from guiqwt.io import array_to_imagefile, MODE_INTENSITY_U8, MODE_INTENSITY_U16
+from guiqwt import io
 
 DEFAULT_CHARS = "".join([chr(c) for c in range(32,256)])
 
@@ -115,10 +115,8 @@ def get_bbox(items):
     return r
 
 def save_image(name, data):
-    array_to_imagefile(data, name+".u16.tif",
-                       mode=MODE_INTENSITY_U16, max_range=True)
-    array_to_imagefile(data, name+".u8.png",
-                       mode=MODE_INTENSITY_U8, max_range=True)
+    io.imwrite(name+".u16.tif", data, dtype=np.uint16, max_range=True)
+    io.imwrite(name+".u8.png", data, dtype=np.uint8, max_range=True)
 
 def build_image(items):
     r = get_bbox(items)

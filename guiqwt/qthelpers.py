@@ -34,8 +34,7 @@ from guidata.qt.compat import getsavefilename, getopenfilename, getopenfilenames
 
 # Local imports
 from guiqwt.config import _
-from guiqwt.io import (IMAGE_SAVE_FILTERS, IMAGE_LOAD_FILTERS,
-                       array_to_imagefile, imagefile_to_array)
+from guiqwt import io
 
 
 #===============================================================================
@@ -55,12 +54,12 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filename, _filter = getsavefilename(parent, _("Save as"), basedir,
-                                        IMAGE_SAVE_FILTERS)
+                                        io.iohandler.save_filters)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
         filename = unicode(filename)
         try:
-            array_to_imagefile(data, filename)
+            io.imwrite(filename, data)
             return filename
         except Exception, msg:
             import traceback
@@ -86,11 +85,11 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filename, _filter = getopenfilename(parent, _("Open"), basedir,
-                                        IMAGE_LOAD_FILTERS)
+                                        io.iohandler.load_filters)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filename = unicode(filename)
     try:
-        data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+        data = io.imread(filename, to_grayscale=to_grayscale)
     except Exception, msg:
         import traceback
         traceback.print_exc()
@@ -116,12 +115,12 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filenames, _filter = getopenfilenames(parent, _("Open"), basedir,
-                                          IMAGE_LOAD_FILTERS)
+                                          io.iohandler.load_filters)
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filenames = [unicode(fname) for fname in list(filenames)]
     for filename in filenames:
         try:
-            data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+            data = io.imread(filename, to_grayscale=to_grayscale)
         except Exception, msg:
             import traceback
             traceback.print_exc()

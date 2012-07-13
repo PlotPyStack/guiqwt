@@ -988,8 +988,8 @@ class ImageFT(ObjectFT):
             image.data = np.empty(shape, dtype=dtype)
         elif imagenew.type == 'rand':
             data = np.random.rand(*shape)
-            from guiqwt.io import set_dynamic_range_from_dtype
-            image.data = set_dynamic_range_from_dtype(data, dtype)
+            from guiqwt import io
+            image.data = io.scale_data_to_dtype(data, dtype)
         self.add_object(image)
     
     def open_image(self):

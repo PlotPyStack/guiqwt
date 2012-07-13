@@ -16,7 +16,7 @@ def test():
     from guiqwt import io, scaler, pyplot as plt
 
     filename = osp.join(osp.dirname(__file__), "brain.png")
-    data = io.imagefile_to_array(filename)
+    data = io.imread(filename)
     dst_image = scaler.resize(data, (2000, 3000))
 
     plt.imshow(dst_image, interpolation='nearest')

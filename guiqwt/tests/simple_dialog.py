@@ -22,7 +22,8 @@ from guiqwt.config import _
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt.tools import OpenImageTool
-from guiqwt.io import imagefile_to_array
+from guiqwt import io
+
 
 class ImageParam(DataSet):
     title = StringItem(_("Title"))
@@ -74,7 +75,7 @@ class ExampleDialog(ImageDialog):
         
     def open_image(self, filename):
         """Opening image *filename*"""
-        self.data = imagefile_to_array(filename, to_grayscale=True)
+        self.data = io.imread(filename, to_grayscale=True)
         self.show_data(self.data)
         param = ImageParam()
         param.title = filename

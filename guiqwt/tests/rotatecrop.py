@@ -14,7 +14,7 @@ import os.path as osp
 from guiqwt.builder import make
 from guiqwt.plot import ImageDialog
 from guiqwt.widgets.rotatecrop import RotateCropDialog, RotateCropWidget
-from guiqwt.io import imagefile_to_array
+from guiqwt import io
 
 
 def imshow(data, title=None, hold=False):
@@ -26,8 +26,8 @@ def imshow(data, title=None, hold=False):
         dlg.exec_()
 
 def create_test_data(fname):
-    array0 = imagefile_to_array(osp.join(osp.dirname(__file__), fname),
-                                to_grayscale=True)
+    array0 = io.imread(osp.join(osp.dirname(__file__), fname),
+                       to_grayscale=True)
     item = make.trimage(array0, dx=.1, dy=.1)
     return array0, item
     
