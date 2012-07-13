@@ -558,8 +558,8 @@ class PlotItemBuilder(object):
     def _get_image_data(self, data, filename, title, to_grayscale):
         if data is None:
             assert filename is not None
-            from guiqwt.io import imagefile_to_array
-            data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+            from guiqwt import io
+            data = io.imread(filename, to_grayscale=to_grayscale)
         if title is None and filename is not None:
             title = osp.basename(filename)
         return data, filename, title
