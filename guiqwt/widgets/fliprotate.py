@@ -36,11 +36,10 @@ from guidata.configtools import get_icon
 
 # Local imports
 from guiqwt.config import _
-from guiqwt.widgets.base import (BaseTransformMixin, BaseTransformDialog,
-                                 BaseTransformWidget)
+from guiqwt.widgets import base
 
 
-class FlipRotateMixin(BaseTransformMixin):
+class FlipRotateMixin(base.BaseTransformMixin):
     """Rotate & Crop mixin class, to be mixed with a class providing the 
     get_plot method, like ImageDialog or FlipRotateWidget (see below)"""
 
@@ -110,20 +109,27 @@ class FlipRotateMixin(BaseTransformMixin):
         return angle, hflip, vflip
 
 
-class FlipRotateDialog(BaseTransformDialog, FlipRotateMixin):
+class FlipRotateDialog(base.BaseTransformDialog, FlipRotateMixin):
     """Flip & Rotate Dialog
     
     Flip and rotate a :py:class:`guiqwt.image.TrImageItem` plot item"""
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
         FlipRotateMixin.__init__(self)
-        BaseTransformDialog.__init__(self, parent, wintitle=wintitle,
-                                     options=options, resize_to=resize_to)
+        base.BaseTransformDialog.__init__(self, parent, wintitle=wintitle,
+                                          options=options, resize_to=resize_to)
 
 
-class FlipRotateWidget(BaseTransformWidget, FlipRotateMixin):
+class FlipRotateWidget(base.BaseTransformWidget, FlipRotateMixin):
     """Flip & Rotate Widget
     
     Flip and rotate a :py:class:`guiqwt.image.TrImageItem` plot item"""
     def __init__(self, parent, options=None):
-        BaseTransformWidget.__init__(self, parent, options=options)
+        base.BaseTransformWidget.__init__(self, parent, options=options)
         FlipRotateMixin.__init__(self)
+
+
+class MultipleFlipRotateWidget(base.BaseMultipleTransformWidget):
+    """Multiple Flip & Rotate Widget
+    
+    Flip and rotate several :py:class:`guiqwt.image.TrImageItem` plot items"""
+    TRANSFORM_WIDGET_CLASS = FlipRotateWidget

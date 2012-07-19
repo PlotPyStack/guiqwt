@@ -14,7 +14,7 @@ The `base` module provides base objects for internal use of the
 
 """
 
-from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout
+from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget
 from PyQt4.QtCore import SIGNAL
 
 from guidata.qthelpers import create_toolbutton
@@ -89,6 +89,12 @@ class BaseTransformMixin(object):
         # register this item (contrast, ...):
         plot.set_active_item(self.item)
         self.item.unselect()
+    
+    def unset_item(self):
+        """Unset the associated item, freeing memory"""
+        plot = self.get_plot()
+        plot.del_item(self.item)
+        self.item = None
         
     def reset(self):
         """Reset crop/transform image settings"""
@@ -177,4 +183,53 @@ class BaseTransformWidget(QWidget):
     def get_plot(self):
         """Required for BaseTransformMixin"""
         return self.imagewidget.get_plot()
+
+
+class BaseMultipleTransformWidget(QTabWidget):
+    """Base Multiple Transform Widget
+    
+    Transform several :py:class:`guiqwt.image.TrImageItem` plot items"""
+    
+    TRANSFORM_WIDGET_CLASS = None
+    
+    def __init__(self, parent, options=None):
+        QTabWidget.__init__(self, parent)
+        self.options = options
+        self.output_arrays = None
+    
+    def set_items(self, *items):
+        """Set the associated items -- must be a TrImageItem objects"""
+        for item in items:
+            self.add_item(item)
+        
+    def add_item(self, item):
+        """Add item to widget"""
+        widget = self.TRANSFORM_WIDGET_CLASS(self, options=self.options)
+        widget.set_item(item)
+        self.addTab(widget, item.title().text())
+    
+    def clear_items(self):
+        """Clear all items, freeing memory"""
+        self.items = None
+        for index in range(self.count()):
+            self.widget(index).unset_item()
+        self.clear()
+
+    def reset(self):
+        """Reset transform image settings"""
+        for index in range(self.count()):
+            self.widget(index).reset()
+    
+    def accept_changes(self):
+        """Accept all changes"""
+        self.output_arrays = []
+        for index in range(self.count()):
+            widget = self.widget(index)
+            widget.accept_changes()
+            self.output_arrays.append(widget.output_array)
+    
+    def reject_changes(self):
+        """Reject all changes"""
+        for index in range(self.count()):
+            self.widget(index).reject_changes()
 

@@ -33,15 +33,14 @@ from PyQt4.QtCore import SIGNAL
 from guiqwt.config import _
 from guiqwt.builder import make
 from guiqwt.image import get_image_in_shape
-from guiqwt.widgets.base import (BaseTransformMixin, BaseTransformDialog,
-                                 BaseTransformWidget)
+from guiqwt.widgets import base
 
 
-class RotateCropMixin(BaseTransformMixin):
+class RotateCropMixin(base.BaseTransformMixin):
     """Rotate & Crop mixin class, to be mixed with a class providing the 
     get_plot method, like ImageDialog or RotateCropWidget (see below)"""
     def __init__(self):
-        BaseTransformMixin.__init__(self)
+        base.BaseTransformMixin.__init__(self)
         self.crop_rect = None
 
     #------BaseTransformMixin API----------------------------------------------
@@ -53,11 +52,11 @@ class RotateCropMixin(BaseTransformMixin):
         self.connect(show_crop, SIGNAL("toggled(bool)"), self.show_crop_rect)
         layout.addWidget(show_crop)
         layout.addSpacing(15)
-        BaseTransformMixin.add_buttons_to_layout(self, layout)
+        base.BaseTransformMixin.add_buttons_to_layout(self, layout)
     
     def set_item(self, item):
         """Set associated item -- must be a TrImageItem object"""
-        BaseTransformMixin.set_item(self, item)
+        base.BaseTransformMixin.set_item(self, item)
         crect = make.annotated_rectangle(0, 0, 1, 1, _(u"Cropping rectangle"))
         self.crop_rect = crect
         crect.annotationparam.format = "%.1f cm"
@@ -101,20 +100,27 @@ class RotateCropMixin(BaseTransformMixin):
         self.get_plot().replot()
 
 
-class RotateCropDialog(BaseTransformDialog, RotateCropMixin):
+class RotateCropDialog(base.BaseTransformDialog, RotateCropMixin):
     """Rotate & Crop Dialog
     
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
         RotateCropMixin.__init__(self)
-        BaseTransformDialog.__init__(self, parent, wintitle=wintitle,
-                                     options=options, resize_to=resize_to)
+        base.BaseTransformDialog.__init__(self, parent, wintitle=wintitle,
+                                          options=options, resize_to=resize_to)
 
 
-class RotateCropWidget(BaseTransformWidget, RotateCropMixin):
+class RotateCropWidget(base.BaseTransformWidget, RotateCropMixin):
     """Rotate & Crop Widget
     
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
     def __init__(self, parent, options=None):
-        BaseTransformWidget.__init__(self, parent, options=options)
+        base.BaseTransformWidget.__init__(self, parent, options=options)
         RotateCropMixin.__init__(self)
+
+
+class MultipleRotateCropWidget(base.BaseMultipleTransformWidget):
+    """Multiple Rotate & Crop Widget
+    
+    Rotate and crop several :py:class:`guiqwt.image.TrImageItem` plot items"""
+    TRANSFORM_WIDGET_CLASS = RotateCropWidget
