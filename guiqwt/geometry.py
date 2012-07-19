@@ -84,4 +84,7 @@ def compute_distance(x1, y1, x2, y2):
     
 def compute_angle(x1, y1, x2, y2, reverse=False):
     sign = -1 if reverse else 1
-    return arctan(-sign*(y2-y1)/(x2-x1))*180/pi
+    if x2 == x1:
+        return 0.
+    else:
+        return arctan(-sign*(y2-y1)/(x2-x1))*180/pi
