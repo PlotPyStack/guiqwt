@@ -459,11 +459,52 @@ class ObjectInfo(object):
     def get_text(self):
         return u""
 
+class RangeInfo(ObjectInfo):
+    u"""ObjectInfo handling XRangeSelection shape informations: x, dx
+    
+    label: formatted string
+    xrangeselection: XRangeSelection object
+    function: input arguments are x, dx ; returns objects used to format the 
+    label. Default function is `lambda x, dx: (x, dx)`.
+
+    Example:
+    -------
+    
+    x = linspace(-10, 10, 10)
+    y = sin(sin(sin(x)))
+    xrangeselection = make.range(-2, 2)
+    RangeInfo(u"x = %.1f ± %.1f cm", xrangeselection,
+              lambda x, dx: (x, dx))
+    disp = make.info_label('BL', comp, title="titre")
+    """
+    def __init__(self, label, xrangeselection, function=None):
+        self.label = unicode(label)
+        self.range = xrangeselection
+        if function is None:
+            function = lambda x, dx: (x, dx)
+        self.func = function
+
+    def get_text(self):
+        x0, x1 = self.range.get_range()
+        x = .5*(x0+x1)
+        dx = .5*(x1-x0)
+        return self.label % self.func(x, dx)
+
 class RangeComputation(ObjectInfo):
-    def __init__(self, label, curve, range, function):
+    u"""ObjectInfo showing curve computations relative to a XRangeSelection 
+    shape.
+    
+    label: formatted string
+    curve: CurveItem object
+    xrangeselection: XRangeSelection object
+    function: input arguments are x, y arrays (extraction of arrays 
+    corresponding to the xrangeselection X-axis range)"""
+    def __init__(self, label, curve, xrangeselection, function=None):
         self.label = unicode(label)
         self.curve = curve
-        self.range = range
+        self.range = xrangeselection
+        if function is None:
+            function = lambda x, dx: (x, dx)
         self.func = function
         
     def set_curve(self, curve):

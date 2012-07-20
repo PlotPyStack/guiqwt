@@ -20,6 +20,7 @@ def plot( *items ):
     win.show()
     win.exec_()
 
+
 def test():
     """Test"""
     # -- Create QApplication
@@ -32,14 +33,18 @@ def test():
 
     curve = make.curve(x, y, "ab", "b")
     range = make.range(-2, 2)
+    disp0 = make.range_info_label(range, 'BR', u"x = %.1f ± %.1f cm",
+                                  curve, title="Range infos")
+
     disp1 = make.computation(range, "BL", "trapz=%g",
                              curve, lambda x,y: trapz(y,x))
+
     disp2 = make.computations(range, "TL",
                               [(curve, "min=%.5f", lambda x,y: y.min()),
                                (curve, "max=%.5f", lambda x,y: y.max()),
                                (curve, "avg=%.5f", lambda x,y: y.mean())])
     legend = make.legend("TR")
-    plot( curve, range, disp1, disp2, legend)
+    plot( curve, range, disp0, disp1, disp2, legend)
 
 if __name__ == "__main__":
     test()
