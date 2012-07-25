@@ -528,6 +528,10 @@ class CurveItem(QwtPlotCurve):
         ay = self.yAxis()
         return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
 
+    def axes_to_canvas(self, x, y):
+        plot = self.plot()
+        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
+
     def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return

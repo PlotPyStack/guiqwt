@@ -251,7 +251,8 @@ import sys, numpy as np, weakref, os.path as osp
 
 from guidata.qt.QtCore import Qt, QObject, SIGNAL, QPoint
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
-                              QPrintDialog, QFont, QAction, QToolButton)
+                              QPrintDialog, QFont, QAction, QToolButton,
+                              QKeySequence)
 from guidata.qt.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
@@ -264,7 +265,8 @@ from guidata.dataset.dataitems import BoolItem, FloatItem
 from guiqwt.transitional import QwtPlotPrintFilter
 from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
-                           KeyEventMatch, QtDragHandler, ZoomRectHandler,
+                           KeyEventMatch, StandardKeyMatch,
+                           QtDragHandler, ZoomRectHandler,
                            RectangularSelectionHandler, ClickHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
                            EllipseShape, SegmentShape, PointShape,
@@ -454,8 +456,7 @@ class SelectTool(InteractiveTool):
                          KeyEventMatch((Qt.Key_Enter, Qt.Key_Return,
                                         Qt.Key_Space)),
                          self.validate, start_state)
-        filter.add_event(start_state,
-                         KeyEventMatch(((Qt.Key_A, Qt.ControlModifier),)),
+        filter.add_event(start_state, StandardKeyMatch(QKeySequence.SelectAll),
                          self.select_all_items, start_state)
         return setup_standard_tool_filter(filter, start_state)
 

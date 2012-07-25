@@ -1352,8 +1352,8 @@ class XRangeSelection(AbstractShape):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        val = self.plot().invTransform(self.xAxis(), pos.x())
-        self.move_point_to(handle, (val, 0))
+        x, _y = self.canvas_to_axes(pos)
+        self.move_point_to(handle, (x, 0))
         
     def move_point_to(self, hnd, pos, ctrl=None):
         val, _ = pos
