@@ -107,7 +107,8 @@ import warnings
 import numpy as np
 
 from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                              QToolBar, QMessageBox, QBrush, QColor, QPen, QPolygonF)
+                              QToolBar, QMessageBox, QBrush, QColor, QPen,
+                              QPolygonF)
 from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
                                QLine)
 
@@ -123,7 +124,7 @@ from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
                                ITrackableItemType, IPanel)
 from guiqwt.panels import PanelWidget, ID_ITEMLIST
-from guiqwt.baseplot import BasePlot
+from guiqwt.baseplot import BasePlot, canvas_to_axes
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
@@ -522,22 +523,12 @@ class CurveItem(QwtPlotCurve):
                 return self._x[i-1], self._y[i-1]
         return self._x[i], self._y[i]
 
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
-
     def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return
         if handle < 0 or handle > self._x.shape[0]:
             return
-        x, y = self.canvas_to_axes(pos)
+        x, y = canvas_to_axes(self, pos)
         self._x[handle] = x
         self._y[handle] = y
         self.setData(self._x, self._y)
@@ -546,8 +537,8 @@ class CurveItem(QwtPlotCurve):
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        nx, ny = self.canvas_to_axes(new_pos)
-        ox, oy = self.canvas_to_axes(old_pos)
+        nx, ny = canvas_to_axes(self, new_pos)
+        ox, oy = canvas_to_axes(self, old_pos)
         self._x += (nx-ox)
         self._y += (ny-oy)
         self.setData(self._x, self._y)

@@ -92,6 +92,7 @@ from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
                             SIG_AXES_CHANGED, SIG_ITEM_MOVED)
 from guiqwt.geometry import (vector_norm, vector_projection, vector_rotation,
                              compute_center)
+from guiqwt.baseplot import canvas_to_axes
 
 
 class AbstractShape(QwtPlotItem):
@@ -208,14 +209,14 @@ class AbstractShape(QwtPlotItem):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        pt = self.canvas_to_axes(pos)
+        pt = canvas_to_axes(self, pos)
         self.move_point_to(handle, pt, ctrl)
         
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        old_pt = self.canvas_to_axes(old_pos)
-        new_pt = self.canvas_to_axes(new_pos)
+        old_pt = canvas_to_axes(self, old_pos)
+        new_pt = canvas_to_axes(self, new_pos)
         self.move_shape(old_pt, new_pt)
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
@@ -228,16 +229,6 @@ class AbstractShape(QwtPlotItem):
         self.move_shape([0, 0], [delta_x, delta_y])
 
     #------Public API-----------------------------------------------------------
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
-
     def move_point_to(self, handle, pos, ctrl=None):
         pass
     
@@ -422,14 +413,14 @@ class Marker(QwtPlotMarker):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        x, y = self.canvas_to_axes(pos)
+        x, y = canvas_to_axes(self, pos)
         self.set_pos(x, y)
         
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        old_pt = self.canvas_to_axes(old_pos)
-        new_pt = self.canvas_to_axes(new_pos)
+        old_pt = canvas_to_axes(self, old_pos)
+        new_pt = canvas_to_axes(self, new_pos)
         self.move_shape(old_pt, new_pt)
 
     def move_with_selection(self, delta_x, delta_y):
@@ -443,18 +434,6 @@ class Marker(QwtPlotMarker):
     def set_style(self, section, option):
         self.markerparam.read_config(CONF, section, option)
         self.markerparam.update_marker(self)
-
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        if plot is None:
-            return
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
         
     def set_pos(self, x=None, y=None):
         if x is None:
@@ -701,7 +680,7 @@ class PolygonShape(AbstractShape):
         return self.poly_hit_test(self.plot(), self.xAxis(), self.yAxis(), pos)
     
     def add_local_point(self, pos):
-        pt = self.canvas_to_axes(pos)
+        pt = canvas_to_axes(self, pos)
         return self.add_point(pt)
         
     def add_point(self, pt):
@@ -1352,7 +1331,7 @@ class XRangeSelection(AbstractShape):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        x, _y = self.canvas_to_axes(pos)
+        x, _y = canvas_to_axes(self, pos)
         self.move_point_to(handle, (x, 0))
         
     def move_point_to(self, hnd, pos, ctrl=None):

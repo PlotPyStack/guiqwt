@@ -66,6 +66,7 @@ from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
                             SIG_MASK_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
+from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
 
 class CrossSectionItem(ErrorBarCurveItem):
@@ -158,7 +159,7 @@ def get_plot_x_section(obj, apply_lut=False):
     plot = obj.plot()
     xmap = plot.canvasMap(plot.X_BOTTOM)
     xc0, xc1 = xmap.p1(), xmap.p2()
-    _xc0, yc0 = obj.axes_to_canvas(0, y0)
+    _xc0, yc0 = axes_to_canvas(obj, 0, y0)
     if plot.get_axis_direction("left"):
         yc1 = yc0+1
     else:
@@ -171,8 +172,8 @@ def get_plot_x_section(obj, apply_lut=False):
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
-    x0, _y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
-    x1, _y1 = obj.canvas_to_axes(QPoint(xc1, yc1))
+    x0, _y0 = canvas_to_axes(obj, QPoint(xc0, yc0))
+    x1, _y1 = canvas_to_axes(obj, QPoint(xc1, yc1))
     x = np.linspace(x0, x1, len(y))
     return x, y
 
@@ -187,7 +188,7 @@ def get_plot_y_section(obj, apply_lut=False):
     yc0, yc1 = ymap.p1(), ymap.p2()
     if plot.get_axis_direction("left"):
         yc1, yc0 = yc0, yc1
-    xc0, _yc0 = obj.axes_to_canvas(x0, 0)
+    xc0, _yc0 = axes_to_canvas(obj, x0, 0)
     xc1 = xc0+1
     try:
         data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
@@ -196,8 +197,8 @@ def get_plot_y_section(obj, apply_lut=False):
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
-    _x0, y0 = obj.canvas_to_axes(QPoint(xc0, yc0))
-    _x1, y1 = obj.canvas_to_axes(QPoint(xc1, yc1))
+    _x0, y0 = canvas_to_axes(obj, QPoint(xc0, yc0))
+    _x1, y1 = canvas_to_axes(obj, QPoint(xc1, yc1))
     x = np.linspace(y0, y1, len(y))
     return x, y
 
@@ -209,8 +210,8 @@ def get_plot_average_x_section(obj, apply_lut=False):
     (RectangleShape, AnnotatedRectangle, etc.)
     """
     x0, y0, x1, y1 = obj.get_rect()
-    xc0, yc0 = obj.axes_to_canvas(x0, y0)
-    xc1, yc1 = obj.axes_to_canvas(x1, y1)
+    xc0, yc0 = axes_to_canvas(obj, x0, y0)
+    xc1, yc1 = axes_to_canvas(obj, x1, y1)
     invert = False
     if xc0 > xc1:
         invert = True
@@ -238,8 +239,8 @@ def get_plot_average_y_section(obj, apply_lut=False):
     (RectangleShape, AnnotatedRectangle, etc.)
     """
     x0, y0, x1, y1 = obj.get_rect()
-    xc0, yc0 = obj.axes_to_canvas(x0, y0)
-    xc1, yc1 = obj.axes_to_canvas(x1, y1)
+    xc0, yc0 = axes_to_canvas(obj, x0, y0)
+    xc1, yc1 = axes_to_canvas(obj, x1, y1)
     invert = False
     ydir = obj.plot().get_axis_direction("left")
     if (ydir and yc0 > yc1) or (not ydir and yc0 < yc1):

@@ -162,6 +162,7 @@ from guiqwt.shapes import RectangleShape
 from guiqwt import io
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 from guiqwt.geometry import translate, scale, rotate, colvector
+from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
 stderr = sys.stderr
 try:
@@ -395,16 +396,6 @@ class BaseImageItem(QwtPlotItem):
         title = self.title().text()
         z = self.get_data(xc, yc)
         return "%s:<br>x = %d<br>y = %d<br>z = %g" % (title, xc, yc, z)
-    
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
-    def axes_to_canvas(self, x, y):
-        plot = self.plot()
-        return plot.transform(self.xAxis(), x), plot.transform(self.yAxis(), y)
 
     def set_background_color(self, qcolor):
         #mask = np.uint32(255*self.imageparam.alpha+0.5).clip(0,255) << 24
@@ -1235,7 +1226,7 @@ class TrImageItem(RawImageItem):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        nx, ny = self.canvas_to_axes(pos)
+        nx, ny = canvas_to_axes(self, pos)
         handles = self.itr*self.points
         p0 = colvector(nx, ny)
         #self.debug_transform(p0)
@@ -1258,8 +1249,8 @@ class TrImageItem(RawImageItem):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        nx, ny = self.canvas_to_axes(new_pos)
-        ox, oy = self.canvas_to_axes(old_pos)
+        nx, ny = canvas_to_axes(self, new_pos)
+        ox, oy = canvas_to_axes(self, old_pos)
         self.set_transform(x0+nx-ox, y0+ny-oy, angle, dx, dy, hflip, vflip)
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
@@ -1399,8 +1390,8 @@ def get_image_in_shape(obj, norm_range=False, item_type=None,
     """Return image array from rectangle shape"""
     x0, y0, x1, y1 = obj.get_rect()
     (x0, x1), (y0, y1) = sorted([x0, x1]), sorted([y0, y1])
-    xc0, yc0 = obj.axes_to_canvas(x0, y0)
-    xc1, yc1 = obj.axes_to_canvas(x1, y1)
+    xc0, yc0 = axes_to_canvas(obj, x0, y0)
+    xc1, yc1 = axes_to_canvas(obj, x1, y1)
     adjust_range = 'normalize' if norm_range else 'original'
     return get_image_from_qrect(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
                                 src_size=(x1-x0, y1-y0),
@@ -1946,14 +1937,14 @@ class ImageFilterItem(BaseImageItem):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        npos = self.canvas_to_axes(pos)
+        npos = canvas_to_axes(self, pos)
         self.border_rect.move_point_to(handle, npos)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        old_pt = self.canvas_to_axes(old_pos)
-        new_pt = self.canvas_to_axes(new_pos)
+        old_pt = canvas_to_axes(self, old_pos)
+        new_pt = canvas_to_axes(self, new_pos)
         self.border_rect.move_shape(old_pt, new_pt)
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))

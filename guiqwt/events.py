@@ -371,23 +371,27 @@ class MoveHandler(object):
 class UndoMoveObject(object):
     def __init__(self, obj, pos1, pos2):
         self.obj = obj
-        self.coords1 = obj.canvas_to_axes(pos1)
-        self.coords2 = obj.canvas_to_axes(pos2)
+        from guiqwt.baseplot import canvas_to_axes
+        self.coords1 = canvas_to_axes(obj, pos1)
+        self.coords2 = canvas_to_axes(obj, pos2)
         
     def is_valid(self):
         return self.obj.plot() is not None
     
     def compute_positions(self):
-        pos1 = QPoint(*self.obj.axes_to_canvas(*self.coords1))
-        pos2 = QPoint(*self.obj.axes_to_canvas(*self.coords2))
+        from guiqwt.baseplot import axes_to_canvas
+        pos1 = QPoint(*axes_to_canvas(self.obj, *self.coords1))
+        pos2 = QPoint(*axes_to_canvas(self.obj, *self.coords2))
         return pos1, pos2
     
     def undo(self):
         pos1, pos2 = self.compute_positions()
+        self.obj.plot().unselect_all()
         self.obj.move_local_shape(pos1, pos2)
     
     def redo(self):
         pos1, pos2 = self.compute_positions()
+        self.obj.plot().unselect_all()
         self.obj.move_local_shape(pos2, pos1)
 
 class UndoMovePoint(UndoMoveObject):
