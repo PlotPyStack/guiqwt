@@ -767,7 +767,8 @@ class CurveWidgetMixin(PlotManager):
         self.setWindowTitle(wintitle)
         if isinstance(icon, basestring):
             icon = get_icon(icon)
-        self.setWindowIcon(icon)
+        if icon is not None:
+            self.setWindowIcon(icon)
         self.setMinimumSize(320, 240)
         self.resize(640, 480)
 
