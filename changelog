@@ -1,3 +1,56 @@
+== Version 2.2.0 ==
+
+=== New features (since v2.1.6) ===
+
+  * Added scaler module: resize function (using scaler C++ engine to resize images) which is incredibly faster than scipy.misc.imresize
+  * `guiqwt.io` module was rewritten: new extensible I/O functions `imwrite`/`imread` (see section 'Possible API compatibility issues')
+  * !SelectTool:
+    * added Undo/Redo actions (triggered by platform's standard key sequences)
+    * "Select all" action is now triggered by platform's standard key sequence
+  * Added 'get_segment' test (analog to 'get_point')
+  * Interactive tools: added argument 'switch_to_default_tool' (if True, when tool action is finished, plot manager will automatically switch to the default tool)
+  * Added `label.!RangeInfo` object: showing !XRangeSelection shape informations (x, dx) in a label. See associated method 'range_info_label' in 'builder.make' singleton and unit test in 'tests/computations.py'.
+  * Snapshot tool: added an option to apply (or not) the interpolation algorithm
+  * `guiqwt.pyplot`: selecting default item type, hence allowing to use directly tools when there is only one curve/image without having to select it before
+  * Added new guiqwt svg logo
+  * Added new dialogs and widgets for manipulating (multiple) images:
+    * Rotate&Crop dialog, widget and tool (+ test) for !TrImageItem plot items
+    * Flip&Rotate dialog and widget
+  * `pyplot.imshow`: added interpolation option ('nearest', 'linear', 'antialiasing')
+  * `io.imagefile_to_array`: added support for 16-bit Tiff with !PhotoInterpretation=1
+  * !ResizeDialog: added option "keep original size" to bypass this dialog
+  * !RectangularActionTool: added option 'fix_orientation' (default: False, but set to True for the !SnapshotTool)
+
+=== Possible API compatibility issues (since v2.1.6) ===
+
+  * `guiqwt.io` module was rewritten -- potential API breaks:
+    * `imagefile_to_array` --> `imread`
+    * `array_to_imagefile` --> `imwrite`
+    * `array_to_dicomfile` --> `imwrite`
+    * `IMAGE_LOAD_FILTERS` --> `iohandler.load_filters`
+    * `IMAGE_SAVE_FILTERS` --> `iohandler.save_filters`
+    * `set_dynamic_range_from_dtype` --> `scale_data_to_dtype`
+
+  * Created `guiqwt.widgets` package to regroup !ResizeDialog and !RotateCropDialog/Widget
+  * Moved module `guiqwt.fit` to `guiqwt.widgets` package
+
+=== Bug fixes (since v2.1.6) ===
+
+  * `guiqwt.geometry` : fixed zero division error in `compute_angle` function
+  * Fixed minimum value for histogram display
+  * Fixed Issue 16: use double precision for point baseclass
+  * Fixed rounding error in image.assemble_imageitems: concerns the snapshot tool, and the new rotate/crop dialog box (Rotate/Crop dialog: added a specific test checking if exported image is exactly identical to the original image when the cropping rectangle has the same size and position as the image below -- see rotatecrop.py test script).
+  * scaler: linear interpolation was inactive on image edges (first/last col/row)
+  * !ImagePlot widget: fixed aspect ratio when showing the widget for the first time
+  * Events/Hit test:
+    * Plot item: fixed !AttributeError with cursors (when clicking on the canvas with no current active item)
+    * Curve item: avoid showing dividing by zero warning
+  * tools.!SnapshotTool:
+    * now fixing ROI orientation to avoid the negative size issue
+    * now handling out of memory errors for big images
+
+----
+
 == Version 2.1.6 ==
 
 === Other changes (since v2.1.5) ===
