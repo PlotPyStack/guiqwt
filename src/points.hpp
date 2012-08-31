@@ -18,7 +18,7 @@
 
 class Point {
 public:
-    typedef float real;
+    typedef double real;
     typedef num_trait<real> trait;
     Point():_ix(0),_iy(0),_x(0.0),_y(0.0) {}
     real x() const { return _x; }

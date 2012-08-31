@@ -30,27 +30,23 @@ cf2py intent(out) nmax
 c Apply log if needed and compute max value at the same time
       nmax = 0.0
       if (do_log.GE.1) then
-         do i=1,nx
-            do j=1,ny
+         do j=1,ny
+            do i=1,nx
                R(i,j)=log(1+R(i,j))
-               if (R(i,j).GT.nmax) then
-                  nmax = R(i,j)
-               end if
+               nmax = max(nmax, R(i,j))
             end do
          end do
       else
-         do i=1,nx
-            do j=1,ny
-               if (R(i,j).GT.nmax) then
-                  nmax = R(i,j)
-               end if
+         do j=1,ny
+            do i=1,nx
+               nmax = max(nmax, R(i,j))
             end do
          end do
       endif
       end subroutine
 
       subroutine hist2d_func(X, Y, Z, n, i0, i1, j0, j1, R, V,
-     +     nx, ny, do_func, nmax)
+     +     nx, ny, do_func)
 c Compute a 2-D Histogram from data X(i),Y(i)
 c do_func is a parameter selecting the computation to do
 c if not specified, R receives the number of points in the bin
@@ -65,7 +61,6 @@ c TODO : provide V1 V2 to compute min/max mean/std together
 
 cf2py intent(in) X, Y, Z, do_func
 cf2py intent(in,out) R,V
-cf2py intent(out) nmax
       double precision :: X(n), Y(n), Z(n), R(nx,ny), V(nx,ny)
       double precision :: i0, i1, j0, j1
       integer :: n, nx, ny
@@ -109,15 +104,5 @@ cf2py intent(out) nmax
                end if
             end select
         end if
-      end do
-
-c Apply log if needed and compute max value at the same time
-      nmax = 0.0
-      do i=1,nx
-         do j=1,ny
-            if (V(i,j).GT.nmax) then
-               nmax = V(i,j)
-            end if
-         end do
       end do
       end subroutine

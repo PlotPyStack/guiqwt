@@ -12,53 +12,53 @@ guiqwt.image
 ------------
 
 The `image` module provides image-related objects and functions:
-    
-    * :py:class:`guiqwt.image.ImagePlot`: a 2D curve and image plotting widget, 
+
+    * :py:class:`guiqwt.image.ImagePlot`: a 2D curve and image plotting widget,
       derived from :py:class:`guiqwt.curve.CurvePlot`
     * :py:class:`guiqwt.image.ImageItem`: simple images
-    * :py:class:`guiqwt.image.TrImageItem`: images supporting arbitrary 
+    * :py:class:`guiqwt.image.TrImageItem`: images supporting arbitrary
       affine transform
     * :py:class:`guiqwt.image.XYImageItem`: images with non-linear X/Y axes
     * :py:class:`guiqwt.image.Histogram2DItem`: 2D histogram
-    * :py:class:`guiqwt.image.ImageFilterItem`: rectangular filtering area 
+    * :py:class:`guiqwt.image.ImageFilterItem`: rectangular filtering area
       that may be resized and moved onto the processed image
     * :py:func:`guiqwt.image.assemble_imageitems`
     * :py:func:`guiqwt.image.get_plot_source_rect`
     * :py:func:`guiqwt.image.get_image_from_plot`
 
-``ImageItem``, ``TrImageItem``, ``XYImageItem``, ``Histogram2DItem`` and 
-``ImageFilterItem`` objects are plot items (derived from QwtPlotItem) that 
+``ImageItem``, ``TrImageItem``, ``XYImageItem``, ``Histogram2DItem`` and
+``ImageFilterItem`` objects are plot items (derived from QwtPlotItem) that
 may be displayed on a :py:class:`guiqwt.image.ImagePlot` plotting widget.
 
 .. seealso::
-    
+
     Module :py:mod:`guiqwt.curve`
         Module providing curve-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
 
 Examples
 ~~~~~~~~
 
 Create a basic image plotting widget:
-    * before creating any widget, a `QApplication` must be instantiated (that 
+    * before creating any widget, a `QApplication` must be instantiated (that
       is a `Qt` internal requirement):
-          
+
 >>> import guidata
 >>> app = guidata.qapplication()
 
-    * that is mostly equivalent to the following (the only difference is that 
-      the `guidata` helper function also installs the `Qt` translation 
+    * that is mostly equivalent to the following (the only difference is that
+      the `guidata` helper function also installs the `Qt` translation
       corresponding to the system locale):
-          
+
 >>> from PyQt4.QtGui import QApplication
 >>> app = QApplication([])
 
-    * now that a `QApplication` object exists, we may create the plotting 
+    * now that a `QApplication` object exists, we may create the plotting
       widget:
-          
+
 >>> from guiqwt.image import ImagePlot
 >>> plot = ImagePlot(title="Example")
 
@@ -68,29 +68,29 @@ Generate random data for testing purpose:
 >>> data = np.random.rand(100, 100)
 
 Create a simple image item:
-    * from the associated plot item class (e.g. `XYImageItem` to create 
-      an image with non-linear X/Y axes): the item properties are then 
+    * from the associated plot item class (e.g. `XYImageItem` to create
+      an image with non-linear X/Y axes): the item properties are then
       assigned by creating the appropriate style parameters object
       (e.g. :py:class:`guiqwt.styles.ImageParam)
-      
+
 >>> from guiqwt.curve import ImageItem
 >>> from guiqwt.styles import ImageParam
 >>> param = ImageParam()
 >>> param.label = 'My image'
 >>> image = ImageItem(param)
 >>> image.set_data(data)
-      
+
     * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
-      
+
 >>> from guiqwt.builder import make
 >>> image = make.image(data, title='My image')
 
 Attach the image to the plotting widget:
-    
+
 >>> plot.add_item(image)
 
 Display the plotting widget:
-    
+
 >>> plot.show()
 >>> app.exec_()
 
@@ -221,38 +221,38 @@ class BaseImageItem(QwtPlotItem):
     _can_rotate = False
     _readonly = False
     _private = False
-    
+
     def __init__(self, data=None, param=None):
         super(BaseImageItem, self).__init__()
-        
+
         self.bg_qcolor = QColor()
-        
+
         self.bounds = QRectF()
-        
+
         # BaseImageItem needs:
         # param.background
         # param.alpha_mask
         # param.alpha
         # param.colormap
         self.imageparam = param
-        
+
         self.selected = False
-        
+
         self.data = None
-        
+
         self.min = 0.0
         self.max = 1.0
         self.cmap_table = None
         self.cmap = None
         self.colormap_axis = None
-        
+
         self._offscreen = np.array((1, 1), np.uint32)
-        
+
         # Linear interpolation is the default interpolation algorithm:
         # it's almost as fast as 'nearest pixel' method but far smoother
         self.interpolate = None
         self.set_interpolation(INTERP_LINEAR)
-        
+
         x1, y1 = self.bounds.left(), self.bounds.top()
         x2, y2 = self.bounds.right(), self.bounds.bottom()
         self.border_rect = RectangleShape(x1, y1, x2, y2)
@@ -264,7 +264,7 @@ class BaseImageItem(QwtPlotItem):
         self.setItemAttribute(QwtPlotItem.AutoScale)
         self.setItemAttribute(QwtPlotItem.Legend, True)
         self._filename = None # The file this image comes from
-        
+
         self.histogram_cache = None
         if data is not None:
             self.set_data(data)
@@ -286,25 +286,25 @@ class BaseImageItem(QwtPlotItem):
     def get_filter(self, filterobj, filterparam):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
-    
+
     def get_pixel_coordinates(self, xplot, yplot):
         """
         Return (image) pixel coordinates
         Transform the plot coordinates (arbitrary plot Z-axis unit)
         into the image coordinates (pixel unit)
-        
+
         Rounding is necessary to obtain array indexes from these coordinates
         """
         return xplot, yplot
-        
+
     def get_plot_coordinates(self, xpixel, ypixel):
         """
         Return plot coordinates
-        Transform the image coordinates (pixel unit) 
+        Transform the image coordinates (pixel unit)
         into the plot coordinates (arbitrary plot Z-axis unit)
         """
         return xpixel, ypixel
-        
+
     def get_closest_indexes(self, x, y, corner=None):
         """
         Return closest image pixel indexes
@@ -320,7 +320,7 @@ class BaseImageItem(QwtPlotItem):
         i = max([0, min([i_max, int(pixelround(x, corner))])])
         j = max([0, min([j_max, int(pixelround(y, corner))])])
         return i, j
-        
+
     def get_closest_index_rect(self, x0, y0, x1, y1):
         """
         Return closest image rectangular pixel area index bounds
@@ -338,24 +338,24 @@ class BaseImageItem(QwtPlotItem):
         if iy0 == iy1:
             iy1 += 1
         return ix0, iy0, ix1, iy1
-        
+
     def align_rectangular_shape(self, shape):
         """Align rectangular shape to image pixels"""
         ix0, iy0, ix1, iy1 = self.get_closest_index_rect(*shape.get_rect())
         x0, y0 = self.get_plot_coordinates(ix0, iy0)
         x1, y1 = self.get_plot_coordinates(ix1, iy1)
         shape.set_rect(x0, y0, x1, y1)
-        
+
     def get_closest_pixel_indexes(self, x, y):
         """
         Return closest pixel indexes
-        Instead of returning indexes of an image pixel like the method 
-        'get_closest_indexes', this method returns the indexes of the 
-        closest pixel which is not necessarily on the image itself 
-        (i.e. indexes may be outside image index bounds: negative or 
+        Instead of returning indexes of an image pixel like the method
+        'get_closest_indexes', this method returns the indexes of the
+        closest pixel which is not necessarily on the image itself
+        (i.e. indexes may be outside image index bounds: negative or
         superior than the image dimension)
-        
-        Note: this is *not* the same as retrieving the canvas pixel 
+
+        Note: this is *not* the same as retrieving the canvas pixel
         coordinates (which depends on the zoom level)
         """
         x, y = self.get_pixel_coordinates(x, y)
@@ -365,7 +365,7 @@ class BaseImageItem(QwtPlotItem):
 
     def get_x_values(self, i0, i1):
         return np.arange(i0, i1)
-    
+
     def get_y_values(self, j0, j1):
         return np.arange(j0, j1)
 
@@ -387,7 +387,7 @@ class BaseImageItem(QwtPlotItem):
             j1 += 1
             return (self.get_x_values(i0, i1), self.get_y_values(j0, j1),
                     self.data[j0:j1, i0:i1])
-        
+
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
         return self.get_closest_indexes(x, y)
@@ -436,11 +436,11 @@ class BaseImageItem(QwtPlotItem):
 
     def get_color_map_name(self):
         return get_cmap_name(self.get_color_map())
-        
+
     def set_interpolation(self, interp_mode, size=None):
         """
         Set image interpolation mode
-        
+
         interp_mode: INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
         size (integer): (for anti-aliasing only) AA matrix size
         """
@@ -457,7 +457,7 @@ class BaseImageItem(QwtPlotItem):
     def set_lut_range(self, lut_range):
         """
         Set LUT transform range
-        *lut_range* is a tuple: (min, max)        
+        *lut_range* is a tuple: (min, max)
         """
         self.min, self.max = lut_range
         _a, _b, bg, cmap = self.lut
@@ -467,7 +467,7 @@ class BaseImageItem(QwtPlotItem):
             self.lut = (LUT_MAX/(self.max-self.min),
                         -LUT_MAX*self.min/(self.max-self.min),
                         bg, cmap)
-        
+
     def get_lut_range(self):
         """Return the LUT transform range tuple: (min, max)"""
         return self.min, self.max
@@ -503,7 +503,7 @@ class BaseImageItem(QwtPlotItem):
                            self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
-        
+
     def export_roi(self, src_rect, dst_rect, dst_image,
                    apply_lut=False, apply_interpolation=False,
                    original_resolution=False):
@@ -535,14 +535,14 @@ class BaseImageItem(QwtPlotItem):
             self.notify_new_offscreen()
         self.draw_image(painter, canvasRect, (i1, j1, i2, j2), dest, xMap, yMap)
         self.draw_border(painter, xMap, yMap, canvasRect)
-        
+
     def boundingRect(self):
         return self.bounds
 
     def notify_new_offscreen(self):
         # callback for those derived classes who need it
         pass
-    
+
     def setVisible(self, enable):
         if not enable:
             self.unselect() # when hiding item, unselect it
@@ -561,46 +561,46 @@ class BaseImageItem(QwtPlotItem):
     def set_readonly(self, state):
         """Set object readonly state"""
         self._readonly = state
-        
+
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
-        
+
     def set_private(self, state):
         """Set object as private"""
         self._private = state
-        
+
     def is_private(self):
         """Return True if object is private"""
         return self._private
-    
+
     def select(self):
         """Select item"""
         self.selected = True
         self.border_rect.select()
-        
+
     def unselect(self):
         """Unselect item"""
         self.selected = False
         self.border_rect.unselect()
-    
+
     def is_empty(self):
         """Return True if item data is empty"""
         return self.data is None or self.data.size == 0
-        
+
     def set_selectable(self, state):
         """Set item selectable state"""
         self._can_select = state
-        
+
     def set_resizable(self, state):
         """Set item resizable state
         (or any action triggered when moving an handle, e.g. rotation)"""
         self._can_resize = state
-        
+
     def set_movable(self, state):
         """Set item movable state"""
         self._can_move = state
-        
+
     def set_rotatable(self, state):
         """Set item rotatable state"""
         self._can_rotate = state
@@ -612,17 +612,17 @@ class BaseImageItem(QwtPlotItem):
     def can_move(self):
         return self._can_move
     def can_rotate(self):
-        return self._can_rotate        
-    
+        return self._can_rotate
+
     def hit_test(self, pos):
         plot = self.plot()
         ax = self.xAxis()
         ay = self.yAxis()
         return self.border_rect.poly_hit_test(plot, ax, ay, pos)
-    
+
     def get_item_parameters(self, itemparams):
         itemparams.add("ShapeParam", self, self.border_rect.shapeparam)
-    
+
     def set_item_parameters(self, itemparams):
         self.border_rect.set_item_parameters(itemparams)
 
@@ -634,8 +634,8 @@ class BaseImageItem(QwtPlotItem):
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        pass        
-        
+        pass
+
     def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
@@ -680,14 +680,14 @@ class BaseImageItem(QwtPlotItem):
         else:
             res = self.histogram_cache
         return res
-        
+
     def __process_cross_section(self, ydata, apply_lut):
         if apply_lut:
             a, b, bg, cmap = self.lut
             return (ydata*a+b).clip(0, LUT_MAX)
         else:
             return ydata
-            
+
     def get_stats(self, x0, y0, x1, y1):
         """Return formatted string with stats on image rectangular area
         (output should be compatible with AnnotatedShape.get_infos)"""
@@ -715,7 +715,7 @@ class BaseImageItem(QwtPlotItem):
         _ix, iy = self.get_closest_indexes(0, y0)
         return (self.get_x_values(0, self.data.shape[1]),
                 self.__process_cross_section(self.data[iy, :], apply_lut))
-        
+
     def get_ysection(self, x0, apply_lut=False):
         """Return cross section along y-axis at x=x0"""
         ix, _iy = self.get_closest_indexes(x0, 0)
@@ -735,7 +735,7 @@ class BaseImageItem(QwtPlotItem):
         ydata = self.data[iy0:iy1, ix0:ix1].mean(axis=1)
         return (self.get_y_values(iy0, iy1),
                 self.__process_cross_section(ydata, apply_lut))
-                
+
 assert_interfaces_valid(BaseImageItem)
 
 
@@ -755,7 +755,7 @@ class RawImageItem(BaseImageItem):
         if param is None:
             param = RawImageParam(_("Image"))
         super(RawImageItem, self).__init__(data=data, param=param)
-            
+
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
         fname = self.get_filename()
@@ -777,7 +777,7 @@ class RawImageItem(BaseImageItem):
             self.set_data(fn_or_data, lut_range=lut_range)
         self.setZ(z)
         self.imageparam.update_image(self)
-        
+
     #---- Public API -----------------------------------------------------------
     def load_data(self, lut_range=None):
         """
@@ -786,7 +786,7 @@ class RawImageItem(BaseImageItem):
         """
         data = io.imread(self.get_filename(), to_grayscale=True)
         self.set_data(data, lut_range=lut_range)
-        
+
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
@@ -797,7 +797,7 @@ class RawImageItem(BaseImageItem):
             _min, _max = lut_range
         else:
             _min, _max = _nanmin(data), _nanmax(data)
-            
+
         self.data = data
         self.histogram_cache = None
         self.update_bounds()
@@ -819,7 +819,7 @@ class RawImageItem(BaseImageItem):
         BaseImageItem.get_item_parameters(self, itemparams)
         self.imageparam.update_param(self)
         itemparams.add("ImageParam", self, self.imageparam)
-    
+
     def set_item_parameters(self, itemparams):
         update_dataset(self.imageparam, itemparams.get("ImageParam"),
                        visible_only=True)
@@ -855,7 +855,7 @@ class ImageItem(RawImageItem):
         if param is None:
             param = ImageParam(_("Image"))
         super(ImageItem, self).__init__(data=data, param=param)
-        
+
     #---- Public API -----------------------------------------------------------
     def get_xdata(self):
         """Return (xmin, xmax)"""
@@ -865,7 +865,7 @@ class ImageItem(RawImageItem):
         if xmax is None:
             xmax = self.data.shape[1]
         return xmin, xmax
-        
+
     def get_ydata(self):
         """Return (ymin, ymax)"""
         ymin, ymax = self.ymin, self.ymax
@@ -874,10 +874,10 @@ class ImageItem(RawImageItem):
         if ymax is None:
             ymax = self.data.shape[0]
         return ymin, ymax
-        
+
     def set_xdata(self, xmin=None, xmax=None):
         self.xmin, self.xmax = xmin, xmax
-        
+
     def set_ydata(self, ymin=None, ymax=None):
         self.ymin, self.ymax = ymin, ymax
 
@@ -906,12 +906,12 @@ class ImageItem(RawImageItem):
         xmin, xmax = self.get_xdata()
         xfunc = lambda index: xmin+(xmax-xmin)*index/self.data.shape[1]
         return np.linspace(xfunc(i0), xfunc(i1), i1-i0)
-    
+
     def get_y_values(self, j0, j1):
         ymin, ymax = self.get_ydata()
         yfunc = lambda index: ymin+(ymax-ymin)*index/self.data.shape[0]
         return np.linspace(yfunc(j0), yfunc(j1), j1-j0)
-    
+
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
@@ -919,7 +919,7 @@ class ImageItem(RawImageItem):
         xpix = np.linspace(xmin, xmax, self.data.shape[1]+1)
         ypix = np.linspace(ymin, ymax, self.data.shape[0]+1)
         return xpix[i], ypix[j]
-        
+
     def _rescale_src_rect(self, src_rect):
         sxl, syt, sxr, syb = src_rect
         xl, yt, xr, yb = self.boundingRect().getCoords()
@@ -1057,7 +1057,7 @@ class TrImageItem(RawImageItem):
         if param is None:
             param = TrImageParam(_("Image"))
         super(TrImageItem, self).__init__(data, param)
-        
+
     #---- Public API -----------------------------------------------------------
     def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0,
                       hflip=False, vflip=False):
@@ -1094,13 +1094,13 @@ class TrImageItem(RawImageItem):
         print "tr1+rot:", p2.T
         print "tr1+rot+sc:", p3.T
         print "tr1+rot+tr2:", p4.T
-    
+
     def set_crop(self, left, top, right, bottom):
         self.imageparam.set_crop(left, top, right, bottom)
-        
+
     def get_crop(self):
         return self.imageparam.get_crop()
-        
+
     def get_crop_coordinates(self):
         """Return crop rectangle coordinates"""
         tpos = np.array(np.dot(self.itr, self.points))
@@ -1123,7 +1123,7 @@ class TrImageItem(RawImageItem):
                                 [1,  1,  1,  1]], float)
         self.compute_bounds()
 
-    #--- BaseImageItem API -----------------------------------------------------    
+    #--- BaseImageItem API -----------------------------------------------------
     def get_filter(self, filterobj, filterparam):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
@@ -1135,20 +1135,20 @@ class TrImageItem(RawImageItem):
         v = self.tr*colvector(xplot, yplot)
         xpixel, ypixel, _ = v[:, 0]
         return xpixel, ypixel
-        
+
     def get_plot_coordinates(self, xpixel, ypixel):
         """Return plot coordinates (from image pixel coordinates)"""
         v0 = self.itr*colvector(xpixel, ypixel)
         xplot, yplot, _ = v0[:, 0].A.ravel()
         return xplot, yplot
-        
+
     def get_x_values(self, i0, i1):
         v0 = self.itr*colvector(i0, 0)
         x0, _y0, _ = v0[:, 0].A.ravel()
         v1 = self.itr*colvector(i1, 0)
         x1, _y1, _ = v1[:, 0].A.ravel()
         return np.linspace(x0, x1, i1-i0)
-    
+
     def get_y_values(self, j0, j1):
         v0 = self.itr*colvector(0, j0)
         _x0, y0, _ = v0[:, 0].A.ravel()
@@ -1162,7 +1162,7 @@ class TrImageItem(RawImageItem):
         v = self.itr*colvector(xi, yi)
         x, y, _ = v[:, 0].A.ravel()
         return x, y
-    
+
     def update_border(self):
         tpos = np.dot(self.itr, self.points)
         self.border_rect.set_points(tpos.T[:,:2])
@@ -1191,7 +1191,7 @@ class TrImageItem(RawImageItem):
                          self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
-        
+
     def export_roi(self, src_rect, dst_rect, dst_image,
                    apply_lut=False, apply_interpolation=False,
                    original_resolution=False):
@@ -1203,24 +1203,24 @@ class TrImageItem(RawImageItem):
 
         xs0, ys0, xs1, ys1 = src_rect
         xd0, yd0, xd1, yd1 = dst_rect
-        
+
         if original_resolution:
             _t1, _t2, _t3, xscale, yscale, _t4, _t5 = self.get_transform()
         else:
             xscale, yscale = (xs1-xs0)/float(xd1-xd0), (ys1-ys0)/float(yd1-yd0)
-        
+
         mat = self.tr*( translate(xs0, ys0)*scale(xscale, yscale) )
-        
+
         x0, y0, x1, y1 = self.get_crop_coordinates()
         xd0 = max([xd0, xd0+int((x0-xs0)/xscale)])
         yd0 = max([yd0, yd0+int((y0-ys0)/xscale)])
         xd1 = min([xd1, xd1+int((x1-xs1)/xscale)])
         yd1 = min([yd1, yd1+int((y1-ys1)/xscale)])
         dst_rect = xd0, yd0, xd1, yd1
-        
+
         interp = self.interpolate if apply_interpolation else (INTERP_NEAREST,)
         _scale_tr(self.data, mat, dst_image, dst_rect, (a, b, None), interp)
-                    
+
     #---- IBasePlotItem API ----------------------------------------------------
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
@@ -1271,7 +1271,7 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
                         apply_interpolation=False,
                         original_resolution=False):
     """
-    Assemble together image items in qrect (QRectF object) 
+    Assemble together image items in qrect (QRectF object)
     and return resulting pixel data
     <!> Does not support XYImageItem objects
     """
@@ -1316,7 +1316,7 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
             if add_images:
                 output += dst_image
     return output
-    
+
 def get_plot_qrect(plot, p0, p1):
     """
     Return QRectF rectangle object in plot coordinates
@@ -1408,7 +1408,7 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None, add_images=False,
     p0, p1: resp. top-left and bottom-right points (QPoint objects)
     apply_lut: apply contrast settings
     add_images: add superimposed images (instead of replace by the foreground)
-    
+
     Support only the image items implementing the IExportROIImageItemType
     interface, i.e. this does *not* support XYImageItem objects
     """
@@ -1477,7 +1477,7 @@ class XYImageItem(RawImageItem):
         self.set_xy(x, y)
         self.setZ(z)
         self.imageparam.update_image(self)
-        
+
     #---- Public API -----------------------------------------------------------
     def set_xy(self, x, y):
         ni, nj = self.data.shape
@@ -1520,17 +1520,17 @@ class XYImageItem(RawImageItem):
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
         return self.x.searchsorted(xplot), self.y.searchsorted(yplot)
-        
+
     def get_plot_coordinates(self, xpixel, ypixel):
         """Return plot coordinates (from image pixel coordinates)"""
         return self.x[int(pixelround(xpixel))], self.y[int(pixelround(ypixel))]
 
     def get_x_values(self, i0, i1):
         return self.x[i0:i1]
-    
+
     def get_y_values(self, j0, j1):
         return self.y[j0:j1]
-    
+
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
         i, j = self.get_closest_indexes(x, y)
@@ -1540,7 +1540,7 @@ class XYImageItem(RawImageItem):
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType, ISerializableType, ICSImageItemType)
-                
+
     #---- IBaseImageItem API ---------------------------------------------------
     def can_setfullscale(self):
         return True
@@ -1590,7 +1590,7 @@ class RGBImageItem(ImageItem):
             self.set_data(fn_or_data)
         self.setZ(z)
         self.imageparam.update_image(self)
-        
+
     #---- Public API -----------------------------------------------------------
     def recompute_alpha_channel(self):
         data = self.orig_data
@@ -1608,7 +1608,7 @@ class RGBImageItem(ImageItem):
             A = np.zeros((H, W), np.uint32)
             A[:, :]=int(255*alpha)
         self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
-      
+
     #--- BaseImageItem API -----------------------------------------------------
     # Override lut/bg handling
     def set_lut_range(self, range):
@@ -1628,7 +1628,7 @@ class RGBImageItem(ImageItem):
         """
         data = io.imread(self.get_filename(), to_grayscale=False)
         self.set_data(data)
-        
+
     def set_data(self, data):
         H, W, NC = data.shape
         self.orig_data = data
@@ -1672,7 +1672,7 @@ class MaskedImageItem(ImageItem):
         self._mask_filename = None
         self._masked_areas = []
         super(MaskedImageItem, self).__init__(data, param)
-        
+
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
         fname = self.get_filename()
@@ -1701,31 +1701,31 @@ class MaskedImageItem(ImageItem):
         elif masked_areas and self.data is not None:
             self.set_masked_areas(masked_areas)
             self.apply_masked_areas()
-        
+
     #---- Public API -----------------------------------------------------------
     def update_mask(self):
         if isinstance(self.data, np.ma.MaskedArray):
             self.data.set_fill_value(self.imageparam.filling_value)
-            
+
     def set_mask(self, mask):
         """Set image mask"""
         self.data.mask = mask
-        
+
     def get_mask(self):
         """Return image mask"""
         return self.data.mask
-        
+
     def set_mask_filename(self, fname):
         """
         Set mask filename
         There are two ways for pickling mask data of MaskedImageItem objects:
             1. using the mask filename (as for data itself)
             2. using the mask areas (MaskedAreas instance, see set_mask_areas)
-        When saving objects, the first method is tried and then, if no 
+        When saving objects, the first method is tried and then, if no
         filename has been defined for mask data, the second method is used.
         """
         self._mask_filename = fname
-        
+
     def get_mask_filename(self):
         return self._mask_filename
 
@@ -1733,14 +1733,14 @@ class MaskedImageItem(ImageItem):
         data = io.imread(self.get_mask_filename(), to_grayscale=True)
         self.set_mask(data)
         self._mask_changed()
-        
+
     def set_masked_areas(self, areas):
         """Set masked areas (see set_mask_filename)"""
         self._masked_areas = areas
-        
+
     def get_masked_areas(self):
         return self._masked_areas
-        
+
     def add_masked_areas(self, geometry, x0, y0, x1, y1, inside):
         for _g, _x0, _y0, _x1, _y1, _i in self._masked_areas:
             if _g == geometry and _x0 == x0 and _y0 == y0 and \
@@ -1753,7 +1753,7 @@ class MaskedImageItem(ImageItem):
         plot = self.plot()
         if plot is not None:
             plot.emit(SIG_MASK_CHANGED, self)
-        
+
     def apply_masked_areas(self):
         for geometry, x0, y0, x1, y1, inside in self._masked_areas:
             if geometry == 'rectangular':
@@ -1763,18 +1763,18 @@ class MaskedImageItem(ImageItem):
                 self.mask_circular_area(x0, y0, x1, y1, inside,
                                         trace=False, do_signal=False)
         self._mask_changed()
-                            
+
     def mask_all(self):
         """Mask all pixels"""
         self.data.mask = True
         self._mask_changed()
-        
+
     def unmask_all(self):
         """Unmask all pixels"""
         self.data.mask = np.ma.nomask
         self.set_masked_areas([])
         self._mask_changed()
-        
+
     def mask_rectangular_area(self, x0, y0, x1, y1, inside=True,
                               trace=True, do_signal=True):
         """
@@ -1793,11 +1793,11 @@ class MaskedImageItem(ImageItem):
             self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
         if do_signal:
             self._mask_changed()
-        
+
     def mask_circular_area(self, x0, y0, x1, y1, inside=True,
                            trace=True, do_signal=True):
         """
-        Mask circular area, inside the rectangle (x0, y0, x1, y1), i.e. 
+        Mask circular area, inside the rectangle (x0, y0, x1, y1), i.e.
         circle with a radius of .5*(x1-x0)
         If inside is True (default), mask the inside of the area
         Otherwise, mask the outside
@@ -1824,14 +1824,14 @@ class MaskedImageItem(ImageItem):
     def is_mask_visible(self):
         """Return mask visibility"""
         return self.imageparam.show_mask
-        
+
     def set_mask_visible(self, state):
         """Set mask visibility"""
         self.imageparam.show_mask = state
         plot = self.plot()
         if plot is not None:
             plot.replot()
-            
+
     #---- BaseImageItem API ----------------------------------------------------
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         ImageItem.draw_image(self, painter, canvasRect,
@@ -1854,7 +1854,7 @@ class MaskedImageItem(ImageItem):
                                lut, (INTERP_NEAREST,))
             qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
             painter.drawImage(qrect, self._image, qrect)
-            
+
     #---- RawImageItem API -----------------------------------------------------
     def set_data(self, data, lut_range=None):
         """
@@ -1891,16 +1891,16 @@ class ImageFilterItem(BaseImageItem):
     _can_move = True
     def __init__(self, image, filter, param):
         self.use_source_cmap = None
-        self.image = None # BaseImageItem constructor will try to set this 
+        self.image = None # BaseImageItem constructor will try to set this
                           # item's color map using the method 'set_color_map'
         super(ImageFilterItem, self).__init__(param=param)
         self.border_rect.set_style("plot", "shape/imagefilter")
         self.image = image
         self.filter = filter
-        
+
         self.imagefilterparam = param
         self.imagefilterparam.update_imagefilter(self)
-        
+
     #---- Public API -----------------------------------------------------------
     def set_image(self, image):
         """
@@ -1908,7 +1908,7 @@ class ImageFilterItem(BaseImageItem):
             * image: :py:class:`guiqwt.image.RawImageItem` instance
         """
         self.image = image
-    
+
     def set_filter(self, filter):
         """
         Set the filter function
@@ -1926,7 +1926,7 @@ class ImageFilterItem(BaseImageItem):
         BaseImageItem.get_item_parameters(self, itemparams)
         self.imagefilterparam.update_param(self)
         itemparams.add("ImageFilterParam", self, self.imagefilterparam)
-    
+
     def set_item_parameters(self, itemparams):
         update_dataset(self.imagefilterparam,
                        itemparams.get("ImageFilterParam"),
@@ -1962,7 +1962,7 @@ class ImageFilterItem(BaseImageItem):
                 self.image.set_color_map(name_or_table)
         else:
             BaseImageItem.set_color_map(self, name_or_table)
-            
+
     def get_color_map(self):
         if self.use_source_cmap:
             return self.image.get_color_map()
@@ -1980,7 +1980,7 @@ class ImageFilterItem(BaseImageItem):
             self.image.set_lut_range(lut_range)
         else:
             BaseImageItem.set_lut_range(self, lut_range)
-    
+
     #---- IBaseImageItem API ---------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
@@ -2002,17 +2002,17 @@ class XYImageFilterItem(ImageFilterItem):
     """
     def __init__(self, image, filter, param):
         ImageFilterItem.__init__(self, image, filter, param)
-        
+
     def set_image(self, image):
         """
         Set the image item on which the filter will be applied
             * image: :py:class:`guiqwt.image.XYImageItem` instance
         """
         ImageFilterItem.set_image(self, image)
-    
+
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         bounds = self.boundingRect()
-        
+
         filt_qrect = bounds & self.image.boundingRect()
         x0, y0, x1, y1 = filt_qrect.getCoords()
         i0, i1 = xMap.transform(x0), xMap.transform(x1)
@@ -2021,7 +2021,7 @@ class XYImageFilterItem(ImageFilterItem):
         dstRect = QRect(i0, j0, i1-i0, j1-j0)
         if not dstRect.intersects(canvasRect):
             return
-        
+
         x, y, data = self.image.get_data(x0, y0, x1, y1)
         new_data = self.filter(x, y, data)
         self.data = new_data
@@ -2056,20 +2056,20 @@ class Histogram2DItem(BaseImageItem):
             param = ImageParam(_("Image"))
         self._z = Z # allows set_bins to
         super(Histogram2DItem, self).__init__(param=param)
-        
+
         # Set by parameters
         self.nx_bins = 0
         self.ny_bins = 0
         self.logscale = None
-        
+
         # internal use
         self._x = None
         self._y = None
-        
+
         # Histogram parameters
         self.histparam = param
         self.histparam.update_histogram(self)
-        
+
         self.set_lut_range([0, 10.])
         self.set_data(X, Y, Z)
 
@@ -2084,7 +2084,7 @@ class Histogram2DItem(BaseImageItem):
         self.data = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
         if self._z is not None:
             self.data_tmp = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
-        
+
     def set_data(self, X, Y, Z=None):
         """Set histogram data"""
         self._x = X
@@ -2093,7 +2093,7 @@ class Histogram2DItem(BaseImageItem):
         self.bounds = QRectF(QPointF(X.min(), Y.min()),
                              QPointF(X.max(), Y.max()))
         self.update_border()
-    
+
     #---- QwtPlotItem API ------------------------------------------------------
     fill_canvas = True
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
@@ -2105,22 +2105,27 @@ class Histogram2DItem(BaseImageItem):
                              self.data, self.logscale)
         else:
             self.data_tmp[:,:] = 0.0
-            if computation in (0,2,4):
+            if computation in (2,4):    # sum, avg
                 self.data[:,:] = 0.0
-            elif computation==1:
-                self.data[:,:] = np.inf
+            elif computation in (1,5):  # min, argmin
+                val = np.inf
+                self.data[:,:] = val
+            elif computation in (0,6):  # max, argmax
+                val = -np.inf
+                self.data[:,:] = val
             elif computation==3:
                 self.data[:,:] = 1.
             r = hist2d_func(self._y, self._x, self._z, j1, j2, i1, i2,
                             self.data_tmp, self.data, computation)
-            _,_,nmax=r
-            if computation==1:
-                nmax = self.data.max()
-                self.data[self.data==np.inf] = np.nan
+            _data_tmp,_data=r
+            if computation in (0,1,5,6):
+                self.data[self.data==val] = np.nan
             else:
                 self.data[self.data_tmp==0.0] = np.nan
         if self.histparam.auto_lut:
-            self.set_lut_range([0, nmax])
+            nmin = _nanmin(self.data)
+            nmax = _nanmax(self.data)
+            self.set_lut_range([nmin, nmax])
             self.plot().update_colormap_axis(self)
         src_rect = (0, 0, self.nx_bins, self.ny_bins)
         drawfunc = lambda *args: BaseImageItem.draw_image(self, *args)
@@ -2129,7 +2134,7 @@ class Histogram2DItem(BaseImageItem):
             drawfunc(painter, canvasRect, src_rect, (x1, y1, x2, y2), xMap, yMap)
         else:
             drawfunc(painter, canvasRect, src_rect, dst_rect, xMap, yMap)
-    
+
     #---- IBasePlotItem API ----------------------------------------------------
     def types(self):
         return (IColormapImageItemType, IImageItemType, ITrackableItemType,
@@ -2138,7 +2143,7 @@ class Histogram2DItem(BaseImageItem):
     def get_item_parameters(self, itemparams):
         BaseImageItem.get_item_parameters(self, itemparams)
         itemparams.add("Histogram2DParam", self, self.histparam)
-    
+
     def set_item_parameters(self, itemparams):
         update_dataset(self.histparam, itemparams.get("Histogram2DParam"),
                        visible_only=True)
@@ -2170,7 +2175,7 @@ class Histogram2DItem(BaseImageItem):
         res = res2[1:-1], bins
         return res
 
-    
+
 assert_interfaces_valid(Histogram2DItem)
 
 
@@ -2179,11 +2184,11 @@ assert_interfaces_valid(Histogram2DItem)
 #===============================================================================
 class ImagePlot(CurvePlot):
     """
-    Construct a 2D curve and image plotting widget 
+    Construct a 2D curve and image plotting widget
     (this class inherits :py:class:`guiqwt.curve.CurvePlot`)
         * parent: parent widget
         * title: plot title (string)
-        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
+        * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles
           (strings)
         * xunit, yunit, zunit: resp. bottom, left and right axis units (strings)
         * yreverse: reversing y-axis direction of increasing values (bool)
@@ -2198,7 +2203,7 @@ class ImagePlot(CurvePlot):
                  xunit=None, yunit=None, zunit=None, yreverse=True,
                  aspect_ratio=1.0, lock_aspect_ratio=True,
                  gridparam=None, section="plot"):
-        
+
         self.lock_aspect_ratio = lock_aspect_ratio
 
         if zlabel is not None:
@@ -2222,7 +2227,7 @@ class ImagePlot(CurvePlot):
         self.set_axis_direction('left', yreverse)
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
-        
+
     #---- QwtPlot API ----------------------------------------------------------
     def showEvent(self, event):
         """Override BasePlot method"""
@@ -2230,25 +2235,25 @@ class ImagePlot(CurvePlot):
             self._start_autoscaled = True
         CurvePlot.showEvent(self, event)
 
-    #---- CurvePlot API --------------------------------------------------------    
+    #---- CurvePlot API --------------------------------------------------------
     def do_zoom_view(self, dx, dy):
         """Reimplement CurvePlot method"""
         CurvePlot.do_zoom_view(self, dx, dy,
                                lock_aspect_ratio=self.lock_aspect_ratio)
-    
+
     #---- Levels histogram-related API -----------------------------------------
     def update_lut_range(self, _min, _max):
         """update the LUT scale"""
         #self.set_items_lut_range(_min, _max, replot=False)
         self.updateAxes()
-        
+
     #---- Image scale/aspect ratio -related API --------------------------------
     def set_full_scale(self, item):
         if item.can_setfullscale():
             bounds = item.boundingRect()
             self.set_plot_limits(bounds.left(), bounds.right(),
                                  bounds.top(), bounds.bottom())
-        
+
     def get_current_aspect_ratio(self):
         """Return current aspect ratio"""
         dx = self.axisScaleDiv(self.X_BOTTOM).range()
@@ -2256,11 +2261,11 @@ class ImagePlot(CurvePlot):
         h = self.canvasMap(self.Y_LEFT).pDist()
         w = self.canvasMap(self.X_BOTTOM).pDist()
         return fabs((h*dx)/(w*dy))
-            
+
     def get_aspect_ratio(self):
         """Return aspect ratio"""
         return self.__aspect_ratio
-            
+
     def set_aspect_ratio(self, ratio=None, lock=None):
         """Set aspect ratio"""
         if ratio is not None:
@@ -2268,7 +2273,7 @@ class ImagePlot(CurvePlot):
         if lock is not None:
             self.lock_aspect_ratio = lock
         self.apply_aspect_ratio()
-            
+
     def apply_aspect_ratio(self, full_scale=False):
         if not self.isVisible():
             return
@@ -2331,7 +2336,7 @@ class ImagePlot(CurvePlot):
     def add_item(self, item, z=None, autoscale=True):
         """
         Add a *plot item* instance to this *plot widget*
-        
+
         item: QwtPlotItem (PyQt4.Qwt5) object implementing
               the IBasePlotItem interface (guiqwt.interfaces)
         z: item's z order (None -> z = max(self.get_items())+1)
@@ -2347,7 +2352,7 @@ class ImagePlot(CurvePlot):
                 self.do_autoscale()
             if parent is not None:
                 parent.setUpdatesEnabled(True)
-    
+
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
         CurvePlot.do_autoscale(self, replot=False)
@@ -2357,7 +2362,7 @@ class ImagePlot(CurvePlot):
             self.apply_aspect_ratio(full_scale=True)
         if replot:
             self.replot()
-    
+
     def get_axesparam_class(self, item):
         """Return AxesParam dataset class associated to item's type"""
         if isinstance(item, BaseImageItem):
