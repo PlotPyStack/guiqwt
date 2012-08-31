@@ -3,7 +3,7 @@ GUIQwt reference
 
 .. automodule:: guiqwt.pyplot
 
-.. automodule:: guiqwt.fit
+.. automodule:: guiqwt.widgets.fit
 
 .. automodule:: guiqwt.plot
 
@@ -35,3 +35,6 @@ GUIQwt reference
 
 .. automodule:: guiqwt.io
 
+.. automodule:: guiqwt.widgets.resizedialog
+
+.. automodule:: guiqwt.widgets.rotatecrop

@@ -64,6 +64,27 @@ from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_MOVED,
                             SIG_PLOT_LABELS_CHANGED)
 
+
+#==============================================================================
+# Utilities for plot items
+#==============================================================================
+
+def canvas_to_axes(item, pos):
+    """Convert (x,y) from canvas coordinates system to axes coordinates"""
+    plot, ax, ay = item.plot(), item.xAxis(), item.yAxis()
+    return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
+
+def axes_to_canvas(item, x, y):
+    """Convert (x,y) from axes coordinates to canvas coordinates system"""
+    plot, ax, ay = item.plot(), item.xAxis(), item.yAxis()
+    return plot.transform(ax, x), plot.transform(ay, y)
+
+
+
+#==============================================================================
+# Base plot widget
+#==============================================================================
+
 PARAMETERS_TITLE_ICON = {
                          'grid': (_("Grid..."), "grid.png" ),
                          'axes': (_("Axes style..."), "axes.png" ),

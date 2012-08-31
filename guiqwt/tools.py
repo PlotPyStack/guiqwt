@@ -249,9 +249,10 @@ except ImportError:
 
 import sys, numpy as np, weakref, os.path as osp
 
-from guidata.qt.QtCore import Qt, QObject, SIGNAL
+from guidata.qt.QtCore import Qt, QObject, SIGNAL, QPoint
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
-                              QPrintDialog, QFont, QAction, QToolButton)
+                              QPrintDialog, QFont, QAction, QToolButton,
+                              QKeySequence)
 from guidata.qt.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
@@ -264,7 +265,8 @@ from guidata.dataset.dataitems import BoolItem, FloatItem
 from guiqwt.transitional import QwtPlotPrintFilter
 from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
-                           KeyEventMatch, QtDragHandler, ZoomRectHandler,
+                           KeyEventMatch, StandardKeyMatch,
+                           QtDragHandler, ZoomRectHandler,
                            RectangularSelectionHandler, ClickHandler)
 from guiqwt.shapes import (Axes, RectangleShape, Marker, PolygonShape,
                            EllipseShape, SegmentShape, PointShape,
@@ -454,8 +456,7 @@ class SelectTool(InteractiveTool):
                          KeyEventMatch((Qt.Key_Enter, Qt.Key_Return,
                                         Qt.Key_Space)),
                          self.validate, start_state)
-        filter.add_event(start_state,
-                         KeyEventMatch(((Qt.Key_A, Qt.ControlModifier),)),
+        filter.add_event(start_state, StandardKeyMatch(QKeySequence.SelectAll),
                          self.select_all_items, start_state)
         return setup_standard_tool_filter(filter, start_state)
 
@@ -724,8 +725,10 @@ class RectangularActionTool(InteractiveTool):
     SHAPE_STYLE_KEY = "shape/drag"
     AVOID_NULL_SHAPE = False
     def __init__(self, manager, func, shape_style=None,
-                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
+                 fix_orientation=False):
         self.action_func = func
+        self.fix_orientation = fix_orientation
         InteractiveTool.__init__(self, manager, toolbar_id,
                                  title=title, icon=icon, tip=tip)
         if shape_style is not None:
@@ -779,7 +782,12 @@ class RectangularActionTool(InteractiveTool):
 
     def end_rect(self, filter, p0, p1):
         plot = filter.plot
-        self.action_func(plot, p0, p1)
+        if self.fix_orientation:
+            left, right = min(p0.x(), p1.x()), max(p0.x(), p1.x())
+            top, bottom = min(p0.y(), p1.y()), max(p0.y(), p1.y())
+            self.action_func(plot, QPoint(left, top), QPoint(right, bottom))
+        else:
+            self.action_func(plot, p0, p1)
         self.emit(SIG_TOOL_JOB_FINISHED)
 
 
@@ -1491,33 +1499,26 @@ class CopyToClipboardTool(CommandTool):
         """Activate tool"""
         plot.copy_to_clipboard()
 
-    
+
 def save_snapshot(plot, p0, p1):
     """
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
     """
-    from guiqwt.image import TrImageItem, get_image_from_plot, get_plot_qrect
-    from guiqwt.io import (array_to_imagefile, array_to_dicomfile,
-                           MODE_INTENSITY_U8, set_dynamic_range_from_dtype)
-    items = plot.get_items(item_type=IExportROIImageItemType)
-    src_qrect = get_plot_qrect(plot, p0, p1)
-    src_x, src_y, src_w, src_h = src_qrect.getRect()
-    items = [it for it in items if src_qrect.intersects(it.boundingRect())]
+    from guiqwt.image import (get_image_from_plot, get_plot_qrect,
+                              get_items_in_rectangle,
+                              compute_trimageitems_original_size)
+    from guiqwt import io
+    items = get_items_in_rectangle(plot, p0, p1)
     if not items:
         QMessageBox.critical(plot, _("Rectangle snapshot"),
                  _("There is no supported image item in current selection."))
         return
-    original_size = (src_w, src_h)
-    trparams = [item.get_transform() for item in items
-                if isinstance(item, TrImageItem)]
-    if trparams:
-        dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
-        dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
-        original_size = (src_w/dx_max, src_h/dy_max)
+    src_x, src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
+    original_size = compute_trimageitems_original_size(items, src_w, src_h)
     screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
     
-    from guiqwt.resizedialog import ResizeDialog
+    from guiqwt.widgets.resizedialog import ResizeDialog
     dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
                        text=_("Destination size:"))
     if not dlg.exec_():
@@ -1529,6 +1530,8 @@ def save_snapshot(plot, p0, p1):
         _levels = BeginGroup(_("Image levels adjustments"))
         apply_contrast = BoolItem(_("Apply contrast settings"),
                                   default=False)
+        apply_interpolation = BoolItem(_("Apply interpolation algorithm"),
+                                       default=True)
         norm_range = BoolItem(_("Scale levels to maximum range"),
                               default=False)
         _end_levels = EndGroup(_("Image levels adjustments"))
@@ -1542,20 +1545,34 @@ def save_snapshot(plot, p0, p1):
     param = SnapshotParam(_("Rectangle snapshot"))
     if not param.edit(parent=plot):
         return
-        
-    data = get_image_from_plot(plot, p0, p1, dlg.width, dlg.height,
-                               apply_lut=param.apply_contrast,
-                               add_images=param.add_images)
-
-    dtype = None
-    for item in items:
-        if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
-            dtype = item.data.dtype
-    if param.norm_range:
-        data = set_dynamic_range_from_dtype(data, dtype=dtype)
+    
+    if dlg.keep_original_size:
+        destw, desth = original_size
     else:
-        data = np.array(data, dtype=dtype)
-            
+        destw, desth = dlg.width, dlg.height
+    
+    try:
+        data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
+                               add_images=param.add_images,
+                               apply_lut=param.apply_contrast,
+                               apply_interpolation=param.apply_interpolation,
+                               original_resolution=dlg.keep_original_size)
+    
+        dtype = None
+        for item in items:
+            if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
+                dtype = item.data.dtype
+        if param.norm_range:
+            data = io.scale_data_to_dtype(data, dtype=dtype)
+        else:
+            data = np.array(data, dtype=dtype)
+    except MemoryError:
+        mbytes = int(destw*desth*32./(8*1024**2))
+        QMessageBox.critical(plot, _("Memory error"),
+                             _("There is not enough memory left to process "
+                               "this %d x %d image (%d MB would be required)."
+                             ) % (destw, desth, mbytes))
+        return
     for model_item in items:
         model_fname = model_item.get_filename()
         if model_fname is not None and model_fname.lower().endswith(".dcm"):
@@ -1568,14 +1585,14 @@ def save_snapshot(plot, p0, p1):
         formats = ''
     formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
     formats += '\n%s (*.png)' % _('8-bits PNG image')
-    fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'), formats)
+    fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'),
+                                io.iohandler.save_filters)
     _base, ext = osp.splitext(fname)
+    options = {}
     if not fname:
         return
     elif ext.lower() == ".png":
-        array_to_imagefile(data, fname, MODE_INTENSITY_U8, max_range=True)
-    elif ext.lower() in (".tif", ".tiff"):
-        array_to_imagefile(data, fname)
+        options.update(dict(dtype=np.uint8, max_range=True))
     elif ext.lower() == ".dcm":
         import dicom
         model_dcm = dicom.read_file(model_fname)
@@ -1593,10 +1610,8 @@ def save_snapshot(plot, p0, p1):
         new_ps_x = ps_x*src_w/(model_dx*dest_width)
         new_ps_y = ps_y*src_h/(model_dy*dest_height)
         setattr(model_dcm, ps_attr, [new_ps_x, new_ps_y])
-        
-        array_to_dicomfile(data, model_dcm, fname)
-    else:
-        raise RuntimeError(_("Unknown file extension"))
+        options.update(dict(template=model_dcm))
+    io.imwrite(fname, data, **options)
 
 class SnapshotTool(RectangularActionTool):
     SWITCH_TO_DEFAULT_TOOL = True
@@ -1604,7 +1619,39 @@ class SnapshotTool(RectangularActionTool):
     ICON = "snapshot.png"
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         RectangularActionTool.__init__(self, manager, save_snapshot,
-                                       toolbar_id=toolbar_id)
+                                       toolbar_id=toolbar_id,
+                                       fix_orientation=True)
+
+
+class RotateCropTool(CommandTool):
+    """Rotate & Crop tool
+    
+    See :py:class:`guiqwt.rotatecrop.RotateCropDialog` dialog."""
+    def __init__(self, manager, toolbar_id=DefaultToolbarID, options=None):
+        CommandTool.__init__(self, manager, title=_("Rotate and crop"),
+                             icon=get_icon('rotate.png'), toolbar_id=toolbar_id)
+        self.options = options
+
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        from guiqwt.image import TrImageItem
+        from guiqwt.widgets.rotatecrop import RotateCropDialog
+        for item in plot.get_selected_items():
+            if isinstance(item, TrImageItem):
+                z = item.z()
+                plot.del_item(item)
+                dlg = RotateCropDialog(plot.parent(), options=self.options)
+                dlg.set_item(item)
+                ok = dlg.exec_()
+                plot.add_item(item, z=z)
+                if not ok:
+                    break
+
+    def update_status(self, plot):
+        from guiqwt.image import TrImageItem
+        status = any([isinstance(item, TrImageItem)
+                      for item in plot.get_selected_items()])
+        self.action.setEnabled(status)
 
 
 class PrintFilter(QwtPlotPrintFilter):
@@ -1711,8 +1758,8 @@ class LoadItemsTool(OpenFileTool):
 
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        from guiqwt.io import IMAGE_LOAD_FILTERS
-        OpenFileTool.__init__(self, manager, formats=IMAGE_LOAD_FILTERS,
+        from guiqwt import io
+        OpenFileTool.__init__(self, manager, formats=io.iohandler.load_filters,
                               toolbar_id=toolbar_id)
     
 
@@ -1851,7 +1898,7 @@ def export_curve_data(item):
             QMessageBox.critical(plot, _("Export"),
                                  _("Unable to export item data.")+\
                                  "<br><br>"+_("Error message:")+"<br>"+\
-                                 str(error))
+                                 unicode(error))
 
 def export_image_data(item):
     """Export image item data to file"""

@@ -733,7 +733,7 @@ class CurveWidget(BaseCurveWidget, PlotManager):
                 self.add_panel(panel)
 
 class CurveWidgetMixin(PlotManager):
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
                  toolbar=False, options=None, panels=None):
         PlotManager.__init__(self, main=self)
 
@@ -812,11 +812,12 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png", edit=False,
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg", edit=False,
                  toolbar=False, options=None, parent=None, panels=None):
         QDialog.__init__(self, parent)
         self.edit = edit
         self.button_box = None
+        self.button_layout = None
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
                                   toolbar=toolbar, options=options,
                                   panels=panels)
@@ -856,7 +857,7 @@ class CurveWindow(QMainWindow, CurveWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
                  toolbar=False, options=None, parent=None, panels=None):
         QMainWindow.__init__(self, parent)
         CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 

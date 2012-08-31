@@ -82,6 +82,7 @@ from guiqwt.interfaces import IShapeItemType, ISerializableType
 from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 from guiqwt.geometry import (compute_center, compute_rect_size,
                              compute_distance, compute_angle)
+from guiqwt.baseplot import canvas_to_axes
 
 
 class AnnotatedShape(AbstractShape):
@@ -257,8 +258,8 @@ class AnnotatedShape(AbstractShape):
         self.label.move_local_shape(old_pos, new_pos)
         
     def move_local_shape(self, old_pos, new_pos):
-        old_pt = self.canvas_to_axes(old_pos)
-        new_pt = self.canvas_to_axes(new_pos)
+        old_pt = canvas_to_axes(self, old_pos)
+        new_pt = canvas_to_axes(self, new_pos)
         self.shape.move_shape(old_pt, new_pt)
         self.set_label_position()
         if self.plot():

@@ -11,7 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
 
-from guiqwt.fit import FitParam, guifit
+from guiqwt.widgets.fit import FitParam, guifit
 
 def test():
     x = np.linspace(-10, 10, 1000)

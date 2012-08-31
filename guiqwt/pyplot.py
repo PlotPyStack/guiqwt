@@ -112,7 +112,7 @@ from guidata.configtools import get_icon
 # Local imports
 from guiqwt.config import _
 from guiqwt.plot import PlotManager
-from guiqwt.image import ImagePlot
+from guiqwt.image import ImagePlot, INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.histogram import ContrastAdjustment
 from guiqwt.cross_section import XCrossSection, YCrossSection
@@ -151,7 +151,7 @@ class Window(QMainWindow):
         self.frame = frame
 
         self.setWindowTitle(wintitle)
-        self.setWindowIcon(get_icon('guiqwt.png'))
+        self.setWindowIcon(get_icon('guiqwt.svg'))
 
     def closeEvent(self, event):
         global _figures, _current_fig, _current_axes
@@ -173,6 +173,10 @@ class Window(QMainWindow):
     def replot(self):
         for plot in self.plots:
             plot.replot()
+            item = plot.get_default_item()
+            if item is not None:
+                plot.set_active_item(item)
+                item.unselect()
             
     def add_panels(self, images=False):
         self.manager.add_panel(self.itemlist)
@@ -191,6 +195,7 @@ class Window(QMainWindow):
         self.show()
         self.replot()
         self.manager.get_default_tool().activate()
+        self.manager.update_tools_status()
 
 
 class Figure(object):
@@ -594,12 +599,13 @@ def errorbar(*args, **kwargs):
 
 def imread(fname, to_grayscale=False):
     """Read data from *fname*"""
-    from guiqwt.io import imagefile_to_array
-    return imagefile_to_array(fname, to_grayscale=to_grayscale)
+    from guiqwt import io
+    return io.imread(fname, to_grayscale=to_grayscale)
 
-def imshow(data, mask=None):
+def imshow(data, interpolation=None, mask=None):
     """
     Display the image in *data* to current axes
+    interpolation: 'nearest', 'linear' (default), 'antialiasing'
     
     Example:
         
@@ -620,6 +626,12 @@ def imshow(data, mask=None):
         img = make.image(data)
     else:
         img = make.maskedimage(data, mask, show_mask=True)
+    if interpolation is not None:
+        interp_dict = {'nearest': INTERP_NEAREST,
+                       'linear': INTERP_LINEAR,
+                       'antialiasing': INTERP_AA}
+        assert interpolation in interp_dict, "invalid interpolation option"
+        img.set_interpolation(interp_dict[interpolation], size=5)
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()

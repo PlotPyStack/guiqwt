@@ -863,7 +863,7 @@ class ImageFT(ObjectFT):
         rows = self._get_selected_rows()
         obj = self.objects[rows[0]]
         original_size = obj.data.shape[1], obj.data.shape[0]
-        from guiqwt.resizedialog import ResizeDialog
+        from guiqwt.widgets.resizedialog import ResizeDialog
         dlg = ResizeDialog(self.plot, new_size=original_size,
                            old_size=original_size,
                            text=_("Destination size:"))
@@ -988,8 +988,8 @@ class ImageFT(ObjectFT):
             image.data = np.empty(shape, dtype=dtype)
         elif imagenew.type == 'rand':
             data = np.random.rand(*shape)
-            from guiqwt.io import set_dynamic_range_from_dtype
-            image.data = set_dynamic_range_from_dtype(data, dtype)
+            from guiqwt import io
+            image.data = io.scale_data_to_dtype(data, dtype)
         self.add_object(image)
     
     def open_image(self):

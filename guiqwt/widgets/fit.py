@@ -8,10 +8,10 @@
 # pylint: disable=C0103
 
 """
-guiqwt.fit
-----------
+guiqwt.widgets.fit
+------------------
 
-The `fit` module provides an interactive curve fitting tool allowing:
+The `fit` module provides an interactive curve fitting widget/dialog allowing:
     * to fit data manually (by moving sliders)
     * or automatically (with standard optimization algorithms 
       provided by :py:mod:`scipy`).
@@ -253,7 +253,7 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
                 layout.setColumnStretch(col_nb*w_colums-1, 1)
 
 class FitWidgetMixin(CurveWidgetMixin):
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.png",
+    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
                  toolbar=False, options=None, panels=None, param_cols=1,
                  legend_anchor='TR', auto_fit=True):
         if wintitle is None:
@@ -538,7 +538,7 @@ class FitWidgetMixin(CurveWidgetMixin):
 
 
 class FitWidget(QWidget, FitWidgetMixin):
-    def __init__(self, wintitle=None, icon="guiqwt.png", toolbar=False,
+    def __init__(self, wintitle=None, icon="guiqwt.svg", toolbar=False,
                  options=None, parent=None, panels=None,
                  param_cols=1, legend_anchor='TR', auto_fit=False):
         QWidget.__init__(self, parent)
@@ -547,7 +547,7 @@ class FitWidget(QWidget, FitWidgetMixin):
 
 
 class FitDialog(QDialog, FitWidgetMixin):
-    def __init__(self, wintitle=None, icon="guiqwt.png", edit=True,
+    def __init__(self, wintitle=None, icon="guiqwt.svg", edit=True,
                  toolbar=False, options=None, parent=None, panels=None,
                  param_cols=1, legend_anchor='TR', auto_fit=False):
         QDialog.__init__(self, parent)

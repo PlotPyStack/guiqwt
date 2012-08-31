@@ -1,14 +1,30 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
+# Copyright © 2009-2012 CEA
 # Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
+"""
+resizedialog
+------------
+
+The `resizedialog` module provides a dialog box providing essential GUI 
+for entering parameters needed to resize an image:
+:py:class:`guiqwt.widgets.resizedialog.ResizeDialog`.
+
+Reference
+~~~~~~~~~
+
+.. autoclass:: ResizeDialog
+   :members:
+   :inherited-members:
+"""
+
 from __future__ import division
 
-from guidata.qt.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout,
-                              QFormLayout, QLineEdit, QIntValidator, QLabel)
+from guidata.qt.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout, QLabel,
+                              QFormLayout, QLineEdit, QIntValidator, QCheckBox)
 from guidata.qt.QtCore import SIGNAL, SLOT, Qt
 
 
@@ -28,6 +44,7 @@ class ResizeDialog(QDialog):
     def __init__(self, parent, new_size, old_size, text=""):
         QDialog.__init__(self, parent)
         
+        self.keep_original_size = False
         self.width, self.height = new_size
         self.old_width, self.old_height = old_size
         self.ratio = self.width/self.height
@@ -52,16 +69,19 @@ class ResizeDialog(QDialog):
         h_valid = QIntValidator(h_edit)
         h_valid.setBottom(1)
         h_edit.setValidator(h_valid)
+        
+        zbox = QCheckBox(_("Original size"), self)
 
         formlayout.addRow(_("Width (pixels)"), w_edit)
         formlayout.addRow(_("Height (pixels)"), h_edit)
+        formlayout.addRow('', zbox)
         
         formlayout.addRow(_("Original size:"), QLabel("%d x %d" % old_size))
         self.z_label = QLabel()
         formlayout.addRow(_("Zoom factor:"), self.z_label)
         
         # Button box
-        self.bbox = bbox = QDialogButtonBox(QDialogButtonBox.Ok |
+        self.bbox = bbox = QDialogButtonBox(QDialogButtonBox.Ok|
                                             QDialogButtonBox.Cancel)
         self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
         self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
@@ -77,6 +97,7 @@ class ResizeDialog(QDialog):
                      self.width_changed)
         self.connect(h_edit, SIGNAL("textChanged(QString)"),
                      self.height_changed)
+        self.connect(zbox, SIGNAL("toggled(bool)"), self.toggled_no_zoom)
 
     def update_widgets(self):
         valid = True
@@ -103,9 +124,21 @@ class ResizeDialog(QDialog):
             self.w_edit.setText(str(self.width))
             self.w_edit.blockSignals(False)
         self.update_widgets()
+
+    def toggled_no_zoom(self, state):
+        self.keep_original_size = state
+        if state:
+            self.z_label.setText("100 %")
+            self.bbox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.update_widgets()
+        for widget in (self.w_edit, self.h_edit):
+            widget.setDisabled(state)
         
     def get_zoom(self):
-        if self.width > self.height:
+        if self.keep_original_size:
+            return 1
+        elif self.width > self.height:
             return self.width/self.old_width
         else:
             return self.height/self.old_height
@@ -117,4 +150,4 @@ if __name__ == '__main__':
     test = ResizeDialog(None, (150, 100), (300, 200), "Enter the new size:")
     if test.exec_():
         print test.width
-        print test.get_scale_factor()
+        print test.get_zoom()

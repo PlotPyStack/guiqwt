@@ -68,7 +68,7 @@ class TestWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.setWindowTitle("Signal filtering (guiqwt)")
-        self.setWindowIcon(get_icon('guiqwt.png'))
+        self.setWindowIcon(get_icon('guiqwt.svg'))
         hlayout = QHBoxLayout()
         self.setLayout(hlayout)
         

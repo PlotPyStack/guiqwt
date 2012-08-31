@@ -29,7 +29,7 @@ from guiqwt.config import _
 from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
 from guiqwt.signals import SIG_LUT_CHANGED
-from guiqwt.io import imagefile_to_array, IMAGE_LOAD_FILTERS
+from guiqwt import io
 
 APP_NAME = _("Application example")
 VERSION = '1.0.0'
@@ -149,7 +149,7 @@ class CentralWidget(QSplitter):
     def add_image_from_file(self, filename):
         image = ImageParam()
         image.title = unicode(filename)
-        image.data = imagefile_to_array(filename, to_grayscale=True)
+        image.data = io.imread(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)
 
@@ -230,7 +230,7 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename, _filter = getopenfilename(self, _("Open"), "",
-                                            IMAGE_LOAD_FILTERS)
+                                            io.iohandler.load_filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

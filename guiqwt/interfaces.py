@@ -67,7 +67,9 @@ class IColormapImageItemType(IItemType):
 
 class IExportROIImageItemType(IItemType):
     """An image with export_roi"""
-    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image,
+                   apply_lut=False, apply_interpolation=False,
+                   original_resolution=False):
         pass
 
 class IStatsImageItemType(IItemType):

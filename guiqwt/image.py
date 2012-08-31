@@ -141,7 +141,7 @@ import numpy as np
 from math import fabs
 
 from guidata.qt.QtGui import QColor, QImage
-from guidata.qt.QtCore import QRectF, QPointF, QRect
+from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -159,9 +159,10 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RGBImageParam, MaskedImageParam, XYImageParam,
                            RawImageParam)
 from guiqwt.shapes import RectangleShape
-from guiqwt.io import imagefile_to_array
+from guiqwt import io
 from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 from guiqwt.geometry import translate, scale, rotate, colvector
+from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
 stderr = sys.stderr
 try:
@@ -396,12 +397,6 @@ class BaseImageItem(QwtPlotItem):
         z = self.get_data(xc, yc)
         return "%s:<br>x = %d<br>y = %d<br>z = %g" % (title, xc, yc, z)
 
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
     def set_background_color(self, qcolor):
         #mask = np.uint32(255*self.imageparam.alpha+0.5).clip(0,255) << 24
         self.bg_qcolor = qcolor
@@ -447,7 +442,7 @@ class BaseImageItem(QwtPlotItem):
         Set image interpolation mode
 
         interp_mode: INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
-        size: (for anti-aliasing only) AA matrix size
+        size (integer): (for anti-aliasing only) AA matrix size
         """
         if interp_mode in (INTERP_NEAREST, INTERP_LINEAR):
             self.interpolate = (interp_mode,)
@@ -509,14 +504,17 @@ class BaseImageItem(QwtPlotItem):
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
 
-    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image,
+                   apply_lut=False, apply_interpolation=False,
+                   original_resolution=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
         else:
             a, b = 1., 0.
-        _scale_rect(self.data, src_rect, dst_image, dst_rect, (a, b, None),
-                    self.interpolate)
+        interp = self.interpolate if apply_interpolation else (INTERP_NEAREST,)
+        _scale_rect(self.data, src_rect, dst_image, dst_rect,
+                    (a, b, None), interp)
 
     #---- QwtPlotItem API ------------------------------------------------------
     def draw(self, painter, xMap, yMap, canvasRect):
@@ -786,7 +784,7 @@ class RawImageItem(BaseImageItem):
         Load data from *filename* and eventually apply specified lut_range
         *filename* has been set using method 'set_filename'
         """
-        data = imagefile_to_array(self.get_filename(), to_grayscale=True)
+        data = io.imread(self.get_filename(), to_grayscale=True)
         self.set_data(data, lut_range=lut_range)
 
     def set_data(self, data, lut_range=None):
@@ -941,14 +939,17 @@ class ImageItem(RawImageItem):
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
 
-    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image,
+                   apply_lut=False, apply_interpolation=False,
+                   original_resolution=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
         else:
             a, b = 1., 0.
+        interp = self.interpolate if apply_interpolation else (INTERP_NEAREST,)
         _scale_rect(self.data, self._rescale_src_rect(src_rect),
-                    dst_image, dst_rect, (a, b, None), self.interpolate)
+                    dst_image, dst_rect, (a, b, None), interp)
 
 assert_interfaces_valid(ImageItem)
 
@@ -1191,7 +1192,9 @@ class TrImageItem(RawImageItem):
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
 
-    def export_roi(self, src_rect, dst_rect, dst_image, apply_lut=False):
+    def export_roi(self, src_rect, dst_rect, dst_image,
+                   apply_lut=False, apply_interpolation=False,
+                   original_resolution=False):
         """Export Region Of Interest to array"""
         if apply_lut:
             a, b, _bg, _cmap = self.lut
@@ -1201,7 +1204,11 @@ class TrImageItem(RawImageItem):
         xs0, ys0, xs1, ys1 = src_rect
         xd0, yd0, xd1, yd1 = dst_rect
 
-        xscale, yscale = (xs1-xs0)/float(xd1-xd0), (ys1-ys0)/float(yd1-yd0)
+        if original_resolution:
+            _t1, _t2, _t3, xscale, yscale, _t4, _t5 = self.get_transform()
+        else:
+            xscale, yscale = (xs1-xs0)/float(xd1-xd0), (ys1-ys0)/float(yd1-yd0)
+
         mat = self.tr*( translate(xs0, ys0)*scale(xscale, yscale) )
 
         x0, y0, x1, y1 = self.get_crop_coordinates()
@@ -1211,15 +1218,15 @@ class TrImageItem(RawImageItem):
         yd1 = min([yd1, yd1+int((y1-ys1)/xscale)])
         dst_rect = xd0, yd0, xd1, yd1
 
-        _scale_tr(self.data, mat, dst_image, dst_rect,
-                  (a, b, None), self.interpolate)
+        interp = self.interpolate if apply_interpolation else (INTERP_NEAREST,)
+        _scale_tr(self.data, mat, dst_image, dst_rect, (a, b, None), interp)
 
     #---- IBasePlotItem API ----------------------------------------------------
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        nx, ny = self.canvas_to_axes(pos)
+        nx, ny = canvas_to_axes(self, pos)
         handles = self.itr*self.points
         p0 = colvector(nx, ny)
         #self.debug_transform(p0)
@@ -1242,8 +1249,8 @@ class TrImageItem(RawImageItem):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
         x0, y0, angle, dx, dy, hflip, vflip = self.get_transform()
-        nx, ny = self.canvas_to_axes(new_pos)
-        ox, oy = self.canvas_to_axes(old_pos)
+        nx, ny = canvas_to_axes(self, new_pos)
+        ox, oy = canvas_to_axes(self, old_pos)
         self.set_transform(x0+nx-ox, y0+ny-oy, angle, dx, dy, hflip, vflip)
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
@@ -1259,28 +1266,53 @@ class TrImageItem(RawImageItem):
 assert_interfaces_valid(TrImageItem)
 
 
-def assemble_imageitems(items, qrect, destw, desth, align=1,
-                        apply_lut=False, add_images=False):
+def assemble_imageitems(items, src_qrect, destw, desth, align=None,
+                        add_images=False, apply_lut=False,
+                        apply_interpolation=False,
+                        original_resolution=False):
     """
     Assemble together image items in qrect (QRectF object)
     and return resulting pixel data
     <!> Does not support XYImageItem objects
-    <!> src_rect: (xtop, yleft, xbottom, yright)
     """
     # align width to 'align' bytes
+    if align is not None:
+        print >>sys.stderr, "guiqwt.image.assemble_imageitems: since v2.2, "\
+                            "the `align` option is ignored"
+    align = 1  #XXX: byte alignment is disabled until further notice!
     aligned_destw = align*((int(destw)+align-1)/align)
     aligned_desth = int(desth*aligned_destw/destw)
-    output = np.zeros((aligned_desth, aligned_destw), np.float32)
+
+    try:
+        output = np.zeros((aligned_desth, aligned_destw), np.float32)
+    except ValueError:
+        raise MemoryError
     if not add_images:
         dst_image = output
-    src_rect = qrect.getCoords()
-    dst_rect = (0, 0, int(aligned_destw), int(aligned_desth))
+
+    dst_rect = (0, 0, aligned_destw, aligned_desth)
+    
+    src_rect = list(src_qrect.getCoords())
+    # The source QRect is generally coming from a rectangle shape which is 
+    # adjusted to fit a given ROI on the image. So the rectangular area is 
+    # aligned with image pixel edges: to avoid any rounding error, we reduce
+    # the rectangle area size by one half of a pixel, so that the area is now 
+    # aligned with the center of image pixels.
+    pixel_width = src_qrect.width()/float(destw)
+    pixel_height = src_qrect.height()/float(desth)
+    src_rect[0] += .5*pixel_width
+    src_rect[1] += .5*pixel_height
+    src_rect[2] -= .5*pixel_width
+    src_rect[3] -= .5*pixel_height
+
     for it in items:
-        if it.isVisible() and qrect.intersects(it.boundingRect()):
+        if it.isVisible() and src_qrect.intersects(it.boundingRect()):
             if add_images:
                 dst_image = np.zeros_like(output)
             it.export_roi(src_rect=src_rect, dst_rect=dst_rect,
-                          dst_image=dst_image, apply_lut=apply_lut)
+                          dst_image=dst_image, apply_lut=apply_lut,
+                          apply_interpolation=apply_interpolation,
+                          original_resolution=original_resolution)
             if add_images:
                 output += dst_image
     return output
@@ -1295,8 +1327,82 @@ def get_plot_qrect(plot, p0, p1):
     p1x, p1y = plot.invTransform(ax, p1.x()+1), plot.invTransform(ay, p1.y()+1)
     return QRectF(p0x, p0y, p1x-p0x, p1y-p0y)
 
-def get_image_from_plot(plot, p0, p1, destw=None, desth=None,
-                        apply_lut=False, add_images=False):
+def get_items_in_rectangle(plot, p0, p1, item_type=None):
+    """Return items which bounding rectangle intersects (p0, p1)
+    item_type: default is IExportROIImageItemType"""
+    if item_type is None:
+        item_type = IExportROIImageItemType
+    items = plot.get_items(item_type=IExportROIImageItemType)
+    src_qrect = get_plot_qrect(plot, p0, p1)
+    return [it for it in items if src_qrect.intersects(it.boundingRect())]
+
+def compute_trimageitems_original_size(items, src_w, src_h):
+    """Compute TrImageItem original size from max dx and dy"""
+    trparams = [item.get_transform() for item in items
+                if isinstance(item, TrImageItem)]
+    if trparams:
+        dx_max = max([dx for _x, _y, _angle, dx, _dy, _hf, _vf in trparams])
+        dy_max = max([dy for _x, _y, _angle, _dx, dy, _hf, _vf in trparams])
+        return src_w/dx_max, src_h/dy_max
+    else:
+        return src_w, src_h
+
+def get_image_from_qrect(plot, p0, p1, src_size=None,
+                         adjust_range=None, item_type=None,
+                         apply_lut=False, apply_interpolation=False,
+                         original_resolution=False):
+    """Return image array from QRect area (p0 and p1 are respectively the 
+    top-left and bottom-right QPoint objects)
+    
+    adjust_range: None (return raw data, dtype=np.float32), 'original' 
+    (return data with original data type), 'normalize' (normalize range with
+    original data type)"""
+    assert adjust_range in (None, 'normalize', 'original')
+    items = get_items_in_rectangle(plot, p0, p1, item_type=item_type)
+    if not items:
+        raise TypeError, _("There is no supported image item in current plot.")
+    if src_size is None:
+        _src_x, _src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
+    else:
+        # The only benefit to pass the src_size list is to avoid any 
+        # rounding error in the transformation computed in `get_plot_qrect`
+        src_w, src_h = src_size
+    destw, desth = compute_trimageitems_original_size(items, src_w, src_h)
+    data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
+                               apply_lut=apply_lut,
+                               apply_interpolation=apply_interpolation,
+                               original_resolution=original_resolution)
+    if adjust_range is None:
+        return data
+    dtype = None
+    for item in items:
+        if dtype is None or item.data.dtype.itemsize > dtype.itemsize:
+            dtype = item.data.dtype
+    if adjust_range == 'normalize':
+        from guiqwt import io
+        data = io.scale_data_to_dtype(data, dtype=dtype)
+    else:
+        data = np.array(data, dtype=dtype)
+    return data
+
+def get_image_in_shape(obj, norm_range=False, item_type=None,
+                       apply_lut=False, apply_interpolation=False):
+    """Return image array from rectangle shape"""
+    x0, y0, x1, y1 = obj.get_rect()
+    (x0, x1), (y0, y1) = sorted([x0, x1]), sorted([y0, y1])
+    xc0, yc0 = axes_to_canvas(obj, x0, y0)
+    xc1, yc1 = axes_to_canvas(obj, x1, y1)
+    adjust_range = 'normalize' if norm_range else 'original'
+    return get_image_from_qrect(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                src_size=(x1-x0, y1-y0),
+                                adjust_range=adjust_range, item_type=item_type,
+                                apply_lut=apply_lut,
+                                apply_interpolation=apply_interpolation,
+                                original_resolution=True)
+
+def get_image_from_plot(plot, p0, p1, destw=None, desth=None, add_images=False,
+                        apply_lut=False, apply_interpolation=False,
+                        original_resolution=False):
     """
     Return pixel data of a rectangular plot area (image items only)
     p0, p1: resp. top-left and bottom-right points (QPoint objects)
@@ -1312,9 +1418,10 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None,
         desth = p1.y()-p0.y()+1
     items = plot.get_items(item_type=IExportROIImageItemType)
     qrect = get_plot_qrect(plot, p0, p1)
-    return assemble_imageitems(items, qrect, destw, desth,
-                               align=4, apply_lut=apply_lut,
-                               add_images=add_images)
+    return assemble_imageitems(items, qrect, destw, desth,# align=4,
+                               add_images=add_images, apply_lut=apply_lut,
+                               apply_interpolation=apply_interpolation,
+                               original_resolution=original_resolution)
 
 
 #===============================================================================
@@ -1519,7 +1626,7 @@ class RGBImageItem(ImageItem):
         Load data from *filename*
         *filename* has been set using method 'set_filename'
         """
-        data = imagefile_to_array(self.get_filename(), to_grayscale=False)
+        data = io.imread(self.get_filename(), to_grayscale=False)
         self.set_data(data)
 
     def set_data(self, data):
@@ -1623,7 +1730,7 @@ class MaskedImageItem(ImageItem):
         return self._mask_filename
 
     def load_mask_data(self):
-        data = imagefile_to_array(self.get_mask_filename(), to_grayscale=True)
+        data = io.imread(self.get_mask_filename(), to_grayscale=True)
         self.set_mask(data)
         self._mask_changed()
 
@@ -1830,14 +1937,14 @@ class ImageFilterItem(BaseImageItem):
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
-        npos = self.canvas_to_axes(pos)
+        npos = canvas_to_axes(self, pos)
         self.border_rect.move_point_to(handle, npos)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        old_pt = self.canvas_to_axes(old_pos)
-        new_pt = self.canvas_to_axes(new_pos)
+        old_pt = canvas_to_axes(self, old_pos)
+        new_pt = canvas_to_axes(self, new_pos)
         self.border_rect.move_shape(old_pt, new_pt)
         if self.plot():
             self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
@@ -2088,6 +2195,7 @@ class ImagePlot(CurvePlot):
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
     """
+    DEFAULT_ITEM_TYPE = IImageItemType
     AUTOSCALE_TYPES = (CurveItem, BaseImageItem, PolygonMapItem)
     AXIS_CONF_OPTIONS = ("image_axis", "color_axis", "image_axis", None)
     def __init__(self, parent=None,
@@ -2120,7 +2228,7 @@ class ImagePlot(CurvePlot):
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
 
-    #---- BasePlot API ---------------------------------------------------------
+    #---- QwtPlot API ----------------------------------------------------------
     def showEvent(self, event):
         """Override BasePlot method"""
         if self.lock_aspect_ratio:
@@ -2236,15 +2344,21 @@ class ImagePlot(CurvePlot):
         """
         CurvePlot.add_item(self, item, z)
         if isinstance(item, BaseImageItem):
+            parent = self.parent()
+            if parent is not None:
+                parent.setUpdatesEnabled(False)
             self.update_colormap_axis(item)
             if autoscale:
                 self.do_autoscale()
+            if parent is not None:
+                parent.setUpdatesEnabled(True)
 
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
         CurvePlot.do_autoscale(self, replot=False)
         self.updateAxes()
         if self.lock_aspect_ratio:
+            self.replot()
             self.apply_aspect_ratio(full_scale=True)
         if replot:
             self.replot()

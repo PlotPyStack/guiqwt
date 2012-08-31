@@ -40,9 +40,9 @@ def test():
     imshow(x, y, data, filter_area=(-3., -1., 0., 2.), yreverse=False)
     # --
     import os.path as osp, numpy as np
-    from guiqwt.io import imagefile_to_array
+    from guiqwt import io
     filename = osp.join(osp.dirname(__file__), "brain.png")
-    data = imagefile_to_array(filename, to_grayscale=True)
+    data = io.imread(filename, to_grayscale=True)
     x = np.linspace(0, 30., data.shape[1])
     y = np.linspace(0, 30., data.shape[0])
     imshow(x, y, data, filter_area=(10, 20, 5, 15))

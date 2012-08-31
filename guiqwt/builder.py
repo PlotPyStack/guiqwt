@@ -77,7 +77,7 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
                            LineStyleParam, AnnotationParam, QuadGridParam,
                            LabelParamWithContents, MarkerParam)
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
-                          RangeComputation2d, DataInfoLabel,
+                          RangeComputation2d, DataInfoLabel, RangeInfo,
                           SelectedLegendBoxItem)
 import os.path as osp
 
@@ -558,8 +558,8 @@ class PlotItemBuilder(object):
     def _get_image_data(self, data, filename, title, to_grayscale):
         if data is None:
             assert filename is not None
-            from guiqwt.io import imagefile_to_array
-            data = imagefile_to_array(filename, to_grayscale=to_grayscale)
+            from guiqwt import io
+            data = io.imread(filename, to_grayscale=to_grayscale)
         if title is None and filename is not None:
             title = osp.basename(filename)
         return data, filename, title
@@ -1091,7 +1091,7 @@ class PlotItemBuilder(object):
         return self.__annotated_shape(AnnotatedSegment,
                                       x0, y0, x1, y1, title, subtitle)
 
-    def info_label(self, anchor, comps, title=""):
+    def info_label(self, anchor, comps, title=None):
         """
         Make an info label `plot item` 
         (:py:class:`guiqwt.label.DataInfoLabel` object)
@@ -1099,7 +1099,7 @@ class PlotItemBuilder(object):
         basename = _("Computation")
         param = LabelParam(basename, icon='label.png')
         param.read_config(CONF, "plot", "info_label")
-        if title:
+        if title is not None:
             param.label = title
         else:
             global LABEL_COUNT
@@ -1111,6 +1111,28 @@ class PlotItemBuilder(object):
         c = ANCHOR_OFFSETS[anchor]
         param.xc, param.yc = c
         return DataInfoLabel(param, comps)
+    
+    def range_info_label(self, range, anchor, label,
+                         function=None, title=None):
+        """
+        Make an info label `plot item` showing an XRangeSelection object infos
+        
+        Default function is `lambda x, dx: (x, dx)`.
+
+        Example:
+        -------
+        
+        x = linspace(-10, 10, 10)
+        y = sin(sin(sin(x)))
+        range = make.range(-2, 2)
+        disp = make.range_info_label(range, 'BL', u"x = %.1f ± %.1f cm",
+                                     lambda x, dx: (x, dx))
+        
+        (:py:class:`guiqwt.label.DataInfoLabel` object)
+        (see example: :py:mod:`guiqwt.tests.computations`)
+        """
+        info = RangeInfo(label, range, function)
+        return make.info_label(anchor, info, title=title)
 
     def computation(self, range, anchor, label, curve, function, title=None):
         """

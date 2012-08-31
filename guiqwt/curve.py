@@ -107,7 +107,8 @@ import warnings
 import numpy as np
 
 from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
-                              QToolBar, QMessageBox, QBrush, QColor, QPen, QPolygonF)
+                              QToolBar, QMessageBox, QBrush, QColor, QPen,
+                              QPolygonF)
 from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
                                QLine)
 
@@ -123,7 +124,7 @@ from guiqwt.interfaces import (IBasePlotItem, IDecoratorItemType,
                                ISerializableType, ICurveItemType,
                                ITrackableItemType, IPanel)
 from guiqwt.panels import PanelWidget, ID_ITEMLIST
-from guiqwt.baseplot import BasePlot
+from guiqwt.baseplot import BasePlot, canvas_to_axes
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
@@ -466,8 +467,14 @@ class CurveItem(QwtPlotCurve):
         py = plot.invTransform(ay, pos.y())
         # On cherche les 4 points qui sont les plus proches en X et en Y
         # avant et après ie tels que p1x < x < p2x et p3y < y < p4y
-        dx = 1/(self._x-px)
-        dy = 1/(self._y-py)
+        tmpx = self._x - px
+        tmpy = self._y - py
+        if np.count_nonzero(tmpx) != len(tmpx) or\
+           np.count_nonzero(tmpy) != len(tmpy):
+            # Avoid dividing by zero warning when computing dx or dy
+            return sys.maxint, 0, False, None
+        dx = 1/tmpx
+        dy = 1/tmpy
         i0 = dx.argmin()
         i1 = dx.argmax()
         i2 = dy.argmin()
@@ -516,18 +523,12 @@ class CurveItem(QwtPlotCurve):
                 return self._x[i-1], self._y[i-1]
         return self._x[i], self._y[i]
 
-    def canvas_to_axes(self, pos):
-        plot = self.plot()
-        ax = self.xAxis()
-        ay = self.yAxis()
-        return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
-
     def move_local_point_to(self, handle, pos, ctrl=None):
         if self.immutable:
             return
         if handle < 0 or handle > self._x.shape[0]:
             return
-        x, y = self.canvas_to_axes(pos)
+        x, y = canvas_to_axes(self, pos)
         self._x[handle] = x
         self._y[handle] = y
         self.setData(self._x, self._y)
@@ -536,8 +537,8 @@ class CurveItem(QwtPlotCurve):
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
-        nx, ny = self.canvas_to_axes(new_pos)
-        ox, oy = self.canvas_to_axes(old_pos)
+        nx, ny = canvas_to_axes(self, new_pos)
+        ox, oy = canvas_to_axes(self, old_pos)
         self._x += (nx-ox)
         self._y += (ny-oy)
         self.setData(self._x, self._y)
@@ -1268,6 +1269,7 @@ class CurvePlot(BasePlot):
         * axes_synchronised: keep all x and y axes synchronised when zomming or
                              panning
     """
+    DEFAULT_ITEM_TYPE = ICurveItemType
     AUTOSCALE_TYPES = (CurveItem,PolygonMapItem)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  xunit=None, yunit=None, gridparam=None,
@@ -1479,6 +1481,16 @@ class CurvePlot(BasePlot):
                 o1, o2 = o2, o1
             self.setAxisScale(k, o1, o2)
         self.replot()
+
+    def get_default_item(self):
+        """Return default item, depending on plot's default item type
+        (e.g. for a curve plot, this is a curve item type).
+        
+        Return nothing if there is more than one item matching 
+        the default item type."""
+        items = self.get_items(item_type=self.DEFAULT_ITEM_TYPE)
+        if len(items) == 1:
+            return items[0]
 
     #---- BasePlot API ---------------------------------------------------------
     def add_item(self, item, z=None):
