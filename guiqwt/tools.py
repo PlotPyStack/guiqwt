@@ -369,7 +369,8 @@ class InteractiveTool(GuiTool):
     SWITCH_TO_DEFAULT_TOOL = False # switch to default tool when finished
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
-                 title=None, icon=None, tip=None):
+                 title=None, icon=None, tip=None,
+                 switch_to_default_tool=None):
         if title is not None:
             self.TITLE = title
         if icon is not None:
@@ -380,7 +381,9 @@ class InteractiveTool(GuiTool):
         # Starting state for every plotwidget we can act upon
         self.start_state = {}
         
-        if self.SWITCH_TO_DEFAULT_TOOL:
+        if switch_to_default_tool is None:
+            switch_to_default_tool = self.SWITCH_TO_DEFAULT_TOOL
+        if switch_to_default_tool:
             self.connect(self, SIG_TOOL_JOB_FINISHED,
                          self.manager.activate_default_tool)
                         
@@ -474,9 +477,11 @@ class SelectPointTool(InteractiveTool):
     
     def __init__(self, manager, mode="reuse", on_active_item=False,
                  title=None, icon=None, tip=None, end_callback=None,
-                 toolbar_id=DefaultToolbarID, marker_style=None):
+                 toolbar_id=DefaultToolbarID, marker_style=None,
+                 switch_to_default_tool=None):
         super(SelectPointTool, self).__init__(manager, toolbar_id,
-                                              title=title, icon=icon, tip=tip)
+                              title=title, icon=icon, tip=tip,
+                              switch_to_default_tool=switch_to_default_tool)
         assert mode in ("reuse", "create")
         self.mode = mode
         self.end_callback = end_callback
@@ -552,9 +557,11 @@ class MultiLineTool(InteractiveTool):
     CURSOR = Qt.ArrowCursor
 
     def __init__(self, manager, handle_final_shape_cb=None, shape_style=None,
-                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
+                 switch_to_default_tool=None):
         super(MultiLineTool, self).__init__(manager, toolbar_id,
-                                            title=title, icon=icon, tip=tip)
+                                title=title, icon=icon, tip=tip,
+                                switch_to_default_tool=switch_to_default_tool)
         self.handle_final_shape_cb = handle_final_shape_cb
         self.shape = None
         self.current_handle = None
@@ -677,10 +684,12 @@ class LabelTool(InteractiveTool):
     SWITCH_TO_DEFAULT_TOOL = True
     
     def __init__(self, manager, handle_label_cb=None, label_style=None,
-                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None):
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
+                 switch_to_default_tool=None):
         self.handle_label_cb = handle_label_cb
         InteractiveTool.__init__(self, manager, toolbar_id,
-                                 title=title, icon=icon, tip=tip)
+                                 title=title, icon=icon, tip=tip,
+                                 switch_to_default_tool=switch_to_default_tool)
         if label_style is not None:
             self.label_style_sect = label_style[0]
             self.label_style_key = label_style[1]
@@ -726,11 +735,12 @@ class RectangularActionTool(InteractiveTool):
     AVOID_NULL_SHAPE = False
     def __init__(self, manager, func, shape_style=None,
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
-                 fix_orientation=False):
+                 fix_orientation=False, switch_to_default_tool=None):
         self.action_func = func
         self.fix_orientation = fix_orientation
         InteractiveTool.__init__(self, manager, toolbar_id,
-                                 title=title, icon=icon, tip=tip)
+                                 title=title, icon=icon, tip=tip,
+                                 switch_to_default_tool=switch_to_default_tool)
         if shape_style is not None:
             self.shape_style_sect = shape_style[0]
             self.shape_style_key = shape_style[1]
@@ -738,6 +748,7 @@ class RectangularActionTool(InteractiveTool):
             self.shape_style_sect = self.SHAPE_STYLE_SECT
             self.shape_style_key = self.SHAPE_STYLE_KEY
         self.last_final_shape = None
+        self.switch_to_default_tool = switch_to_default_tool
         
     def get_last_final_shape(self):
         if self.last_final_shape is not None:
@@ -789,18 +800,22 @@ class RectangularActionTool(InteractiveTool):
         else:
             self.action_func(plot, p0, p1)
         self.emit(SIG_TOOL_JOB_FINISHED)
+        if self.switch_to_default_tool:
+            shape = self.get_last_final_shape()
+            plot.set_active_item(shape)
 
 
 class RectangularShapeTool(RectangularActionTool):
     TITLE = None
     ICON = None
-    def __init__(self, manager, setup_shape_cb=None, handle_final_shape_cb=None,
-                 shape_style=None, toolbar_id=DefaultToolbarID,
-                 title=None, icon=None, tip=None):
+    def __init__(self, manager, setup_shape_cb=None,
+                 handle_final_shape_cb=None, shape_style=None,
+                 toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
+                 switch_to_default_tool=None):
         RectangularActionTool.__init__(self, manager,
-                                       self.add_shape_to_plot, shape_style,
-                                       toolbar_id=toolbar_id,
-                                       title=title, icon=icon, tip=tip)
+                       self.add_shape_to_plot, shape_style,
+                       toolbar_id=toolbar_id, title=title, icon=icon, tip=tip,
+                       switch_to_default_tool=switch_to_default_tool)
         self.setup_shape_cb = setup_shape_cb
         self.handle_final_shape_cb = handle_final_shape_cb
         
@@ -1085,9 +1100,10 @@ class BaseCursorTool(InteractiveTool):
     TITLE = None
     ICON = None
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
-                 title=None, icon=None, tip=None):
+                 title=None, icon=None, tip=None, switch_to_default_tool=None):
         super(BaseCursorTool, self).__init__(manager, toolbar_id,
-                                             title=title, icon=icon, tip=tip)
+                                 title=title, icon=icon, tip=tip,
+                                 switch_to_default_tool=switch_to_default_tool)
         self.shape = None
 
     def create_shape(self):
