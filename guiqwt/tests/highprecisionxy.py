@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2011-2012 CEA
+# Ludovic Aubry
+# Licensed under the terms of the CECILL License
+# (see guiqwt/__init__.py for details)
+
+"""Plot computations test"""
+
+SHOW = False # Show test in GUI-based test launcher
+
 def xyimagebug(offset):
     from guiqwt.plot import ImageDialog
     from guiqwt.builder import make
@@ -13,5 +24,6 @@ def xyimagebug(offset):
     plot.add_item(image)
     plot.select_item(image) #this helps in seeing where the image should be
     win.exec_()
-    
-xyimagebug(1e9) #offset=1e9 makes it fail, but offset=1e4 is ok
+
+if __name__ == '__main__':
+    xyimagebug(1e9) #offset=1e9 makes it fail, but offset=1e4 is ok
