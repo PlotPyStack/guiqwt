@@ -14,6 +14,7 @@ This guiqwt tool provide a MATLAB-like "ginput" feature.
 SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp
+import numpy as np
 
 from guiqwt.plot import ImageDialog
 from guiqwt.tools import SelectTool, AnnotatedSegmentTool
@@ -21,16 +22,12 @@ from guiqwt.builder import make
 from guiqwt.config import _
 
 
-def test_function(shape):
-    print "Current coordinates:", shape.get_rect()
-
 def get_segment(item):
     """Show image and return selected segment coordinates"""
     win = ImageDialog(_("Select a segment then press OK to accept"), edit=True)
     default = win.add_tool(SelectTool)
     win.set_default_tool(default)
     segtool = win.add_tool(AnnotatedSegmentTool, title="Test",
-                           setup_shape_cb=test_function,
                            switch_to_default_tool=True)
     segtool.activate()
     plot = win.get_plot()
@@ -49,7 +46,9 @@ def test():
     # --
     filename = osp.join(osp.dirname(__file__), "brain.png")
     image = make.image(filename=filename, colormap="bone")
-    print get_segment(image)
+    rect = get_segment(image)
+    print "Coordinates:", rect
+    print "Distance:", np.sqrt((rect[2]-rect[0])**2 + (rect[3]-rect[1])**2)
 
 if __name__ == "__main__":
     test()
