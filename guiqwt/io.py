@@ -15,18 +15,22 @@ The `io` module provides input/output helper functions:
     * :py:func:`guiqwt.io.imread`: load an image (.png, .tiff, 
       .dicom, etc.) and return its data as a NumPy array
     * :py:func:`guiqwt.io.imwrite`: save an array to an image file
+    * :py:func:`guiqwt.io.load_items`: load plot items from HDF5
+    * :py:func:`guiqwt.io.save_items`: save plot items to HDF5
 
 Reference
 ~~~~~~~~~
 
 .. autofunction:: imread
 .. autofunction:: imwrite
+.. autofunction:: load_items
+.. autofunction:: save_items
 """
 
-#TODO: Implement an XML-based serialize/deserialize mechanism for plot items
-
 import sys
+import re
 import os.path as osp
+
 import numpy as np
 
 # Local imports
@@ -385,4 +389,88 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     print >>sys.stderr,\
           "io.array_to_imagefile is deprecated: use io.imwrite instead"
     return imwrite(filename, arr, mode=mode, max_range=max_range)
-    
+
+
+#==============================================================================
+# guiqwt plot items I/O
+#==============================================================================
+
+SERIALIZABLE_ITEMS = []
+ITEM_MODULES = {}
+
+def register_serializable_items(modname, classnames):
+    """Register serializable item from module name and class name"""
+    global SERIALIZABLE_ITEMS, ITEM_MODULES
+    SERIALIZABLE_ITEMS += classnames
+    ITEM_MODULES[modname] = ITEM_MODULES.setdefault(modname, []) + classnames
+
+# Curves
+register_serializable_items('guiqwt.curve',
+       ['CurveItem', 'PolygonMapItem', 'ErrorBarCurveItem'])
+# Images
+register_serializable_items('guiqwt.image',
+       ['RawImageItem', 'ImageItem', 'TrImageItem', 'XYImageItem',
+        'RGBImageItem', 'MaskedImageItem'])
+# Shapes
+register_serializable_items('guiqwt.shapes',
+       ['PolygonShape', 'PointShape', 'SegmentShape', 'RectangleShape',
+        'ObliqueRectangleShape', 'EllipseShape', 'Axes'])
+# Annotations
+register_serializable_items('guiqwt.annotations',
+       ['AnnotatedPoint', 'AnnotatedSegment', 'AnnotatedRectangle',
+        'AnnotatedObliqueRectangle', 'AnnotatedEllipse', 'AnnotatedCircle'])
+# Labels
+register_serializable_items('guiqwt.label',
+       ['LabelItem', 'LegendBoxItem', 'SelectedLegendBoxItem'])
+
+def _item_class_from_name(name):
+    """Return plot item class from name"""
+    global SERIALIZABLE_ITEMS, ITEM_MODULES
+    assert name in SERIALIZABLE_ITEMS, "Unknown class %r" % name
+    for modname, names in ITEM_MODULES.iteritems():
+        if name in names:
+            return getattr(__import__(modname, fromlist=[name]), name)
+
+def _item_name_from_object(obj):
+    """Return plot item name from instance"""
+    return obj.__class__.__name__
+
+def save_items(writer, items):
+    """Save items to HDF5 file:
+        * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
+        * items: serializable plot items"""
+    counts = {}
+    names = []
+    def _get_name(item):
+        basename = _item_name_from_object(item)
+        count = counts[basename] = counts.setdefault(basename, 0) + 1
+        name = '%s_%03d' % (basename, count)
+        names.append(name)
+        return name
+    for item in items:
+        with writer.group(_get_name(item)):
+            item.serialize(writer)
+    with writer.group('plot_items'):
+        writer.write_sequence(names)
+
+def load_items(reader):
+    """Load items from HDF5 file:
+        * reader: :py:class:`guidata.hdf5io.HDF5Reader` object"""
+    with reader.group('plot_items'):
+        names = reader.read_sequence()
+    items = []
+    for name in names:
+        klass_name = re.match(r'([A-Z]+[A-Za-z0-9\_]*)\_([0-9]*)',
+                              name).groups()[0]
+        klass = _item_class_from_name(klass_name)
+        item = klass()
+        with reader.group(name):
+            item.deserialize(reader)
+        items.append(item)
+    return items
+
+
+if __name__ == '__main__':
+    # Test if items can all be constructed from their Python module
+    for name in SERIALIZABLE_ITEMS:
+        print name, '-->', _item_class_from_name(name)

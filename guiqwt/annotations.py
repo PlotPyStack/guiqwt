@@ -70,7 +70,7 @@ Reference
 
 import numpy as np
 
-from guidata.utils import update_dataset
+from guidata.utils import update_dataset, assert_interfaces_valid
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -78,7 +78,7 @@ from guiqwt.styles import LabelParam, AnnotationParam
 from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
                            SegmentShape, PointShape, ObliqueRectangleShape)
 from guiqwt.label import DataInfoLabel
-from guiqwt.interfaces import IShapeItemType, ISerializableType
+from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 from guiqwt.geometry import (compute_center, compute_rect_size,
                              compute_distance, compute_angle)
@@ -90,6 +90,7 @@ class AnnotatedShape(AbstractShape):
     Construct an annotated shape with properties set with
     *annotationparam* (see :py:class:`guiqwt.styles.AnnotationParam`)
     """
+    __implements__ = (IBasePlotItem, ISerializableType)
     SHAPE_CLASS = None
     LABEL_ANCHOR = None
     def __init__(self, annotationparam=None):
@@ -120,6 +121,21 @@ class AnnotatedShape(AbstractShape):
         self.annotationparam = param
         self.annotationparam.update_annotation(self)
 
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        writer.write(self.annotationparam, group_name='annotationparam')
+        self.shape.serialize(writer)
+        self.label.serialize(writer)
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.annotationparam = AnnotationParam(_("Annotation"),
+                                               icon="annotation.png")
+        reader.read('annotationparam', dataset=self.annotationparam)
+        self.annotationparam.update_annotation(self)
+        self.shape.deserialize(reader)
+        self.label.deserialize(reader)
+    
     def set_style(self, section, option):
         self.shape.set_style(section, option)
         
@@ -297,7 +313,9 @@ class AnnotatedShape(AbstractShape):
         update_dataset(self.annotationparam, itemparams.get("AnnotationParam"),
                        visible_only=True)
         self.annotationparam.update_annotation(self)
-    
+
+assert_interfaces_valid(AnnotatedShape)
+
 
 class AnnotatedPoint(AnnotatedShape):
     """
@@ -520,8 +538,7 @@ class AnnotatedEllipse(AnnotatedShape):
     """
     SHAPE_CLASS = EllipseShape
     LABEL_ANCHOR = "C"
-    def __init__(self, x1=0, y1=0, x2=0, y2=0, ratio=1., annotationparam=None):
-        self.ratio = ratio
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedShape.__init__(self, annotationparam)
         self.set_xdiameter(x1, y1, x2, y2)
 
@@ -536,7 +553,7 @@ class AnnotatedEllipse(AnnotatedShape):
         """Return the coordinates of the ellipse's X-axis diameter
         Warning: transform matrix is not applied here"""
         return self.shape.get_xdiameter()
-                         
+
     def set_ydiameter(self, x2, y2, x3, y3):
         """Set the coordinates of the ellipse's Y-axis diameter
         Warning: transform matrix is not applied here"""
@@ -563,11 +580,6 @@ class AnnotatedEllipse(AnnotatedShape):
         return (compute_angle(reverse=yr1 > yr2, *xcoords)+90)%180-90
         
     #----AnnotatedShape API-----------------------------------------------------
-    def create_shape(self):
-        """Return the shape object associated to this annotated shape object"""
-        shape = self.SHAPE_CLASS(0, 0, 1, 1, ratio=self.ratio)
-        return shape
-        
     def set_label_position(self):
         """Set label position, for instance based on shape position"""
         x_label, y_label = self.shape.points.mean(axis=0)
@@ -603,7 +615,7 @@ class AnnotatedCircle(AnnotatedEllipse):
     (see :py:class:`guiqwt.styles.AnnotationParam`)
     """
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
-        AnnotatedEllipse.__init__(self, x1, y1, x2, y2, 1., annotationparam)
+        AnnotatedEllipse.__init__(self, x1, y1, x2, y2, annotationparam)
         
     def get_tr_diameter(self):
         """Return circle diameter after applying transform matrix"""

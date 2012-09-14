@@ -1,9 +1,16 @@
 == Version 2.2.1 ==
 
+=== New features (since v2.2.0) ===
+
+  * Added support for plot items serialization/deserialization to/from HDF5:
+    * See `save_items` and `load_items` function in `guiqwt.io`
+    * See `serialize` (save to) and `deserialize` (load from) methods in plot objects (save all items) or plot item objects
+    * See the new test `loadsaveitems_hdf5.py`
+
 === Possible API compatibility issues (since v2.2.0) ===
 
   * guiqwt now requires Python 2.6 (Python 2.5 support has been dropped)
-	
+
 ----
 
 == Version 2.2.0 ==

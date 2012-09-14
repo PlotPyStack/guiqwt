@@ -533,11 +533,13 @@ assert_interfaces_valid(Marker)
 
 
 class PolygonShape(AbstractShape):
+    __implements__ = (IBasePlotItem, ISerializableType)
     ADDITIONNAL_POINTS = 0 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = False # Link additionnal points with dotted lines
-    def __init__(self, points, closed=True, shapeparam=None):
+    CLOSED = True
+    def __init__(self, points=None, closed=None, shapeparam=None):
         super(PolygonShape, self).__init__()
-        self.closed = closed
+        self.closed = self.CLOSED if closed is None else closed
         self.selected = False
         
         if shapeparam is None:
@@ -553,7 +555,7 @@ class PolygonShape(AbstractShape):
         self.sel_brush = QBrush()
         self.sel_symbol = QwtSymbol.NoSymbol
         self.points = np.zeros( (0, 2), float )
-        if points:
+        if points is not None:
             self.set_points(points)
                 
     def types(self):
@@ -561,8 +563,8 @@ class PolygonShape(AbstractShape):
 
     def __reduce__(self):
         self.shapeparam.update_param(self)
-        state = (self.shapeparam, self.points, self.z())
-        return (PolygonShape, (None, self.closed), state)
+        state = (self.shapeparam, self.points, self.closed, self.z())
+        return (PolygonShape, (), state)
 
     def __setstate__(self, state):
         param, points, z = state
@@ -570,6 +572,23 @@ class PolygonShape(AbstractShape):
         self.setZ(z)
         self.shapeparam = param
         self.shapeparam.update_shape(self)
+    
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        self.shapeparam.update_param(self)
+        writer.write(self.shapeparam, group_name='shapeparam')
+        writer.write(self.points, group_name='points')
+        writer.write(self.closed, group_name='closed')
+        writer.write(self.z(), group_name='z')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.closed = reader.read('closed')
+        self.shapeparam = ShapeParam(_("Shape"), icon="rectangle.png")
+        reader.read('shapeparam', dataset=self.shapeparam)
+        self.shapeparam.update_shape(self)
+        self.points = reader.read(group_name='points', func=reader.read_array)
+        self.setZ(reader.read('z'))
     
     #----Public API-------------------------------------------------------------
 
@@ -717,9 +736,9 @@ assert_interfaces_valid(PolygonShape)
 
 
 class PointShape(PolygonShape):
-    def __init__(self, x, y, shapeparam=None):
-        super(PointShape, self).__init__([], closed=False,
-                                         shapeparam=shapeparam)
+    CLOSED = False
+    def __init__(self, x=0, y=0, shapeparam=None):
+        super(PointShape, self).__init__(shapeparam=shapeparam)
         self.set_pos(x, y)
         
     def set_pos(self, x, y):
@@ -736,16 +755,16 @@ class PointShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0, 0), state)
+        return (self.__class__, (), state)
 
 assert_interfaces_valid(PointShape)
 
 
 class SegmentShape(PolygonShape):
+    CLOSED = False
     ADDITIONNAL_POINTS = 1 # Number of points which are not part of the shape
-    def __init__(self, x1, y1, x2, y2, shapeparam=None):
-        super(SegmentShape, self).__init__([], closed=False,
-                                           shapeparam=shapeparam)
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, shapeparam=None):
+        super(SegmentShape, self).__init__(shapeparam=shapeparam)
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
@@ -772,7 +791,7 @@ class SegmentShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0, 0, 0, 0), state)
+        return (self.__class__, (), state)
 
     def __setstate__(self, state):
         param, points, z = state
@@ -794,9 +813,9 @@ assert_interfaces_valid(SegmentShape)
 
 
 class RectangleShape(PolygonShape):
-    def __init__(self, x1, y1, x2, y2, shapeparam=None):
-        super(RectangleShape, self).__init__([], closed=True,
-                                             shapeparam=shapeparam)
+    CLOSED = True
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, shapeparam=None):
+        super(RectangleShape, self).__init__(shapeparam=shapeparam)
         self.set_rect(x1, y1, x2, y2)
         
     def set_rect(self, x1, y1, x2, y2):
@@ -830,7 +849,7 @@ class RectangleShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0,0,0,0), state)
+        return (self.__class__, (), state)
 
 assert_interfaces_valid(RectangleShape)
 
@@ -841,12 +860,12 @@ def _no_null_vector(x0, y0, x1, y1, x2, y2, x3, y3):
            vector_norm(x1, y1, x3, y3) and vector_norm(x2, y2, x3, y3)
     
 class ObliqueRectangleShape(PolygonShape):
+    CLOSED = True
     ADDITIONNAL_POINTS = 2 # Number of points which are not part of the shape
     LINK_ADDITIONNAL_POINTS = True # Link additionnal points with dotted lines
-    def __init__(self, x0, y0, x1, y1, x2, y2, x3, y3,
+    def __init__(self, x0=0, y0=0, x1=0, y1=0, x2=0, y2=0, x3=0, y3=0,
                  shapeparam=None):
-        super(ObliqueRectangleShape, self).__init__([], closed=True,
-                                                    shapeparam=shapeparam)
+        super(ObliqueRectangleShape, self).__init__(shapeparam=shapeparam)
         self.set_rect(x0, y0, x1, y1, x2, y2, x3, y3)
         
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
@@ -963,17 +982,16 @@ class ObliqueRectangleShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0, 0, 0, 0, 0, 0, 0, 0), state)
+        return (self.__class__, (), state)
 
 assert_interfaces_valid(ObliqueRectangleShape)
 
 
 #FIXME: EllipseShape's ellipse drawing is invalid when aspect_ratio != 1
 class EllipseShape(PolygonShape):
-    def __init__(self, x1, y1, x2, y2, ratio=None, shapeparam=None):
-        self.ratio = ratio
-        super(EllipseShape, self).__init__([], closed=True,
-                                           shapeparam=shapeparam)
+    CLOSED = True
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, shapeparam=None):
+        super(EllipseShape, self).__init__(shapeparam=shapeparam)
         self.is_ellipse = False
         self.set_xdiameter(x1, y1, x2, y2)
         
@@ -987,8 +1005,8 @@ class EllipseShape(PolygonShape):
         yline.translate(xline.pointAt(.5)-xline.p1())
         if self.is_ellipse:
             yline.setLength(self.get_yline().length())
-        elif self.ratio is not None:
-            yline.setLength(xline.length()*self.ratio)
+        else:
+            yline.setLength(xline.length())
         yline.translate(yline.pointAt(.5)-yline.p2())
         self.set_points([(x0, y0), (x1, y1),
                          (yline.x1(), yline.y1()), (yline.x2(), yline.y2())])
@@ -1111,15 +1129,17 @@ class EllipseShape(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
-        return (self.__class__, (0,0,0,0), state)
+        return (self.__class__, (), state)
 
 assert_interfaces_valid(EllipseShape)
 
 
 class Axes(PolygonShape):
     """Axes( (0,1), (1,1), (0,0) )"""
-    def __init__(self, p0, p1, p2, axesparam=None, shapeparam=None):
-        super(Axes, self).__init__([], closed=True, shapeparam=shapeparam)
+    CLOSED = True
+    def __init__(self, p0=(0, 0), p1=(0, 0), p2=(0, 0),
+                 axesparam=None, shapeparam=None):
+        super(Axes, self).__init__(shapeparam=shapeparam)
         self.set_rect(p0, p1, p2)
         self.arrow_angle = 15 # degrees
         self.arrow_size = 0.05 # % of axe length
@@ -1135,7 +1155,7 @@ class Axes(PolygonShape):
 
     def __reduce__(self):
         state = (self.shapeparam, self.axesparam, self.points, self.z())
-        return (self.__class__, ((0, 0), (0, 0), (0, 0)), state)
+        return (self.__class__, (), state)
 
     def __setstate__(self, state):
         shapeparam, axesparam, points, z = state

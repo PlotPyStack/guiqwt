@@ -18,6 +18,7 @@
 Thumbs.db$
 MANIFEST$
 loadsavecanvas.gui$
+loadsavecanvas.h5$
 \.pot$
 ~$
 syntax: glob

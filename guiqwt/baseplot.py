@@ -45,6 +45,7 @@ Reference
 """
 
 import sys
+
 import numpy as np
 
 from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
@@ -56,6 +57,7 @@ from guidata.configtools import get_font
 # Local imports
 from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
                                  QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
+from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
@@ -514,6 +516,31 @@ class BasePlot(QwtPlot):
         items = pickle.load(iofile)
         for item in items:
             self.add_item(item, z=item.z())
+
+    def serialize(self, writer, selected=False):
+        """
+        Save (serializable) items to HDF5 file:
+            * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
+            * selected=False: if True, will save only selected items
+            
+        See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items_from_hdf5`
+        """
+        if selected:
+            items = self.get_selected_items()
+        else:
+            items = self.items[:]
+        items = [item for item in items if ISerializableType in item.types()]
+        io.save_items(writer, items)
+        
+    def deserialize(self, reader):
+        """
+        Restore items from HDF5 file:
+            * reader: :py:class:`guidata.hdf5io.HDF5Reader` object
+            
+        See also :py:meth:`guiqwt.baseplot.BasePlot.save_items_to_hdf5`
+        """
+        for item in io.load_items(reader):
+            self.add_item(item)
 
     def __clean_item_references(self, item):
         """Remove all reference to this item (active,

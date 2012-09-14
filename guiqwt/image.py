@@ -136,9 +136,13 @@ Reference
 .. autofunction:: get_image_from_plot
 """
 
-import sys, os, os.path as osp
-import numpy as np
+import sys
+import os
+import os.path as osp
+import re
 from math import fabs
+
+import numpy as np
 
 from guidata.qt.QtGui import QColor, QImage
 from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
@@ -208,9 +212,9 @@ def pixelround(x, corner=None):
         return np.floor(x)
 
 
-#===============================================================================
+#==============================================================================
 # Base image item class
-#===============================================================================
+#==============================================================================
 class BaseImageItem(QwtPlotItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType, ICSImageItemType, IStatsImageItemType,
@@ -234,6 +238,8 @@ class BaseImageItem(QwtPlotItem):
         # param.alpha_mask
         # param.alpha
         # param.colormap
+        if param is None:
+            param = self.get_default_param()
         self.imageparam = param
 
         self.selected = False
@@ -270,7 +276,11 @@ class BaseImageItem(QwtPlotItem):
             self.set_data(data)
         self.imageparam.update_image(self)
 
-    #---- Public API -----------------------------------------------------------
+    #---- Public API ----------------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        raise NotImplementedError
+        
     def set_filename(self, fname):
         self._filename = fname
 
@@ -497,7 +507,8 @@ class BaseImageItem(QwtPlotItem):
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         """
         Draw image with painter on canvasRect
-        <!> src_rect and dst_rect are coord tuples (xleft, ytop, xright, ybottom)
+        <!> src_rect and dst_rect are coord tuples 
+        (xleft, ytop, xright, ybottom)
         """
         dest = _scale_rect(self.data, src_rect, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
@@ -516,7 +527,7 @@ class BaseImageItem(QwtPlotItem):
         _scale_rect(self.data, src_rect, dst_image, dst_rect,
                     (a, b, None), interp)
 
-    #---- QwtPlotItem API ------------------------------------------------------
+    #---- QwtPlotItem API -----------------------------------------------------
     def draw(self, painter, xMap, yMap, canvasRect):
         x1, y1, x2, y2 = canvasRect.getCoords()
         i1, i2 = xMap.invTransform(x1), xMap.invTransform(x2)
@@ -533,7 +544,8 @@ class BaseImageItem(QwtPlotItem):
             self._image = QImage(self._offscreen, W, H, QImage.Format_ARGB32)
             self._image.ndarray = self._offscreen
             self.notify_new_offscreen()
-        self.draw_image(painter, canvasRect, (i1, j1, i2, j2), dest, xMap, yMap)
+        self.draw_image(painter, canvasRect, (i1, j1, i2, j2),
+                        dest, xMap, yMap)
         self.draw_border(painter, xMap, yMap, canvasRect)
 
     def boundingRect(self):
@@ -643,7 +655,7 @@ class BaseImageItem(QwtPlotItem):
         """
         pass
 
-    #---- IBaseImageItem API ---------------------------------------------------
+    #---- IBaseImageItem API --------------------------------------------------
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
@@ -739,9 +751,9 @@ class BaseImageItem(QwtPlotItem):
 assert_interfaces_valid(BaseImageItem)
 
 
-#===============================================================================
+#==============================================================================
 # Raw Image item (image item without scale)
-#===============================================================================
+#==============================================================================
 class RawImageItem(BaseImageItem):
     """
     Construct a simple image item
@@ -750,13 +762,13 @@ class RawImageItem(BaseImageItem):
           (:py:class:`guiqwt.styles.RawImageParam` instance)
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
-                      IVoiImageItemType)
-    def __init__(self, data, param=None):
-        if param is None:
-            param = RawImageParam(_("Image"))
-        super(RawImageItem, self).__init__(data=data, param=param)
+                      IVoiImageItemType, ISerializableType)
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return RawImageParam(_("Image"))
 
-    #---- Pickle methods -------------------------------------------------------
+    #---- Serialization methods -----------------------------------------------
     def __reduce__(self):
         fname = self.get_filename()
         if fname is None:
@@ -764,7 +776,7 @@ class RawImageItem(BaseImageItem):
         else:
             fn_or_data = fname
         state = self.imageparam, self.get_lut_range(), fn_or_data, self.z()
-        res = ( self.__class__, (None,), state )
+        res = ( self.__class__, (), state )
         return res
 
     def __setstate__(self, state):
@@ -778,7 +790,35 @@ class RawImageItem(BaseImageItem):
         self.setZ(z)
         self.imageparam.update_image(self)
 
-    #---- Public API -----------------------------------------------------------
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        fname = self.get_filename()
+        load_from_fname = fname is not None
+        data = None if load_from_fname else self.data
+        writer.write(load_from_fname, group_name='load_from_fname')
+        writer.write(fname, group_name='fname')
+        writer.write(data, group_name='Zdata')
+        writer.write(self.get_lut_range(), group_name='lut_range')
+        writer.write(self.z(), group_name='z')
+        self.imageparam.update_param(self)
+        writer.write(self.imageparam, group_name='imageparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        lut_range = reader.read(group_name='lut_range')
+        if reader.read(group_name='load_from_fname'):
+            self.set_filename(reader.read(group_name='fname',
+                                          func=reader.read_unicode))
+            self.load_data(lut_range)
+        else:
+            data = reader.read(group_name='Zdata', func=reader.read_array)
+            self.set_data(data, lut_range=lut_range)
+        self.setZ(reader.read('z'))
+        self.imageparam = self.get_default_param()
+        reader.read('imageparam', dataset=self.imageparam)
+        self.imageparam.update_image(self)
+    
+    #---- Public API ----------------------------------------------------------
     def load_data(self, lut_range=None):
         """
         Load data from *filename* and eventually apply specified lut_range
@@ -809,7 +849,7 @@ class RawImageItem(BaseImageItem):
             return
         self.bounds = QRectF(0, 0, self.data.shape[1], self.data.shape[0])
 
-    #---- IBasePlotItem API ----------------------------------------------------
+    #---- IBasePlotItem API ---------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType, ICSImageItemType, ISerializableType,
@@ -826,7 +866,7 @@ class RawImageItem(BaseImageItem):
         self.imageparam.update_image(self)
         BaseImageItem.set_item_parameters(self, itemparams)
 
-    #---- IBaseImageItem API ---------------------------------------------------
+    #---- IBaseImageItem API --------------------------------------------------
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
@@ -835,9 +875,9 @@ class RawImageItem(BaseImageItem):
 assert_interfaces_valid(RawImageItem)
 
 
-#===============================================================================
+#==============================================================================
 # Image item
-#===============================================================================
+#==============================================================================
 class ImageItem(RawImageItem):
     """
     Construct a simple image item
@@ -847,16 +887,19 @@ class ImageItem(RawImageItem):
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType, IExportROIImageItemType)
-    def __init__(self, data, param=None):
+    def __init__(self, data=None, param=None):
         self.xmin = None
         self.xmax = None
         self.ymin = None
         self.ymax = None
-        if param is None:
-            param = ImageParam(_("Image"))
         super(ImageItem, self).__init__(data=data, param=param)
 
-    #---- Public API -----------------------------------------------------------
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return ImageParam(_("Image"))
+
+    #---- Public API ----------------------------------------------------------
     def get_xdata(self):
         """Return (xmin, xmax)"""
         xmin, xmax = self.xmin, self.xmax
@@ -887,7 +930,7 @@ class ImageItem(RawImageItem):
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
         self.bounds = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax))
 
-    #---- BaseImageItem API ----------------------------------------------------
+    #---- BaseImageItem API ---------------------------------------------------
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
@@ -954,9 +997,9 @@ class ImageItem(RawImageItem):
 assert_interfaces_valid(ImageItem)
 
 
-#===============================================================================
+#==============================================================================
 # QuadGrid item
-#===============================================================================
+#==============================================================================
 class QuadGridItem(RawImageItem):
     """
     Construct a QuadGrid image
@@ -968,8 +1011,6 @@ class QuadGridItem(RawImageItem):
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType)
     def __init__(self, X, Y, Z, param=None):
-        if param is None:
-            param = QuadGridParam(_("Quadrilaterals"))
         assert X is not None
         assert Y is not None
         assert Z is not None
@@ -982,6 +1023,11 @@ class QuadGridItem(RawImageItem):
         self.grid = 1
         self.interpolate = (0, 0.5, 0.5)
         self.imageparam.update_image(self)
+
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return QuadGridParam(_("Quadrilaterals"))
 
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
@@ -1033,9 +1079,9 @@ class QuadGridItem(RawImageItem):
 assert_interfaces_valid(QuadGridItem)
 
 
-#===============================================================================
+#==============================================================================
 # Image with a custom linear transform
-#===============================================================================
+#==============================================================================
 class TrImageItem(RawImageItem):
     """
     Construct a transformable image item
@@ -1048,17 +1094,20 @@ class TrImageItem(RawImageItem):
     _can_resize = True
     _can_rotate = True
     _can_move = True
-    def __init__(self, data, param=None):
+    def __init__(self, data=None, param=None):
         self.tr = np.eye(3, dtype=float)
         self.itr = np.eye(3, dtype=float)
         self.points = np.array([ [0, 0, 2, 2],
                                  [0, 2, 2, 0],
                                  [1, 1, 1, 1] ], float)
-        if param is None:
-            param = TrImageParam(_("Image"))
         super(TrImageItem, self).__init__(data, param)
 
-    #---- Public API -----------------------------------------------------------
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return TrImageParam(_("Image"))
+
+    #---- Public API ----------------------------------------------------------
     def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0,
                       hflip=False, vflip=False):
         self.imageparam.set_transform(x0, y0, angle, dx, dy, hflip, vflip)
@@ -1114,7 +1163,7 @@ class TrImageItem(RawImageItem):
         self.bounds = QRectF(QPointF(x0, y0), QPointF(x1, y1))
         self.update_border()
 
-    #--- RawImageItem API ------------------------------------------------------
+    #--- RawImageItem API -----------------------------------------------------
     def set_data(self, data, lut_range=None):
         RawImageItem.set_data(self, data, lut_range)
         ni, nj = self.data.shape
@@ -1123,7 +1172,7 @@ class TrImageItem(RawImageItem):
                                 [1,  1,  1,  1]], float)
         self.compute_bounds()
 
-    #--- BaseImageItem API -----------------------------------------------------
+    #--- BaseImageItem API ----------------------------------------------------
     def get_filter(self, filterobj, filterparam):
         """Provides a filter object over this image's content"""
         raise NotImplementedError
@@ -1221,7 +1270,7 @@ class TrImageItem(RawImageItem):
         interp = self.interpolate if apply_interpolation else (INTERP_NEAREST,)
         _scale_tr(self.data, mat, dst_image, dst_rect, (a, b, None), interp)
 
-    #---- IBasePlotItem API ----------------------------------------------------
+    #---- IBasePlotItem API ---------------------------------------------------
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
@@ -1424,9 +1473,9 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None, add_images=False,
                                original_resolution=original_resolution)
 
 
-#===============================================================================
+#==============================================================================
 # Image with custom X, Y axes
-#===============================================================================
+#==============================================================================
 def to_bins(x):
     """Convert point center to point bounds"""
     bx = np.zeros((x.shape[0]+1,), float)
@@ -1444,17 +1493,20 @@ class XYImageItem(RawImageItem):
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.XYImageParam` instance)
     """
-    __implements__ = (IBasePlotItem, IBaseImageItem)
-    def __init__(self, x, y, data, param=None):
-        if param is None:
-            param = XYImageParam(_("Image"))
+    __implements__ = (IBasePlotItem, IBaseImageItem, ISerializableType)
+    def __init__(self, x=None, y=None, data=None, param=None):
         super(XYImageItem, self).__init__(data, param)
         self.x = None
         self.y = None
         if x is not None and y is not None:
             self.set_xy(x, y)
 
-    #---- Pickle methods -------------------------------------------------------
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return XYImageParam(_("Image"))
+
+    #---- Pickle methods ------------------------------------------------------
     def __reduce__(self):
         fname = self.get_filename()
         if fname is None:
@@ -1463,7 +1515,7 @@ class XYImageItem(RawImageItem):
             fn_or_data = fname
         state = (self.imageparam, self.get_lut_range(),
                  self.x, self.y, fn_or_data, self.z())
-        res = ( self.__class__, (None, None, None), state )
+        res = ( self.__class__, (), state )
         return res
 
     def __setstate__(self, state):
@@ -1478,7 +1530,20 @@ class XYImageItem(RawImageItem):
         self.setZ(z)
         self.imageparam.update_image(self)
 
-    #---- Public API -----------------------------------------------------------
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(XYImageItem, self).serialize(writer)
+        writer.write(self.x, group_name='Xdata')
+        writer.write(self.y, group_name='Ydata')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        super(XYImageItem, self).deserialize(reader)
+        x = reader.read(group_name='Xdata', func=reader.read_array)
+        y = reader.read(group_name='Ydata', func=reader.read_array)
+        self.set_xy(x, y)
+
+    #---- Public API ----------------------------------------------------------
     def set_xy(self, x, y):
         ni, nj = self.data.shape
         x = np.array(x, float)
@@ -1505,7 +1570,7 @@ class XYImageItem(RawImageItem):
                              QPointF(self.x[-1], self.y[-1]))
         self.update_border()
 
-    #--- BaseImageItem API -----------------------------------------------------
+    #--- BaseImageItem API ----------------------------------------------------
     def get_filter(self, filterobj, filterparam):
         """Provides a filter object over this image's content"""
         return XYImageFilterItem(self, filterobj, filterparam)
@@ -1536,12 +1601,12 @@ class XYImageItem(RawImageItem):
         i, j = self.get_closest_indexes(x, y)
         return self.x[i], self.y[j]
 
-    #---- IBasePlotItem API ----------------------------------------------------
+    #---- IBasePlotItem API ---------------------------------------------------
     def types(self):
         return (IImageItemType, IVoiImageItemType, IColormapImageItemType,
                 ITrackableItemType, ISerializableType, ICSImageItemType)
 
-    #---- IBaseImageItem API ---------------------------------------------------
+    #---- IBaseImageItem API --------------------------------------------------
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
@@ -1550,9 +1615,9 @@ class XYImageItem(RawImageItem):
 assert_interfaces_valid(XYImageItem)
 
 
-#===============================================================================
+#==============================================================================
 # RGB Image with alpha channel
-#===============================================================================
+#==============================================================================
 class RGBImageItem(ImageItem):
     """
     Construct a RGB/RGBA image item
@@ -1561,15 +1626,18 @@ class RGBImageItem(ImageItem):
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.RGBImageParam` instance)
     """
-    __implements__ = (IBasePlotItem, IBaseImageItem)
+    __implements__ = (IBasePlotItem, IBaseImageItem, ISerializableType)
     def __init__(self, data=None, param=None):
         self.orig_data = None
-        if param is None:
-            param = RGBImageParam(_("Image"))
         super(RGBImageItem, self).__init__(data, param)
         self.lut = None
 
-    #---- Pickle methods -------------------------------------------------------
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return RGBImageParam(_("Image"))
+
+    #---- Pickle methods ------------------------------------------------------
     def __reduce__(self):
         fname = self.get_filename()
         if fname is None:
@@ -1577,7 +1645,7 @@ class RGBImageItem(ImageItem):
         else:
             fn_or_data = fname
         state = self.imageparam, fn_or_data, self.z()
-        res = ( self.__class__, (None,), state )
+        res = ( self.__class__, (), state )
         return res
 
     def __setstate__(self, state):
@@ -1591,7 +1659,33 @@ class RGBImageItem(ImageItem):
         self.setZ(z)
         self.imageparam.update_image(self)
 
-    #---- Public API -----------------------------------------------------------
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        fname = self.get_filename()
+        load_from_fname = fname is not None
+        data = None if load_from_fname else self.data
+        writer.write(load_from_fname, group_name='load_from_fname')
+        writer.write(fname, group_name='fname')
+        writer.write(data, group_name='Zdata')
+        writer.write(self.z(), group_name='z')
+        self.imageparam.update_param(self)
+        writer.write(self.imageparam, group_name='imageparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        if reader.read(group_name='load_from_fname'):
+            self.set_filename(reader.read(group_name='fname',
+                                          func=reader.read_unicode))
+            self.load_data()
+        else:
+            data = reader.read(group_name='Zdata', func=reader.read_array)
+            self.set_data(data)
+        self.setZ(reader.read('z'))
+        self.imageparam = RawImageParam(_("Image"))
+        reader.read('imageparam', dataset=self.imageparam)
+        self.imageparam.update_image(self)
+
+    #---- Public API ----------------------------------------------------------
     def recompute_alpha_channel(self):
         data = self.orig_data
         if self.orig_data is None:
@@ -1609,7 +1703,7 @@ class RGBImageItem(ImageItem):
             A[:, :]=int(255*alpha)
         self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
 
-    #--- BaseImageItem API -----------------------------------------------------
+    #--- BaseImageItem API ----------------------------------------------------
     # Override lut/bg handling
     def set_lut_range(self, range):
         pass
@@ -1620,7 +1714,7 @@ class RGBImageItem(ImageItem):
     def set_color_map(self, name_or_table):
         self.lut = None
 
-    #---- RawImageItem API -----------------------------------------------------
+    #---- RawImageItem API ----------------------------------------------------
     def load_data(self):
         """
         Load data from *filename*
@@ -1638,11 +1732,11 @@ class RGBImageItem(ImageItem):
         self.update_border()
         self.lut = None
 
-    #---- IBasePlotItem API ----------------------------------------------------
+    #---- IBasePlotItem API ---------------------------------------------------
     def types(self):
         return (IImageItemType, ITrackableItemType, ISerializableType)
 
-    #---- IBaseImageItem API ---------------------------------------------------
+    #---- IBaseImageItem API --------------------------------------------------
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
@@ -1651,9 +1745,9 @@ class RGBImageItem(ImageItem):
 assert_interfaces_valid(RGBImageItem)
 
 
-#===============================================================================
+#==============================================================================
 # Masked Image
-#===============================================================================
+#==============================================================================
 class MaskedImageItem(ImageItem):
     """
     Construct a masked image item
@@ -1664,14 +1758,17 @@ class MaskedImageItem(ImageItem):
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, IHistDataSource,
                       IVoiImageItemType)
-    def __init__(self, data, mask=None, param=None):
+    def __init__(self, data=None, mask=None, param=None):
         self.orig_data = None
-        if param is None:
-            param = MaskedImageParam(_("Image"))
         self._mask = mask
         self._mask_filename = None
         self._masked_areas = []
         super(MaskedImageItem, self).__init__(data, param)
+
+    #---- BaseImageItem API ---------------------------------------------------
+    def get_default_param(self):
+        """Return instance of the default imageparam DataSet"""
+        return MaskedImageParam(_("Image"))
 
     #---- Pickle methods -------------------------------------------------------
     def __reduce__(self):
@@ -1682,11 +1779,11 @@ class MaskedImageItem(ImageItem):
             fn_or_data = fname
         state = (self.imageparam, self.get_lut_range(), fn_or_data, self.z(),
                  self.get_mask_filename(), self.get_masked_areas())
-        res = ( self.__class__, (None,), state )
+        res = ( self.__class__, (), state )
         return res
 
     def __setstate__(self, state):
-        param, lut_range, fn_or_data, z, mask_filename, masked_areas = state
+        param, lut_range, fn_or_data, z, mask_fname, masked_areas = state
         self.imageparam = param
         if isinstance(fn_or_data, basestring):
             self.set_filename(fn_or_data)
@@ -1695,8 +1792,46 @@ class MaskedImageItem(ImageItem):
             self.set_data(fn_or_data, lut_range=lut_range)
         self.setZ(z)
         self.imageparam.update_image(self)
-        if mask_filename is not None:
-            self.set_mask_filename(mask_filename)
+        if mask_fname is not None:
+            self.set_mask_filename(mask_fname)
+            self.load_mask_data()
+        elif masked_areas and self.data is not None:
+            self.set_masked_areas(masked_areas)
+            self.apply_masked_areas()
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(MaskedImageItem, self).serialize(writer)
+        writer.write(self.get_mask_filename(), group_name='mask_fname')
+        names = []
+        for index, (geometry, x0, y0, x1, y1, inside
+                    ) in enumerate(self._masked_areas):
+            name = 'masked_area_%03d' % (index + 1)
+            names.append(name)
+            with writer.group(name):
+                for val, gn in ((geometry, 'geometry'), (inside, 'inside'),
+                            (x0, 'x0'), (y0, 'y0'), (x1, 'x1'), (y1, 'y1')):
+                    writer.write(val, gn)
+        with writer.group('masked_areas'):
+            writer.write_sequence(names)
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        super(MaskedImageItem, self).deserialize(reader)
+        mask_fname = reader.read(group_name='mask_fname',
+                                 func=reader.read_unicode)
+        with reader.group('masked_areas'):
+            names = reader.read_sequence()
+        masked_areas = []
+        for name in names:
+            with reader.group(name):
+                geometry = reader.read('geometry')
+                inside = reader.read('inside')
+                x0, y0, x1, y1 = [reader.read(gn, func=reader.read_float)
+                                  for gn in ('x0', 'y0', 'x1', 'y1')]
+                masked_areas.append( (geometry, x0, y0, x1, y1, inside) )
+        if mask_fname:
+            self.set_mask_filename(mask_fname)
             self.load_mask_data()
         elif masked_areas and self.data is not None:
             self.set_masked_areas(masked_areas)
@@ -1873,9 +2008,9 @@ class MaskedImageItem(ImageItem):
         self.update_mask()
 
 
-#===============================================================================
+#==============================================================================
 # Image filter
-#===============================================================================
+#==============================================================================
 #TODO: Implement get_filter methods for image items other than XYImageItem!
 class ImageFilterItem(BaseImageItem):
     """
@@ -2038,9 +2173,9 @@ class XYImageFilterItem(ImageFilterItem):
 assert_interfaces_valid(ImageFilterItem)
 
 
-#===============================================================================
+#==============================================================================
 # 2-D Histogram
-#===============================================================================
+#==============================================================================
 class Histogram2DItem(BaseImageItem):
     """
     Construct a 2D histogram item
@@ -2135,7 +2270,7 @@ class Histogram2DItem(BaseImageItem):
         else:
             drawfunc(painter, canvasRect, src_rect, dst_rect, xMap, yMap)
 
-    #---- IBasePlotItem API ----------------------------------------------------
+    #---- IBasePlotItem API ---------------------------------------------------
     def types(self):
         return (IColormapImageItemType, IImageItemType, ITrackableItemType,
                 IVoiImageItemType, IColormapImageItemType, ICSImageItemType)
@@ -2151,7 +2286,7 @@ class Histogram2DItem(BaseImageItem):
         self.histparam.update_histogram(self)
         BaseImageItem.set_item_parameters(self, itemparams)
 
-    #---- IBaseImageItem API ---------------------------------------------------
+    #---- IBaseImageItem API --------------------------------------------------
     def can_setfullscale(self):
         return True
     def can_sethistogram(self):
@@ -2179,9 +2314,9 @@ class Histogram2DItem(BaseImageItem):
 assert_interfaces_valid(Histogram2DItem)
 
 
-#===============================================================================
+#==============================================================================
 # Image Plot Widget
-#===============================================================================
+#==============================================================================
 class ImagePlot(CurvePlot):
     """
     Construct a 2D curve and image plotting widget
@@ -2190,7 +2325,8 @@ class ImagePlot(CurvePlot):
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles
           (strings)
-        * xunit, yunit, zunit: resp. bottom, left and right axis units (strings)
+        * xunit, yunit, zunit: resp. bottom, left and right axis units
+          (strings)
         * yreverse: reversing y-axis direction of increasing values (bool)
         * aspect_ratio: height to width ratio (float)
         * lock_aspect_ratio: locking aspect ratio (bool)
@@ -2228,26 +2364,26 @@ class ImagePlot(CurvePlot):
         self.set_aspect_ratio(aspect_ratio, lock_aspect_ratio)
         self.replot() # Workaround for the empty image widget bug
 
-    #---- QwtPlot API ----------------------------------------------------------
+    #---- QwtPlot API ---------------------------------------------------------
     def showEvent(self, event):
         """Override BasePlot method"""
         if self.lock_aspect_ratio:
             self._start_autoscaled = True
         CurvePlot.showEvent(self, event)
 
-    #---- CurvePlot API --------------------------------------------------------
+    #---- CurvePlot API -------------------------------------------------------
     def do_zoom_view(self, dx, dy):
         """Reimplement CurvePlot method"""
         CurvePlot.do_zoom_view(self, dx, dy,
                                lock_aspect_ratio=self.lock_aspect_ratio)
 
-    #---- Levels histogram-related API -----------------------------------------
+    #---- Levels histogram-related API ----------------------------------------
     def update_lut_range(self, _min, _max):
         """update the LUT scale"""
         #self.set_items_lut_range(_min, _max, replot=False)
         self.updateAxes()
 
-    #---- Image scale/aspect ratio -related API --------------------------------
+    #---- Image scale/aspect ratio -related API -------------------------------
     def set_full_scale(self, item):
         if item.can_setfullscale():
             bounds = item.boundingRect()
@@ -2303,7 +2439,7 @@ class ImagePlot(CurvePlot):
             x1 += delta_x
         self.set_plot_limits(x0, x1, y0, y1)
 
-    #---- LUT/colormap-related API ---------------------------------------------
+    #---- LUT/colormap-related API --------------------------------------------
     def notify_colormap_changed(self):
         """Levels histogram range has changed"""
         item = self.get_last_active_item(IColormapImageItemType)
@@ -2318,13 +2454,13 @@ class ImagePlot(CurvePlot):
         zaxis = self.colormap_axis
         axiswidget = self.axisWidget(zaxis)
         self.setAxisScale(zaxis, item.min, item.max)
-        # XXX: the colormap can't be displayed if min>max, to fix this we should
-        # pass an inverted colormap along with _max, _min values
+        # XXX: the colormap can't be displayed if min>max, to fix this
+        # we should pass an inverted colormap along with _max, _min values
         axiswidget.setColorMap(QwtDoubleInterval(item.min, item.max),
                                item.get_color_map())
         self.updateAxes()
 
-    #---- QwtPlot API ----------------------------------------------------------
+    #---- QwtPlot API ---------------------------------------------------------
     def resizeEvent(self, event):
         """Reimplement Qt method to resize widget"""
         CurvePlot.resizeEvent(self, event)
@@ -2332,7 +2468,7 @@ class ImagePlot(CurvePlot):
             self.apply_aspect_ratio()
         self.replot()
 
-    #---- BasePlot API ---------------------------------------------------------
+    #---- BasePlot API --------------------------------------------------------
     def add_item(self, item, z=None, autoscale=True):
         """
         Add a *plot item* instance to this *plot widget*

@@ -56,6 +56,8 @@ Reference
    :members:
 """
 
+import os.path as osp
+
 from numpy import arange, array, zeros, meshgrid, ndarray
 
 # Local imports
@@ -79,7 +81,6 @@ from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
 from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
                           RangeComputation2d, DataInfoLabel, RangeInfo,
                           SelectedLegendBoxItem)
-import os.path as osp
 
 # default offset positions for anchors
 ANCHOR_OFFSETS = {
@@ -1001,15 +1002,14 @@ class PlotItemBuilder(object):
         """
         return self.__shape(RectangleShape, x0, y0, x1, y1, title)
 
-    def ellipse(self, x0, y0, x1, y1, ratio, title=None):
+    def ellipse(self, x0, y0, x1, y1, title=None):
         """
         Make an ellipse shape `plot item` 
         (:py:class:`guiqwt.shapes.EllipseShape` object)
             * x0, y0, x1, y1: ellipse x-axis coordinates
-            * ratio: ratio between y-axis and x-axis lengths
             * title: label name (optional)
         """
-        shape = EllipseShape(x0, y0, x1, y1, ratio)
+        shape = EllipseShape(x0, y0, x1, y1)
         shape.set_style("plot", "shape/drag")
         if title is not None:
             shape.setTitle(title)
@@ -1022,7 +1022,7 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: circle diameter coordinates
             * title: label name (optional)
         """
-        return self.ellipse(x0, y0, x1, y1, 1., title=title)
+        return self.ellipse(x0, y0, x1, y1, title=title)
 
     def segment(self, x0, y0, x1, y1, title=None):
         """

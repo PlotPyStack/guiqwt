@@ -324,7 +324,7 @@ class CurveItem(QwtPlotCurve):
     Construct a curve `plot item` with the parameters *curveparam*
     (see :py:class:`guiqwt.styles.CurveParam`)
     """
-    __implements__ = (IBasePlotItem,)
+    __implements__ = (IBasePlotItem, ISerializableType)
     
     _readonly = False
     _private = False
@@ -403,6 +403,24 @@ class CurveItem(QwtPlotCurve):
         self.setZ(z)
         self.update_params()
 
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        writer.write(self._x, group_name='Xdata')
+        writer.write(self._y, group_name='Ydata')
+        writer.write(self.z(), group_name='z')
+        self.curveparam.update_param(self)
+        writer.write(self.curveparam, group_name='curveparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.curveparam = CurveParam(_("Curve"), icon='curve.png')
+        reader.read('curveparam', dataset=self.curveparam)
+        x = reader.read(group_name='Xdata', func=reader.read_array)
+        y = reader.read(group_name='Ydata', func=reader.read_array)
+        self.set_data(x, y)
+        self.setZ(reader.read('z'))
+        self.update_params()
+    
     def set_readonly(self, state):
         """Set object readonly state"""
         self._readonly = state
@@ -573,7 +591,7 @@ class PolygonMapItem(QwtPlotItem):
     Construct a curve `plot item` with the parameters *curveparam*
     (see :py:class:`guiqwt.styles.CurveParam`)
     """
-    __implements__ = (IBasePlotItem,)
+    __implements__ = (IBasePlotItem, ISerializableType)
     
     _readonly = False
     _private = False
@@ -634,6 +652,7 @@ class PolygonMapItem(QwtPlotItem):
         pass
     def setBaseline(self,x):
         pass
+
     def __reduce__(self):
         state = (self.curveparam, self._pts, self._n, self._c, self.z())
         res = ( PolygonMapItem, (), state )
@@ -644,6 +663,26 @@ class PolygonMapItem(QwtPlotItem):
         self.curveparam = param
         self.set_data(pts, n, c)
         self.setZ(z)
+        self.update_params()
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        writer.write(self._pts, group_name='Pdata')
+        writer.write(self._n, group_name='Ndata')
+        writer.write(self._c, group_name='Cdata')
+        writer.write(self.z(), group_name='z')
+        self.curveparam.update_param(self)
+        writer.write(self.curveparam, group_name='curveparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        pts = reader.read(group_name='Pdata', func=reader.read_array)
+        n = reader.read(group_name='Ndata', func=reader.read_array)
+        c = reader.read(group_name='Cdata', func=reader.read_array)
+        self.set_data(pts, n, c)
+        self.setZ(reader.read('z'))
+        self.curveparam = CurveParam(_("PolygonMap"), icon='curve.png')
+        reader.read('curveparam', dataset=self.curveparam)
         self.update_params()
 
     def set_readonly(self, state):
@@ -744,7 +783,7 @@ class PolygonMapItem(QwtPlotItem):
         self.update_params()
 
     def draw(self, painter, xMap, yMap, canvasRect):
-        from time import time
+        #from time import time
         p1x = xMap.p1()
         s1x = xMap.s1()
         ax = (xMap.p2() - p1x)/(xMap.s2()-s1x)
@@ -807,6 +846,29 @@ class ErrorBarCurveItem(CurveItem):
         self._dx = None
         self._dy = None
         self._minmaxarrays = {}
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(ErrorBarCurveItem, self).serialize(writer)
+        writer.write(self._dx, group_name='dXdata')
+        writer.write(self._dy, group_name='dYdata')
+        self.errorbarparam.update_param(self)
+        writer.write(self.errorbarparam, group_name='errorbarparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.curveparam = CurveParam(_("Curve"), icon='curve.png')
+        reader.read('curveparam', dataset=self.curveparam)
+        self.errorbarparam = ErrorBarParam(_("Error bars"),
+                                           icon='errorbar.png')
+        reader.read('errorbarparam', dataset=self.errorbarparam)
+        x = reader.read(group_name='Xdata', func=reader.read_array)
+        y = reader.read(group_name='Ydata', func=reader.read_array)
+        dx = reader.read(group_name='dXdata', func=reader.read_array)
+        dy = reader.read(group_name='dYdata', func=reader.read_array)
+        self.set_data(x, y, dx, dy)
+        self.setZ(reader.read('z'))
+        self.update_params()
         
     def unselect(self):
         """Unselect item"""

@@ -1050,7 +1050,7 @@ class RawImageParam(BaseImageParam):
     
     def update_param(self, image):
         super(RawImageParam, self).update_param(image)
-        self.background = QColor(image.bg_qcolor).name()
+        self.background = str(QColor(image.bg_qcolor).name())
 
     def update_image(self, image):
         super(RawImageParam, self).update_image(image)
@@ -1372,6 +1372,7 @@ class MarkerParam(DataSet):
         self.markerstyle = MARKERSTYLES.get(style, style)
 
 class ShapeParam(DataSet):
+    label = StringItem(_("Title"), default=u"")
     _styles = BeginTabGroup("Styles")
     #------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
@@ -1399,6 +1400,7 @@ class ShapeParam(DataSet):
                                "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
+        self.label = unicode(obj.title().text())
         self.line.update_param(obj.pen)
         self.symbol.update_param(obj.symbol)
         self.fill.update_param(obj.brush)
@@ -1409,6 +1411,7 @@ class ShapeParam(DataSet):
         self.private = obj.is_private()
         
     def update_shape(self, obj):
+        obj.setTitle(self.label)
         obj.pen = self.line.build_pen()
         obj.symbol = self.symbol.build_symbol()
         obj.brush = self.fill.build_brush()

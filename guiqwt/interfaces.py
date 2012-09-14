@@ -105,7 +105,13 @@ class IShapeItemType(IItemType):
 
 class ISerializableType(IItemType):
     """An item that can be serialized"""
-    pass
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        pass
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        pass
 
 # XXX: we should differentiate shapes and annotation :
 # an annotation is a shape but is supposed to stay on the canvas
