@@ -423,17 +423,34 @@ register_serializable_items('guiqwt.annotations',
 register_serializable_items('guiqwt.label',
        ['LabelItem', 'LegendBoxItem', 'SelectedLegendBoxItem'])
 
-def _item_class_from_name(name):
-    """Return plot item class from name"""
+def item_class_from_name(name):
+    """Return plot item class from class name"""
     global SERIALIZABLE_ITEMS, ITEM_MODULES
     assert name in SERIALIZABLE_ITEMS, "Unknown class %r" % name
     for modname, names in ITEM_MODULES.iteritems():
         if name in names:
             return getattr(__import__(modname, fromlist=[name]), name)
 
-def _item_name_from_object(obj):
-    """Return plot item name from instance"""
+def item_name_from_object(obj):
+    """Return plot item class name from instance"""
     return obj.__class__.__name__
+
+def save_item(writer, group_name, item):
+    """Save plot item to HDF5 group"""
+    with writer.group(group_name):
+        item.serialize(writer)
+        with writer.group('item_class_name'):
+            writer.write_str(item_name_from_object(item))
+
+def load_item(reader, group_name):
+    """Load plot item from HDF5 group"""
+    with reader.group(group_name):
+        with reader.group('item_class_name'):
+            klass_name = reader.read_str()
+        klass = item_class_from_name(klass_name)
+        item = klass()
+        item.deserialize(reader)
+    return item
 
 def save_items(writer, items):
     """Save items to HDF5 file:
@@ -442,7 +459,7 @@ def save_items(writer, items):
     counts = {}
     names = []
     def _get_name(item):
-        basename = _item_name_from_object(item)
+        basename = item_name_from_object(item)
         count = counts[basename] = counts.setdefault(basename, 0) + 1
         name = '%s_%03d' % (basename, count)
         names.append(name)
@@ -462,7 +479,7 @@ def load_items(reader):
     for name in names:
         klass_name = re.match(r'([A-Z]+[A-Za-z0-9\_]*)\_([0-9]*)',
                               name).groups()[0]
-        klass = _item_class_from_name(klass_name)
+        klass = item_class_from_name(klass_name)
         item = klass()
         with reader.group(name):
             item.deserialize(reader)
@@ -473,4 +490,4 @@ def load_items(reader):
 if __name__ == '__main__':
     # Test if items can all be constructed from their Python module
     for name in SERIALIZABLE_ITEMS:
-        print name, '-->', _item_class_from_name(name)
+        print name, '-->', item_class_from_name(name)
