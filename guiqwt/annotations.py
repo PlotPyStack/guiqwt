@@ -131,7 +131,7 @@ class AnnotatedShape(AbstractShape):
         """Deserialize object from HDF5 reader"""
         self.annotationparam = AnnotationParam(_("Annotation"),
                                                icon="annotation.png")
-        reader.read('annotationparam', dataset=self.annotationparam)
+        reader.read('annotationparam', instance=self.annotationparam)
         self.annotationparam.update_annotation(self)
         self.shape.deserialize(reader)
         self.label.deserialize(reader)

@@ -414,7 +414,7 @@ class CurveItem(QwtPlotCurve):
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
         self.curveparam = CurveParam(_("Curve"), icon='curve.png')
-        reader.read('curveparam', dataset=self.curveparam)
+        reader.read('curveparam', instance=self.curveparam)
         x = reader.read(group_name='Xdata', func=reader.read_array)
         y = reader.read(group_name='Ydata', func=reader.read_array)
         self.set_data(x, y)
@@ -682,7 +682,7 @@ class PolygonMapItem(QwtPlotItem):
         self.set_data(pts, n, c)
         self.setZ(reader.read('z'))
         self.curveparam = CurveParam(_("PolygonMap"), icon='curve.png')
-        reader.read('curveparam', dataset=self.curveparam)
+        reader.read('curveparam', instance=self.curveparam)
         self.update_params()
 
     def set_readonly(self, state):
@@ -858,10 +858,10 @@ class ErrorBarCurveItem(CurveItem):
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
         self.curveparam = CurveParam(_("Curve"), icon='curve.png')
-        reader.read('curveparam', dataset=self.curveparam)
+        reader.read('curveparam', instance=self.curveparam)
         self.errorbarparam = ErrorBarParam(_("Error bars"),
                                            icon='errorbar.png')
-        reader.read('errorbarparam', dataset=self.errorbarparam)
+        reader.read('errorbarparam', instance=self.errorbarparam)
         x = reader.read(group_name='Xdata', func=reader.read_array)
         y = reader.read(group_name='Ydata', func=reader.read_array)
         dx = reader.read(group_name='dXdata', func=reader.read_array)

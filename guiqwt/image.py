@@ -815,7 +815,7 @@ class RawImageItem(BaseImageItem):
             self.set_data(data, lut_range=lut_range)
         self.setZ(reader.read('z'))
         self.imageparam = self.get_default_param()
-        reader.read('imageparam', dataset=self.imageparam)
+        reader.read('imageparam', instance=self.imageparam)
         self.imageparam.update_image(self)
     
     #---- Public API ----------------------------------------------------------
@@ -1682,7 +1682,7 @@ class RGBImageItem(ImageItem):
             self.set_data(data)
         self.setZ(reader.read('z'))
         self.imageparam = RawImageParam(_("Image"))
-        reader.read('imageparam', dataset=self.imageparam)
+        reader.read('imageparam', instance=self.imageparam)
         self.imageparam.update_image(self)
 
     #---- Public API ----------------------------------------------------------

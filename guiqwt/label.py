@@ -119,7 +119,7 @@ class AbstractLabelItem(QwtPlotItem):
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
         self.labelparam = LabelParam(_("Label"), icon='label.png')
-        reader.read('labelparam', dataset=self.labelparam)
+        reader.read('labelparam', instance=self.labelparam)
         self.labelparam.update_label(self)
         
     def get_text_rect(self):

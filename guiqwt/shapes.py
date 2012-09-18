@@ -585,7 +585,7 @@ class PolygonShape(AbstractShape):
         """Deserialize object from HDF5 reader"""
         self.closed = reader.read('closed')
         self.shapeparam = ShapeParam(_("Shape"), icon="rectangle.png")
-        reader.read('shapeparam', dataset=self.shapeparam)
+        reader.read('shapeparam', instance=self.shapeparam)
         self.shapeparam.update_shape(self)
         self.points = reader.read(group_name='points', func=reader.read_array)
         self.setZ(reader.read('z'))
