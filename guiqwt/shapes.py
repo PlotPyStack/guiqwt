@@ -1154,6 +1154,7 @@ class Axes(PolygonShape):
         self.axesparam.update_param(self)
 
     def __reduce__(self):
+        self.axesparam.update_param(self)
         state = (self.shapeparam, self.axesparam, self.points, self.z())
         return (self.__class__, (), state)
 
@@ -1166,6 +1167,19 @@ class Axes(PolygonShape):
         self.axesparam = axesparam
         self.axesparam.update_axes(self)
         
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(Axes, self).serialize(writer)
+        self.axesparam.update_param(self)
+        writer.write(self.axesparam, group_name='axesparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        super(Axes, self).deserialize(reader)
+        self.axesparam = AxesShapeParam(_("Axes"), icon="gtaxes.png")
+        reader.read('axesparam', instance=self.axesparam)
+        self.axesparam.update_axes(self)
+    
     def get_transform_matrix(self, dx=1., dy=1.):
         p0, p1, _p3, p2 = [np.array([p[0], p[1], 1.0]) for p in self.points]
         matrix = np.array([(p1-p0)/dx, (p2-p0)/dy, p0])
