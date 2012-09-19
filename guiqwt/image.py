@@ -1748,6 +1748,34 @@ assert_interfaces_valid(RGBImageItem)
 #==============================================================================
 # Masked Image
 #==============================================================================
+class MaskedArea(object):
+    """Defines masked areas for a masked image item"""
+    def __init__(self, geometry=None, x0=None, y0=None, x1=None, y1=None,
+                 inside=None):
+        self.geometry = geometry
+        self.x0 = x0
+        self.y0 = y0
+        self.x1 = x1
+        self.y1 = y1
+        self.inside = inside
+    
+    def __eq__(self, other):
+        return self.geometry == other.geometry and self.x0 == other.x0 and \
+               self.y0 == other.y0 and self.x1 == other.x1 and \
+               self.y1 == other.y1 and self.inside == other.inside
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        for name in ('geometry', 'inside', 'x0', 'y0', 'x1', 'y1'):
+            writer.write(getattr(self, name), name)
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.geometry = reader.read('geometry')
+        self.inside = reader.read('inside')
+        for name in ('x0', 'y0', 'x1', 'y1'):
+            setattr(self, name, reader.read(name, func=reader.read_float))
+    
 class MaskedImageItem(ImageItem):
     """
     Construct a masked image item
@@ -1783,7 +1811,16 @@ class MaskedImageItem(ImageItem):
         return res
 
     def __setstate__(self, state):
-        param, lut_range, fn_or_data, z, mask_fname, masked_areas = state
+        param, lut_range, fn_or_data, z, mask_fname, old_masked_areas = state
+        if old_masked_areas and isinstance(old_masked_areas[0], MaskedArea):
+            masked_areas = old_masked_areas
+        else:
+            # Compatibility with old format
+            masked_areas = []
+            for geometry, x0, y0, x1, y1, inside in old_masked_areas:
+                area = MaskedArea(geometry=geometry, x0=x0, y0=y0, x1=x1, y1=y1,
+                                  inside=inside)
+                masked_areas.append(area)
         self.imageparam = param
         if isinstance(fn_or_data, basestring):
             self.set_filename(fn_or_data)
@@ -1803,33 +1840,14 @@ class MaskedImageItem(ImageItem):
         """Serialize object to HDF5 writer"""
         super(MaskedImageItem, self).serialize(writer)
         writer.write(self.get_mask_filename(), group_name='mask_fname')
-        names = []
-        for index, (geometry, x0, y0, x1, y1, inside
-                    ) in enumerate(self._masked_areas):
-            name = 'masked_area_%03d' % (index + 1)
-            names.append(name)
-            with writer.group(name):
-                for val, gn in ((geometry, 'geometry'), (inside, 'inside'),
-                            (x0, 'x0'), (y0, 'y0'), (x1, 'x1'), (y1, 'y1')):
-                    writer.write(val, gn)
-        with writer.group('masked_areas'):
-            writer.write_sequence(names)
+        writer.write_object_list(self._masked_areas, 'masked_areas')
     
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
         super(MaskedImageItem, self).deserialize(reader)
         mask_fname = reader.read(group_name='mask_fname',
                                  func=reader.read_unicode)
-        with reader.group('masked_areas'):
-            names = reader.read_sequence()
-        masked_areas = []
-        for name in names:
-            with reader.group(name):
-                geometry = reader.read('geometry')
-                inside = reader.read('inside')
-                x0, y0, x1, y1 = [reader.read(gn, func=reader.read_float)
-                                  for gn in ('x0', 'y0', 'x1', 'y1')]
-                masked_areas.append( (geometry, x0, y0, x1, y1, inside) )
+        masked_areas = reader.read_object_list('masked_areas', MaskedArea)
         if mask_fname:
             self.set_mask_filename(mask_fname)
             self.load_mask_data()
@@ -1876,12 +1894,13 @@ class MaskedImageItem(ImageItem):
     def get_masked_areas(self):
         return self._masked_areas
 
-    def add_masked_areas(self, geometry, x0, y0, x1, y1, inside):
-        for _g, _x0, _y0, _x1, _y1, _i in self._masked_areas:
-            if _g == geometry and _x0 == x0 and _y0 == y0 and \
-               _x1 == x1 and _y1 == y1 and _i == inside:
-                   return
-        self._masked_areas.append((geometry, x0, y0, x1, y1, inside))
+    def add_masked_area(self, geometry, x0, y0, x1, y1, inside):
+        area = MaskedArea(geometry=geometry, x0=x0, y0=y0, x1=x1, y1=y1,
+                          inside=inside)
+        for _area in self._masked_areas:
+            if area == _area:
+                return
+        self._masked_areas.append(area)
 
     def _mask_changed(self):
         """Emit the SIG_MASK_CHANGED signal (emitter: plot)"""
@@ -1890,13 +1909,14 @@ class MaskedImageItem(ImageItem):
             plot.emit(SIG_MASK_CHANGED, self)
 
     def apply_masked_areas(self):
-        for geometry, x0, y0, x1, y1, inside in self._masked_areas:
-            if geometry == 'rectangular':
-                self.mask_rectangular_area(x0, y0, x1, y1, inside,
-                                           trace=False, do_signal=False)
+        """Apply masked areas"""
+        for area in self._masked_areas:
+            if area.geometry == 'rectangular':
+                self.mask_rectangular_area(area.x0, area.y0, area.x1, area.y1,
+                                   area.inside, trace=False, do_signal=False)
             else:
-                self.mask_circular_area(x0, y0, x1, y1, inside,
-                                        trace=False, do_signal=False)
+                self.mask_circular_area(area.x0, area.y0, area.x1, area.y1,
+                                    area.inside, trace=False, do_signal=False)
         self._mask_changed()
 
     def mask_all(self):
@@ -1925,7 +1945,7 @@ class MaskedImageItem(ImageItem):
             indexes[iy0:iy1, ix0:ix1] = False
             self.data[indexes] = np.ma.masked
         if trace:
-            self.add_masked_areas('rectangular', x0, y0, x1, y1, inside)
+            self.add_masked_area('rectangular', x0, y0, x1, y1, inside)
         if do_signal:
             self._mask_changed()
 
@@ -1952,7 +1972,7 @@ class MaskedImageItem(ImageItem):
         if not inside:
             self.mask_rectangular_area(x0, y0, x1, y1, inside, trace=False)
         if trace:
-            self.add_masked_areas('circular', x0, y0, x1, y1, inside)
+            self.add_masked_area('circular', x0, y0, x1, y1, inside)
         if do_signal:
             self._mask_changed()
 

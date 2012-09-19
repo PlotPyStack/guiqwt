@@ -2263,16 +2263,16 @@ class ImageMaskTool(CommandTool):
     def create_shapes_from_masked_areas(self):
         plot = self.get_active_plot()
         self._mask_shapes[plot] = []
-        masked_areas = self.masked_image.get_masked_areas()
-        for geometry, x0, y0, x1, y1, inside in masked_areas:
-            if geometry == 'rectangular':
-                shape = RectangleShape(x0, y0, x1, y1)
+        for area in self.masked_image.get_masked_areas():
+            if area.geometry == 'rectangular':
+                shape = RectangleShape(area.x0, area.y0, area.x1, area.y1)
                 self.masked_image.align_rectangular_shape(shape)
             else:
-                shape = EllipseShape(x0, .5*(y0+y1), x1, .5*(y0+y1))
+                shape = EllipseShape(area.x0, .5*(area.y0+area.y1),
+                                     area.x1, .5*(area.y0+area.y1))
             shape.set_style("plot", "shape/mask")
             shape.set_private(True)
-            self._mask_shapes[plot] += [(shape, inside)]
+            self._mask_shapes[plot] += [(shape, area.inside)]
             plot.blockSignals(True)
             plot.add_item(shape)
             plot.blockSignals(False)
