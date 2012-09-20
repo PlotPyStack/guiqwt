@@ -136,10 +136,11 @@ Reference
 .. autofunction:: get_image_from_plot
 """
 
+#FIXME: traceback in scaler when adding here 'from __future__ import division'
+
 import sys
 import os
 import os.path as osp
-import re
 from math import fabs
 
 import numpy as np
@@ -934,25 +935,25 @@ class ImageItem(RawImageItem):
     def get_pixel_coordinates(self, xplot, yplot):
         """Return (image) pixel coordinates (from plot coordinates)"""
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
-        xpix = self.data.shape[1]*(xplot-xmin)/(xmax-xmin)
-        ypix = self.data.shape[0]*(yplot-ymin)/(ymax-ymin)
+        xpix = self.data.shape[1]*(xplot-xmin)/float(xmax-xmin)
+        ypix = self.data.shape[0]*(yplot-ymin)/float(ymax-ymin)
         return xpix, ypix
 
     def get_plot_coordinates(self, xpixel, ypixel):
         """Return plot coordinates (from image pixel coordinates)"""
         (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
-        xplot = xmin+(xmax-xmin)*xpixel/self.data.shape[1]
-        yplot = ymin+(ymax-ymin)*ypixel/self.data.shape[0]
+        xplot = xmin+(xmax-xmin)*xpixel/float(self.data.shape[1])
+        yplot = ymin+(ymax-ymin)*ypixel/float(self.data.shape[0])
         return xplot, yplot
 
     def get_x_values(self, i0, i1):
         xmin, xmax = self.get_xdata()
-        xfunc = lambda index: xmin+(xmax-xmin)*index/self.data.shape[1]
+        xfunc = lambda index: xmin+(xmax-xmin)*index/float(self.data.shape[1])
         return np.linspace(xfunc(i0), xfunc(i1), i1-i0)
 
     def get_y_values(self, j0, j1):
         ymin, ymax = self.get_ydata()
-        yfunc = lambda index: ymin+(ymax-ymin)*index/self.data.shape[0]
+        yfunc = lambda index: ymin+(ymax-ymin)*index/float(self.data.shape[0])
         return np.linspace(yfunc(j0), yfunc(j1), j1-j0)
 
     def get_closest_coordinates(self, x, y):
