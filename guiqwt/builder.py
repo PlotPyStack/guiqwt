@@ -566,18 +566,26 @@ class PlotItemBuilder(object):
         return data, filename, title
 
     @staticmethod
-    def compute_bounds(data, pixel_size):
+    def compute_bounds(data, pixel_size, center_on):
         """Return image bounds from *pixel_size* (scalar or tuple)"""
         if not isinstance(pixel_size, (tuple, list)):
             pixel_size = [pixel_size, pixel_size]
         dx, dy = pixel_size
         xmin, ymin = 0., 0.
         xmax, ymax = data.shape[1]*dx, data.shape[0]*dy
+        if center_on is not None:
+            xc, yc = center_on
+            dx, dy = .5*(xmax-xmin)-xc, .5*(ymax-ymin)-yc
+            xmin -= dx
+            xmax -= dx
+            ymin -= dy
+            ymax -= dy
         return xmin, xmax, ymin, ymax
         
     def image(self, data=None, filename=None, title=None, alpha_mask=None,
               alpha=None, background_color=None, colormap=None,
-              xdata=[None, None], ydata=[None, None], pixel_size=None,
+              xdata=[None, None], ydata=[None, None],
+              pixel_size=None, center_on=None,
               interpolation='linear', eliminate_outliers=None,
               xformat='%.1f', yformat='%.1f', zformat='%.1f'):
         """
@@ -595,10 +603,13 @@ class PlotItemBuilder(object):
                                  alpha_mask=alpha_mask, alpha=alpha)
         assert data.ndim == 2, "Data must have 2 dimensions"
         if pixel_size is None:
+            assert center_on is None, "Ambiguous parameters: both `center_on`"\
+                                      " and `xdata`/`ydata` were specified"
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
+                                                         center_on)
         self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                background=background_color,
                                colormap=colormap,
@@ -614,7 +625,8 @@ class PlotItemBuilder(object):
 
     def maskedimage(self, data=None, mask=None, filename=None, title=None,
                     alpha_mask=False, alpha=1.0,
-                    xdata=[None, None], ydata=[None, None], pixel_size=None,
+                    xdata=[None, None], ydata=[None, None],
+                    pixel_size=None, center_on=None,
                     background_color=None, colormap=None,
                     show_mask=False, fill_value=None, interpolation='linear',
                     eliminate_outliers=None,
@@ -630,10 +642,13 @@ class PlotItemBuilder(object):
                                                      to_grayscale=False)
         assert data.ndim == 2, "Data must have 2 dimensions"
         if pixel_size is None:
+            assert center_on is None, "Ambiguous parameters: both `center_on`"\
+                                      " and `xdata`/`ydata` were specified"
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
+                                                         center_on)
         self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                background=background_color,
                                colormap=colormap,
@@ -650,7 +665,8 @@ class PlotItemBuilder(object):
 
     def rgbimage(self, data=None, filename=None, title=None,
                  alpha_mask=False, alpha=1.0,
-                 xdata=[None, None], ydata=[None, None], pixel_size=None,
+                 xdata=[None, None], ydata=[None, None],
+                 pixel_size=None, center_on=None,
                  interpolation='linear'):
         """
         Make a RGB image `plot item` from data
@@ -663,10 +679,13 @@ class PlotItemBuilder(object):
                                                      to_grayscale=False)
         assert data.ndim == 3, "RGB data must have 3 dimensions"
         if pixel_size is None:
+            assert center_on is None, "Ambiguous parameters: both `center_on`"\
+                                      " and `xdata`/`ydata` were specified"
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
+                                                         center_on)
         self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
                                xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
         image = RGBImageItem(data, param)
