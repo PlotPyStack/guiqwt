@@ -182,6 +182,10 @@ def _imread_pil(filename, to_grayscale=False):
     if to_grayscale and img.mode in ("RGB", "RGBA", "RGBX"):
         # Converting to grayscale
         img = img.convert("L")
+    elif img.mode == "P":
+        img = img.convert("RGB")
+    elif "A" in img.mode:
+        img = img.convert("RGBA")
     try:
         dtype, extra = DTYPES[img.mode]
     except KeyError:
@@ -189,7 +193,7 @@ def _imread_pil(filename, to_grayscale=False):
     shape = (img.size[1], img.size[0])
     if extra is not None:
         shape += (extra,)
-    arr = np.array(img.getdata(), dtype=np.dtype(dtype)).reshape(shape)
+    arr = np.array(img, dtype=np.dtype(dtype)).reshape(shape)
     if img.mode in ("RGB", "RGBA", "RGBX"):
         arr = np.flipud(arr)
     return arr
