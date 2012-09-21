@@ -193,10 +193,7 @@ def _imread_pil(filename, to_grayscale=False):
     shape = (img.size[1], img.size[0])
     if extra is not None:
         shape += (extra,)
-    arr = np.array(img, dtype=np.dtype(dtype)).reshape(shape)
-    if img.mode in ("RGB", "RGBA", "RGBX"):
-        arr = np.flipud(arr)
-    return arr
+    return np.array(img, dtype=np.dtype(dtype)).reshape(shape)
 
 def _imwrite_pil(filename, arr):
     """Write `arr` NumPy array to `filename` using PIL"""
