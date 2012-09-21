@@ -785,9 +785,10 @@ class RawImageItem(BaseImageItem):
         self.imageparam = param
         if isinstance(fn_or_data, basestring):
             self.set_filename(fn_or_data)
-            self.load_data(lut_range)
+            self.load_data()
         elif fn_or_data is not None: # should happen only with previous API
-            self.set_data(fn_or_data, lut_range=lut_range)
+            self.set_data(fn_or_data)
+        self.set_lut_range(lut_range)
         self.setZ(z)
         self.imageparam.update_image(self)
 
@@ -810,10 +811,11 @@ class RawImageItem(BaseImageItem):
         if reader.read(group_name='load_from_fname'):
             self.set_filename(reader.read(group_name='fname',
                                           func=reader.read_unicode))
-            self.load_data(lut_range)
+            self.load_data()
         else:
             data = reader.read(group_name='Zdata', func=reader.read_array)
-            self.set_data(data, lut_range=lut_range)
+            self.set_data(data)
+        self.set_lut_range(lut_range)
         self.setZ(reader.read('z'))
         self.imageparam = self.get_default_param()
         reader.read('imageparam', instance=self.imageparam)
@@ -900,6 +902,50 @@ class ImageItem(RawImageItem):
         """Return instance of the default imageparam DataSet"""
         return ImageParam(_("Image"))
 
+    #---- Serialization methods -----------------------------------------------
+    def __reduce__(self):
+        fname = self.get_filename()
+        if fname is None:
+            fn_or_data = self.data
+        else:
+            fn_or_data = fname
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
+        state = (self.imageparam, self.get_lut_range(), fn_or_data, self.z(),
+                 xmin, xmax, ymin, ymax)
+        res = ( self.__class__, (), state )
+        return res
+
+    def __setstate__(self, state):
+        param, lut_range, fn_or_data, z, xmin, xmax, ymin, ymax = state
+        self.set_xdata(xmin, xmax)
+        self.set_ydata(ymin, ymax)
+        self.imageparam = param
+        if isinstance(fn_or_data, basestring):
+            self.set_filename(fn_or_data)
+            self.load_data()
+        elif fn_or_data is not None: # should happen only with previous API
+            self.set_data(fn_or_data)
+        self.set_lut_range(lut_range)
+        self.setZ(z)
+        self.imageparam.update_image(self)
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(ImageItem, self).serialize(writer)
+        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
+        writer.write(xmin, group_name='xmin')
+        writer.write(xmax, group_name='xmax')
+        writer.write(ymin, group_name='ymin')
+        writer.write(ymax, group_name='ymax')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        super(ImageItem, self).deserialize(reader)
+        for attr in ('xmin', 'xmax', 'ymin', 'ymax'):
+            # Note: do not be tempted to write the symetric code in `serialize`
+            # because calling `get_xdata` and `get_ydata` is necessary
+            setattr(self, attr, reader.read(attr, func=reader.read_float))
+    
     #---- Public API ----------------------------------------------------------
     def get_xdata(self):
         """Return (xmin, xmax)"""
@@ -1637,54 +1683,6 @@ class RGBImageItem(ImageItem):
     def get_default_param(self):
         """Return instance of the default imageparam DataSet"""
         return RGBImageParam(_("Image"))
-
-    #---- Pickle methods ------------------------------------------------------
-    def __reduce__(self):
-        fname = self.get_filename()
-        if fname is None:
-            fn_or_data = self.data
-        else:
-            fn_or_data = fname
-        state = self.imageparam, fn_or_data, self.z()
-        res = ( self.__class__, (), state )
-        return res
-
-    def __setstate__(self, state):
-        param, fn_or_data, z = state
-        self.imageparam = param
-        if isinstance(fn_or_data, basestring):
-            self.set_filename(fn_or_data)
-            self.load_data()
-        elif fn_or_data is not None: # should happen only with previous API
-            self.set_data(fn_or_data)
-        self.setZ(z)
-        self.imageparam.update_image(self)
-
-    def serialize(self, writer):
-        """Serialize object to HDF5 writer"""
-        fname = self.get_filename()
-        load_from_fname = fname is not None
-        data = None if load_from_fname else self.data
-        writer.write(load_from_fname, group_name='load_from_fname')
-        writer.write(fname, group_name='fname')
-        writer.write(data, group_name='Zdata')
-        writer.write(self.z(), group_name='z')
-        self.imageparam.update_param(self)
-        writer.write(self.imageparam, group_name='imageparam')
-    
-    def deserialize(self, reader):
-        """Deserialize object from HDF5 reader"""
-        if reader.read(group_name='load_from_fname'):
-            self.set_filename(reader.read(group_name='fname',
-                                          func=reader.read_unicode))
-            self.load_data()
-        else:
-            data = reader.read(group_name='Zdata', func=reader.read_array)
-            self.set_data(data)
-        self.setZ(reader.read('z'))
-        self.imageparam = RawImageParam(_("Image"))
-        reader.read('imageparam', instance=self.imageparam)
-        self.imageparam.update_image(self)
 
     #---- Public API ----------------------------------------------------------
     def recompute_alpha_channel(self):
