@@ -2027,33 +2027,6 @@ class DeleteItemTool(CommandTool):
             for item in items:
                 plot.emit(SIG_ITEM_REMOVED, item)
             plot.replot()
-
-
-class DuplicateCurveTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
-        super(DuplicateCurveTool,self).__init__(manager, _("Duplicate"),
-                                                "copy.png",
-                                                toolbar_id=toolbar_id)
-    def update_status(self, plot):
-        self.set_status_active_item()
-            
-    def activate_command(self, plot, checked):
-        """Activate tool"""
-        plot.duplicate_active_curve()
-
-
-class DeleteCurveTool(CommandTool):
-    def __init__(self, manager, toolbar_id=None):
-        super(DeleteCurveTool,self).__init__(manager, _("Remove"),
-                                             "delete.png",
-                                             toolbar_id=toolbar_id)
-
-    def update_status(self, plot):
-        self.set_status_active_item()
-            
-    def activate_command(self, plot, checked):
-        """Activate tool"""
-        plot.remove_active_curve()
         
         
 class FilterTool(CommandTool):
