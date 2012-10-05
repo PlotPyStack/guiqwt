@@ -42,6 +42,7 @@ from guiqwt.widgets import base
 class FlipRotateMixin(base.BaseTransformMixin):
     """Rotate & Crop mixin class, to be mixed with a class providing the 
     get_plot method, like ImageDialog or FlipRotateWidget (see below)"""
+    ROTATION_ANGLES = [str((i-1)*90) for i in range(4)]
 
     #------BaseTransformMixin API----------------------------------------------
     def add_buttons_to_layout(self, layout):
@@ -50,7 +51,7 @@ class FlipRotateMixin(base.BaseTransformMixin):
         angle_label = QLabel(_(u"Angle (°):"))
         layout.addWidget(angle_label)
         self.angle_combo = QComboBox(self)
-        self.angle_combo.addItems([str((i-1)*90) for i in range(4)])
+        self.angle_combo.addItems(self.ROTATION_ANGLES)
         self.angle_combo.setCurrentIndex(1)
         self.connect(self.angle_combo, SIGNAL("currentIndexChanged(int)"),
                      lambda index: self.apply_transformation())
@@ -79,7 +80,7 @@ class FlipRotateMixin(base.BaseTransformMixin):
         self.angle_combo.setCurrentIndex(1)
         self.hflip_btn.setChecked(False)
         self.vflip_btn.setChecked(False)
-    
+
     def apply_transformation(self):
         """Apply transformation, e.g. crop or rotate"""
         angle, hflip, vflip = self.get_parameters()
@@ -100,13 +101,20 @@ class FlipRotateMixin(base.BaseTransformMixin):
             data = np.rot90(data, k)
         return data
     
-    #------Private API---------------------------------------------------------
+    #------Public API----------------------------------------------------------
     def get_parameters(self):
         """Return transform parameters"""
         angle = int(str(self.angle_combo.currentText()))
         hflip = self.hflip_btn.isChecked()
         vflip = self.vflip_btn.isChecked()
         return angle, hflip, vflip
+
+    def set_parameters(self, angle, hflip, vflip):
+        """Set transform parameters"""
+        angle_index = self.ROTATION_ANGLES.index(str(angle))
+        self.angle_combo.setCurrentIndex(angle_index)
+        self.hflip_btn.setChecked(hflip)
+        self.vflip_btn.setChecked(vflip)
 
 
 class FlipRotateDialog(base.BaseTransformDialog, FlipRotateMixin):

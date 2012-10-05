@@ -207,6 +207,7 @@ class BaseMultipleTransformWidget(QTabWidget):
         widget = self.TRANSFORM_WIDGET_CLASS(self, options=self.options)
         widget.set_item(item)
         self.addTab(widget, item.title().text())
+        return widget
     
     def clear_items(self):
         """Clear all items, freeing memory"""
