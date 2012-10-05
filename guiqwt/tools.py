@@ -247,7 +247,10 @@ try:
 except ImportError:
     pass
 
-import sys, numpy as np, weakref, os.path as osp
+import sys
+import numpy as np
+import weakref
+import os.path as osp
 
 from guidata.qt.QtCore import Qt, QObject, SIGNAL, QPoint
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
@@ -276,14 +279,14 @@ from guiqwt.annotations import (AnnotatedRectangle, AnnotatedCircle,
                                 AnnotatedPoint, AnnotatedObliqueRectangle)
 from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
-                               IVoiImageItemType, IExportROIImageItemType,
-                               IStatsImageItemType, ICurveItemType)
+                               IVoiImageItemType, IStatsImageItemType,
+                               ICurveItemType)
 from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
                             SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
                             SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
                             SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
-                            SIG_APPLIED_MASK_TOOL, SIG_TOOL_JOB_FINISHED)
+                            SIG_ITEM_SELECTION_CHANGED, SIG_APPLIED_MASK_TOOL,
+                            SIG_TOOL_JOB_FINISHED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -976,7 +979,11 @@ class ImageStatsTool(RectangularShapeTool):
                                 handle_final_shape_cb, shape_style, toolbar_id,
                                 title, icon, tip)
         self._last_item = None
-        
+
+    def get_last_item(self):
+        if self._last_item is not None:
+            return self._last_item()
+
     def create_shape(self):
         return ImageStatsRectangle(0, 0, 1, 1), 0, 2
         
@@ -991,7 +998,7 @@ class ImageStatsTool(RectangularShapeTool):
         if plot is not None:
             plot.unselect_all()
             plot.set_active_item(shape)
-            shape.set_image_item(self._last_item)
+            shape.set_image_item(self.get_last_item())
 
     def handle_final_shape(self, shape):
         super(ImageStatsTool, self).handle_final_shape(shape)
@@ -1000,8 +1007,8 @@ class ImageStatsTool(RectangularShapeTool):
     def get_associated_item(self, plot):
         items = plot.get_selected_items(item_type=IStatsImageItemType)
         if len(items) == 1:
-            self._last_item = items[0]
-        return self._last_item
+            self._last_item = weakref.ref(items[0])
+        return self.get_last_item()
         
     def update_status(self, plot):
         if update_image_tool_status(self, plot):
@@ -1185,7 +1192,11 @@ class SignalStatsTool(BaseCursorTool):
                                               icon=icon, tip=tip)
         self._last_item = None
         self.label = None
-        
+
+    def get_last_item(self):
+        if self._last_item is not None:
+            return self._last_item()
+
     def create_shape(self):
         from guiqwt.shapes import XRangeSelection
         return XRangeSelection(0, 0)
@@ -1217,8 +1228,8 @@ class SignalStatsTool(BaseCursorTool):
     def get_associated_item(self, plot):
         items = plot.get_selected_items(item_type=ICurveItemType)
         if len(items) == 1:
-            self._last_item = items[0]
-        return self._last_item
+            self._last_item = weakref.ref(items[0])
+        return self.get_last_item()
         
     def update_status(self, plot):
         item = self.get_associated_item(plot)
@@ -2003,7 +2014,7 @@ class ItemCenterTool(CommandTool):
 
 class DeleteItemTool(CommandTool):
     def __init__(self, manager, toolbar_id=None):
-        super(DeleteItemTool,self).__init__(manager, _("Remove"), "delete.png",
+        super(DeleteItemTool,self).__init__(manager, _("Remove"), "trash.png",
                                             toolbar_id=toolbar_id)
         
     def get_removable_items(self, plot):
@@ -2024,8 +2035,6 @@ class DeleteItemTool(CommandTool):
                                      QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
             plot.del_items(items)
-            for item in items:
-                plot.emit(SIG_ITEM_REMOVED, item)
             plot.replot()
         
         

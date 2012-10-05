@@ -128,8 +128,7 @@ from guiqwt.baseplot import BasePlot, canvas_to_axes
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
 from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_REMOVED, SIG_AXIS_DIRECTION_CHANGED,
-                            SIG_PLOT_AXIS_CHANGED)
+                            SIG_AXIS_DIRECTION_CHANGED, SIG_PLOT_AXIS_CHANGED)
 
 def _simplify_poly(pts, off, scale, bounds):
     ax, bx, ay, by = scale
@@ -1275,8 +1274,6 @@ class ItemListWidget(QListWidget):
             items = self.get_selected_items()
             self.plot.del_items(items)
             self.plot.replot()
-            for item in items:
-                self.plot.emit(SIG_ITEM_REMOVED, item)
         
 
 class PlotItemList(PanelWidget):
