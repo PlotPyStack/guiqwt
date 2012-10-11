@@ -1198,7 +1198,10 @@ class SignalStatsTool(BaseCursorTool):
             from guiqwt.builder import make
             self.label = make.computations(self.shape, "TL",
               [
-               (curve, "%g &lt; y &lt; %g", lambda *args: (args[1].min(), args[1].max())),
+               (curve, "%g &lt; x &lt; %g", 
+                lambda *args: (args[0].min(), args[0].max())),
+               (curve, "%g &lt; y &lt; %g", 
+                lambda *args: (args[1].min(), args[1].max())),
                (curve, "&lt;y&gt;=%g", lambda *args: args[1].mean()),
                (curve, u"σ(y)=%g", lambda *args: args[1].std()),
                (curve, u"∑(y)=%g", lambda *args: np.trapz(args[1])),
