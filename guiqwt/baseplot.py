@@ -304,12 +304,13 @@ class BasePlot(QwtPlot):
                 return axis_label
         return "lin"  # unknown default to linear
 
-    def set_axis_scale(self, axis_id, scale):
+    def set_axis_scale(self, axis_id, scale, autoscale=True):
         """Set axis scale
         Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
         axis_id = self.get_axis_id(axis_id)
         self.setAxisScaleEngine(axis_id, self.AXIS_TYPES[scale]())
-        self.do_autoscale(replot=False)
+        if autoscale:
+            self.do_autoscale(replot=False)
 
     def get_scales(self):
         """Return active curve scales"""

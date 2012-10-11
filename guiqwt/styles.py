@@ -638,12 +638,12 @@ class AxesParam(DataSet):
         # x
         item.setXAxis(self.xaxis)
         plot.enableAxis(self.xaxis, True)
-        plot.set_axis_scale(self.xaxis, self.xscale)
+        plot.set_axis_scale(self.xaxis, self.xscale, autoscale=False)
         plot.setAxisScale(self.xaxis, self.xmin, self.xmax)
         # y
         item.setYAxis(self.yaxis)
         plot.enableAxis(self.yaxis, True)
-        plot.set_axis_scale(self.yaxis, self.yscale)
+        plot.set_axis_scale(self.yaxis, self.yscale, autoscale=False)
         plot.setAxisScale(self.yaxis, self.ymin, self.ymax)
         
         plot.disable_unused_axes()
