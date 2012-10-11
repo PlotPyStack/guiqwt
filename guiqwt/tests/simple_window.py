@@ -230,7 +230,7 @@ class MainWindow(QMainWindow):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filename, _filter = getopenfilename(self, _("Open"), "",
-                                            io.iohandler.load_filters)
+                                            io.iohandler.get_filters('load'))
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if filename:
             self.mainwidget.add_image_from_file(filename)

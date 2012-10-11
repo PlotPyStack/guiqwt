@@ -17,6 +17,7 @@ def widget_test(fname, qapp):
     array0, item = create_test_data(fname)
     widget = FlipRotateWidget(None)
     widget.set_item(item)
+    widget.set_parameters(-90, True, False)
     widget.show()
     qapp.exec_()
 

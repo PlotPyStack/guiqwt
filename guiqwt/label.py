@@ -53,9 +53,10 @@ from guidata.utils import assert_interfaces_valid, update_dataset
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem
-from guiqwt.config import CONF
+from guiqwt.config import CONF, _
 from guiqwt.curve import CurveItem
-from guiqwt.interfaces import IBasePlotItem, IShapeItemType
+from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
+from guiqwt.styles import LabelParam
 from guiqwt.signals import SIG_ITEM_MOVED
 
 
@@ -82,7 +83,7 @@ class AbstractLabelItem(QwtPlotItem):
     _readonly = False
     _private = False
     
-    def __init__(self, labelparam):
+    def __init__(self, labelparam=None):
         super(AbstractLabelItem, self).__init__()
         self.selected = False
         self.anchor = None
@@ -90,8 +91,11 @@ class AbstractLabelItem(QwtPlotItem):
         self.C = None
         self.border_pen = None
         self.bg_brush = None
-        self.labelparam = labelparam
-        self.labelparam.update_label(self)
+        if labelparam is None:
+            self.labelparam = LabelParam(_("Label"), icon='label.png')
+        else:
+            self.labelparam = labelparam
+            self.labelparam.update_label(self)
 
     def set_style(self, section, option):
         self.labelparam.read_config(CONF, section, option)
@@ -103,12 +107,26 @@ class AbstractLabelItem(QwtPlotItem):
     def __setstate__(self, state):
         self.labelparam = state[0]
         self.labelparam.update_label(self)
+
+    def __reduce__(self):
+        return (self.__class__, (self.labelparam,) )
+    
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        self.labelparam.update_param(self)
+        writer.write(self.labelparam, group_name='labelparam')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.labelparam = LabelParam(_("Label"), icon='label.png')
+        reader.read('labelparam', instance=self.labelparam)
+        self.labelparam.update_label(self)
         
     def get_text_rect(self):
         return QRectF(0.0, 0.0, 10.,10.)
 
     def types(self):
-        return (IShapeItemType,)
+        return (IShapeItemType, )
     
     def set_text_style(self, font=None, color=None):
         raise NotImplementedError
@@ -278,15 +296,28 @@ class AbstractLabelItem(QwtPlotItem):
         
 
 class LabelItem(AbstractLabelItem):
-    __implements__ = (IBasePlotItem,)
+    __implements__ = (IBasePlotItem, ISerializableType)
 
-    def __init__(self, text, dataset):
-        self.text_string = text
+    def __init__(self, text=None, labelparam=None):
+        self.text_string = '' if text is None else text
         self.text = QTextDocument()
-        super(LabelItem, self).__init__(dataset)
+        super(LabelItem, self).__init__(labelparam)
     
     def __reduce__(self):
         return (self.__class__, (self.text_string, self.labelparam))
+    
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        super(LabelItem, self).serialize(writer)
+        writer.write(self.text_string, group_name='text')
+    
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        super(LabelItem, self).deserialize(reader)
+        self.set_text(reader.read('text', func=reader.read_unicode))
+
+    def types(self):
+        return (IShapeItemType, ISerializableType)
 
     def set_pos(self, x, y):
         self.G = x, y
@@ -335,17 +366,17 @@ LEGEND_SPACEH = 5  # Spacing between border, sample, text, border
 LEGEND_SPACEV = 3  # Vertical space between items
 
 class LegendBoxItem(AbstractLabelItem):
-    __implements__ = (IBasePlotItem,)
+    __implements__ = (IBasePlotItem, ISerializableType)
 
-    def __init__(self, dataset):
+    def __init__(self, dataset=None):
         self.font = None
         self.color = None
         super(LegendBoxItem, self).__init__(dataset)
         # saves the last computed sizes
         self.sizes = 0.0, 0.0, 0.0, 0.0
 
-    def __reduce__(self):
-        return (self.__class__, (self.labelparam,) )
+    def types(self):
+        return (IShapeItemType, ISerializableType)
 
     def get_legend_items(self):
         plot = self.plot()
@@ -440,13 +471,9 @@ class LegendBoxItem(AbstractLabelItem):
 assert_interfaces_valid(LegendBoxItem)
 
 class SelectedLegendBoxItem(LegendBoxItem):
-    def __init__(self, dataset, itemlist):
+    def __init__(self, dataset=None, itemlist=None):
         super(SelectedLegendBoxItem, self).__init__(dataset)
-        self.itemlist = itemlist
-
-    def __reduce__(self):
-        # XXX filter itemlist for picklabel items
-        return (self.__class__, (self.labelparam, []))
+        self.itemlist = [] if itemlist is None else itemlist
 
     def include_item(self, item):
         return LegendBoxItem.include_item(self, item) and item in self.itemlist
@@ -546,14 +573,14 @@ class RangeComputation2d(ObjectInfo):
 class DataInfoLabel(LabelItem):
     __implements__ = (IBasePlotItem,)
 
-    def __init__(self, dataset, infos):
-        super(DataInfoLabel, self).__init__("", dataset)
+    def __init__(self, labelparam=None, infos=None):
+        super(DataInfoLabel, self).__init__(None, labelparam)
         if isinstance(infos, ObjectInfo):
             infos = [infos]
         self.infos = infos
 
-    def __reduce__(self):
-        return (self.__class__, (self.labelparam, self.infos))
+    def types(self):
+        return (IShapeItemType,)
 
     def update_text(self):
         title = self.labelparam.label

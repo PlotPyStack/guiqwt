@@ -34,7 +34,7 @@ def test():
     curve = make.curve(x, y, "ab", "b")
     range = make.range(-2, 2)
     disp0 = make.range_info_label(range, 'BR', u"x = %.1f ± %.1f cm",
-                                  curve, title="Range infos")
+                                  title="Range infos")
 
     disp1 = make.computation(range, "BL", "trapz=%g",
                              curve, lambda x,y: trapz(y,x))

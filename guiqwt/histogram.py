@@ -43,6 +43,8 @@ Reference
    :members:
    :inherited-members:
 """
+
+import weakref
 import numpy as np
 from guidata.qt.QtCore import Qt
 from guidata.qt.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
@@ -66,7 +68,8 @@ from guiqwt.shapes import XRangeSelection
 from guiqwt.tools import (SelectTool, BasePlotMenuTool, SelectPointTool,
                           AntiAliasingTool)
 from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_VOI_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ACTIVE_ITEM_CHANGED)
+                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
+                            SIG_ACTIVE_ITEM_CHANGED)
 from guiqwt.plot import PlotManager
 
 
@@ -122,13 +125,18 @@ class HistogramItem(CurveItem):
         self.setCurveAttribute(QwtPlotCurve.Inverted)
             
     def set_hist_source(self, src):
-        """
-        Set histogram source
+        """Set histogram source
         (source: object with method 'get_histogram',
-         e.g. objects derived from guiqwt.image.ImageItem)
-        """
-        self.source = src
+         e.g. objects derived from guiqwt.image.ImageItem)"""
+        self.source = weakref.ref(src)
         self.update_histogram()
+
+    def get_hist_source(self):
+        """Return histogram source
+        (source: object with method 'get_histogram',
+         e.g. objects derived from guiqwt.image.ImageItem)"""
+        if self.source is not None:
+            return self.source()
         
     def set_hist_data(self, data):
         """Set histogram data"""
@@ -152,10 +160,10 @@ class HistogramItem(CurveItem):
         return self.bins
         
     def compute_histogram(self):
-        return self.source.get_histogram(self.bins)
+        return self.get_hist_source().get_histogram(self.bins)
         
     def update_histogram(self):
-        if self.source is None:
+        if self.get_hist_source() is None:
             return
         hist, bin_edges = self.compute_histogram()
         hist = np.concatenate((hist, [0]))
@@ -230,6 +238,7 @@ class LevelsHistogram(CurvePlot):
             return
         self.connect(self, SIG_VOI_CHANGED, plot.notify_colormap_changed)
         self.connect(plot, SIG_ITEM_SELECTION_CHANGED, self.selection_changed)
+        self.connect(plot, SIG_ITEM_REMOVED, self.item_removed)
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
 
     def tracked_items_gen(self):
@@ -297,6 +306,12 @@ class LevelsHistogram(CurvePlot):
         if ymax is not None:
             self.set_axis_limits("left", ymin, ymax)
             self.replot()
+
+    def item_removed(self, item):
+        for plot, items in self._tracked_items.items():
+            if item in items:
+                items.pop(item)
+                break
 
     def active_item_changed(self, plot):
         items = plot.get_selected_items(item_type=IVoiImageItemType)

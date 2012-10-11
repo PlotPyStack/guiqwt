@@ -45,6 +45,7 @@ Reference
 """
 
 import sys
+
 import numpy as np
 
 from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
@@ -56,13 +57,14 @@ from guidata.configtools import get_font
 # Local imports
 from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
                                  QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
+from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
 from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_MOVED,
-                            SIG_PLOT_LABELS_CHANGED)
+                            SIG_PLOT_LABELS_CHANGED, SIG_ITEM_REMOVED)
 
 
 #==============================================================================
@@ -115,6 +117,8 @@ class BasePlot(QwtPlot):
     AXIS_TYPES = {"lin" : QwtLinearScaleEngine,
                   "log" : QwtLog10ScaleEngine }
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
+    DEFAULT_ACTIVE_XAXIS = X_BOTTOM
+    DEFAULT_ACTIVE_YAXIS = Y_LEFT
 
     def __init__(self, parent=None, section="plot"):
         super(BasePlot, self).__init__(parent)
@@ -130,8 +134,8 @@ class BasePlot(QwtPlot):
                             AxeStyleParam(_(u"Right")),
                             AxeStyleParam(_(u"Bottom")),
                             AxeStyleParam(_(u"Top"))]
-        self._active_xaxis = self.X_BOTTOM
-        self._active_yaxis = self.Y_LEFT
+        self._active_xaxis = self.DEFAULT_ACTIVE_XAXIS
+        self._active_yaxis = self.DEFAULT_ACTIVE_YAXIS
         self.read_axes_styles(section, self.AXIS_CONF_OPTIONS)
         self.font_title = get_font(CONF, section, "title")
         canvas = self.canvas()
@@ -300,12 +304,13 @@ class BasePlot(QwtPlot):
                 return axis_label
         return "lin"  # unknown default to linear
 
-    def set_axis_scale(self, axis_id, scale):
+    def set_axis_scale(self, axis_id, scale, autoscale=True):
         """Set axis scale
         Example: self.set_axis_scale(curve.yAxis(), 'lin')"""
         axis_id = self.get_axis_id(axis_id)
         self.setAxisScaleEngine(axis_id, self.AXIS_TYPES[scale]())
-        self.do_autoscale(replot=False)
+        if autoscale:
+            self.do_autoscale(replot=False)
 
     def get_scales(self):
         """Return active curve scales"""
@@ -435,16 +440,17 @@ class BasePlot(QwtPlot):
         else:
             z = zlist[dzlist]+1
         self.add_item(item, z=z)
-        
-    def del_item(self, item):
-        """
-        Remove item from widget
-        Convenience function (see 'del_items')
-        """
-        try:
-            self.del_items([item])
-        except ValueError:
-            raise ValueError, "item not in plot"
+
+    def __clean_item_references(self, item):
+        """Remove all reference to this item (active,
+        last_selected"""
+        if item is self.active_item:
+            self.active_item = None
+            self._active_xaxis = self.DEFAULT_ACTIVE_XAXIS
+            self._active_yaxis = self.DEFAULT_ACTIVE_YAXIS
+        for key, it in self.last_selected.items():
+            if item is it:
+                del self.last_selected[key]
 
     def del_items(self, items):
         """Remove item from widget"""
@@ -456,9 +462,20 @@ class BasePlot(QwtPlot):
             # raises ValueError if item not in list
             self.items.remove(item)
             self.__clean_item_references(item)
+            self.emit(SIG_ITEM_REMOVED, item)
         self.emit(SIG_ITEMS_CHANGED, self)
         if active_item is not self.get_active_item():
             self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
+
+    def del_item(self, item):
+        """
+        Remove item from widget
+        Convenience function (see 'del_items')
+        """
+        try:
+            self.del_items([item])
+        except ValueError:
+            raise ValueError, "item not in plot"
 
     def set_item_visible(self, item, state, notify=True, replot=True):
         """Show/hide *item* and emit a SIG_ITEMS_CHANGED signal"""
@@ -515,14 +532,30 @@ class BasePlot(QwtPlot):
         for item in items:
             self.add_item(item, z=item.z())
 
-    def __clean_item_references(self, item):
-        """Remove all reference to this item (active,
-        last_selected"""
-        if item is self.active_item:
-            self.active_item = None
-        for key, it in self.last_selected.items():
-            if item is it:
-                del self.last_selected[key]
+    def serialize(self, writer, selected=False):
+        """
+        Save (serializable) items to HDF5 file:
+            * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
+            * selected=False: if True, will save only selected items
+            
+        See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items_from_hdf5`
+        """
+        if selected:
+            items = self.get_selected_items()
+        else:
+            items = self.items[:]
+        items = [item for item in items if ISerializableType in item.types()]
+        io.save_items(writer, items)
+        
+    def deserialize(self, reader):
+        """
+        Restore items from HDF5 file:
+            * reader: :py:class:`guidata.hdf5io.HDF5Reader` object
+            
+        See also :py:meth:`guiqwt.baseplot.BasePlot.save_items_to_hdf5`
+        """
+        for item in io.load_items(reader):
+            self.add_item(item)
 
     def set_items(self, *args):
         """Utility function used to quickly setup a plot

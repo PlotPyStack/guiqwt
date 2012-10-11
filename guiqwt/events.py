@@ -16,6 +16,7 @@ guiqwt.events
 The `event` module handles event management (states, event filter, ...).
 """
 
+import weakref
 from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
 from guidata.qt.QtGui import QKeySequence
 
@@ -426,7 +427,7 @@ class ObjectHandler(object):
                          self.redo, start_state)
         self.handle = None  # first mouse position
         self.inside = False
-        self.active = None  # mouse position seen during last event
+        self._active = None  # mouse position seen during last event
         self.last_pos = None
         self.unselection_pending = None
 
@@ -434,7 +435,19 @@ class ObjectHandler(object):
         self.undo_index = 0
         self.first_pos = None
         self.undo_action = None
-        
+
+    @property
+    def active(self):
+        if self._active is not None:
+            return self._active()
+
+    @active.setter
+    def active(self, value):
+        if value is None:
+            self._active = None
+        else:
+            self._active = weakref.ref(value)
+
     def add_undo_move_action(self, undo_action):
         self.undo_stack = self.undo_stack[:self.undo_index+1]
         self.undo_stack.append(undo_action)

@@ -54,7 +54,7 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filename, _filter = getsavefilename(parent, _("Save as"), basedir,
-                                        io.iohandler.save_filters)
+                            io.iohandler.get_filters('save', dtype=data.dtype))
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
         filename = unicode(filename)
@@ -71,7 +71,7 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
             return
 
 def exec_image_open_dialog(parent, basedir='', app_name=None,
-                           to_grayscale=True):
+                           to_grayscale=True, dtype=None):
     """
     Executes an image open dialog box (QFileDialog.getOpenFileName)
         * parent: parent widget (None means no parent)
@@ -85,7 +85,7 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filename, _filter = getopenfilename(parent, _("Open"), basedir,
-                                        io.iohandler.load_filters)
+                                io.iohandler.get_filters('load', dtype=dtype))
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filename = unicode(filename)
     try:
@@ -101,7 +101,7 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     return filename, data
 
 def exec_images_open_dialog(parent, basedir='', app_name=None,
-                            to_grayscale=True):
+                            to_grayscale=True, dtype=None):
     """
     Executes an image*s* open dialog box (QFileDialog.getOpenFileNames)
         * parent: parent widget (None means no parent)
@@ -115,7 +115,7 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filenames, _filter = getopenfilenames(parent, _("Open"), basedir,
-                                          io.iohandler.load_filters)
+                                io.iohandler.get_filters('load', dtype=dtype))
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filenames = [unicode(fname) for fname in list(filenames)]
     for filename in filenames:
