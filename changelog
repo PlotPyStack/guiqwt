@@ -10,6 +10,10 @@
 === Possible API compatibility issues (since v2.2.0) ===
 
   * guiqwt now requires Python 2.6 (Python 2.5 support has been dropped)
+  * `guiqwt.io` module: file type filters are now sorted depending on data types
+    * `iohandler.load_filters` and `iohandler.save_filters` properties have been replaced by a method `iohandler.get_filters`:
+      * iohandler.load_filter --> iohandler.get_filters('load')
+      * iohandler.save_filter --> iohandler.get_filters('save')
 
 ----
 

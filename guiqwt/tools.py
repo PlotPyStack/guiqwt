@@ -1606,14 +1606,8 @@ def save_snapshot(plot, p0, p1):
             break
     else:
         model_fname = None
-    if is_module_available('dicom') and model_fname is not None:
-        formats = '%s (*.dcm)' % _("16-bits DICOM image")
-    else:
-        formats = ''
-    formats += '\n%s (*.tif *.tiff)' % _('16-bits TIFF image')
-    formats += '\n%s (*.png)' % _('8-bits PNG image')
     fname, _f = getsavefilename(plot,  _("Save as"), _('untitled'),
-                                io.iohandler.save_filters)
+                   io.iohandler.get_filters('save', data.dtype, template=True))
     _base, ext = osp.splitext(fname)
     options = {}
     if not fname:
@@ -1786,7 +1780,8 @@ class LoadItemsTool(OpenFileTool):
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         from guiqwt import io
-        OpenFileTool.__init__(self, manager, formats=io.iohandler.load_filters,
+        OpenFileTool.__init__(self, manager,
+                              formats=io.iohandler.get_filters('load'),
                               toolbar_id=toolbar_id)
     
 

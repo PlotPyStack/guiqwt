@@ -64,59 +64,72 @@ class FileType(object):
     """Filetype object:
         * `name` : description of filetype,
         * `read_func`, `write_func` : I/O callbacks,
-        * `extensions` : filename extensions (with a dot!) or filenames,
-        (list, tuple or space-separated string)"""        
-    def __init__(self, name, extensions, read_func=None, write_func=None):
+        * `extensions`: filename extensions (with a dot!) or filenames,
+        (list, tuple or space-separated string)
+        * `data_types`: supported data types"""        
+    def __init__(self, name, extensions, read_func=None, write_func=None,
+                 data_types=None, requires_template=False):
         self.name = name
         if isinstance(extensions, basestring):
             extensions = extensions.split()
         self.extensions = [osp.splitext(' '+ext)[1] for ext in extensions]
         self.read_func = read_func
         self.write_func = write_func
+        self.data_types = data_types
+        self.requires_template = requires_template
+    
+    def matches(self, action, dtype, template):
+        """Return True if file type matches passed data type and template
+        (or if dtype is None)"""
+        assert action in ('load', 'save')
+        matches = dtype is None or self.data_types is None \
+                  or dtype in self.data_types
+        if action == 'save' and self.requires_template:
+            matches = matches and template is not None
+        return matches
     
     @property
     def wcards(self):
         return "*"+(" *".join(self.extensions))
     
-    @property
-    def filters(self):
-        return '\n%s (%s)' % (self.name, self.wcards)
+    def filters(self, action, dtype, template):
+        assert action in ('load', 'save')
+        if self.matches(action, dtype, template):
+            return '\n%s (%s)' % (self.name, self.wcards)
+        else:
+            return ''
 
 class ImageIOHandler(object):
     """I/O handler: regroup all FileType objects"""
     def __init__(self):
         self.filetypes = []
-        self._load_filters = ''
-        self._save_filters = ''
-    
-    @property
-    def allfilters(self):
-        wcards = ' '.join([ftype.wcards for ftype in self.filetypes])
+
+    def allfilters(self, action, dtype, template):
+        wcards = ' '.join([ftype.wcards for ftype in self.filetypes
+                           if ftype.matches(action, dtype, template)])
         return '%s (%s)' % (_("All supported files"), wcards)
     
-    @property
-    def load_filters(self):
-        return self.allfilters + self._load_filters
-    
-    @property
-    def save_filters(self):
-        return self.allfilters + self._save_filters
+    def get_filters(self, action, dtype=None, template=None):
+        """Return file type filters for `action` (string: 'save' or 'load'),
+        `dtype` data type (None: all data types), and `template` (True if save 
+        function requires a template (e.g. DICOM files), False otherwise)"""
+        filters = self.allfilters(action, dtype, template)
+        for ftype in self.filetypes:
+            filters += ftype.filters(action, dtype, template)
+        return filters
     
     def add(self, name, extensions, read_func=None, write_func=None,
-            import_func=None):
+            import_func=None, data_types=None, requires_template=None):
         if import_func is not None:
             try:
                 import_func()
             except ImportError:
                 return
         assert read_func is not None or write_func is not None
-        ftype = FileType(name, extensions,
-                         read_func=read_func, write_func=write_func)
+        ftype = FileType(name, extensions, read_func=read_func,
+                         write_func=write_func, data_types=data_types,
+                         requires_template=requires_template)
         self.filetypes.append(ftype)
-        if read_func:
-            self._load_filters += ftype.filters
-        if write_func:
-            self._save_filters += ftype.filters
     
     def _get_filetype(self, ext):
         """Return FileType object associated to file extension `ext`"""
@@ -321,16 +334,22 @@ def _imwrite_txt(filename, arr):
 #==============================================================================
 # Registering I/O functions
 #==============================================================================
-iohandler.add(_(u"Portable images"), '*.png *.tif *.tiff',
+iohandler.add(_(u"PNG files"), '*.png',
+              read_func=_imread_pil, write_func=_imwrite_pil,
+              data_types=(np.uint8, np.uint16))
+iohandler.add(_(u"TIFF files"), '*.tif *.tiff',
               read_func=_imread_pil, write_func=_imwrite_pil)
-iohandler.add(_(u"Portable compressed images"), '*.jpg *.gif',
-              read_func=_imread_pil, write_func=_imwrite_pil)
+iohandler.add(_(u"8-bit images"), '*.jpg *.gif',
+              read_func=_imread_pil, write_func=_imwrite_pil,
+              data_types=(np.uint8,))
 iohandler.add(_(u"NumPy arrays"), '*.npy',
               read_func=np.load, write_func=np.save)
 iohandler.add(_(u"Text files"), '*.txt *.csv *.asc',
               read_func=_imread_txt, write_func=_imwrite_txt)
 iohandler.add(_(u"DICOM files"), '*.dcm', read_func=_imread_dcm,
-              write_func=_imwrite_dcm, import_func=_import_dcm)
+              write_func=_imwrite_dcm, import_func=_import_dcm,
+              data_types=(np.int8, np.uint8, np.int16, np.uint16),
+              requires_template=True)
 
 
 #==============================================================================
