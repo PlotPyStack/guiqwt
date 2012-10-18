@@ -690,7 +690,8 @@ class BaseCurveWidget(QSplitter):
     """
     def __init__(self, parent=None, title=None,
                  xlabel=None, ylabel=None, xunit=None, yunit=None,
-                 section="plot", show_itemlist=False, gridparam=None):
+                 section="plot", show_itemlist=False, gridparam=None,
+                 curve_antialiasing=None):
         QSplitter.__init__(self, Qt.Horizontal, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -698,6 +699,8 @@ class BaseCurveWidget(QSplitter):
         self.plot = CurvePlot(parent=self, title=title, xlabel=xlabel,
                               ylabel=ylabel, xunit=xunit, yunit=yunit,
                               section=section, gridparam=gridparam)
+        if curve_antialiasing is not None:
+            self.plot.set_antialiasing(curve_antialiasing)
         self.addWidget(self.plot)
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
@@ -905,7 +908,7 @@ class BaseImageWidget(QSplitter):
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None):
+                 gridparam=None, curve_antialiasing=None):
         QSplitter.__init__(self, Qt.Vertical, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -917,6 +920,8 @@ class BaseImageWidget(QSplitter):
                               yreverse=yreverse, aspect_ratio=aspect_ratio,
                               lock_aspect_ratio=lock_aspect_ratio,
                               gridparam=gridparam)
+        if curve_antialiasing is not None:
+            self.plot.set_antialiasing(curve_antialiasing)
 
         from guiqwt.cross_section import YCrossSection
         self.ycsw = YCrossSection(self, position=ysection_pos,
