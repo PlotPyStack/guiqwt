@@ -461,15 +461,22 @@ def item_name_from_object(obj):
 def save_item(writer, group_name, item):
     """Save plot item to HDF5 group"""
     with writer.group(group_name):
-        item.serialize(writer)
-        with writer.group('item_class_name'):
-            writer.write_str(item_name_from_object(item))
+        if item is None:
+            writer.write_none()
+        else:
+            item.serialize(writer)
+            with writer.group('item_class_name'):
+                writer.write_str(item_name_from_object(item))
 
 def load_item(reader, group_name):
     """Load plot item from HDF5 group"""
     with reader.group(group_name):
         with reader.group('item_class_name'):
-            klass_name = reader.read_str()
+            try:
+                klass_name = reader.read_str()
+            except ValueError:
+                # None was saved instead of a real item
+                return
         klass = item_class_from_name(klass_name)
         item = klass()
         item.deserialize(reader)
