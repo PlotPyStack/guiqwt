@@ -101,15 +101,8 @@ class AbstractLabelItem(QwtPlotItem):
         self.labelparam.read_config(CONF, section, option)
         self.labelparam.update_label(self)
 
-    def get_state(self):
-        return (self.labelparam,)
-
-    def __setstate__(self, state):
-        self.labelparam = state[0]
-        self.labelparam.update_label(self)
-
     def __reduce__(self):
-        return (self.__class__, (self.labelparam,) )
+        return (self.__class__, (self.labelparam,))
     
     def serialize(self, writer):
         """Serialize object to HDF5 writer"""
@@ -368,10 +361,10 @@ LEGEND_SPACEV = 3  # Vertical space between items
 class LegendBoxItem(AbstractLabelItem):
     __implements__ = (IBasePlotItem, ISerializableType)
 
-    def __init__(self, dataset=None):
+    def __init__(self, labelparam=None):
         self.font = None
         self.color = None
-        super(LegendBoxItem, self).__init__(dataset)
+        super(LegendBoxItem, self).__init__(labelparam)
         # saves the last computed sizes
         self.sizes = 0.0, 0.0, 0.0, 0.0
 
@@ -474,6 +467,10 @@ class SelectedLegendBoxItem(LegendBoxItem):
     def __init__(self, dataset=None, itemlist=None):
         super(SelectedLegendBoxItem, self).__init__(dataset)
         self.itemlist = [] if itemlist is None else itemlist
+
+    def __reduce__(self):
+        # XXX filter itemlist for picklabel items
+        return (self.__class__, (self.labelparam, []))
 
     def include_item(self, item):
         return LegendBoxItem.include_item(self, item) and item in self.itemlist
@@ -578,6 +575,9 @@ class DataInfoLabel(LabelItem):
         if isinstance(infos, ObjectInfo):
             infos = [infos]
         self.infos = infos
+    
+    def __reduce__(self):
+        return (self.__class__, (self.labelparam, self.infos))
 
     def types(self):
         return (IShapeItemType,)
