@@ -19,34 +19,14 @@ Licensed under the terms of the CECILL License
 # python setup.py build_ext -c mingw32 --inplace
 
 from numpy.distutils.core import setup, Extension
-import sys, os, os.path as osp
+import sys
+import os
+import os.path as osp
 join = osp.join
+from guidata.utils import get_subpackages, get_package_data
 
 #TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
 #      note: this directory doesn't exist for a default PyQt4 install
-
-def get_package_data(name, extlist):
-    """
-    Return data files for package *name* with extensions in *extlist*
-    (search recursively in package directories)
-    """
-    assert isinstance(extlist, (list, tuple))
-    flist = []
-    # Workaround to replace os.path.relpath (not available until Python 2.6):
-    offset = len(name)+len(os.pathsep)
-    for dirpath, _dirnames, filenames in os.walk(name):
-        for fname in filenames:
-            if osp.splitext(fname)[1] in extlist:
-                flist.append(join(dirpath, fname)[offset:])
-    return flist
-
-def get_subpackages(name):
-    """Return subpackages of package *name*"""
-    splist = []
-    for dirpath, _dirnames, _filenames in os.walk(name):
-        if osp.isfile(osp.join(dirpath, '__init__.py')):
-            splist.append(".".join(dirpath.split(os.sep)))
-    return splist
 
 
 LIBNAME = 'guiqwt'
