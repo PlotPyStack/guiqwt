@@ -3,9 +3,16 @@
 === New features (since v2.2.0) ===
 
   * Added support for plot items serialization/deserialization to/from HDF5:
-    * See `save_items` and `load_items` function in `guiqwt.io`
+    * See `save_item`, `load_item`, `save_items` and `load_items` functions in `guiqwt.io`
+    * io.save_item/load_item (HDF5): None can be saved/loaded instead of a real item
     * See `serialize` (save to) and `deserialize` (load from) methods in plot objects (save all items) or plot item objects
     * See the new test `loadsaveitems_hdf5.py`
+  * builder/images: added option 'center_on' to center image data on point of coordinates 'center_on' (tuple)
+  * Flip/Rotate widget/dialog: added method 'set_parameters' to set default transform parameters
+  * guiqwt.tools.SignalStatsTool.move: added X range to label
+  * BaseCurveWidget/BaseImageWidget: added argument `curve_antialiasing` to switch on/off the curve antialiasing feature (this option may be passed to CurveWidget, CurveDialog, ImageWidget or ImageDialog through the `options` dictionary)
+  * (Issue 29) Added test 'customize_shape_tool.py' to demonstrate how easy it is to customize a shape created with a tool like RectangleTool, EllipseTool, etc.
+  * (Issue 37) Plot axis widget: added support for mouse double-click to set the axis range
 
 === Possible API compatibility issues (since v2.2.0) ===
 
@@ -14,6 +21,23 @@
     * `iohandler.load_filters` and `iohandler.save_filters` properties have been replaced by a method `iohandler.get_filters`:
       * iohandler.load_filter --> iohandler.get_filters('load')
       * iohandler.save_filter --> iohandler.get_filters('save')
+  * guidata.hdf5io.HDF5Reader.read: argument 'dataset' was renamed to 'instance'
+  * MaskedImageItem: masked_areas attribute is now a list of MaskedArea objects (so that MaskedImageItem objects serialization is easier to implement)
+  * Removed deprecated tools DuplicateCurveTool and DeleteCurveTool
+
+=== Bug fixes (since v2.2.0) ===
+
+  * MaskedImageItem/bugfix: fixed rounding error when applying mask to item
+  * io.imread: drastically reduced loading time with PIL.Image
+  * RGB images support: fixed vertical orientation issue
+  * Fixed memory leaks in selection tool, image/curve stats tools and contrast tool
+  * Curve plot: setting axis scale of both X and Y axes at the same time was not working
+  * Issue 27: fixed FTBFS on kfreebsd due to Werror flag (patch from Frédéric Picca)
+  * FreeFormTool/MultiLineTool: fixed warning when clicking the first two points if these two points are at the exact same position (happened only when creating such a shape on an empty canvas)
+  * Fixed "Edit data..." tool: `oedit` function returns None when dialog is canceled or an array when it's validated (fixed "truth value" error)
+  * (Issue 32) pyplot/better compatibility with Matplotlib: `plot` now accepts lists instead of NumPy arrays
+  * (Issue 33) tools.LoadItemsTool: parent constructor was not called
+  * (Issue 36) plot.PlotManager: fixed typo when setting the plot manager to `plot_id`
 
 ----
 
