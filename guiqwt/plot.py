@@ -183,7 +183,7 @@ class PlotManager(object):
         self.plots[plot_id] = plot
         if len(self.plots) == 1:
             self.default_plot = plot
-        plot.set_manager(self, id)
+        plot.set_manager(self, plot_id)
         # Connecting signals
         plot.connect(plot, SIG_ITEMS_CHANGED, self.update_tools_status)
         plot.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.update_tools_status)
