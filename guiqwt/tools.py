@@ -1952,7 +1952,7 @@ def edit_curve_data(item):
         x, y = item_data
         data = np.array([x, y]).T
     from spyderlib.widgets.objecteditor import oedit
-    if oedit(data):
+    if oedit(data) is not None:
         if data.shape[1] > 2:
             if data.shape[1] == 3:
                 x, y, tmp = data.T
