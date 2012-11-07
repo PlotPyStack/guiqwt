@@ -581,7 +581,7 @@ class MultiLineTool(InteractiveTool):
         self.current_handle = None
     
     def create_shape(self, filter, pt):
-        self.shape = PolygonShape([], closed=False)
+        self.shape = PolygonShape(closed=False)
         filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)
         self.shape.setVisible(True)
         self.shape.set_style(self.shape_style_sect, self.shape_style_key)
