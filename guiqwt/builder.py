@@ -645,7 +645,7 @@ class PlotItemBuilder(object):
         assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
         param = MaskedImageParam(title=_("Image"), icon='image.png')
         data, filename, title = self._get_image_data(data, filename, title,
-                                                     to_grayscale=False)
+                                                     to_grayscale=True)
         assert data.ndim == 2, "Data must have 2 dimensions"
         if pixel_size is None:
             assert center_on is None, "Ambiguous parameters: both `center_on`"\
