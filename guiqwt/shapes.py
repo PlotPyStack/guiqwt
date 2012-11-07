@@ -620,7 +620,8 @@ class PolygonShape(AbstractShape):
         return points
     
     def get_reference_point(self):
-        return self.points.mean(axis=0)
+        if self.points.size:
+            return self.points.mean(axis=0)
 
     def get_pen_brush(self, xMap, yMap):
         if self.selected:
@@ -631,20 +632,20 @@ class PolygonShape(AbstractShape):
             pen = self.pen
             brush = self.brush
             sym = self.symbol
-
-        tr = brush.transform()
-        x0, y0 = self.get_reference_point()
-        xx0 = xMap.transform(x0)
-        yy0 = yMap.transform(y0)
-        try:
-            # Optimized version in PyQt >= v4.5
-            t0 = QTransform.fromTranslate(xx0, yy0) 
-        except AttributeError:
-            # Fallback for PyQt <= v4.4
-            t0 = QTransform().translate(xx0, yy0)
-        tr = tr*t0
-        brush = QBrush(brush)
-        brush.setTransform(tr)
+        if self.points.size > 0:
+            x0, y0 = self.get_reference_point()
+            xx0 = xMap.transform(x0)
+            yy0 = yMap.transform(y0)
+            try:
+                # Optimized version in PyQt >= v4.5
+                t0 = QTransform.fromTranslate(xx0, yy0) 
+            except AttributeError:
+                # Fallback for PyQt <= v4.4
+                t0 = QTransform().translate(xx0, yy0)
+            tr = brush.transform()
+            tr = tr*t0
+            brush = QBrush(brush)
+            brush.setTransform(tr)
         return pen, brush, sym
 
     def draw(self, painter, xMap, yMap, canvasRect):
