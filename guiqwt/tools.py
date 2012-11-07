@@ -260,7 +260,6 @@ from guidata.qt.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
-from guidata.utils import is_module_available
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
 
@@ -1724,8 +1723,9 @@ class PrintTool(CommandTool):
 
 
 class OpenFileTool(CommandTool):
-    def __init__(self, manager, formats='*.*', toolbar_id=DefaultToolbarID):
-        super(OpenFileTool, self).__init__(manager, _("Open..."),
+    def __init__(self, manager, title=_("Open..."), formats='*.*',
+                 toolbar_id=DefaultToolbarID):
+        super(OpenFileTool, self).__init__(manager, title,
                   get_std_icon("DialogOpenButton", 16), toolbar_id=toolbar_id)
         self.formats = formats
         self.directory = ""
@@ -1752,6 +1752,7 @@ class SaveItemsTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(SaveItemsTool, self).__init__(manager, _("Save items"),
                   get_std_icon("DialogSaveButton", 16), toolbar_id=toolbar_id)
+
     def activate_command(self, plot, checked):
         """Activate tool"""
         fname, _f = getsavefilename(plot, _("Save items as"), _('untitled'),
@@ -1763,9 +1764,8 @@ class SaveItemsTool(CommandTool):
 
 class LoadItemsTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(LoadItemsTool, self).__init__(self, manager, _("Load items"),
-                  get_std_icon("DialogOpenButton", 16), toolbar_id=toolbar_id)
-        self.formats = '*.gui'
+        super(LoadItemsTool, self).__init__(manager, title=_("Load items"),
+                                      formats='*.gui', toolbar_id=toolbar_id)
 
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1780,7 +1780,7 @@ class LoadItemsTool(OpenFileTool):
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         from guiqwt import io
-        super(OpenImageTool, self).__init__(manager,
+        super(OpenImageTool, self).__init__(manager, title=_("Open image"),
             formats=io.iohandler.get_filters('load'), toolbar_id=toolbar_id)
     
 
