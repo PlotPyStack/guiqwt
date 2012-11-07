@@ -61,7 +61,7 @@ from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
-from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam
+from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam, AxisParam
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_MOVED,
                             SIG_PLOT_LABELS_CHANGED, SIG_ITEM_REMOVED)
@@ -142,15 +142,23 @@ class BasePlot(QwtPlot):
         canvas.setFocusPolicy(Qt.StrongFocus)
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
         self.connect(self, SIG_ITEM_MOVED, self._move_selected_items_together)
-        
-    #---- QwtPlot API ----------------------------------------------------------
+
+    #---- QWidget API ---------------------------------------------------------
+    def mouseDoubleClickEvent(self, event):
+        """Reimplement QWidget method"""
+        for axis_id in self.AXIS_IDS:
+            widget = self.axisWidget(axis_id)
+            if widget.geometry().contains(event.pos()):
+                self.edit_axis_parameters(axis_id)
+
+    #---- QwtPlot API ---------------------------------------------------------
     def showEvent(self, event):
         """Reimplement Qwt method"""
         QwtPlot.showEvent(self, event)
         if self._start_autoscaled:
             self.do_autoscale()
 
-    #---- Public API -----------------------------------------------------------
+    #---- Public API ----------------------------------------------------------
     def _move_selected_items_together(self, item, x0, y0, x1, y1):
         """Selected items move together"""
         for selitem in self.get_selected_items():
@@ -812,6 +820,18 @@ class BasePlot(QwtPlot):
         self.get_plot_parameters(key, itemparams)
         title, icon = PARAMETERS_TITLE_ICON[key]
         itemparams.edit(self, title, icon)
+
+    def edit_axis_parameters(self, axis_id):
+        """Edit axis parameters"""
+        if axis_id in (self.Y_LEFT, self.Y_RIGHT):
+            title = _("Y Axis")
+        else:
+            title = _("X Axis")
+        param = AxisParam(title=title)
+        param.update_param(self, axis_id)
+        if param.edit(parent=self):
+            param.update_axis(self, axis_id)
+            self.replot()
         
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
