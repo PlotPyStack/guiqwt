@@ -298,7 +298,7 @@ class GuiTool(QObject):
     """Base class for interactive tool applying on a plot"""
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         """Constructor"""
-        QObject.__init__(self)
+        super(GuiTool, self).__init__()
         assert IPlotManager in manager.__implements__
         self.manager = manager
         self.parent_tool = None
@@ -690,9 +690,8 @@ class LabelTool(InteractiveTool):
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
                  switch_to_default_tool=None):
         self.handle_label_cb = handle_label_cb
-        InteractiveTool.__init__(self, manager, toolbar_id,
-                                 title=title, icon=icon, tip=tip,
-                                 switch_to_default_tool=switch_to_default_tool)
+        super(LabelTool, self).__init__(manager, toolbar_id, title=title,
+            icon=icon, tip=tip, switch_to_default_tool=switch_to_default_tool)
         if label_style is not None:
             self.label_style_sect = label_style[0]
             self.label_style_key = label_style[1]
@@ -741,7 +740,7 @@ class RectangularActionTool(InteractiveTool):
                  fix_orientation=False, switch_to_default_tool=None):
         self.action_func = func
         self.fix_orientation = fix_orientation
-        InteractiveTool.__init__(self, manager, toolbar_id,
+        super(RectangularActionTool, self).__init__(manager, toolbar_id,
                                  title=title, icon=icon, tip=tip,
                                  switch_to_default_tool=switch_to_default_tool)
         if shape_style is not None:
@@ -815,7 +814,7 @@ class RectangularShapeTool(RectangularActionTool):
                  handle_final_shape_cb=None, shape_style=None,
                  toolbar_id=DefaultToolbarID, title=None, icon=None, tip=None,
                  switch_to_default_tool=None):
-        RectangularActionTool.__init__(self, manager,
+        super(RectangularShapeTool, self).__init__(manager,
                        self.add_shape_to_plot, shape_style,
                        toolbar_id=toolbar_id, title=title, icon=icon, tip=tip,
                        switch_to_default_tool=switch_to_default_tool)
@@ -1642,9 +1641,9 @@ class SnapshotTool(RectangularActionTool):
     TITLE = _("Rectangle snapshot")
     ICON = "snapshot.png"
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        RectangularActionTool.__init__(self, manager, save_snapshot,
-                                       toolbar_id=toolbar_id,
-                                       fix_orientation=True)
+        super(SnapshotTool, self).__init__(manager, save_snapshot,
+                                           toolbar_id=toolbar_id,
+                                           fix_orientation=True)
 
 
 class RotateCropTool(CommandTool):
@@ -1652,8 +1651,9 @@ class RotateCropTool(CommandTool):
     
     See :py:class:`guiqwt.rotatecrop.RotateCropDialog` dialog."""
     def __init__(self, manager, toolbar_id=DefaultToolbarID, options=None):
-        CommandTool.__init__(self, manager, title=_("Rotate and crop"),
-                             icon=get_icon('rotate.png'), toolbar_id=toolbar_id)
+        super(RotateCropTool, self).__init__(manager,
+                        title=_("Rotate and crop"),
+                        icon=get_icon('rotate.png'), toolbar_id=toolbar_id)
         self.options = options
 
     def activate_command(self, plot, checked):
@@ -1680,7 +1680,7 @@ class RotateCropTool(CommandTool):
 
 class PrintFilter(QwtPlotPrintFilter):
     def __init__(self):
-        QwtPlotPrintFilter.__init__(self)
+        super(PrintFilter, self).__init__()
 
     def color(self, c, item):
         if not (self.options() & QwtPlotPrintFilter.CanvasBackground):
@@ -1725,9 +1725,8 @@ class PrintTool(CommandTool):
 
 class OpenFileTool(CommandTool):
     def __init__(self, manager, formats='*.*', toolbar_id=DefaultToolbarID):
-        CommandTool.__init__(self, manager, _("Open..."),
-                             get_std_icon("DialogOpenButton", 16),
-                             toolbar_id=toolbar_id)
+        super(OpenFileTool, self).__init__(manager, _("Open..."),
+                  get_std_icon("DialogOpenButton", 16), toolbar_id=toolbar_id)
         self.formats = formats
         self.directory = ""
         
@@ -1751,9 +1750,8 @@ class OpenFileTool(CommandTool):
 
 class SaveItemsTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        CommandTool.__init__(self, manager, _("Save items"),
-                             get_std_icon("DialogSaveButton", 16),
-                             toolbar_id=toolbar_id)
+        super(SaveItemsTool, self).__init__(manager, _("Save items"),
+                  get_std_icon("DialogSaveButton", 16), toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
         """Activate tool"""
         fname, _f = getsavefilename(plot, _("Save items as"), _('untitled'),
@@ -1765,9 +1763,8 @@ class SaveItemsTool(CommandTool):
 
 class LoadItemsTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        CommandTool.__init__(self, manager, _("Load items"),
-                             get_std_icon("DialogOpenButton", 16),
-                             toolbar_id=toolbar_id)
+        super(LoadItemsTool, self).__init__(self, manager, _("Load items"),
+                  get_std_icon("DialogOpenButton", 16), toolbar_id=toolbar_id)
         self.formats = '*.gui'
 
     def activate_command(self, plot, checked):
@@ -1783,9 +1780,8 @@ class LoadItemsTool(OpenFileTool):
 class OpenImageTool(OpenFileTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         from guiqwt import io
-        OpenFileTool.__init__(self, manager,
-                              formats=io.iohandler.get_filters('load'),
-                              toolbar_id=toolbar_id)
+        super(OpenImageTool, self).__init__(manager,
+            formats=io.iohandler.get_filters('load'), toolbar_id=toolbar_id)
     
 
 class AxisScaleTool(CommandTool):
