@@ -2524,3 +2524,13 @@ class ImagePlot(CurvePlot):
             return ImageAxesParam
         else:
             return CurvePlot.get_axesparam_class(self, item)
+
+    def edit_axis_parameters(self, axis_id):
+        """Edit axis parameters"""
+        #FIXME: without the following workaround, aspect ratio is changed 
+        # when applying axis parameters
+        # (see also guiqwt.styles.ItemParameters.update)
+        ratio = self.get_current_aspect_ratio()
+        CurvePlot.edit_axis_parameters(self, axis_id)
+        self.set_aspect_ratio(ratio=ratio)
+        self.replot()

@@ -169,6 +169,7 @@ class ItemParameters(object):
     def update(self, plot):
         #FIXME: without the following workaround, ImagePlot object aspect ratio
         # is changed when pressing button "Apply"
+        # (see also guiqwt.image.ImagePlot.edit_axis_parameters)
         from guiqwt.image import ImagePlot
         if isinstance(plot, ImagePlot):
             ratio = plot.get_current_aspect_ratio()
