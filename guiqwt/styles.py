@@ -595,58 +595,59 @@ class AxeStyleParam(DataSet):
 # ===================================================
 # Axes parameters
 # ===================================================
+class AxisParam(DataSet):
+    scale = ChoiceItem(_("Scale"),
+                        [("lin", _("linear")), ("log", _("logarithmic"))],
+                        default="lin")
+    vmin = FloatItem("Min", help=_("Lower axis limit"))
+    vmax = FloatItem("Max", help=_("Upper axis limit"))
+
+    def update_param(self, plot, axis_id):
+        self.scale = plot.get_axis_scale(axis_id)
+        axis = plot.axisScaleDiv(axis_id)
+        self.vmin = axis.lowerBound()
+        self.vmax = axis.upperBound()
+
+    def update_axis(self, plot, axis_id):
+        plot.enableAxis(axis_id, True)
+        plot.set_axis_scale(axis_id, self.scale, autoscale=False)
+        plot.setAxisScale(axis_id, self.vmin, self.vmax)
+        plot.disable_unused_axes()
+
+class AxisItemWidget(DataSetWidget):
+    klass = AxisParam
+
+class AxisItem(ObjectItem):
+    klass = AxisParam
+
+DataSetEditLayout.register(AxisItem, AxisItemWidget)
+
 class AxesParam(DataSet):
-    xparams = BeginGroup(_("X Axis") )
-    xaxis = ChoiceItem(_("Position"),
-                       [(QwtPlot.xBottom, _("bottom")),
-                        (QwtPlot.xTop, _("top"))],
-                       default=QwtPlot.xBottom, help=_("X-axis position"))
-    xscale = ChoiceItem(_("Scale"),
-                        [("lin", _("linear")), ("log", _("logarithmic"))],
-                        default="lin")
-    xmin = FloatItem("x|min", help=_("Lower x-axis limit"))
-    xmax = FloatItem("x|max", help=_("Upper x-axis limit"))
-    _xparams = EndGroup("end X")
-    yparams = BeginGroup(_("Y Axis") )
-    yaxis = ChoiceItem(_("Position"),
-                       [(QwtPlot.yLeft,  _("left")),
-                        (QwtPlot.yRight, _("right"))],
-                       default=QwtPlot.yLeft, help=_("Y-axis position"))
-    yscale = ChoiceItem(_("Scale"),
-                        [("lin", _("linear")), ("log", _("logarithmic"))],
-                        default="lin")
-    ymin = FloatItem("y|min", help=_("Lower y-axis limit"))
-    ymax = FloatItem("y|max", help=_("Upper y-axis limit"))
-    _yparams = EndGroup("end Y")
+    xaxis_id = ChoiceItem(_("X-axis position"),
+                          [(QwtPlot.xBottom, _("bottom")),
+                           (QwtPlot.xTop, _("top"))],
+                          default=QwtPlot.xBottom)
+    xaxis = AxisItem(_("X Axis"))
+    yaxis_id = ChoiceItem(_("Y-axis position"),
+                          [(QwtPlot.yLeft,  _("left")),
+                           (QwtPlot.yRight, _("right"))],
+                          default=QwtPlot.yLeft)
+    yaxis = AxisItem(_("Y Axis"))
 
     def update_param(self, item):
         plot = item.plot()
-        self.xaxis = item.xAxis()
-        self.xscale = plot.get_axis_scale(self.xaxis)
-        xaxis = plot.axisScaleDiv(self.xaxis)
-        self.xmin = xaxis.lowerBound()
-        self.xmax = xaxis.upperBound()
-        self.yaxis = item.yAxis()
-        self.yscale = plot.get_axis_scale(self.yaxis)
-        yaxis = plot.axisScaleDiv(self.yaxis)
-        self.ymin = yaxis.lowerBound()
-        self.ymax = yaxis.upperBound()
+        self.xaxis_id = item.xAxis()
+        self.xaxis.update_param(plot, self.xaxis_id)
+        self.yaxis_id = item.yAxis()
+        self.yaxis.update_param(plot, self.yaxis_id)
 
     def update_axes(self, item):
         plot = item.plot()
-        plot.grid.setAxis(self.xaxis, self.yaxis)
-        # x
-        item.setXAxis(self.xaxis)
-        plot.enableAxis(self.xaxis, True)
-        plot.set_axis_scale(self.xaxis, self.xscale, autoscale=False)
-        plot.setAxisScale(self.xaxis, self.xmin, self.xmax)
-        # y
-        item.setYAxis(self.yaxis)
-        plot.enableAxis(self.yaxis, True)
-        plot.set_axis_scale(self.yaxis, self.yscale, autoscale=False)
-        plot.setAxisScale(self.yaxis, self.ymin, self.ymax)
-        
-        plot.disable_unused_axes()
+        plot.grid.setAxis(self.xaxis_id, self.yaxis_id)
+        item.setXAxis(self.xaxis_id)
+        self.xaxis.update_axis(plot, self.xaxis_id)
+        item.setYAxis(self.yaxis_id)
+        self.yaxis.update_axis(plot, self.yaxis_id)
 
 class ImageAxesParam(DataSet):
     xparams = BeginGroup(_("X Axis") )
