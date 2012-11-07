@@ -214,7 +214,9 @@ class PlotItemBuilder(object):
     def __get_arg_triple_plot(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
         def get_x_y_from_data(data):
-            if len(data.shape) == 1 or data.shape[0] == 1 or data.shape[1] == 1:
+            if isinstance(data, (tuple, list)):
+                data = array(data)
+            if len(data.shape) == 1 or 1 in data.shape:
                 x = arange(data.size)
                 y = data
             else:
@@ -222,7 +224,7 @@ class PlotItemBuilder(object):
                 y = [data[:, i] for i in range(len(data[0, :]))]
             return x, y
             
-        if len(args)==1:
+        if len(args) == 1:
             if isinstance(args[0], basestring):
                 x = array((), float)
                 y = array((), float)
@@ -233,7 +235,7 @@ class PlotItemBuilder(object):
                     style = self.style.next()
                 else:
                     style = [self.style.next() for yi in y]
-        elif len(args)==2:
+        elif len(args) == 2:
             a1, a2 = args
             if isinstance(a2, basestring):
                 x, y = get_x_y_from_data(a1)
@@ -246,6 +248,10 @@ class PlotItemBuilder(object):
             x, y, style = args
         else:
             raise TypeError("Wrong number of arguments")
+        if isinstance(x, (list, tuple)):
+            x = array(x)
+        if isinstance(y, (list, tuple)):
+            y = array(y)
         return x, y, style
         
     def __get_arg_triple_errorbar(self, args):
