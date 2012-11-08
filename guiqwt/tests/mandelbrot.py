@@ -17,9 +17,8 @@ from guiqwt.config import _
 from guiqwt.plot import ImageDialog
 from guiqwt.image import RawImageItem
 from guiqwt.tools import ToggleTool
+from guiqwt.mandelbrot import mandelbrot
 
-from guiqwt._mandel import mandel
-mandelbrot = mandel.mandelbrot
 
 class FullScale(ToggleTool):
     def __init__(self, parent, image):
@@ -41,7 +40,7 @@ class FullScale(ToggleTool):
 
 class MandelItem(RawImageItem):
     def __init__(self, xmin, xmax, ymin, ymax):
-        super(MandelItem, self).__init__(np.zeros((1, 1), np.int16, order='F'))
+        super(MandelItem, self).__init__(np.zeros((1, 1), np.uint8))
         self.bounds = QRectF(QPointF(xmin, ymin),
                              QPointF(xmax, ymax))
         self.update_border()
@@ -57,15 +56,8 @@ class MandelItem(RawImageItem):
         NX = x2-x1
         NY = y2-y1
         if self.data.shape != (NX, NY):
-            self.data = np.zeros((NX, NY), np.int16, order='F')
-            
-        orig = complex(i1, j1)
-        dx = (i2-i1)/(NX-1)
-        dy = 1j*(j2-j1)/(NY-1)
-        NMAX = self.IMAX
-        mandelbrot(orig, dx, dy, self.data, NMAX)
-        
-        self.data = self.data.T
+            self.data = np.zeros((NY, NX), np.uint8)
+        mandelbrot(i1, j1, i2, j2, self.data, self.IMAX)
         
         srcRect = (0, 0, NX, NY)
         x1, y1, x2, y2 = canvasRect.getCoords()

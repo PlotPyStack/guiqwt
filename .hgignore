@@ -20,6 +20,7 @@ MANIFEST$
 loadsavecanvas.gui$
 loadsavecanvas.h5$
 \.pot$
+mandelbrot.c$
 ~$
 syntax: glob
 tests/test*.tif

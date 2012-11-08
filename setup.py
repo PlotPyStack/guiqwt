@@ -18,19 +18,18 @@ Licensed under the terms of the CECILL License
 # Building extensions:
 # python setup.py build_ext -c mingw32 --inplace
 
-from numpy.distutils.core import setup, Extension
+import numpy
 import sys
 import os
-import os.path as osp
-join = osp.join
-from guidata.utils import get_subpackages, get_package_data
+from os.path import join, dirname, abspath, isdir
+from numpy.distutils.core import setup, Extension
+from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
 #TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
 #      note: this directory doesn't exist for a default PyQt4 install
 
 
 LIBNAME = 'guiqwt'
-import sys
 from guiqwt import __version__ as version
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
@@ -51,7 +50,7 @@ SCRIPTS = [join('scripts', fname) for fname in SCRIPTS]
 try:
     import sphinx
 except ImportError:
-    sphinx = None
+    sphinx = None  # analysis:ignore
     
 from numpy.distutils.command.build import build as dftbuild
 
@@ -59,8 +58,8 @@ class build(dftbuild):
     def has_doc(self):
         if sphinx is None:
             return False
-        setup_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.isdir(os.path.join(setup_dir, 'doc'))
+        setup_dir = dirname(abspath(__file__))
+        return isdir(join(setup_dir, 'doc'))
     sub_commands = dftbuild.sub_commands + [('build_doc', has_doc)]
 
 cmdclass = {'build' : build}
@@ -73,7 +72,7 @@ if sphinx:
             # code so that the documentation is built on this and not a
             # previously installed version
             build = self.get_finalized_command('build')
-            sys.path.insert(0, os.path.abspath(build.build_lib))
+            sys.path.insert(0, abspath(build.build_lib))
             try:
                 sphinx.setup_command.BuildDoc.run(self)
             except UnicodeDecodeError:
@@ -82,7 +81,6 @@ if sphinx:
 
     cmdclass['build_doc'] = build_doc
 
-
 CFLAGS = ["-Wall"]
 for arg, compile_arg in (("--sse2", "-msse2"),
                          ("--sse3", "-msse3"),):
@@ -90,6 +88,9 @@ for arg, compile_arg in (("--sse2", "-msse2"),
         sys.argv.pop(sys.argv.index(arg))
         CFLAGS.insert(0, compile_arg)
 
+# Compiling Cython modules to C source code: this is the only way I found to 
+# be able to build both Fortran and Cython extensions together
+cythonize_all('src')
 
 setup(name=LIBNAME, version=version,
       download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
@@ -102,7 +103,9 @@ setup(name=LIBNAME, version=version,
       requires=["PyQt4 (>4.3)", "NumPy", "guidata (>=1.3.0)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),]),
-                   Extension(LIBNAME+'._mandel', [join("src", 'mandel.f90')]),
+                   Extension(LIBNAME+'.mandelbrot',
+                             [join('src', 'mandelbrot.c')],
+                             include_dirs=[numpy.get_include()]),
                    Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp"),
                                                   join("src", "pcolor.cpp")],
                              extra_compile_args=CFLAGS,
