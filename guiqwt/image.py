@@ -171,14 +171,12 @@ from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
 stderr = sys.stderr
 try:
-    from guiqwt.histogram2d import histogram2d
-    from guiqwt._ext import hist2d_func
+    from guiqwt.histogram2d import histogram2d, histogram2d_func
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
                                 _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
 except ImportError:
-    print >>sys.stderr, ("Module 'guiqwt.image':"
-                         " missing fortran or C extension")
+    print >>sys.stderr, ("Module 'guiqwt.image': missing C extension")
     print >>sys.stderr, ("try running :"
                          "python setup.py build_ext --inplace -c mingw32" )
     raise
@@ -2267,9 +2265,8 @@ class Histogram2DItem(BaseImageItem):
                 self.data[:,:] = val
             elif computation==3:
                 self.data[:,:] = 1.
-            r = hist2d_func(self._y, self._x, self._z, j1, j2, i1, i2,
-                            self.data_tmp, self.data, computation)
-            _data_tmp,_data=r
+            histogram2d_func(self._x, self._y, self._z, i1, i2, j1, j2,
+                             self.data_tmp, self.data, computation)
             if computation in (0,1,5,6):
                 self.data[self.data==val] = np.nan
             else:

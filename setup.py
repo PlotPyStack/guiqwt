@@ -90,6 +90,7 @@ for arg, compile_arg in (("--sse2", "-msse2"),
 
 # Compiling Cython modules to C source code: this is the only way I found to 
 # be able to build both Fortran and Cython extensions together
+# (this could be changed now as there is no longer Fortran extensions here...)
 cythonize_all('src')
 
 setup(name=LIBNAME, version=version,
@@ -102,8 +103,7 @@ setup(name=LIBNAME, version=version,
                                                '.ui'))},
       requires=["PyQt4 (>4.3)", "NumPy", "guidata (>=1.3.0)"],
       scripts=SCRIPTS,
-      ext_modules=[Extension(LIBNAME+'._ext', [join("src", 'histogram.f'),]),
-                   Extension(LIBNAME+'.histogram2d',
+      ext_modules=[Extension(LIBNAME+'.histogram2d',
                              [join('src', 'histogram2d.c')],
                              include_dirs=[numpy.get_include()]),
                    Extension(LIBNAME+'.mandelbrot',

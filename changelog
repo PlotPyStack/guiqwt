@@ -1,3 +1,14 @@
+== Version 2.2.2 ==
+
+=== New features (since v2.2.1) ===
+
+  * Replaced all Fortran 77/90 extensions by Cython extensions:
+    * Building `guiqwt` no longer requires a Fortran compiler (but only a C/C++ compiler for the C++ scaler extension and the C Cython extensions)
+    * 2-D histogram items are drawn 3 times faster than before
+    * The Mandelbrot example runs faster too
+
+----
+
 == Version 2.2.1 ==
 
 === New features (since v2.2.0) ===
