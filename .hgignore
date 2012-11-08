@@ -21,6 +21,7 @@ loadsavecanvas.gui$
 loadsavecanvas.h5$
 \.pot$
 mandelbrot.c$
+histogram2d.c$
 ~$
 syntax: glob
 tests/test*.tif

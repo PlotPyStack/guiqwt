@@ -171,7 +171,8 @@ from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
 stderr = sys.stderr
 try:
-    from guiqwt._ext import hist2d, hist2d_func
+    from guiqwt.histogram2d import histogram2d
+    from guiqwt._ext import hist2d_func
     from guiqwt._scaler import (_histogram, _scale_tr, _scale_xy, _scale_rect,
                                 _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
@@ -2232,12 +2233,9 @@ class Histogram2DItem(BaseImageItem):
         """Set histogram bins"""
         self.nx_bins = NX
         self.ny_bins = NY
-        # We use a fortran array to avoid a double copy of self.data
-        # Thus, in order to get the result in the correct order we
-        # have to swap X and Y axes _before_ computing the histogram
-        self.data = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
+        self.data = np.zeros((self.ny_bins, self.nx_bins), float)
         if self._z is not None:
-            self.data_tmp = np.zeros((self.ny_bins, self.nx_bins), float, order='F')
+            self.data_tmp = np.zeros((self.ny_bins, self.nx_bins), float)
 
     def set_data(self, X, Y, Z=None):
         """Set histogram data"""
@@ -2255,8 +2253,8 @@ class Histogram2DItem(BaseImageItem):
         i1, j1, i2, j2 = src_rect
         if computation == -1 or self._z is None:
             self.data[:, :] = 0.0
-            _, nmax = hist2d(self._y, self._x, j1, j2, i1, i2,
-                             self.data, self.logscale)
+            nmax = histogram2d(self._x, self._y, i1, i2, j1, j2,
+                               self.data, self.logscale)
         else:
             self.data_tmp[:,:] = 0.0
             if computation in (2,4):    # sum, avg

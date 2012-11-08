@@ -13,6 +13,7 @@ import numpy as np
 import scipy.ndimage as ni
 
 from guiqwt._ext import hist2d, hist2d_func
+from guiqwt.histogram2d import histogram2d
 
 
 def test(func, args):
@@ -21,12 +22,20 @@ def test(func, args):
     print "Elapsed time: %d ms" % ((time.time()-t0)*1000)
     return output
 
-def hist2d_test(x, y, bins):
+def hist2d_test(x, y, bins, logscale):
     ny_bins, nx_bins = bins, bins
     i1, j1, i2, j2 = x.min(), y.min(), x.max(), y.max()
     data = np.zeros((ny_bins, nx_bins), float, order='F')
-    logscale = False
     _, nmax = hist2d(y, x, j1, j2, i1, i2, data, logscale)
+    print "nmax:", nmax
+    return data
+
+def histogram2d_test(x, y, bins, logscale):
+    ny_bins, nx_bins = bins, bins
+    i1, j1, i2, j2 = x.min(), y.min(), x.max(), y.max()
+    data = np.zeros((ny_bins, nx_bins), float)
+    nmax = histogram2d(x, y, i1, i2, j1, j2, data, logscale)
+    print "nmax:", nmax
     return data
 
 def compare(func1, func2, args):
@@ -34,21 +43,27 @@ def compare(func1, func2, args):
     output2 = test(func2, args)
     return output1, output2, np.sum(np.abs(output2-output1))
 
+def show_comparison(func1, func2, args):
+    output1, output2, norm = compare(func1, func2, args)
+    from guiqwt import pyplot as plt
+    for title, output in ((func1.__name__, output1),
+                          (func2.__name__, output2)):
+        plt.figure(title)
+        plt.imshow(output, interpolation='nearest')
+    plt.show()
+
 
 if __name__ == "__main__":
     import guidata
     _app = guidata.qapplication()
-    N = 150000
+    N = 5000000
     m = np.array([[ 1., .2], [-.2, 3.]])
     X1 = np.random.normal(0, .3, size=(N, 2))
     X2 = np.random.normal(0, .3, size=(N, 2))
     X = np.concatenate((X1+[0, 1.], np.dot(X2, m)+[-1, -1.])) 
-    args = X[:, 0], X[:, 1], 50
-    output1, output2, norm = compare(hist2d_test, hist2d_test, args)
+
+    args = X[:, 0], X[:, 1], 50, False
+    show_comparison(hist2d_test, histogram2d_test, args)
     
-    from guiqwt import pyplot as plt
-    plt.figure('hist2d_test')
-    plt.imshow(output1, interpolation='nearest')
-    plt.figure('hist2d_test2')
-    plt.imshow(output2, interpolation='nearest')
-    plt.show()
+    args = X[:, 0], X[:, 1], 50, True
+    show_comparison(hist2d_test, histogram2d_test, args)
