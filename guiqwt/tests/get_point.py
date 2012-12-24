@@ -52,7 +52,7 @@ def test():
     y = sin(sin(sin(x)))    
     x2 = linspace(-10, 10, 20)
     y2 = sin(sin(sin(x2)))
-    print(get_point( (x, y), (x2,y2), (x, sin(2*y)) ))
+    print(get_point( (x, y), (x2, y2), (x, sin(2*y)) ))
 
 if __name__ == "__main__":
     test()

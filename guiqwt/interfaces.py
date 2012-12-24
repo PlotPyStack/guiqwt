@@ -51,15 +51,15 @@ class IVoiImageItemType(IItemType):
 
     def get_lut_range(self):
         """Get the current active lut range"""
-        return 0.,1.
+        return 0., 1.
 
     def get_lut_range_full(self):
         """Return full dynamic range"""
-        return 10.,20.
+        return 10., 20.
 
     def get_lut_range_max(self):
         """Get maximum range for this dataset"""
-        return 0.,255.
+        return 0., 255.
 
 class IColormapImageItemType(IItemType):
     """An image with an associated colormap"""

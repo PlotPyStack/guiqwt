@@ -11,7 +11,7 @@
 try:
     from guidata.disthelpers import Distribution
 except ImportError:
-    raise ImportError, "This script requires guidata 1.4+"
+    raise ImportError("This script requires guidata 1.4+")
 
 # Importing modules to be bundled
 from guiqwt.tests import sift

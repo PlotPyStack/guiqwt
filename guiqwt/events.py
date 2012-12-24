@@ -163,7 +163,7 @@ class StatefulEventFilter(QObject):
 #        from pprint import pprint
 #        print self.state
 #        pprint(state.keys())
-        for match, (call_list, next_state) in state.items():
+        for match, (call_list, next_state) in list(state.items()):
             if match(event):
                 self.set_state(next_state, event)
                 for call in call_list:

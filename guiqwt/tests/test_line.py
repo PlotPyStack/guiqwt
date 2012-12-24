@@ -28,11 +28,11 @@ def print_tri(imin, imax):
         print()
 
 def test_line(x0, y0, x1, y1):
-    print(x0, "," , y0, "->", x1, ",", y1)
+    print(x0, ",", y0, "->", x1, ",", y1)
     imin[:] = N
     imax[:] = 0
     line(x0, y0, x1, y1, N, imin, imax)
-    print_tri(imin,imax)
+    print_tri(imin, imax)
 
 if __name__ == '__main__':
     test_line(0, 0, 9, 9)

@@ -216,7 +216,7 @@ def _imwrite_pil(filename, arr):
     """Write `arr` NumPy array to `filename` using PIL"""
     import PIL.Image
     import PIL.TiffImagePlugin # py2exe
-    for mode, (dtype_str, _extra) in DTYPES.iteritems():
+    for mode, (dtype_str, _extra) in DTYPES.items():
         if dtype_str == arr.dtype.str:
             break
     else:
@@ -370,7 +370,7 @@ def imread(fname, ext=None, to_grayscale=False):
     arr = iohandler.get_readfunc(ext)(fname)
     if to_grayscale and arr.ndim == 3:
         # Converting to grayscale
-        return arr[...,:4].mean(axis=2)
+        return arr[..., :4].mean(axis=2)
     else:
         return arr
 
@@ -449,7 +449,7 @@ def item_class_from_name(name):
     """Return plot item class from class name"""
     global SERIALIZABLE_ITEMS, ITEM_MODULES
     assert name in SERIALIZABLE_ITEMS, "Unknown class %r" % name
-    for modname, names in ITEM_MODULES.iteritems():
+    for modname, names in ITEM_MODULES.items():
         if name in names:
             return getattr(__import__(modname, fromlist=[name]), name)
 

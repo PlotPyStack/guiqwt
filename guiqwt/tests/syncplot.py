@@ -38,20 +38,20 @@ class MyPlotDialog(CurveDialog):
         self.plotwidget.add_plot(plot3, 1, 0, "3")
         self.plotwidget.add_plot(plot4, 1, 1, "4")
         self.plotwidget.finalize()
-        manager.synchronize_axis(BasePlot.X_BOTTOM, ["1","3"])
-        manager.synchronize_axis(BasePlot.X_BOTTOM, ["2","4"])
-        manager.synchronize_axis(BasePlot.Y_LEFT,   ["1","2"])
-        manager.synchronize_axis(BasePlot.Y_LEFT,   ["3","4"])
+        manager.synchronize_axis(BasePlot.X_BOTTOM, ["1", "3"])
+        manager.synchronize_axis(BasePlot.X_BOTTOM, ["2", "4"])
+        manager.synchronize_axis(BasePlot.Y_LEFT,   ["1", "2"])
+        manager.synchronize_axis(BasePlot.Y_LEFT,   ["3", "4"])
         
         self.layout.addWidget(self.plotwidget, 0, 0)
 
-def plot(items1,items2,items3,items4):
+def plot(items1, items2, items3, items4):
     win = MyPlotDialog(edit=False, toolbar=True,
                        wintitle="CurvePlotDialog test",
                        options=dict(title="Title", xlabel="xlabel",
                                     ylabel="ylabel"))
-    items = [items1,items2,items3,items4]
-    for i,plot in enumerate(win.plotwidget.plots):
+    items = [items1, items2, items3, items4]
+    for i, plot in enumerate(win.plotwidget.plots):
         for item in items[i]:
             plot.add_item(item)
         plot.set_axis_font("left", QFont("Courier"))
@@ -81,7 +81,7 @@ def test():
           make.label("Relative position <i>inside</i>",
                      (x[0], y[0]), (10, 10), "TL"),],
          [make.merror(x, y/2, dy),
-          make.label("Absolute position", "R", (0,0), "R"),
+          make.label("Absolute position", "R", (0, 0), "R"),
           make.legend("TR"),]
          )
 

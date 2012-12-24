@@ -133,15 +133,15 @@ from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
 def _simplify_poly(pts, off, scale, bounds):
     ax, bx, ay, by = scale
     xm, ym, xM, yM = bounds
-    a = np.array( [[ax,ay]] )
-    b = np.array( [[bx,by]] )
+    a = np.array( [[ax, ay]] )
+    b = np.array( [[bx, by]] )
     _pts = a*pts+b
     poly = []
     NP = off.shape[0]
-    for i in xrange(off.shape[0]):
-        i0 = off[i,1]
+    for i in range(off.shape[0]):
+        i0 = off[i, 1]
         if i+1<NP:
-            i1 = off[i+1,1]
+            i1 = off[i+1, 1]
         else:
             i1 = pts.shape[0]
         poly.append( (_pts[i0:i1], i) )
@@ -191,7 +191,7 @@ def seg_dist_v(P, X0, Y0, X1, Y1):
     dP = np.array(P).reshape(1, 2) - PP
     nV = np.sqrt(norm2(V)).clip(1e-12) # clip: avoid division by zero
     w2 = V/nV[:, np.newaxis]
-    w = np.array([ -w2[:,1], w2[:,0] ]).T
+    w = np.array([ -w2[:, 1], w2[:, 0] ]).T
     distances = np.fabs((dP*w).sum(axis=1))
     ix = distances.argmin()
     return ix, distances[ix]
@@ -240,7 +240,7 @@ class GridItem(QwtPlotGrid):
     
     def attach(self, plot):
         """Reimplemented to update plot canvas background"""
-        QwtPlotGrid.attach(self,plot)
+        QwtPlotGrid.attach(self, plot)
         self.update_params()
 
     def set_readonly(self, state):
@@ -639,17 +639,17 @@ class PolygonMapItem(QwtPlotItem):
 
     def setPen(self, x):
         pass
-    def setBrush(self,x):
+    def setBrush(self, x):
         pass
-    def setSymbol(self,x):
+    def setSymbol(self, x):
         pass
-    def setCurveAttribute(self,x,y):
+    def setCurveAttribute(self, x, y):
         pass
-    def setStyle(self,x):
+    def setStyle(self, x):
         pass
-    def setCurveType(self,x):
+    def setCurveType(self, x):
         pass
-    def setBaseline(self,x):
+    def setBaseline(self, x):
         pass
 
     def __reduce__(self):
@@ -733,7 +733,7 @@ class PolygonMapItem(QwtPlotItem):
         self._c = np.array(c, copy=False)
         xmin, ymin = self._pts.min(axis=0)
         xmax, ymax = self._pts.max(axis=0)
-        self.bounds = QRectF(xmin,ymin,xmax-xmin,ymax-ymin)
+        self.bounds = QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
         
     def is_empty(self):
         """Return True if item data is empty"""
@@ -802,11 +802,11 @@ class PolygonMapItem(QwtPlotItem):
         #t2 = time()
         for poly, num in polygons:
             points = []
-            for i in xrange(poly.shape[0]):
-                points.append(QPointF(poly[i,0],poly[i,1]))
+            for i in range(poly.shape[0]):
+                points.append(QPointF(poly[i, 0], poly[i, 1]))
             pg = QPolygonF(points)
-            fgcol.setRgba(int(_c[num,0]))
-            bgcol.setRgba(int(_c[num,1]))
+            fgcol.setRgba(int(_c[num, 0]))
+            bgcol.setRgba(int(_c[num, 1]))
             painter.setPen(QPen(fgcol))
             painter.setBrush(QBrush(bgcol))
             painter.drawPolygon(pg)
@@ -986,7 +986,7 @@ class ErrorBarCurveItem(CurveItem):
         x, y, xmin, xmax, ymin, ymax = self.get_minmax_arrays(all_values=False)
         tx = vmap(xMap, x)
         ty = vmap(yMap, y)
-        RN = xrange(len(tx))
+        RN = range(len(tx))
         if self.errorOnTop:
             QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
         
@@ -1131,7 +1131,7 @@ class ItemListWidget(QListWidget):
     def __is_selection_contiguous(self):
         indexes = sorted([self.row(lw_item) for lw_item
                           in self.selectedItems()])
-        return len(indexes) <= 1 or range(indexes[0], indexes[-1]+1) == indexes
+        return len(indexes) <= 1 or list(range(indexes[0], indexes[-1]+1)) == indexes
         
     def get_selected_items(self):
         """Return selected QwtPlot items
@@ -1329,7 +1329,7 @@ class CurvePlot(BasePlot):
                              panning
     """
     DEFAULT_ITEM_TYPE = ICurveItemType
-    AUTOSCALE_TYPES = (CurveItem,PolygonMapItem)
+    AUTOSCALE_TYPES = (CurveItem, PolygonMapItem)
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  xunit=None, yunit=None, gridparam=None,
                  section="plot", axes_synchronised=False):

@@ -98,7 +98,7 @@ def build_icon_from_cmap(cmap, width=32, height=32):
     """
     data = zeros((width, height), uint8)
     line = linspace(0, 255, width)
-    data[:, :] = line[:, newaxis]
+    data[:,:] = line[:, newaxis]
     img = toQImage(data)
     img.setColorTable(cmap.colorTable(FULLRANGE))
     return QIcon(QPixmap.fromImage(img))

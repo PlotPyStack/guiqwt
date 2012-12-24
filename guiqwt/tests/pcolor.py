@@ -29,18 +29,18 @@ def polar_demo(N=300):
     r = np.linspace(1., 16, N)
     th= np.linspace(0., np.pi, N)
 
-    R,TH=np.meshgrid(r,th)
+    R, TH=np.meshgrid(r, th)
     X = R*np.cos(TH)
     Y = R*np.sin(TH)
-    Z = 4*TH+R + np.random.randint(-8,8,size=(N,N))
-    ix = np.random.randint(N,size=(N/20,))
-    iy = np.random.randint(N,size=(N/20,))
-    Z[ix,iy] = np.nan
-    return X,Y,Z
+    Z = 4*TH+R + np.random.randint(-8, 8, size=(N, N))
+    ix = np.random.randint(N, size=(N/20,))
+    iy = np.random.randint(N, size=(N/20,))
+    Z[ix, iy] = np.nan
+    return X, Y, Z
 
 def compute_quads(N=300):
-    X,Y,Z = polar_demo(N)
-    item = make.pcolor(X,Y,Z)
+    X, Y, Z = polar_demo(N)
+    item = make.pcolor(X, Y, Z)
     return [item]
 
 def compute_quads2(N=4):
@@ -56,13 +56,13 @@ def compute_quads3():
     cos = np.cos
     sin = np.sin
     items = []
-    for i,t in enumerate( np.linspace(0,2*pi,16) ): 
+    for i, t in enumerate( np.linspace(0, 2*pi, 16) ): 
         X = np.array( [[    0.0, cos(t)],
                        [-sin(t), cos(t)-sin(t)]] )
         Y = np.array( [[   0.0, sin(t)],
                        [cos(t), sin(t)+cos(t)]] )
-        Z = np.array([[1.,2.],[3.,4.]])
-        item = make.pcolor(X-16+2*i,Y-3,Z)
+        Z = np.array([[1., 2.], [3., 4.]])
+        item = make.pcolor(X-16+2*i, Y-3, Z)
         items.append(item)
     return items
 
@@ -78,7 +78,7 @@ def test():
 def valgrind_test(K=200):
     from guiqwt._scaler import _scale_quads
     from time import time
-    X,Y,Z = polar_demo()
+    X, Y, Z = polar_demo()
     lut = (1.0, 0.0, None, np.zeros((1024, ), np.uint32))
     offscreen = np.zeros((1200, 1920), np.uint32)
     border = 1
@@ -86,8 +86,8 @@ def valgrind_test(K=200):
     uflat = 0.5
     vflat = 0.5
     interpolate = (flat, uflat, vflat)
-    src_rect = (X.min(),Y.min(),X.max(),Y.max())
-    dst_rect = (0,0,1920,1200)
+    src_rect = (X.min(), Y.min(), X.max(), Y.max())
+    dst_rect = (0, 0, 1920, 1200)
     t0 = time()
     for count in range(K):
         dest = _scale_quads(X, Y, Z, src_rect,

@@ -46,7 +46,7 @@ def compileui(fname, replace_class="QwtPlot"):
     from PyQt4.uic import compileUi
     from StringIO import StringIO
     uifile_text = open(fname).read().replace("QwtPlot", "QFrame")
-    compileUi( StringIO(uifile_text), open(fname.replace(".ui","_ui.py"), 'w'),
+    compileUi( StringIO(uifile_text), open(fname.replace(".ui", "_ui.py"), 'w'),
                pyqt3_wrapper=True )
     
     

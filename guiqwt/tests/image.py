@@ -46,7 +46,7 @@ def compute_image(N=2000, grid=True):
             v = -1.1
         else:
             v = 1.1
-        img[i, :] = v
+        img[i,:] = v
         img[:, i] = v
     m1, m2, m3, m4 = -1.1, -0.3, 0.3, 1.1
     K = 100
@@ -80,7 +80,7 @@ def compute_image_2():
             v = -1.1
         else:
             v = 1.1
-        img[i, :] = v
+        img[i,:] = v
         img[:, i] = v
     m1, m2, m3, m4 = -1.1, -0.3, 0.3, 1.1
     K = 100
@@ -96,9 +96,9 @@ def compute_image_3():
     N = 1000
     NK = 20
     T = float
-    img = np.zeros( (N,N), T )
+    img = np.zeros( (N, N), T )
     x = np.arange(N, dtype=float)
-    x.shape = (1,N)
+    x.shape = (1, N)
     DK = N/NK
     for i in range(NK):
         S = i+1

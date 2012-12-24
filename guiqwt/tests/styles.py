@@ -30,7 +30,7 @@ class TestSymbol(unittest.TestCase):
         
     def test_update(self):
         obj = QwtSymbol( QwtSymbol.Rect, QBrush(Qt.black), QPen(Qt.yellow),
-                         QSize(3,3) )
+                         QSize(3, 3) )
         sym = SymbolParam(_("Symbol"))
         sym.update_param( obj )
         self.assertEqual(sym.marker, "Rect")
@@ -46,7 +46,7 @@ class TestSymbol(unittest.TestCase):
         
     def test_changeconfig(self):
         obj = QwtSymbol( QwtSymbol.Rect, QBrush(Qt.black), QPen(Qt.yellow),
-                         QSize(3,3) )
+                         QSize(3, 3) )
         sym = SymbolParam(_("Symbol"))
         sym.update_param( obj )
         sym.write_config(CONF, "sym", "" )

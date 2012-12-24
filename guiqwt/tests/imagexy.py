@@ -44,7 +44,7 @@ def compute_image():
             v = -1.1
         else:
             v = 1.1
-        img[i, :] = v
+        img[i,:] = v
         img[:, i] = v
     m1, m2, m3, m4 = -1.1, -0.3, 0.3, 1.1
     K = 100
@@ -53,7 +53,7 @@ def compute_image():
     img[-K:, -K:] = m3   # (N,N)
     img[-K:, :K] = m4    # (N,0)
     #img = array( 30000*(img+1.1), uint16 )
-    img = img + np.random.normal(0., 0.05, size=(N,N))
+    img = img + np.random.normal(0., 0.05, size=(N, N))
     print(img.dtype)
     return x, (x+5)**0.6, img
 

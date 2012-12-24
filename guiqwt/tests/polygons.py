@@ -31,23 +31,23 @@ NSEGMIN=4
 NSEGMAX=300
 
 def create_circle():
-    x,y,rmax = rand(3)
+    x, y, rmax = rand(3)
     rmax*=RMAX
     x*=XMAX
     y*=YMAX
     nseg = randint(NSEGMIN, NSEGMAX)
     th = linspace(0, 2*pi, nseg)
-    PTS = empty( (nseg,2), float)
-    PTS[:,0] = x+rmax*cos(th)
-    PTS[:,1] = y+rmax*sin(th)
+    PTS = empty( (nseg, 2), float)
+    PTS[:, 0] = x+rmax*cos(th)
+    PTS[:, 1] = y+rmax*sin(th)
     return PTS
 
 NCIRC=1000
 COLORS=[
-    (0xff000000,0x8000ff00),
-    (0xff0000ff,0x800000ff),
-    (0xff000000,0x80ff0000),
-    (0xff00ff00,0x80000000),
+    (0xff000000, 0x8000ff00),
+    (0xff0000ff, 0x800000ff),
+    (0xff000000, 0x80ff0000),
+    (0xff00ff00, 0x80000000),
 ]
 
 
@@ -57,22 +57,22 @@ def test():
     plot = win.get_plot()
     plot.set_aspect_ratio(lock=True)
     plot.set_antialiasing(False)
-    plot.set_axis_direction('left',False)
-    plot.set_axis_title("bottom","Lon")
-    plot.set_axis_title("left","Lat")
+    plot.set_axis_direction('left', False)
+    plot.set_axis_title("bottom", "Lon")
+    plot.set_axis_title("left", "Lat")
     
     points = []
-    offsets = zeros( (NCIRC,2), int32)
-    colors = zeros( (NCIRC,2), uint32)
+    offsets = zeros( (NCIRC, 2), int32)
+    colors = zeros( (NCIRC, 2), uint32)
     npts = 0
     for k in range(NCIRC):
         pts = create_circle()
-        offsets[k,0] = k
-        offsets[k,1] = npts
+        offsets[k, 0] = k
+        offsets[k, 1] = npts
         npts += pts.shape[0]
         points.append(pts)
-        colors[k,0] = COLORS[k%len(COLORS)][0]
-        colors[k,1] = COLORS[(3*k)%len(COLORS)][1]
+        colors[k, 0] = COLORS[k%len(COLORS)][0]
+        colors[k, 1] = COLORS[(3*k)%len(COLORS)][1]
     points = concatenate(points)
     
     print(NCIRC, "Polygons")

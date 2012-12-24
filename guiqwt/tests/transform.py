@@ -21,7 +21,7 @@ from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 from guiqwt import io
 
-DEFAULT_CHARS = "".join([chr(c) for c in range(32,256)])
+DEFAULT_CHARS = "".join([chr(c) for c in range(32, 256)])
 
 def get_font_array(sz, chars=DEFAULT_CHARS):
     from guidata.qt.QtGui import QFont, QPainter, QColor
@@ -51,12 +51,12 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     data = img.bits().asstring(img.numBytes())
     npy = np.frombuffer(data, np.uint8)
     npy.shape = img.height(), img.bytesPerLine()/4, 4
-    return npy[:, :, 0]
+    return npy[:,:, 0]
 
 def txtwrite(data, x, y, sz, txt, range=None):
     arr = get_font_array(sz, txt)
     if range is None:
-        m, M = data.min(),data.max()
+        m, M = data.min(), data.max()
     else:
         m, M = range
     z = (float(M)-float(m))*np.array(arr, float)/255.+m
@@ -85,7 +85,7 @@ def imshow(items, title=""):
             maxy = h
         else:
             x += w
-            maxy = max(maxy,h)
+            maxy = max(maxy, h)
         w = item.boundingRect().width()
 
         item.set_transform(x, y, 0.0)
@@ -97,7 +97,7 @@ def imshow(items, title=""):
 
 def compute_image(NX, NY):
     BX, BY = 40, 40
-    img = np.random.normal(0,100,size=(BX, BY))
+    img = np.random.normal(0, 100, size=(BX, BY))
     timg = np.fft.fftshift(np.fft.fft2(img))
     print(timg.shape)
     cx = NX/2
@@ -122,13 +122,13 @@ def save_image(name, data):
 
 def build_image(items):
     r = get_bbox(items)
-    x,y,w,h = r.getRect()
-    print("Assemble test1:", w,"x", h)
+    x, y, w, h = r.getRect()
+    print("Assemble test1:", w, "x", h)
     dest = assemble_imageitems(items, r, w, h, align=4)
     print("saving...")
     save_image("test1.png", dest)
     
-    print("Assemble test2:", w/4,"x", h/4)
+    print("Assemble test2:", w/4, "x", h/4)
     dest = assemble_imageitems(items, r, w/4, h/4, align=4)
     save_image("test2.png", dest)
 

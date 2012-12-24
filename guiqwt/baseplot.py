@@ -91,7 +91,7 @@ def axes_to_canvas(item, x, y):
 PARAMETERS_TITLE_ICON = {
                          'grid': (_("Grid..."), "grid.png" ),
                          'axes': (_("Axes style..."), "axes.png" ),
-                         'item': (_("Parameters..."),"settings.png" ),
+                         'item': (_("Parameters..."), "settings.png" ),
                          }
     
 
@@ -308,7 +308,7 @@ class BasePlot(QwtPlot):
         """Return the name ('lin' or 'log') of the scale used by axis"""
         axis_id = self.get_axis_id(axis_id)
         engine = self.axisScaleEngine(axis_id)
-        for axis_label, axis_type in self.AXIS_TYPES.items():
+        for axis_label, axis_type in list(self.AXIS_TYPES.items()):
             if isinstance(engine, axis_type):
                 return axis_label
         return "lin"  # unknown default to linear
@@ -457,7 +457,7 @@ class BasePlot(QwtPlot):
             self.active_item = None
             self._active_xaxis = self.DEFAULT_ACTIVE_XAXIS
             self._active_yaxis = self.DEFAULT_ACTIVE_YAXIS
-        for key, it in self.last_selected.items():
+        for key, it in list(self.last_selected.items()):
             if item is it:
                 del self.last_selected[key]
 
@@ -484,7 +484,7 @@ class BasePlot(QwtPlot):
         try:
             self.del_items([item])
         except ValueError:
-            raise ValueError, "item not in plot"
+            raise ValueError("item not in plot")
 
     def set_item_visible(self, item, state, notify=True, replot=True):
         """Show/hide *item* and emit a SIG_ITEMS_CHANGED signal"""

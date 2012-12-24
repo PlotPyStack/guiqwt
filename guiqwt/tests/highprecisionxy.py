@@ -15,10 +15,10 @@ def xyimagebug(offset):
     import numpy
     import guidata
     app = guidata.qapplication()
-    data = numpy.random.rand(100,100)
+    data = numpy.random.rand(100, 100)
     x = numpy.arange(100)+offset 
     y = numpy.arange(100)
-    image = make.xyimage(x,y,data=data)
+    image = make.xyimage(x, y, data=data)
     win = ImageDialog()
     plot = win.get_plot()
     plot.add_item(image)

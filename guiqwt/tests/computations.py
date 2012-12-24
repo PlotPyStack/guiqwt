@@ -37,12 +37,12 @@ def test():
                                   title="Range infos")
 
     disp1 = make.computation(range, "BL", "trapz=%g",
-                             curve, lambda x,y: trapz(y,x))
+                             curve, lambda x, y: trapz(y, x))
 
     disp2 = make.computations(range, "TL",
-                              [(curve, "min=%.5f", lambda x,y: y.min()),
-                               (curve, "max=%.5f", lambda x,y: y.max()),
-                               (curve, "avg=%.5f", lambda x,y: y.mean())])
+                              [(curve, "min=%.5f", lambda x, y: y.min()),
+                               (curve, "max=%.5f", lambda x, y: y.max()),
+                               (curve, "avg=%.5f", lambda x, y: y.mean())])
     legend = make.legend("TR")
     plot( curve, range, disp0, disp1, disp2, legend)
 

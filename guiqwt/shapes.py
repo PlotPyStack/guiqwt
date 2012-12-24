@@ -378,7 +378,7 @@ class Marker(QwtPlotMarker):
         # The following assert has no purpose except reminding that the 
         # markerstyle is one of the MARKERSTYLES dictionary values, in case 
         # this dictionary evolves in the future (this should not fail):
-        assert ms in MARKERSTYLES.values()
+        assert ms in list(MARKERSTYLES.values())
         if ms == "NoLine":
             return sqrt((x-xc)**2 + (y-yc)**2), 0, False, None
         elif ms == "HLine":
@@ -386,7 +386,7 @@ class Marker(QwtPlotMarker):
         elif ms == "VLine":
             return sqrt((x-xc)**2), 0, False, None
         elif ms == "Cross":
-            return sqrt(min((x-xc)**2,(y-yc)**2) ), 0, False, None
+            return sqrt(min((x-xc)**2, (y-yc)**2) ), 0, False, None
         
     def get_item_parameters(self, itemparams):
         """
@@ -608,13 +608,13 @@ class PolygonShape(AbstractShape):
         """Return bounding rectangle coordinates (in plot coordinates)"""
         poly = QPolygonF()
         shape_points = self.points[:-self.ADDITIONNAL_POINTS]
-        for i in xrange(shape_points.shape[0]):
+        for i in range(shape_points.shape[0]):
             poly.append(QPointF(shape_points[i, 0], shape_points[i, 1]))
         return poly.boundingRect().getCoords()
         
     def transform_points(self, xMap, yMap):
         points = QPolygonF()
-        for i in xrange(self.points.shape[0]):
+        for i in range(self.points.shape[0]):
             points.append(QPointF(xMap.transform(self.points[i, 0]),
                                   yMap.transform(self.points[i, 1])))
         return points
@@ -665,7 +665,7 @@ class PolygonShape(AbstractShape):
         else:
             painter.drawPolyline(shape_points)
         if symbol != QwtSymbol.NoSymbol:
-            for i in xrange(points.size()):
+            for i in range(points.size()):
                 symbol.draw(painter, points[i].toPoint())
         if self.LINK_ADDITIONNAL_POINTS and other_points:
             pen2 = painter.pen()
@@ -680,7 +680,7 @@ class PolygonShape(AbstractShape):
         Cx, Cy = pos.x(), pos.y()
         poly = QPolygonF()
         pts = self.points
-        for i in xrange(pts.shape[0]):
+        for i in range(pts.shape[0]):
             # On calcule la distance dans le repère du canvas
             px = plot.transform(ax, pts[i, 0])
             py = plot.transform(ay, pts[i, 1])
@@ -704,9 +704,9 @@ class PolygonShape(AbstractShape):
         return self.add_point(pt)
         
     def add_point(self, pt):
-        N,_ = self.points.shape
+        N, _ = self.points.shape
         self.points = np.resize(self.points, (N+1, 2))
-        self.points[N, :] = pt
+        self.points[N,:] = pt
         return N
 
     def del_point(self, handle):
@@ -717,7 +717,7 @@ class PolygonShape(AbstractShape):
             return self.points.shape[0]-1
     
     def move_point_to(self, handle, pos, ctrl=None):
-        self.points[handle, :] = pos
+        self.points[handle,:] = pos
         
     def move_shape(self, old_pos, new_pos):
         dx = new_pos[0]-old_pos[0]
@@ -1085,7 +1085,7 @@ class EllipseShape(PolygonShape):
         painter.drawEllipse(rect.toRect())
         painter.restore()
         if symbol != QwtSymbol.NoSymbol:
-            for i in xrange(points.size()):
+            for i in range(points.size()):
                 symbol.draw(painter, points[i].toPoint())
 
     def get_xline(self):
@@ -1348,8 +1348,8 @@ class XRangeSelection(AbstractShape):
                          rct2.center().x(), rct2.bottom())
         painter.setPen(pen)
         x0, x1, y = self.get_handles_pos()        
-        sym.draw(painter, QPoint(x0,y))
-        sym.draw(painter, QPoint(x1,y))
+        sym.draw(painter, QPoint(x0, y))
+        sym.draw(painter, QPoint(x1, y))
         
     def hit_test(self, pos):
         x, _y = pos.x(), pos.y()

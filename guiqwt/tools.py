@@ -427,7 +427,7 @@ class InteractiveTool(GuiTool):
 
     def activate(self):
         """Activate tool"""
-        for baseplot, start_state in self.start_state.items():
+        for baseplot, start_state in list(self.start_state.items()):
             baseplot.filter.set_state(start_state, None)
         self.action.setChecked(True)
         self.manager.set_active_tool(self)
@@ -598,7 +598,7 @@ class MultiLineTool(InteractiveTool):
                                          Qt.Key_Space) ),
                          self.validate, start_state)
         filter.add_event(start_state,
-                         KeyEventMatch( (Qt.Key_Backspace,Qt.Key_Escape,) ),
+                         KeyEventMatch( (Qt.Key_Backspace, Qt.Key_Escape,) ),
                          self.cancel_point, start_state)
         self.connect(handler, SIG_START_TRACKING, self.mouse_press)
         self.connect(handler, SIG_MOVE, self.move)
@@ -897,7 +897,7 @@ class PlaceAxesTool(RectangularShapeTool):
     ICON = "gtaxes.png"
     SHAPE_STYLE_KEY = "shape/axes"
     def create_shape(self):
-        shape = Axes( (0,1), (1,1), (0,0) )
+        shape = Axes( (0, 1), (1, 1), (0, 0) )
         self.set_shape_style(shape)
         return shape, 0, 2
 
@@ -1096,7 +1096,7 @@ class RectZoomTool(InteractiveTool):
         return setup_standard_tool_filter(filter, start_state)
     
     def get_shape(self):
-        shape = RectangleShape(0,0,1,1)
+        shape = RectangleShape(0, 0, 1, 1)
         shape.set_style("plot", "shape/rectzoom")
         return shape, 0, 2
 
@@ -1498,7 +1498,7 @@ class ItemListPanelTool(PanelTool):
 
 class SaveAsTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(SaveAsTool,self).__init__(manager, _("Save as..."),
+        super(SaveAsTool, self).__init__(manager, _("Save as..."),
                                         get_std_icon("DialogSaveButton", 16),
                                         toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
@@ -1519,7 +1519,7 @@ class SaveAsTool(CommandTool):
 
 class CopyToClipboardTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(CopyToClipboardTool,self).__init__(manager,
+        super(CopyToClipboardTool, self).__init__(manager,
                                         _("Copy to clipboard"),
                                         get_icon('copytoclipboard.png'),
                                         toolbar_id=toolbar_id)
@@ -1702,7 +1702,7 @@ class PrintFilter(QwtPlotPrintFilter):
 
 class PrintTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(PrintTool,self).__init__(manager, _("Print..."),
+        super(PrintTool, self).__init__(manager, _("Print..."),
                                        get_icon("print.png"),
                                        toolbar_id=toolbar_id)
     def activate_command(self, plot, checked):
@@ -1820,7 +1820,7 @@ class AxisScaleTool(CommandTool):
             xscale = plot.get_axis_scale(item.xAxis())
             yscale = plot.get_axis_scale(item.yAxis())
             active_scale = xscale, yscale
-        for scale_type, scale_action in self.scale_menu.items():
+        for scale_type, scale_action in list(self.scale_menu.items()):
             if item is None:
                 scale_action.setEnabled(False)
             else:
@@ -1842,7 +1842,7 @@ class AxisScaleTool(CommandTool):
 
 class HelpTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
-        super(HelpTool,self).__init__(manager, _("Help"),
+        super(HelpTool, self).__init__(manager, _("Help"),
                                       get_std_icon("DialogHelpButton", 16),
                                       toolbar_id=toolbar_id)
                                       
@@ -1915,7 +1915,7 @@ def export_curve_data(item):
     if fname:
         try:
             np.savetxt(unicode(fname), data, delimiter=',')
-        except RuntimeError, error:
+        except RuntimeError as error:
             QMessageBox.critical(plot, _("Export"),
                                  _("Unable to export item data.")+\
                                  "<br><br>"+_("Error message:")+"<br>"+\
@@ -1930,7 +1930,7 @@ class ExportItemDataTool(ItemManipulationBaseTool):
     TITLE = _("Export data...")
     ICON = "export.png"
     def __init__(self, manager, toolbar_id=None):
-        super(ExportItemDataTool,self).__init__(manager, toolbar_id,
+        super(ExportItemDataTool, self).__init__(manager, toolbar_id,
                 curve_func=export_curve_data, image_func=export_image_data)
 
 def edit_curve_data(item):
@@ -1973,13 +1973,13 @@ class EditItemDataTool(ItemManipulationBaseTool):
     TITLE = _("Edit data...")
     ICON = "arredit.png"
     def __init__(self, manager, toolbar_id=None):
-        super(EditItemDataTool,self).__init__(manager, toolbar_id,
+        super(EditItemDataTool, self).__init__(manager, toolbar_id,
                 curve_func=edit_curve_data, image_func=edit_image_data)
 
 
 class ItemCenterTool(CommandTool):
     def __init__(self, manager, toolbar_id=None):
-        super(ItemCenterTool,self).__init__(manager, _("Center items"),
+        super(ItemCenterTool, self).__init__(manager, _("Center items"),
                                             "center.png", toolbar_id=toolbar_id)
         
     def get_supported_items(self, plot):
@@ -2008,7 +2008,7 @@ class ItemCenterTool(CommandTool):
 
 class DeleteItemTool(CommandTool):
     def __init__(self, manager, toolbar_id=None):
-        super(DeleteItemTool,self).__init__(manager, _("Remove"), "trash.png",
+        super(DeleteItemTool, self).__init__(manager, _("Remove"), "trash.png",
                                             toolbar_id=toolbar_id)
         
     def get_removable_items(self, plot):

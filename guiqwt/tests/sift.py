@@ -329,7 +329,7 @@ class ObjectFT(QSplitter):
                     sumobj.copy_data_from(obj)
                 else:
                     sumobj.data += obj.data
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
@@ -350,7 +350,7 @@ class ObjectFT(QSplitter):
                     sumobj.copy_data_from(obj, dtype=np.float64)
                 else:
                     sumobj.data += obj.data
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
@@ -371,7 +371,7 @@ class ObjectFT(QSplitter):
                     sumobj.copy_data_from(obj)
                 else:
                     sumobj.data *= obj.data
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
@@ -388,7 +388,7 @@ class ObjectFT(QSplitter):
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
             diffobj.data = obj0.data-obj1.data
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
@@ -405,7 +405,7 @@ class ObjectFT(QSplitter):
             obj0, obj1 = self.objects[rows[0]], self.objects[rows[1]]
             diffobj.copy_data_from(obj0)
             diffobj.data = obj0.data/obj1.data
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
@@ -442,7 +442,7 @@ class ObjectFT(QSplitter):
             self.repaint()
             try:
                 self.apply_11_func(obj, orig, func, param)
-            except Exception, msg:
+            except Exception as msg:
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
@@ -518,7 +518,7 @@ class SignalFT(ObjectFT):
             x, y, dx, dy = data
             item = make.merror(x, y.real, dx, dy, label=signal.title)
         else:
-            raise RuntimeError, "data not supported"
+            raise RuntimeError("data not supported")
         self.items[row] = item
         return item
         
@@ -676,7 +676,7 @@ class SignalFT(ObjectFT):
                     else:
                         raise
                 assert len(xydata.shape) in (1, 2), "Data not supported"
-            except Exception, msg:
+            except Exception as msg:
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
@@ -712,7 +712,7 @@ class SignalFT(ObjectFT):
             obj = self.objects[row]
             try:
                 np.savetxt(filename, obj.xydata, delimiter=',')
-            except Exception, msg:
+            except Exception as msg:
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
@@ -822,7 +822,7 @@ class ImageFT(ObjectFT):
         prop = ValueProp(False)
         class RotateParam(DataSet):
             angle = FloatItem(u"%s (°)" % _(u"Angle"))
-            mode = ChoiceItem(_(u"Mode"), zip(boundaries, boundaries),
+            mode = ChoiceItem(_(u"Mode"), list(zip(boundaries, boundaries)),
                               default=boundaries[0])
             cval = FloatItem(_("cval"), default=0.,
                              help=_(u"Value used for points outside the "
@@ -873,7 +873,7 @@ class ImageFT(ObjectFT):
         prop = ValueProp(False)
         class ResizeParam(DataSet):
             zoom = FloatItem(_(u"Zoom"), default=dlg.get_zoom())
-            mode = ChoiceItem(_(u"Mode"), zip(boundaries, boundaries),
+            mode = ChoiceItem(_(u"Mode"), list(zip(boundaries, boundaries)),
                               default=boundaries[0])
             cval = FloatItem(_("cval"), default=0.,
                              help=_(u"Value used for points outside the "
@@ -915,7 +915,7 @@ class ImageFT(ObjectFT):
         try:
             robj.data = flatfield(self.objects[rows[0]].data,
                                   self.objects[rows[1]].data)
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,

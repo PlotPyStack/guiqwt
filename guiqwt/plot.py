@@ -272,7 +272,7 @@ class PlotManager(object):
             self.configure_panels()
         tool = ToolKlass(self, *args, **kwargs)
         self.tools.append(tool)
-        for plot in self.plots.values():
+        for plot in list(self.plots.values()):
             tool.register_plot(plot)
         if len(self.tools) == 1:
             self.default_tool = tool
@@ -290,7 +290,7 @@ class PlotManager(object):
         just a tool which insert a separator in the plot context menu
         """
         if toolbar_id is None:
-            for _id, toolbar in self.toolbars.iteritems():
+            for _id, toolbar in self.toolbars.items():
                 if toolbar is self.get_default_toolbar():
                     toolbar_id = _id
                     break
@@ -340,7 +340,7 @@ class PlotManager(object):
         """
         Return all registered plots
         """
-        return self.plots.values()
+        return list(self.plots.values())
 
     def get_active_plot(self):
         """
@@ -349,7 +349,7 @@ class PlotManager(object):
         The active plot is the plot whose canvas has the focus
         otherwise it's the "default" plot
         """
-        for plot in self.plots.values():
+        for plot in list(self.plots.values()):
             canvas = plot.canvas()
             if canvas.hasFocus():
                 return plot
@@ -609,7 +609,7 @@ class PlotManager(object):
             for plot2_id in plots:
                 if plot_id==plot2_id:
                     continue
-                item = (axis,plot2_id)
+                item = (axis, plot2_id)
                 if item not in synclist:
                     synclist.append(item)
 

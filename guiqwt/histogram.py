@@ -242,13 +242,13 @@ class LevelsHistogram(CurvePlot):
         self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
 
     def tracked_items_gen(self):
-        for plot, items in self._tracked_items.items():
-            for item in items.items():
+        for plot, items in list(self._tracked_items.items()):
+            for item in list(items.items()):
                 yield item # tuple item,curve
 
     def __del_known_items(self, known_items, items):
         del_curves = []
-        for item in known_items.keys():
+        for item in list(known_items.keys()):
             if item not in items:
                 curve = known_items.pop(item)
                 del_curves.append(curve)
@@ -262,7 +262,7 @@ class LevelsHistogram(CurvePlot):
             self.__del_known_items(known_items, items)
             if len(items) == 1:
                 # Removing any cached item for other plots
-                for other_plot, _items in self._tracked_items.items():
+                for other_plot, _items in list(self._tracked_items.items()):
                     if other_plot is not plot:
                         if not other_plot.get_selected_items(
                                                 item_type=IVoiImageItemType):
@@ -271,7 +271,7 @@ class LevelsHistogram(CurvePlot):
         else:
             # if all items are deselected we keep the last known
             # selection (for one plot only)
-            for other_plot, _items in self._tracked_items.items():
+            for other_plot, _items in list(self._tracked_items.items()):
                 if other_plot.get_selected_items(item_type=IVoiImageItemType):
                     self.__del_known_items(known_items, [])
                     break
@@ -308,7 +308,7 @@ class LevelsHistogram(CurvePlot):
             self.replot()
 
     def item_removed(self, item):
-        for plot, items in self._tracked_items.items():
+        for plot, items in list(self._tracked_items.items()):
             if item in items:
                 items.pop(item)
                 break
@@ -475,13 +475,13 @@ class ContrastAdjustment(PanelWidget):
         """Configure panel"""
         self.min_select_tool = self.manager.add_tool(SelectPointTool,
                                        title=_("Minimum level"),
-                                       on_active_item=True,mode="create",
+                                       on_active_item=True, mode="create",
                                        tip=_("Select minimum level on image"),
                                        toolbar_id="contrast",
                                        end_callback=self.apply_min_selection)
         self.max_select_tool = self.manager.add_tool(SelectPointTool,
                                        title=_("Maximum level"),
-                                       on_active_item=True,mode="create",
+                                       on_active_item=True, mode="create",
                                        tip=_("Select maximum level on image"),
                                        toolbar_id="contrast",
                                        end_callback=self.apply_max_selection)        
@@ -505,7 +505,7 @@ class ContrastAdjustment(PanelWidget):
                                      tip=_("Eliminate levels histogram "
                                            "outliers and scale the image's "
                                            "display range accordingly") )
-        add_actions(self.toolbar,[fullrange_ac, autorange_ac])
+        add_actions(self.toolbar, [fullrange_ac, autorange_ac])
     
     def eliminate_outliers(self):
         def apply(param):

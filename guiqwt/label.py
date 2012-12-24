@@ -61,15 +61,15 @@ from guiqwt.signals import SIG_ITEM_MOVED
 
 
 ANCHORS = {
-           "TL" : lambda r: (r.left(),r.top()),
-           "TR" : lambda r: (r.right(),r.top()),
-           "BL" : lambda r: (r.left(),r.bottom()),
-           "BR" : lambda r: (r.right(),r.bottom()),
-           "L"  : lambda r: (r.left(), (r.top()+r.bottom())/2.),
-           "R"  : lambda r: (r.right(), (r.top()+r.bottom())/2.),
-           "T"  : lambda r: ((r.left()+r.right())/2.0, r.top()),
-           "B"  : lambda r: ((r.left()+r.right())/2.0, r.bottom()),
-           "C"  : lambda r: ((r.left()+r.right())/2.0, (r.top()+r.bottom())/2.),
+           "TL": lambda r: (r.left(), r.top()),
+           "TR": lambda r: (r.right(), r.top()),
+           "BL": lambda r: (r.left(), r.bottom()),
+           "BR": lambda r: (r.right(), r.bottom()),
+           "L": lambda r: (r.left(), (r.top()+r.bottom())/2.),
+           "R": lambda r: (r.right(), (r.top()+r.bottom())/2.),
+           "T": lambda r: ((r.left()+r.right())/2.0, r.top()),
+           "B": lambda r: ((r.left()+r.right())/2.0, r.bottom()),
+           "C": lambda r: ((r.left()+r.right())/2.0, (r.top()+r.bottom())/2.),
            }
 
 
@@ -116,7 +116,7 @@ class AbstractLabelItem(QwtPlotItem):
         self.labelparam.update_label(self)
         
     def get_text_rect(self):
-        return QRectF(0.0, 0.0, 10.,10.)
+        return QRectF(0.0, 0.0, 10., 10.)
 
     def types(self):
         return (IShapeItemType, )
@@ -214,7 +214,7 @@ class AbstractLabelItem(QwtPlotItem):
         canvasRect = plot.canvas().contentsRect()
         xMap = plot.canvasMap(self.xAxis())
         yMap = plot.canvasMap(self.yAxis())
-        x,y = self.get_top_left(xMap, yMap, canvasRect)
+        x, y = self.get_top_left(xMap, yMap, canvasRect)
         rct = QRectF(x, y, rect.width(), rect.height())
         inside = rct.contains( pos.x(), pos.y())
         if inside:
@@ -431,7 +431,7 @@ class LegendBoxItem(AbstractLabelItem):
             painter.setBrush(ibrush)
             painter.drawLine( x0, y0+height/2, x0+LEGEND_WIDTH, y0+height/2)
             x1 = x0+LEGEND_SPACEH+LEGEND_WIDTH
-            painter.translate(x1,y0)
+            painter.translate(x1, y0)
             text.drawContents(painter)
             painter.restore()
             y0 += height+LEGEND_SPACEV

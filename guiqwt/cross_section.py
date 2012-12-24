@@ -359,7 +359,7 @@ class CrossSectionPlot(CurvePlot):
         elif self._width is not None:
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
             
-        self.label = make.label(self.LABEL_TEXT, "C", (0,0), "C")
+        self.label = make.label(self.LABEL_TEXT, "C", (0, 0), "C")
         self.label.set_readonly(True)
         self.add_item(self.label)
         
@@ -418,7 +418,7 @@ class CrossSectionPlot(CurvePlot):
         self.known_items[source] = curve
         
     def get_cross_section_curves(self):
-        return self.known_items.values()
+        return list(self.known_items.values())
 
     def items_changed(self, plot):
         # Del obsolete cross section items
@@ -457,7 +457,7 @@ class CrossSectionPlot(CurvePlot):
         self.update_plot(marker)
 
     def is_shape_known(self, shape):
-        for shapes in self._shapes.values():
+        for shapes in list(self._shapes.values()):
             if shape in shapes:
                 return True
         else:
@@ -493,7 +493,7 @@ class CrossSectionPlot(CurvePlot):
             return
         if self.label.isVisible():
             self.label.hide()
-        for index, (_item, curve) in enumerate(self.known_items.iteritems()):
+        for index, (_item, curve) in enumerate(iter(self.known_items.items())):
             if not self.perimage_mode and index > 0:
                 curve.hide()
             else:

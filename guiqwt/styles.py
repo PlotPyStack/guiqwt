@@ -187,49 +187,49 @@ class ItemParameters(object):
         for key in self.ENDING_PARAMETERS:
             if key in paramdict:
                 ending_parameters.append(paramdict.pop(key))
-        parameters = paramdict.values()+ending_parameters
+        parameters = list(paramdict.values())+ending_parameters
         dset = DataSetGroup(parameters, title=title.rstrip('.'), icon=icon)
         if dset.edit(parent=plot, apply=lambda dset: self.update(plot)):
             self.update(plot)
 
 
 LINESTYLES = {
-              "-"  : "SolidLine",
-              "--" : "DashLine",
-              ":"  : "DotLine",
-              "-." : "DashDotLine",
+              "-": "SolidLine",
+              "--": "DashLine",
+              ":": "DotLine",
+              "-.": "DashDotLine",
               }
 COLORS = {
-          "r" : "red",
-          "g" : "green",
-          "b" : "blue",
-          "c" : "cyan",
-          "m" : "magenta",
-          "y" : "yellow",
-          "k" : "black",
-          "w" : "white",
-          "G" : "gray",
+          "r": "red",
+          "g": "green",
+          "b": "blue",
+          "c": "cyan",
+          "m": "magenta",
+          "y": "yellow",
+          "k": "black",
+          "w": "white",
+          "G": "gray",
           }
 MARKERS = {
-          "+" : QwtSymbol.Cross,
-          "o" : QwtSymbol.Ellipse,
-          "*" : QwtSymbol.Star1,
-          "." : QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black),
+          "+": QwtSymbol.Cross,
+          "o": QwtSymbol.Ellipse,
+          "*": QwtSymbol.Star1,
+          ".": QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black),
                           QPen(Qt.black), QSize(3, 3)),
-          "x" : QwtSymbol.XCross,
-          "s" : QwtSymbol.Rect,
-          "d" : QwtSymbol.Diamond,
-          "^" : QwtSymbol.UTriangle,
-          "v" : QwtSymbol.DTriangle,
-          ">" : QwtSymbol.RTriangle,
-          "<" : QwtSymbol.LTriangle,
-          "h" : QwtSymbol.Star2,
+          "x": QwtSymbol.XCross,
+          "s": QwtSymbol.Rect,
+          "d": QwtSymbol.Diamond,
+          "^": QwtSymbol.UTriangle,
+          "v": QwtSymbol.DTriangle,
+          ">": QwtSymbol.RTriangle,
+          "<": QwtSymbol.LTriangle,
+          "h": QwtSymbol.Star2,
           }
 MARKERSTYLES = {
                 None: "NoLine",
-                "-" : "HLine",
-                "|" : "VLine",
-                "+" : "Cross",
+                "-": "HLine",
+                "|": "VLine",
+                "+": "Cross",
                 }
 
 
@@ -245,19 +245,19 @@ def update_style_attr(style, param):
     update the color, linestyle, marker attributes of the param
     object
     """
-    for marker in MARKERS.keys():
+    for marker in list(MARKERS.keys()):
         if marker in style:
             param.symbol.update_param(MARKERS[marker])
             break
     else:
         param.symbol.update_param(QwtSymbol.NoSymbol)
-    for linestyle in LINESTYLES.keys():
+    for linestyle in list(LINESTYLES.keys()):
         if linestyle in style:
             param.line.style = LINESTYLES[linestyle]
             break
     else:
         param.line.style = "NoPen"
-    for color in COLORS.keys():
+    for color in list(COLORS.keys()):
         if color in style:
             param.line.color = COLORS[color]
             param.symbol.facecolor = COLORS[color]
@@ -487,7 +487,7 @@ class BrushStyleParam(DataSet):
     def build_brush(self):
         color = QColor(self.color)
         color.setAlphaF(self.alpha)
-        brush = QBrush(color, getattr(Qt,self.style))
+        brush = QBrush(color, getattr(Qt, self.style))
         tr = QTransform()
         tr = tr.scale(self.sx, self.sy)
         tr = tr.rotate(self.angle)
@@ -719,15 +719,15 @@ class LabelParam(DataSet):
     _begin_anchor = BeginGroup(_("Position relative to anchor")) \
                     .set_prop("display", hide=GetAttrProp("_multiselection"))
     anchor = ChoiceItem(_("Corner"),
-                        [("TL" , _("Top left") ),
-                         ("TR" , _("Top right") ),
-                         ("BL" , _("Bottom left") ),
-                         ("BR" , _("Bottom right") ),
-                         ("L"  , _("Left") ),
-                         ("R"  , _("Right") ),
-                         ("T"  , _("Top") ),
-                         ("B"  , _("Bottom") ),
-                         ("C"  , _("Center") ),], default="TL",
+                        [("TL", _("Top left") ),
+                         ("TR", _("Top right") ),
+                         ("BL", _("Bottom left") ),
+                         ("BR", _("Bottom right") ),
+                         ("L", _("Left") ),
+                         ("R", _("Right") ),
+                         ("T", _("Top") ),
+                         ("B", _("Bottom") ),
+                         ("C", _("Center") ),], default="TL",
                          help=_("Label position relative to anchor point")) \
                          .set_prop("display",
                                    hide=GetAttrProp("_multiselection"))
@@ -768,11 +768,11 @@ class LabelParam(DataSet):
                          ("TR", _("Top right") ),
                          ("BL", _("Bottom left") ),
                          ("BR", _("Bottom right") ),
-                         ("L" , _("Left") ),
-                         ("R" , _("Right") ),
-                         ("T" , _("Top") ),
-                         ("B" , _("Bottom") ),
-                         ("C" , _("Center") ),], default="TL",
+                         ("L", _("Left") ),
+                         ("R", _("Right") ),
+                         ("T", _("Top") ),
+                         ("B", _("Bottom") ),
+                         ("C", _("Center") ),], default="TL",
                          help=_("Absolute position on canvas")
                          ).set_prop("display", active=_abspos_prop) \
                           .set_prop("display",
@@ -1022,9 +1022,9 @@ class QuadGridParam(DataSet):
                                       "Flat mode use fixed u,v "
                                       "interpolation parameters"))
     uflat = FloatItem(_("Fixed U interpolation parameter"),
-                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
+                      default=0.5, min=0., max=1., help=_("For flat mode only"))
     vflat = FloatItem(_("Fixed V interpolation parameter"),
-                      default=0.5,min=0.,max=1., help=_("For flat mode only"))
+                      default=0.5, min=0., max=1., help=_("For flat mode only"))
     grid = BoolItem(_("Show grid"), default=False)
     gridcolor = ColorItem(_("Grid lines color"), default="black")
                                
@@ -1040,7 +1040,7 @@ class QuadGridParam(DataSet):
     def update_image(self, image):
         image.setTitle(self.label)
         image.set_color_map(self.colormap)
-        image.interpolate = (self.interpolation,self.uflat,self.vflat)
+        image.interpolate = (self.interpolation, self.uflat, self.vflat)
         image.grid = self.grid
         # TODO : gridcolor
 
@@ -1165,7 +1165,7 @@ class ImageFilterParam(BaseImageParam):
     def update_param(self, obj):
         self.xmin, self.ymin, self.xmax, self.ymax = obj.border_rect.get_rect()
         self.use_source_cmap = obj.use_source_cmap
-        super(ImageFilterParam,self).update_param(obj)
+        super(ImageFilterParam, self).update_param(obj)
     
     def update_imagefilter(self, imagefilter):
         m, M = imagefilter.get_lut_range()

@@ -84,14 +84,14 @@ from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
 
 # default offset positions for anchors
 ANCHOR_OFFSETS = {
-                  "TL" : ( 5,  5),
-                  "TR" : (-5,  5),
-                  "BL" : ( 5, -5),
-                  "BR" : (-5, -5),
-                  "L"  : ( 5,  0),
-                  "R"  : (-5,  0),
-                  "T"  : ( 0,  5),
-                  "B"  : ( 0, -5),
+                  "TL": ( 5,  5),
+                  "TR": (-5,  5),
+                  "BL": ( 5, -5),
+                  "BR": (-5, -5),
+                  "L": ( 5,  0),
+                  "R": (-5,  0),
+                  "T": ( 0,  5),
+                  "B": ( 0, -5),
                   }
 
 CURVE_COUNT = 0
@@ -221,7 +221,7 @@ class PlotItemBuilder(object):
                 y = data
             else:
                 x = arange(len(data[:, 0]))
-                y = [data[:, i] for i in range(len(data[0, :]))]
+                y = [data[:, i] for i in range(len(data[0,:]))]
             return x, y
             
         if len(args) == 1:
@@ -558,7 +558,7 @@ class PlotItemBuilder(object):
             param.alpha = alpha
         interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
         param.interpolation = interp_methods[interpolation]
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             if val is not None:
                 setattr(param, key, val)
 

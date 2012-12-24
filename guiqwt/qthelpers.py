@@ -61,7 +61,7 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
         try:
             io.imwrite(filename, data)
             return filename
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(parent,
@@ -90,7 +90,7 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     filename = unicode(filename)
     try:
         data = io.imread(filename, to_grayscale=to_grayscale)
-    except Exception, msg:
+    except Exception as msg:
         import traceback
         traceback.print_exc()
         QMessageBox.critical(parent,
@@ -121,7 +121,7 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
     for filename in filenames:
         try:
             data = io.imread(filename, to_grayscale=to_grayscale)
-        except Exception, msg:
+        except Exception as msg:
             import traceback
             traceback.print_exc()
             QMessageBox.critical(parent,

@@ -187,13 +187,13 @@ LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
 
 def _nanmin(data):
-    if data.dtype.name in ("float32","float64", "float128"):
+    if data.dtype.name in ("float32", "float64", "float128"):
         return np.nanmin(data)
     else:
         return data.min()
 
 def _nanmax(data):
-    if data.dtype.name in ("float32","float64", "float128"):
+    if data.dtype.name in ("float32", "float64", "float128"):
         return np.nanmax(data)
     else:
         return data.max()
@@ -666,7 +666,7 @@ class BaseImageItem(QwtPlotItem):
     def get_histogram(self, nbins):
         """interface de IHistDataSource"""
         if self.data is None:
-            return [0,], [0,1]
+            return [0,], [0, 1]
         if self.histogram_cache is None \
            or nbins != self.histogram_cache[0].shape[0]:
             #from guidata.utils import tic, toc
@@ -728,7 +728,7 @@ class BaseImageItem(QwtPlotItem):
         """Return cross section along x-axis at y=y0"""
         _ix, iy = self.get_closest_indexes(0, y0)
         return (self.get_x_values(0, self.data.shape[1]),
-                self.__process_cross_section(self.data[iy, :], apply_lut))
+                self.__process_cross_section(self.data[iy,:], apply_lut))
 
     def get_ysection(self, x0, apply_lut=False):
         """Return cross section along y-axis at x=x0"""
@@ -1118,7 +1118,7 @@ class QuadGridItem(RawImageItem):
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
         painter.drawImage(qrect, self._image, qrect)
         xl, yt, xr, yb = dest
-        self._offscreen[yt:yb,xl:xr] = 0
+        self._offscreen[yt:yb, xl:xr] = 0
 
     def notify_new_offscreen(self):
         # we always ensure the offscreen is clean before drawing
@@ -1262,7 +1262,7 @@ class TrImageItem(RawImageItem):
 
     def update_border(self):
         tpos = np.dot(self.itr, self.points)
-        self.border_rect.set_points(tpos.T[:,:2])
+        self.border_rect.set_points(tpos.T[:, :2])
 
     def draw_border(self, painter, xMap, yMap, canvasRect):
         self.border_rect.draw(painter, xMap, yMap, canvasRect)
@@ -1457,7 +1457,7 @@ def get_image_from_qrect(plot, p0, p1, src_size=None,
     assert adjust_range in (None, 'normalize', 'original')
     items = get_items_in_rectangle(plot, p0, p1, item_type=item_type)
     if not items:
-        raise TypeError, _("There is no supported image item in current plot.")
+        raise TypeError(_("There is no supported image item in current plot."))
     if src_size is None:
         _src_x, _src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
     else:
@@ -1697,11 +1697,11 @@ class RGBImageItem(ImageItem):
         use_alpha = self.imageparam.alpha_mask
         alpha = self.imageparam.alpha
         if NC > 3 and use_alpha:
-            A = data[...,3].astype(np.uint32)
+            A = data[..., 3].astype(np.uint32)
         else:
             A = np.zeros((H, W), np.uint32)
-            A[:, :]=int(255*alpha)
-        self.data[:, :] = (A<<24)+(R<<16)+(G<<8)+B
+            A[:,:]=int(255*alpha)
+        self.data[:,:] = (A<<24)+(R<<16)+(G<<8)+B
 
     #--- BaseImageItem API ----------------------------------------------------
     # Override lut/bg handling
@@ -2252,24 +2252,24 @@ class Histogram2DItem(BaseImageItem):
         computation = self.histparam.computation
         i1, j1, i2, j2 = src_rect
         if computation == -1 or self._z is None:
-            self.data[:, :] = 0.0
+            self.data[:,:] = 0.0
             nmax = histogram2d(self._x, self._y, i1, i2, j1, j2,
                                self.data, self.logscale)
         else:
             self.data_tmp[:,:] = 0.0
-            if computation in (2,4):    # sum, avg
+            if computation in (2, 4):    # sum, avg
                 self.data[:,:] = 0.0
-            elif computation in (1,5):  # min, argmin
+            elif computation in (1, 5):  # min, argmin
                 val = np.inf
                 self.data[:,:] = val
-            elif computation in (0,6):  # max, argmax
+            elif computation in (0, 6):  # max, argmax
                 val = -np.inf
                 self.data[:,:] = val
             elif computation==3:
                 self.data[:,:] = 1.
             histogram2d_func(self._x, self._y, self._z, i1, i2, j1, j2,
                              self.data_tmp, self.data, computation)
-            if computation in (0,1,5,6):
+            if computation in (0, 1, 5, 6):
                 self.data[self.data==val] = np.nan
             else:
                 self.data[self.data_tmp==0.0] = np.nan
@@ -2311,7 +2311,7 @@ class Histogram2DItem(BaseImageItem):
     def get_histogram(self, nbins):
         """interface de IHistDataSource"""
         if self.data is None:
-            return [0,], [0,1]
+            return [0,], [0, 1]
         _min = _nanmin(self.data)
         _max = _nanmax(self.data)
         if self.data.dtype in (np.float64, np.float32):

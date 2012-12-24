@@ -208,18 +208,18 @@ class Figure(object):
         self.app = None
 
     def get_axes(self, i, j):
-        if (i,j) in self.axes:
-            return self.axes[(i,j)]
+        if (i, j) in self.axes:
+            return self.axes[(i, j)]
 
         ax = Axes()
-        self.axes[(i,j)] = ax
+        self.axes[(i, j)] = ax
         return ax
 
     def build_window(self):
         self.app = guidata.qapplication()
         self.win = Window(wintitle=self.title)
         images = False
-        for (i, j), ax in self.axes.items():
+        for (i, j), ax in list(self.axes.items()):
             ax.setup_window(i, j, self.win)
             if ax.images:
                 images = True
@@ -270,15 +270,15 @@ class Figure(object):
         W = device.width()
         H = device.height()
         from numpy import array
-        coords = array(self.axes.keys())
-        imin = coords[:,0].min()
-        imax = coords[:,0].max()
-        jmin = coords[:,1].min()
-        jmax = coords[:,1].max()
+        coords = array(list(self.axes.keys()))
+        imin = coords[:, 0].min()
+        imax = coords[:, 0].max()
+        jmin = coords[:, 1].min()
+        jmax = coords[:, 1].max()
         w = W/(jmax-jmin+1)
         h = H/(imax-imin+1)
         paint = QPainter(device)
-        for (i,j), ax in self.axes.items():
+        for (i, j), ax in list(self.axes.items()):
             oy = (i-imin)*h
             ox = (j-jmin)*w
             ax.widget.print_(paint, QRect(ox, oy, w, h))
@@ -434,7 +434,7 @@ def show(mainloop=True):
     This should be the last line of your script
     """
     global _figures, _interactive
-    for fig in _figures.values():
+    for fig in list(_figures.values()):
         fig.show()
     if not _interactive:
         do_mainloop(mainloop)
@@ -463,7 +463,7 @@ def subplot(n, m, k):
     lig = (k-1)/m
     col = (k-1)%m
     fig = gcf()
-    axe = fig.get_axes(lig,col)
+    axe = fig.get_axes(lig, col)
     _current_axes = axe
     return axe
 

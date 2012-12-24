@@ -475,7 +475,7 @@ class FitWidgetMixin(CurveWidgetMixin):
             x = self.autofit_cg(x0)
         else:
             return
-        for v,p in zip(x, self.fitparams):
+        for v, p in zip(x, self.fitparams):
             p.value = v
         self.refresh()
         for prm in self.fitparams:
