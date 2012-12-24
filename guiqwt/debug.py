@@ -13,6 +13,8 @@ The `debug` module contains some debugging functions (mostly dumping attributes
 of Qt Objects).
 """
 
+from __future__ import print_function
+
 from StringIO import StringIO
 from guidata.qt.QtGui import QImage, QInputEvent
 from guidata.qt.QtCore import Qt, QEvent
@@ -57,9 +59,9 @@ def print_event(evt):
             buttons = 0
         string += buttons_to_str(buttons)
     if string:
-        print string
+        print(string)
     else:
-        print evt
+        print(evt)
 
 
 def qimage_format( fmt ):
@@ -72,9 +74,9 @@ def qimage_format( fmt ):
     
 def qimage_to_str( img, indent="" ):
     fd = StringIO()
-    print >>fd, indent, img
+    print(indent, img, file=fd)
     indent += "  "
-    print >>fd, indent, "Size:", img.width(), "x", img.height()
-    print >>fd, indent, "Depth:", img.depth()
-    print >>fd, indent, "Format", qimage_format(img.format())
+    print(indent, "Size:", img.width(), "x", img.height(), file=fd)
+    print(indent, "Depth:", img.depth(), file=fd)
+    print(indent, "Format", qimage_format(img.format()), file=fd)
     return fd.getvalue()

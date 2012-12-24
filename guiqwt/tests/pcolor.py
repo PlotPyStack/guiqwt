@@ -7,6 +7,8 @@
 
 """ImageDialog / Pcolor test"""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
@@ -92,7 +94,7 @@ def valgrind_test(K=200):
                             offscreen, dst_rect,
                             lut, interpolate,
                             border)
-    print (time()-t0)/K, " secs per loop"
+    print((time()-t0)/K, " secs per loop")
 
 
 if __name__ == "__main__":

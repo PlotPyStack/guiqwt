@@ -7,6 +7,8 @@
 
 """Tests around image transforms: rotation, translation, ..."""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 from guidata.qt.QtCore import QRectF
@@ -74,7 +76,7 @@ def imshow(items, title=""):
     x = 0
     w = None
     plot = win.get_plot()
-    print "-"*80
+    print("-"*80)
     for i, item in enumerate(items):
         h = item.boundingRect().height()
         if i%nc==0:
@@ -87,9 +89,9 @@ def imshow(items, title=""):
         w = item.boundingRect().width()
 
         item.set_transform(x, y, 0.0)
-        print "Adding item #%d..." % i,
+        print("Adding item #%d..." % i, end=' ')
         plot.add_item(item)
-        print "Done"
+        print("Done")
     win.show()
     win.exec_()
 
@@ -97,7 +99,7 @@ def compute_image(NX, NY):
     BX, BY = 40, 40
     img = np.random.normal(0,100,size=(BX, BY))
     timg = np.fft.fftshift(np.fft.fft2(img))
-    print timg.shape
+    print(timg.shape)
     cx = NX/2
     cy = NY/2
     bx2 = BX/2
@@ -121,12 +123,12 @@ def save_image(name, data):
 def build_image(items):
     r = get_bbox(items)
     x,y,w,h = r.getRect()
-    print "Assemble test1:", w,"x", h
+    print("Assemble test1:", w,"x", h)
     dest = assemble_imageitems(items, r, w, h, align=4)
-    print "saving..."
+    print("saving...")
     save_image("test1.png", dest)
     
-    print "Assemble test2:", w/4,"x", h/4
+    print("Assemble test2:", w/4,"x", h/4)
     dest = assemble_imageitems(items, r, w/4, h/4, align=4)
     save_image("test2.png", dest)
 

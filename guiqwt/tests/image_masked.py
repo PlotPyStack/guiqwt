@@ -12,6 +12,8 @@ Masked image items are constructed using a masked array item. Masked data is
 ignored in computations, like the average cross sections.
 """
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import os, os.path as osp, pickle
@@ -30,11 +32,11 @@ if __name__ == "__main__":
     win = ImageDialog(toolbar=True, wintitle="Masked image item test")
     win.add_tool(ImageMaskTool)
     if os.access(FNAME, os.R_OK):
-        print "Restoring mask...",
+        print("Restoring mask...", end=' ')
         iofile = file(FNAME, "rb")
         image = pickle.load(iofile)
         iofile.close()
-        print "OK"
+        print("OK")
     else:
         fname = osp.join(osp.abspath(osp.dirname(__file__)), "brain.png")
         image = make.maskedimage(filename=fname, colormap='gray',

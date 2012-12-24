@@ -7,6 +7,8 @@
 
 """Curve fitting tools"""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
@@ -26,8 +28,8 @@ def test():
     params = [a, b]
     values = guifit(x, y, fit, params, xlabel="Time (s)", ylabel="Power (a.u.)")
     
-    print values
-    print [param.value for param in params]
+    print(values)
+    print([param.value for param in params])
 
 if __name__ == "__main__":
     test()

@@ -11,8 +11,9 @@ This test module was used to compare Cython and Fortran extensions performance
 before removing the Fortran extensions.
 """
 
-import time
+from __future__ import print_function
 
+import time
 import numpy as np
 
 from guiqwt._ext import hist2d, hist2d_func
@@ -22,7 +23,7 @@ from guiqwt.histogram2d import histogram2d, histogram2d_func
 def test(func, args):
     t0 = time.time()
     output = func(*args)
-    print "Elapsed time: %d ms" % ((time.time()-t0)*1000)
+    print("Elapsed time: %d ms" % ((time.time()-t0)*1000))
     return output
 
 def hist2d_test(x, y, bins, logscale):
@@ -30,7 +31,7 @@ def hist2d_test(x, y, bins, logscale):
     i1, j1, i2, j2 = x.min(), y.min(), x.max(), y.max()
     data = np.zeros((ny_bins, nx_bins), float, order='F')
     _, nmax = hist2d(y, x, j1, j2, i1, i2, data, logscale)
-    print "nmax:", nmax
+    print("nmax:", nmax)
     return data
 
 def histogram2d_test(x, y, bins, logscale):
@@ -38,7 +39,7 @@ def histogram2d_test(x, y, bins, logscale):
     i1, j1, i2, j2 = x.min(), y.min(), x.max(), y.max()
     data = np.zeros((ny_bins, nx_bins), float)
     nmax = histogram2d(x, y, i1, i2, j1, j2, data, logscale)
-    print "nmax:", nmax
+    print("nmax:", nmax)
     return data
 
 def hist2d_func_test(x, y, z, bins, computation):

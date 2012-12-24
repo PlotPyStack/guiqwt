@@ -16,6 +16,8 @@ guiqwt.events
 The `event` module handles event management (states, event filter, ...).
 """
 
+from __future__ import print_function
+
 import weakref
 from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
 from guidata.qt.QtGui import QKeySequence
@@ -153,7 +155,7 @@ class StatefulEventFilter(QObject):
     def eventFilter(self, _obj, event):
         """Le callback 'eventfilter' pour Qt"""
         if not hasattr(self, "all_event_types"):
-            print repr(self), self
+            print(repr(self), self)
         if event.type() not in self.all_event_types:
             return False
 

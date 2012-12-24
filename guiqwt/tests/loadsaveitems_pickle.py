@@ -7,6 +7,8 @@
 
 """Load/save items using Python's pickle protocol"""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 # WARNING:
@@ -70,9 +72,9 @@ class IOTest(object):
         self.create_dialog()
         self.add_items()
         self.dlg.exec_()
-        print "Saving items...",
+        print("Saving items...", end=' ')
         self.save_items()
-        print "OK"
+        print("OK")
         
     def create_dialog(self):
         self.dlg = dlg = ImageDialog(\
@@ -85,13 +87,13 @@ class IOTest(object):
     
     def add_items(self):
         if os.access(self.FNAME, os.R_OK):
-            print "Restoring items...",
+            print("Restoring items...", end=' ')
             self.restore_items()
-            print "OK"
+            print("OK")
         else:
             for item in build_items():
                 self.plot.add_item(item)
-            print "Building items and add them to plotting canvas",
+            print("Building items and add them to plotting canvas", end=' ')
         self.plot.set_axis_font("left", QFont("Courier"))
         self.dlg.get_itemlist_panel().show()
         self.plot.set_items_readonly(False)

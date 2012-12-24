@@ -11,6 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from __future__ import print_function
+
 import sys, os
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -27,7 +29,7 @@ try:
     import sphinx.ext.viewcode
     extensions.append('sphinx.ext.viewcode')
 except ImportError:
-    print >>sys.stderr, "WARNING: the Sphinx viewcode extension was not found"
+    print("WARNING: the Sphinx viewcode extension was not found", file=sys.stderr)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

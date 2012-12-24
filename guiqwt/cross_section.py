@@ -37,6 +37,8 @@ Reference
    :inherited-members:
 """
 
+from __future__ import print_function
+
 import weakref
 
 from guidata.qt.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
@@ -871,7 +873,7 @@ def compute_oblique_section(item, obj):
     try:
         xdata -= xdata[0]
     except IndexError:
-        print xdata, ydata
+        print(xdata, ydata)
     return xdata, ydata
 
 # Oblique cross section item

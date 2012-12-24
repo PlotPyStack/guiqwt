@@ -100,6 +100,8 @@ Reference
 .. autofunction:: pcolor
 """
 
+from __future__ import print_function
+
 import sys
 from guidata.qt.QtGui import (QMainWindow, QPrinter, QPainter, QFrame,
                               QVBoxLayout, QGridLayout, QToolBar, QPixmap,
@@ -285,7 +287,7 @@ class Figure(object):
 def do_mainloop(mainloop):
     global _current_fig
     if not _current_fig:
-        print >>sys.stderr, "Warning: must create a figure before showing it"
+        print("Warning: must create a figure before showing it", file=sys.stderr)
     elif mainloop:
         app = guidata.qapplication()
         app.exec_()

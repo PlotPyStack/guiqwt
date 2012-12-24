@@ -138,6 +138,8 @@ Reference
 
 #FIXME: traceback in scaler when adding here 'from __future__ import division'
 
+from __future__ import print_function
+
 import sys
 import os
 import os.path as osp
@@ -176,9 +178,9 @@ try:
                                 _scale_quads,
                                 INTERP_NEAREST, INTERP_LINEAR, INTERP_AA)
 except ImportError:
-    print >>sys.stderr, ("Module 'guiqwt.image': missing C extension")
-    print >>sys.stderr, ("try running :"
-                         "python setup.py build_ext --inplace -c mingw32" )
+    print(("Module 'guiqwt.image': missing C extension"), file=sys.stderr)
+    print(("try running :"
+                         "python setup.py build_ext --inplace -c mingw32" ), file=sys.stderr)
     raise
 
 LUT_SIZE = 1024
@@ -1184,11 +1186,11 @@ class TrImageItem(RawImageItem):
         p2 = rot.I*pt
         p3 = sc.I*pt
         p4 = tr2.I*pt
-        print "src=", pt.T
-        print "tr1:", p1.T
-        print "tr1+rot:", p2.T
-        print "tr1+rot+sc:", p3.T
-        print "tr1+rot+tr2:", p4.T
+        print("src=", pt.T)
+        print("tr1:", p1.T)
+        print("tr1+rot:", p2.T)
+        print("tr1+rot+sc:", p3.T)
+        print("tr1+rot+tr2:", p4.T)
 
     def set_crop(self, left, top, right, bottom):
         self.imageparam.set_crop(left, top, right, bottom)
@@ -1372,8 +1374,8 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
     """
     # align width to 'align' bytes
     if align is not None:
-        print >>sys.stderr, "guiqwt.image.assemble_imageitems: since v2.2, "\
-                            "the `align` option is ignored"
+        print("guiqwt.image.assemble_imageitems: since v2.2, "\
+                            "the `align` option is ignored", file=sys.stderr)
     align = 1  #XXX: byte alignment is disabled until further notice!
     aligned_destw = align*((int(destw)+align-1)/align)
     aligned_desth = int(desth*aligned_destw/destw)

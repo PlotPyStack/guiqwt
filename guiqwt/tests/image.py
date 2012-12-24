@@ -10,6 +10,8 @@
 #FIXME: unexpected behavior when changing the xmin/xmax/ymin/ymax values in 
 #       the image parameters (2nd tab: "Axes")
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import numpy as np
@@ -53,7 +55,7 @@ def compute_image(N=2000, grid=True):
     img[-K:, -K:] = m3   # (N,N)
     img[-K:, :K] = m4    # (N,0)
     #img = array( 30000*(img+1.1), uint16 )
-    print img.dtype
+    print(img.dtype)
     return img
 
 

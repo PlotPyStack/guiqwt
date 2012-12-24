@@ -44,8 +44,9 @@ Reference
    :inherited-members:
 """
 
-import sys
+from __future__ import print_function
 
+import sys
 import numpy as np
 
 from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
@@ -431,7 +432,7 @@ class BasePlot(QwtPlot):
         else:
             item.setZ(self.get_max_z()+1)
         if item in self.items:
-            print >>sys.stderr, "Warning: item %r is already attached to plot" % item
+            print("Warning: item %r is already attached to plot" % item, file=sys.stderr)
         else:
             self.items.append(item)
         self.emit(SIG_ITEMS_CHANGED, self)

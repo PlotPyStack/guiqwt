@@ -7,6 +7,8 @@
 
 """Image with custom X/Y axes linear scales"""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 from guiqwt.plot import ImageDialog
@@ -52,7 +54,7 @@ def compute_image():
     img[-K:, :K] = m4    # (N,0)
     #img = array( 30000*(img+1.1), uint16 )
     img = img + np.random.normal(0., 0.05, size=(N,N))
-    print img.dtype
+    print(img.dtype)
     return x, (x+5)**0.6, img
 
 def test():

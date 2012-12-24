@@ -11,6 +11,8 @@ PolygonMapItem is intended to display maps ie items containing
 several hundreds of independent polygons.
 """
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 from guiqwt.plot import ImageDialog
@@ -73,8 +75,8 @@ def test():
         colors[k,1] = COLORS[(3*k)%len(COLORS)][1]
     points = concatenate(points)
     
-    print NCIRC, "Polygons"
-    print points.shape[0], "Points"
+    print(NCIRC, "Polygons")
+    print(points.shape[0], "Points")
     
     crv = PolygonMapItem()
     crv.set_data(points, offsets, colors)

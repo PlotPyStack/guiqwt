@@ -11,6 +11,8 @@ SelectPointTool test
 This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 from guiqwt.plot import CurveDialog
@@ -20,7 +22,7 @@ from guiqwt.config import _
 
 
 def test_function(tool):
-    print "Current coordinates:", tool.get_coordinates()
+    print("Current coordinates:", tool.get_coordinates())
 
 def get_point( *args ):
     """
@@ -50,7 +52,7 @@ def test():
     y = sin(sin(sin(x)))    
     x2 = linspace(-10, 10, 20)
     y2 = sin(sin(sin(x2)))
-    print get_point( (x, y), (x2,y2), (x, sin(2*y)) )
+    print(get_point( (x, y), (x2,y2), (x, sin(2*y)) ))
 
 if __name__ == "__main__":
     test()

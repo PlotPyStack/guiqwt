@@ -27,10 +27,11 @@ Reference
 .. autofunction:: save_items
 """
 
+from __future__ import print_function
+
 import sys
 import re
 import os.path as osp
-
 import numpy as np
 
 # Local imports
@@ -400,8 +401,7 @@ def imagefile_to_array(filename, to_grayscale=False):
     Return a NumPy array from an image file `filename`
     If `to_grayscale` is True, convert RGB images to grayscale
     """
-    print >>sys.stderr,\
-          "io.imagefile_to_array is deprecated: use io.imread instead"
+    print("io.imagefile_to_array is deprecated: use io.imread instead", file=sys.stderr)
     return imread(filename, to_grayscale=to_grayscale)
 
 def array_to_imagefile(arr, filename, mode=None, max_range=False):
@@ -409,8 +409,7 @@ def array_to_imagefile(arr, filename, mode=None, max_range=False):
     Save a numpy array `arr` into an image file `filename`
     Warning: option 'max_range' changes data in place
     """
-    print >>sys.stderr,\
-          "io.array_to_imagefile is deprecated: use io.imwrite instead"
+    print("io.array_to_imagefile is deprecated: use io.imwrite instead", file=sys.stderr)
     return imwrite(filename, arr, mode=mode, max_range=max_range)
 
 
@@ -520,4 +519,4 @@ def load_items(reader):
 if __name__ == '__main__':
     # Test if items can all be constructed from their Python module
     for name in SERIALIZABLE_ITEMS:
-        print name, '-->', item_class_from_name(name)
+        print(name, '-->', item_class_from_name(name))

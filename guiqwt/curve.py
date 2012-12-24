@@ -100,7 +100,7 @@ Reference
    :members:
 """
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import sys
 import warnings
@@ -173,9 +173,9 @@ def seg_dist(P, P0, P1):
             return abs(u*np.sin(angle))
 
 def test_seg_dist():
-    print seg_dist(QPointF(200, 100), QPointF(150, 196), QPointF(250, 180))
-    print seg_dist(QPointF(200, 100), QPointF(190, 196), QPointF(210, 180))
-    print seg_dist(QPointF(201, 105), QPointF(201, 196), QPointF(201, 180))
+    print(seg_dist(QPointF(200, 100), QPointF(150, 196), QPointF(250, 180)))
+    print(seg_dist(QPointF(200, 100), QPointF(190, 196), QPointF(210, 180)))
+    print(seg_dist(QPointF(201, 105), QPointF(201, 196), QPointF(201, 180)))
 
 def norm2(v):
     return (v**2).sum(axis=1)
@@ -201,7 +201,7 @@ def test_seg_dist_v():
     a=(np.arange(10.)**2).reshape(5, 2)
     ix, dist = seg_dist_v((2.1, 3.3), a[:-1, 0], a[:-1, 1],
                           a[1:, 0], a[1:, 1])
-    print ix, dist
+    print(ix, dist)
     assert ix == 0
 
 if __name__ == "__main__":

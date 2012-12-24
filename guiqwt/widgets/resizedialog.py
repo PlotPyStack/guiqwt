@@ -21,7 +21,7 @@ Reference
    :inherited-members:
 """
 
-from __future__ import division
+from __future__ import division, print_function
 
 from guidata.qt.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout, QLabel,
                               QFormLayout, QLineEdit, QIntValidator, QCheckBox)
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     qapp = guidata.qapplication()
     test = ResizeDialog(None, (150, 100), (300, 200), "Enter the new size:")
     if test.exec_():
-        print test.width
-        print test.get_zoom()
+        print(test.width)
+        print(test.get_zoom())

@@ -11,6 +11,8 @@ AnnotatedSegmentTool test
 This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp
@@ -47,8 +49,8 @@ def test():
     filename = osp.join(osp.dirname(__file__), "brain.png")
     image = make.image(filename=filename, colormap="bone")
     rect = get_segment(image)
-    print "Coordinates:", rect
-    print "Distance:", np.sqrt((rect[2]-rect[0])**2 + (rect[3]-rect[1])**2)
+    print("Coordinates:", rect)
+    print("Distance:", np.sqrt((rect[2]-rect[0])**2 + (rect[3]-rect[1])**2))
 
 if __name__ == "__main__":
     test()

@@ -41,7 +41,7 @@ Reference
    :inherited-members:
 """
 
-from __future__ import division
+from __future__ import division, print_function
 
 from guidata.qt.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
                               QLineEdit, QDialog, QVBoxLayout, QHBoxLayout,
@@ -610,5 +610,5 @@ if __name__ == "__main__":
     b = FitParam("Frequency", 1.05, 0., 10., logscale=True)
     params = [a, b]
     values = guifit(x, y, fit, params, auto_fit=True)
-    print values
-    print [param.value for param in params]
+    print(values)
+    print([param.value for param in params])

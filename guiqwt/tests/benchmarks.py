@@ -7,6 +7,8 @@
 
 """guiqwt plot benchmarking"""
 
+from __future__ import print_function
+
 SHOW = False # Show test in GUI-based test launcher
 
 
@@ -54,10 +56,10 @@ class BaseBM(object):
         # Benchmarking
         t0 = time.time()
         self.add_to_plot(plot)
-        print self.name+':'
-        print "    N  = %d" % self.nsamples
+        print(self.name+':')
+        print("    N  = %d" % self.nsamples)
         plot.replot()  # Force replot
-        print "    dt = %d ms" % ((time.time()-t0)*1e3)
+        print("    dt = %d ms" % ((time.time()-t0)*1e3))
         if close:
             win.close()
 
@@ -124,9 +126,9 @@ def run():
     qt_lib = {'pyqt': 'PyQt4', 'pyside': 'PySide'}[qt._modname]
     title = "guiqwt plot benchmark [%s v%s (Qt v%s), guiqwt v%s]" %\
             (qt_lib, qt.__version__, qt.QtCore.__version__, guiqwt.__version__)
-    print title
-    print '-'*len(title)
-    print
+    print(title)
+    print('-'*len(title))
+    print()
 
     import guidata
     app = guidata.qapplication()

@@ -7,6 +7,8 @@
 
 """Rotate/crop test: using the scaler C++ engine to rotate/crop images"""
 
+from __future__ import print_function
+
 SHOW = True # Show test in GUI-based test launcher
 
 import os.path as osp
@@ -70,11 +72,11 @@ def dialog_test(fname, interactive=True):
         array1 = dlg.output_array
         if array0.shape == array1.shape:
             if (array1 == array0).all() and not interactive:
-                print "Test passed successfully."
+                print("Test passed successfully.")
                 return
             imshow(array1-array0, title="array1-array0")
         else:
-            print array0.shape, '-->', array1.shape
+            print(array0.shape, '-->', array1.shape)
         imshow(array0, title="array0", hold=True)
         imshow(array1, title="array1")
 
