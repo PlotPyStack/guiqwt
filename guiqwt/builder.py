@@ -57,8 +57,8 @@ Reference
 """
 
 import os.path as osp
-
 from numpy import arange, array, zeros, meshgrid, ndarray
+from guidata.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _, CONF, make_title
@@ -225,7 +225,7 @@ class PlotItemBuilder(object):
             return x, y
             
         if len(args) == 1:
-            if isinstance(args[0], basestring):
+            if is_text_string(args[0]):
                 x = array((), float)
                 y = array((), float)
                 style = args[0]
@@ -237,7 +237,7 @@ class PlotItemBuilder(object):
                     style = [self.style.next() for yi in y]
         elif len(args) == 2:
             a1, a2 = args
-            if isinstance(a2, basestring):
+            if is_text_string(a2):
                 x, y = get_x_y_from_data(a1)
                 style = a2
             else:
@@ -263,7 +263,7 @@ class PlotItemBuilder(object):
             style = self.style.next()
         elif len(args)==3:
             a1, a2, a3 = args
-            if isinstance(a3, basestring):
+            if is_text_string(a3):
                 y, dy = a1, a2
                 x = arange(len(y))
                 dx = zeros(len(y))
@@ -274,7 +274,7 @@ class PlotItemBuilder(object):
                 style = self.style.next()
         elif len(args)==4:
             a1, a2, a3, a4 = args
-            if isinstance(a4, basestring):
+            if is_text_string(a4):
                 x, y, dy = a1, a2, a3
                 dx = zeros(len(y))
                 style = a4

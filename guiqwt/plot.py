@@ -113,6 +113,7 @@ from guidata.qt.QtCore import Qt, SIGNAL, SLOT
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid
 from guidata.qthelpers import create_action
+from guidata.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -768,7 +769,7 @@ class CurveWidgetMixin(PlotManager):
         
     def setup_widget_properties(self, wintitle, icon):
         self.setWindowTitle(wintitle)
-        if isinstance(icon, basestring):
+        if is_text_string(icon):
             icon = get_icon(icon)
         if icon is not None:
             self.setWindowIcon(icon)

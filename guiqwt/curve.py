@@ -102,7 +102,6 @@ Reference
 
 from __future__ import with_statement, print_function
 
-import sys
 import warnings
 import numpy as np
 
@@ -115,6 +114,7 @@ from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import create_action, add_actions
+from guidata.py3compat import is_text_string, maxsize
 
 # Local imports
 from guiqwt.transitional import (QwtPlotCurve, QwtPlotGrid, QwtPlotItem,
@@ -294,7 +294,7 @@ class GridItem(QwtPlotGrid):
         pass
 
     def hit_test(self, pos):
-        return sys.maxint, 0, False, None
+        return maxsize, 0, False, None
 
     def move_local_point_to(self, handle, pos, ctrl=None):
         pass
@@ -476,7 +476,7 @@ class CurveItem(QwtPlotCurve):
         """Calcul de la distance d'un point à une courbe
         renvoie (dist, handle, inside)"""
         if self.is_empty():
-            return sys.maxint, 0, False, None
+            return maxsize, 0, False, None
         plot = self.plot()
         ax = self.xAxis()
         ay = self.yAxis()
@@ -489,7 +489,7 @@ class CurveItem(QwtPlotCurve):
         if np.count_nonzero(tmpx) != len(tmpx) or\
            np.count_nonzero(tmpy) != len(tmpy):
             # Avoid dividing by zero warning when computing dx or dy
-            return sys.maxint, 0, False, None
+            return maxsize, 0, False, None
         dx = 1/tmpx
         dy = 1/tmpy
         i0 = dx.argmin()
@@ -743,7 +743,7 @@ class PolygonMapItem(QwtPlotItem):
         """Calcul de la distance d'un point à une courbe
         renvoie (dist, handle, inside)"""
         if self.is_empty():
-            return sys.maxint, 0, False, None
+            return maxsize, 0, False, None
         plot = self.plot()
         # TODO
         return distance, i, False, None
@@ -1689,25 +1689,25 @@ class CurvePlot(BasePlot):
         if title is not None:
             self.set_title(title)
         if xlabel is not None:
-            if isinstance(xlabel, basestring):
+            if is_text_string(xlabel):
                 xlabel = (xlabel, "")
             for label, axis in zip(xlabel, ("bottom", "top")):
                 if label is not None:
                     self.set_axis_title(axis, label)
         if ylabel is not None:
-            if isinstance(ylabel, basestring):
+            if is_text_string(ylabel):
                 ylabel = (ylabel, "")
             for label, axis in zip(ylabel, ("left", "right")):
                 if label is not None:
                     self.set_axis_title(axis, label)
         if xunit is not None:
-            if isinstance(xunit, basestring):
+            if is_text_string(xunit):
                 xunit = (xunit, "")
             for unit, axis in zip(xunit, ("bottom", "top")):
                 if unit is not None:
                     self.set_axis_unit(axis, unit)
         if yunit is not None:
-            if isinstance(yunit, basestring):
+            if is_text_string(yunit):
                 yunit = (yunit, "")
             for unit, axis in zip(yunit, ("left", "right")):
                 if unit is not None:

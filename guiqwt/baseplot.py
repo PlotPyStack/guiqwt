@@ -54,6 +54,7 @@ from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
 from guidata.qt.QtCore import QSize, Qt
 
 from guidata.configtools import get_font
+from guidata.py3compat import to_text_string, is_text_string, maxsize
 
 # Local imports
 from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
@@ -177,7 +178,7 @@ class BasePlot(QwtPlot):
         
     def get_title(self):
         """Get plot title"""
-        return unicode(self.title().text())
+        return to_text_string(self.title().text())
 
     def set_title(self, title):
         """Set plot title"""
@@ -250,7 +251,7 @@ class BasePlot(QwtPlot):
         color: color name (string) or QColor instance
         """
         axis_id = self.get_axis_id(axis_id)
-        if isinstance(color, basestring):
+        if is_text_string(color):
             color = QColor(color)
         self.axes_styles[axis_id].color = str(color.name())
         self.update_axis_style(axis_id)
@@ -387,7 +388,7 @@ class BasePlot(QwtPlot):
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""
-        fname = unicode(fname)
+        fname = to_text_string(fname)
         if fname.lower().endswith('.pdf'):
             printer = QPrinter()
             printer.setOutputFormat(QPrinter.PdfFormat)
@@ -725,7 +726,7 @@ class BasePlot(QwtPlot):
                            distance to 'pos' is less than close_dist
         else: return the closest item
         """
-        selobj, distance, inside, handle = None, sys.maxint, None, None
+        selobj, distance, inside, handle = None, maxsize, None, None
         for obj in self.get_items(z_sorted=True):
             if not obj.isVisible() or not obj.can_select():
                 continue
@@ -745,7 +746,7 @@ class BasePlot(QwtPlot):
         Return nearest item for which position 'pos' is inside of it
         (iterate over items with respect to their 'z' coordinate)
         """
-        selobj, distance, inside, handle = None, sys.maxint, None, None
+        selobj, distance, inside, handle = None, maxsize, None, None
         for obj in self.get_items(z_sorted=True):
             if not obj.isVisible() or not obj.can_select():
                 continue

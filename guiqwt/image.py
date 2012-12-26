@@ -141,7 +141,6 @@ Reference
 from __future__ import print_function
 
 import sys
-import os
 import os.path as osp
 from math import fabs
 
@@ -151,6 +150,7 @@ from guidata.qt.QtGui import QColor, QImage
 from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
 
 from guidata.utils import assert_interfaces_valid, update_dataset
+from guidata.py3compat import getcwd, is_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
@@ -289,7 +289,7 @@ class BaseImageItem(QwtPlotItem):
     def get_filename(self):
         fname = self._filename
         if fname is not None and not osp.isfile(fname):
-            other_try = osp.join(os.getcwdu(), osp.basename(fname))
+            other_try = osp.join(getcwd(), osp.basename(fname))
             if osp.isfile(other_try):
                 self.set_filename(other_try)
                 fname = other_try
@@ -784,7 +784,7 @@ class RawImageItem(BaseImageItem):
     def __setstate__(self, state):
         param, lut_range, fn_or_data, z = state
         self.imageparam = param
-        if isinstance(fn_or_data, basestring):
+        if is_text_string(fn_or_data):
             self.set_filename(fn_or_data)
             self.load_data()
         elif fn_or_data is not None: # should happen only with previous API
@@ -921,7 +921,7 @@ class ImageItem(RawImageItem):
         self.set_xdata(xmin, xmax)
         self.set_ydata(ymin, ymax)
         self.imageparam = param
-        if isinstance(fn_or_data, basestring):
+        if is_text_string(fn_or_data):
             self.set_filename(fn_or_data)
             self.load_data()
         elif fn_or_data is not None: # should happen only with previous API
@@ -1569,7 +1569,7 @@ class XYImageItem(RawImageItem):
     def __setstate__(self, state):
         param, lut_range, x, y, fn_or_data, z = state
         self.imageparam = param
-        if isinstance(fn_or_data, basestring):
+        if is_text_string(fn_or_data):
             self.set_filename(fn_or_data)
             self.load_data(lut_range)
         elif fn_or_data is not None: # should happen only with previous API
@@ -1822,7 +1822,7 @@ class MaskedImageItem(ImageItem):
                                   inside=inside)
                 masked_areas.append(area)
         self.imageparam = param
-        if isinstance(fn_or_data, basestring):
+        if is_text_string(fn_or_data):
             self.set_filename(fn_or_data)
             self.load_data(lut_range)
         elif fn_or_data is not None: # should happen only with previous API
@@ -2359,11 +2359,11 @@ class ImagePlot(CurvePlot):
         self.lock_aspect_ratio = lock_aspect_ratio
 
         if zlabel is not None:
-            if ylabel is not None and not isinstance(ylabel, basestring):
+            if ylabel is not None and not is_text_string(ylabel):
                 ylabel = ylabel[0]
             ylabel = (ylabel, zlabel)
         if zunit is not None:
-            if yunit is not None and not isinstance(yunit, basestring):
+            if yunit is not None and not is_text_string(yunit):
                 yunit = yunit[0]
             yunit = (yunit, zunit)
         super(ImagePlot, self).__init__(parent=parent, title=title,

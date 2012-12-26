@@ -33,7 +33,7 @@ if __name__ == "__main__":
     win.add_tool(ImageMaskTool)
     if os.access(FNAME, os.R_OK):
         print("Restoring mask...", end=' ')
-        iofile = file(FNAME, "rb")
+        iofile = open(FNAME, "rb")
         image = pickle.load(iofile)
         iofile.close()
         print("OK")
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     win.get_plot().add_item(image)
     win.show()
     win.exec_()
-    iofile = file(FNAME, "wb")
+    iofile = open(FNAME, "wb")
     pickle.dump(image, iofile)

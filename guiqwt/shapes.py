@@ -74,13 +74,14 @@ Reference
    :inherited-members:
 """
 
-import sys, numpy as np
+import numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
 from guidata.qt.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
 from guidata.qt.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
+from guidata.py3compat import maxsize
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
@@ -675,7 +676,7 @@ class PolygonShape(AbstractShape):
     
     def poly_hit_test(self, plot, ax, ay, pos):
         pos = QPointF(pos)
-        dist = sys.maxint
+        dist = maxsize
         handle = -1
         Cx, Cy = pos.x(), pos.y()
         poly = QPolygonF()
@@ -696,7 +697,7 @@ class PolygonShape(AbstractShape):
     def hit_test(self, pos):
         """return (dist, handle, inside)"""
         if not self.plot():
-            return sys.maxint, 0, False, None
+            return maxsize, 0, False, None
         return self.poly_hit_test(self.plot(), self.xAxis(), self.yAxis(), pos)
     
     def add_local_point(self, pos):
@@ -1060,7 +1061,7 @@ class EllipseShape(PolygonShape):
     def hit_test(self, pos):
         """return (dist, handle, inside)"""
         if not self.plot():
-            return sys.maxint, 0, False, None
+            return maxsize, 0, False, None
         dist, handle, inside, other = self.poly_hit_test(self.plot(),
                                              self.xAxis(), self.yAxis(), pos)
         if not inside:

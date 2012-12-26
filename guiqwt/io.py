@@ -34,6 +34,8 @@ import re
 import os.path as osp
 import numpy as np
 
+from guidata.py3compat import is_text_string, to_text_string
+
 # Local imports
 from guiqwt.config import _
 
@@ -71,7 +73,7 @@ class FileType(object):
     def __init__(self, name, extensions, read_func=None, write_func=None,
                  data_types=None, requires_template=False):
         self.name = name
-        if isinstance(extensions, basestring):
+        if is_text_string(extensions):
             extensions = extensions.split()
         self.extensions = [osp.splitext(' '+ext)[1] for ext in extensions]
         self.read_func = read_func
@@ -363,8 +365,8 @@ def imread(fname, ext=None, to_grayscale=False):
     The `ext` (optional) argument is a string that specifies the file extension
     which defines the input format: when not specified, the input format is 
     guessed from filename."""
-    if not isinstance(fname, basestring):
-        fname = unicode(fname) # in case `filename` is a QString instance
+    if not is_text_string(fname):
+        fname = to_text_string(fname) # in case filename is a QString instance
     if ext is None:
         _base, ext = osp.splitext(fname)
     arr = iohandler.get_readfunc(ext)(fname)
@@ -384,8 +386,8 @@ def imwrite(fname, arr, ext=None, dtype=None, max_range=None, **kwargs):
     If `max_range` is True, array data is scaled to fit the `dtype` (or data 
     type itself if `dtype` is None) dynamic range
     Warning: option `max_range` changes data in place"""
-    if not isinstance(fname, basestring):
-        fname = unicode(fname) # in case `filename` is a QString instance
+    if not is_text_string(fname):
+        fname = to_text_string(fname) # in case filename is a QString instance
     if ext is None:
         _base, ext = osp.splitext(fname)
     if max_range:

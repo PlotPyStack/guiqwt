@@ -15,9 +15,10 @@ of Qt Objects).
 
 from __future__ import print_function
 
-from StringIO import StringIO
 from guidata.qt.QtGui import QImage, QInputEvent
 from guidata.qt.QtCore import Qt, QEvent
+
+from guidata.py3compat import io
 
 def buttons_to_str(buttons):
     """Conversion des flags Qt en chaine"""
@@ -31,7 +32,7 @@ def buttons_to_str(buttons):
     return string
 
 
-def evt_type_to_str( type ):
+def evt_type_to_str(type):
     """Représentation textuelle d'un type d'événement (debug)"""
     if type == QEvent.MouseButtonPress:
         return "Mpress"
@@ -73,7 +74,7 @@ def qimage_format( fmt ):
     return str(fmt)
     
 def qimage_to_str( img, indent="" ):
-    fd = StringIO()
+    fd = io.StringIO()
     print(indent, img, file=fd)
     indent += "  "
     print(indent, "Size:", img.width(), "x", img.height(), file=fd)

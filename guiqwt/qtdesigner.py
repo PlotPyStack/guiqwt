@@ -22,6 +22,13 @@ Reference
 .. autofunction:: create_qtdesigner_plugin
 """
 
+from PyQt4 import uic
+from PyQt4.QtDesigner import QPyDesignerCustomWidgetPlugin
+from PyQt4.QtGui import QIcon
+
+from guidata.configtools import get_icon
+from guidata.py3compat import io
+
 
 def loadui(fname, replace_class="QwtPlot"):
     """
@@ -31,10 +38,8 @@ def loadui(fname, replace_class="QwtPlot"):
     QtDesigner plugins because they don't inheritate from a PyQt4.QtGui
     object.
     """
-    from PyQt4.uic import loadUiType
-    from StringIO import StringIO
     uifile_text = open(fname).read().replace(replace_class, "QFrame")
-    ui, base_class = loadUiType( StringIO(uifile_text) )
+    ui, base_class = uic.loadUiType( io.StringIO(uifile_text) )
     class Form(base_class, ui):
         def __init__(self, parent=None):
             super(Form, self).__init__(parent)
@@ -43,11 +48,10 @@ def loadui(fname, replace_class="QwtPlot"):
 
 
 def compileui(fname, replace_class="QwtPlot"):
-    from PyQt4.uic import compileUi
-    from StringIO import StringIO
     uifile_text = open(fname).read().replace("QwtPlot", "QFrame")
-    compileUi( StringIO(uifile_text), open(fname.replace(".ui", "_ui.py"), 'w'),
-               pyqt3_wrapper=True )
+    uic.compileUi(io.StringIO(uifile_text),
+                  open(fname.replace(".ui", "_ui.py"), 'w'),
+                  pyqt3_wrapper=True )
     
     
 def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
@@ -60,9 +64,6 @@ def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
                              tooltip = "", whatsthis = ""):
     """
     Widget = getattr(__import__(module_name, fromlist=[class_name]), class_name)
-    from PyQt4.QtDesigner import QPyDesignerCustomWidgetPlugin
-    from PyQt4.QtGui import QIcon
-    from guidata.configtools import get_icon
     
     class CustomWidgetPlugin(QPyDesignerCustomWidgetPlugin):
         def __init__(self, parent = None):

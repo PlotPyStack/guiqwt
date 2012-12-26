@@ -262,6 +262,7 @@ from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
+from guidata.py3compat import is_text_string, to_text_string
 
 #Local imports
 from guiqwt.transitional import QwtPlotPrintFilter
@@ -1254,7 +1255,7 @@ class CommandTool(GuiTool):
     def __init__(self, manager, title, icon=None, tip=None,
                  toolbar_id=DefaultToolbarID):
         self.title = title
-        if icon and isinstance(icon, basestring):
+        if icon and is_text_string(icon):
             self.icon = get_icon(icon)
         else:
             self.icon = icon
@@ -1736,7 +1737,7 @@ class OpenFileTool(CommandTool):
         filename, _f = getopenfilename(plot, _("Open"),
                                        self.directory, self.formats)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        filename = unicode(filename)
+        filename = to_text_string(filename)
         if filename:
             self.directory = osp.dirname(filename)
         return filename
@@ -1759,7 +1760,7 @@ class SaveItemsTool(CommandTool):
                                     '%s (*.gui)' % _("guiqwt items"))
         if not fname:
             return
-        itemfile = file(fname, "wb")
+        itemfile = open(fname, "wb")
         plot.save_items(itemfile, selected=True)
 
 class LoadItemsTool(OpenFileTool):
@@ -1772,7 +1773,7 @@ class LoadItemsTool(OpenFileTool):
         filename = self.get_filename(plot)
         if not filename:
             return
-        itemfile = file(filename, "rb")
+        itemfile = open(filename, "rb")
         plot.restore_items(itemfile)
         plot.replot()
 
@@ -1810,7 +1811,7 @@ class AxisScaleTool(CommandTool):
         self.scale_menu = {("lin", "lin"): lin_lin, ("lin", "log"): lin_log,
                            ("log", "lin"): log_lin, ("log", "log"): log_log}
         for obj in (group, menu):
-           add_actions(obj, (lin_lin, lin_log, log_lin, log_log))
+            add_actions(obj, (lin_lin, lin_log, log_lin, log_log))
         return menu
      
     def update_status(self, plot):
@@ -1914,12 +1915,12 @@ def export_curve_data(item):
     fname, _f = getsavefilename(plot, title, "", _("Text file")+" (*.txt)")
     if fname:
         try:
-            np.savetxt(unicode(fname), data, delimiter=',')
+            np.savetxt(to_text_string(fname), data, delimiter=',')
         except RuntimeError as error:
             QMessageBox.critical(plot, _("Export"),
                                  _("Unable to export item data.")+\
                                  "<br><br>"+_("Error message:")+"<br>"+\
-                                 unicode(error))
+                                 to_text_string(error))
 
 def export_image_data(item):
     """Export image item data to file"""
@@ -2034,7 +2035,7 @@ class DeleteItemTool(CommandTool):
         
 class FilterTool(CommandTool):
     def __init__(self, manager, filter, toolbar_id=None):
-        super(FilterTool, self).__init__(manager, unicode(filter.name),
+        super(FilterTool, self).__init__(manager, to_text_string(filter.name),
                                          toolbar_id=toolbar_id)
         self.filter = filter
 

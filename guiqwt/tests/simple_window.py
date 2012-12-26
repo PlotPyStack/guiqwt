@@ -24,6 +24,7 @@ from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.utils import update_dataset
+from guidata.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import ImageWidget
@@ -148,7 +149,7 @@ class CentralWidget(QSplitter):
     
     def add_image_from_file(self, filename):
         image = ImageParam()
-        image.title = unicode(filename)
+        image.title = to_text_string(filename)
         image.data = io.imread(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)

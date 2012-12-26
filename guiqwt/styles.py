@@ -116,6 +116,7 @@ from guidata.dataset.dataitems import (ChoiceItem, BoolItem, FloatItem, IntItem,
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
+from guidata.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
@@ -974,7 +975,7 @@ class BaseImageParam(DataSet):
     _end_formats = EndGroup(_("Statistics string formatting"))
                                
     def update_param(self, image):
-        self.label = unicode(image.title().text())
+        self.label = to_text_string(image.title().text())
         self.colormap = image.get_color_map_name()
         interpolation = image.get_interpolation()
         mode = interpolation[0]
@@ -1029,7 +1030,7 @@ class QuadGridParam(DataSet):
     gridcolor = ColorItem(_("Grid lines color"), default="black")
                                
     def update_param(self, image):
-        self.label = unicode(image.title().text())
+        self.label = to_text_string(image.title().text())
         self.colormap = image.get_color_map_name()
         interp, uflat, vflat = image.interpolate
         self.interpolation = interp
@@ -1402,7 +1403,7 @@ class ShapeParam(DataSet):
                                "the item list panel")).set_pos(col=1)
     
     def update_param(self, obj):
-        self.label = unicode(obj.title().text())
+        self.label = to_text_string(obj.title().text())
         self.line.update_param(obj.pen)
         self.symbol.update_param(obj.symbol)
         self.fill.update_param(obj.brush)
@@ -1479,7 +1480,7 @@ class AnnotationParam(DataSet):
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
-        self.title = unicode(obj.title().text())
+        self.title = to_text_string(obj.title().text())
         self.readonly = obj.is_readonly()
         self.private = obj.is_private()
         

@@ -30,6 +30,7 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
+from guidata.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
@@ -659,7 +660,7 @@ class SignalFT(ObjectFT):
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filenames = list(filenames)
         for filename in filenames:
-            filename = unicode(filename)
+            filename = to_text_string(filename)
             os.chdir(osp.dirname(filename))
             signal = SignalParam()
             signal.title = filename
@@ -707,7 +708,7 @@ class SignalFT(ObjectFT):
                                                 _(u"CSV files")+" (*.csv)")
             if not filename:
                 return
-            filename = unicode(filename)
+            filename = to_text_string(filename)
             os.chdir(osp.dirname(filename))
             obj = self.objects[row]
             try:
@@ -1037,7 +1038,7 @@ class DockablePlotWidget(DockableWidget):
         return self.plotwidget.plot
         
     def setup(self):
-        title = unicode(self.toolbar.windowTitle())
+        title = to_text_string(self.toolbar.windowTitle())
         self.plotwidget.add_toolbar(self.toolbar, title)
         if isinstance(self.plotwidget, ImageWidget):
             self.plotwidget.register_all_image_tools()

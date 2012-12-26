@@ -50,6 +50,7 @@ from guidata.qt.QtGui import QPen, QColor, QTextDocument
 from guidata.qt.QtCore import QRectF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
+from guidata.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem
@@ -317,7 +318,7 @@ class LabelItem(AbstractLabelItem):
         self.labelparam.xg, self.labelparam.yg = x, y
         
     def get_plain_text(self):
-        return unicode(self.text.toPlainText())
+        return to_text_string(self.text.toPlainText())
         
     def set_text(self, text=None):
         if text is not None:
@@ -502,7 +503,7 @@ class RangeInfo(ObjectInfo):
     disp = make.info_label('BL', comp, title="titre")
     """
     def __init__(self, label, xrangeselection, function=None):
-        self.label = unicode(label)
+        self.label = to_text_string(label)
         self.range = xrangeselection
         if function is None:
             function = lambda x, dx: (x, dx)
@@ -524,7 +525,7 @@ class RangeComputation(ObjectInfo):
     function: input arguments are x, y arrays (extraction of arrays 
     corresponding to the xrangeselection X-axis range)"""
     def __init__(self, label, curve, xrangeselection, function=None):
-        self.label = unicode(label)
+        self.label = to_text_string(label)
         self.curve = curve
         self.range = xrangeselection
         if function is None:
@@ -555,7 +556,7 @@ class RangeComputation(ObjectInfo):
 
 class RangeComputation2d(ObjectInfo):
     def __init__(self, label, image, rect, function):
-        self.label = unicode(label)
+        self.label = to_text_string(label)
         self.image = image
         self.rect = rect
         self.func = function

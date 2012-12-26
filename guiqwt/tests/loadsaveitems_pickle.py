@@ -108,11 +108,11 @@ class IOTest(object):
 class PickleTest(IOTest):
     FNAME = "loadsavecanvas.pickle"
     def restore_items(self):
-        f = file(self.FNAME, "rb")
+        f = open(self.FNAME, "rb")
         self.plot.restore_items(f)
     
     def save_items(self):
-        f = file(self.FNAME, "wb")
+        f = open(self.FNAME, "wb")
         self.plot.save_items(f)
     
 
