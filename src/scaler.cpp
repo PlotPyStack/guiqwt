@@ -9,8 +9,26 @@
 #undef NO_IMPORT_ARRAY
 #define PY_ARRAY_UNIQUE_SYMBOL PyScalerArray
 #include <numpy/arrayobject.h>
-#include <fenv.h>
+#ifdef _MSC_VER
+    #include <float.h>
+    #pragma fenv_access (on)
+    #define FE_TOWARDZERO    _RC_CHOP
+    #define fegetround() (_controlfp(0,0) & _MCW_RC)
+    int fesetround(int r) {
+         if((r & _MCW_RC) == r) {  /* check the supplied value is one of 
+    those allowed */
+             int result = _controlfp(r, _MCW_RC) & _MCW_RC;
+             return !(r == result);
+         }
+         return !0;
+    }
+#else
+    #include <fenv.h>
+#endif
 #include <math.h>
+#ifdef _MSC_VER
+    #define isnan(x) _isnan(x)
+#endif
 #include <stdio.h>
 #include <algorithm>
 #include <iostream>
@@ -466,7 +484,11 @@ static bool scale_src_bw(Params& p)
 	/* Destination is RGB */
 	unsigned long bg=0;
 	if (apply_bg) {
-	    bg=PyInt_AsUnsignedLongMask(p_bg);
+        #if PY_MAJOR_VERSION >= 3
+            bg=PyLong_AsUnsignedLongMask(p_bg);
+        #else
+            bg=PyInt_AsUnsignedLongMask(p_bg);
+        #endif    
 	    if (PyErr_Occurred()) return false;
 	}
 	if (!check_lut(p_cmap)) {
@@ -752,13 +774,40 @@ static PyMethodDef _meths[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
+
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_scaler",           /* m_name */
+        "Scaler module",     /* m_doc */
+        -1,                  /* m_size */
+        _meths,              /* m_methods */
+        NULL,                /* m_reload */
+        NULL,                /* m_traverse */
+        NULL,                /* m_clear */
+        NULL,                /* m_free */
+    };
+#endif
+
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
+PyInit__scaler(void)
+#else
 init_scaler()
+#endif
 {
 	PyObject* m;
-	m = Py_InitModule("_scaler", _meths);
+    #if PY_MAJOR_VERSION >= 3
+        m = PyModule_Create(&moduledef);
+    #else
+        m = Py_InitModule("_scaler", _meths);
+    #endif
 	import_array();
 	PyModule_AddIntConstant(m,"INTERP_NEAREST", INTERP_NEAREST);
 	PyModule_AddIntConstant(m,"INTERP_LINEAR", INTERP_LINEAR);
 	PyModule_AddIntConstant(m,"INTERP_AA", INTERP_AA);
+
+    #if PY_MAJOR_VERSION >= 3
+        return m;
+    #endif
 }

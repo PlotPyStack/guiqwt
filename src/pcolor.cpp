@@ -9,8 +9,16 @@
 #define NO_IMPORT_ARRAY
 #define PY_ARRAY_UNIQUE_SYMBOL PyScalerArray
 #include <numpy/arrayobject.h>
-#include <fenv.h>
+#ifdef _MSC_VER
+    #include <float.h>
+    #pragma fenv_access (on)
+#else
+    #include <fenv.h>
+#endif
 #include <math.h>
+#ifdef _MSC_VER
+    #define isnan(x) _isnan(x)
+#endif
 #include <stdio.h>
 #include <algorithm>
 #include <vector>
@@ -372,7 +380,11 @@ PyObject *py_scale_quads(PyObject *self, PyObject *args)
     unsigned long bg=0;
     Array2D<npy_uint32> dest(p_dst);
     if (apply_bg) {
-	bg=PyInt_AsUnsignedLongMask(p_bg);
+    #if PY_MAJOR_VERSION >= 3
+        bg=PyLong_AsUnsignedLongMask(p_bg);
+    #else
+        bg=PyInt_AsUnsignedLongMask(p_bg);
+    #endif
 	if (PyErr_Occurred()) return NULL;
     }
     if (!check_lut(p_cmap)) {

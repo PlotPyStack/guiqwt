@@ -18,6 +18,39 @@
    to switch from float to double type
 */
 
+/* MSVC does not have lrint/lrintf */
+#ifdef _MSC_VER
+__inline long int
+lrint (double f)
+{
+#ifdef _M_X64
+    return (long)((f>0.0f) ? (f + 0.5f):(f -0.5f));
+#else
+    int i; 
+    _asm{
+        fld f
+        fistp i
+    };
+    return i;
+#endif
+}
+
+__inline long int
+lrintf (float f)
+{
+#ifdef _M_X64
+    return (long)((f>0.0f) ? (f + 0.5f):(f -0.5f));
+#else
+    int i;
+    _asm{
+        fld f
+        fistp i
+    };
+    return i;
+#endif
+}
+#endif
+
 typedef int fixed;
 
 template<typename T>
