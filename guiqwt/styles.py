@@ -116,7 +116,7 @@ from guidata.dataset.dataitems import (ChoiceItem, BoolItem, FloatItem, IntItem,
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string, u
+from guidata.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
@@ -732,10 +732,10 @@ class LabelParam(DataSet):
                          help=_("Label position relative to anchor point")) \
                          .set_prop("display",
                                    hide=GetAttrProp("_multiselection"))
-    xc = IntItem(_(u("ΔX")), default=5,
+    xc = IntItem(_("ΔX"), default=5,
                  help=_("Horizontal offset (pixels) relative to anchor point"))\
                  .set_prop("display", hide=GetAttrProp("_multiselection"))
-    yc = IntItem(_(u("ΔY")), default=5,
+    yc = IntItem(_("ΔY"), default=5,
                  help=_("Vertical offset (pixels) relative to anchor point")
                  ).set_pos(col=1).set_prop("display",
                                            hide=GetAttrProp("_multiselection"))

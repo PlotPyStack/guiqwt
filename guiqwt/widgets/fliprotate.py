@@ -33,7 +33,6 @@ import numpy as np
 
 from guidata.qthelpers import create_toolbutton
 from guidata.configtools import get_icon
-from guidata.py3compat import u
 
 # Local imports
 from guiqwt.config import _
@@ -49,7 +48,7 @@ class FlipRotateMixin(base.BaseTransformMixin):
     def add_buttons_to_layout(self, layout):
         """Add tool buttons to layout"""
          # Image orientation
-        angle_label = QLabel(_(u("Angle (°):")))
+        angle_label = QLabel(_("Angle (°):"))
         layout.addWidget(angle_label)
         self.angle_combo = QComboBox(self)
         self.angle_combo.addItems(self.ROTATION_ANGLES)

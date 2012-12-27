@@ -1,7 +1,9 @@
-== Version 2.2.2 ==
+== Version 2.3.0 ==
 
 === New features (since v2.2.1) ===
 
+  * Added support for Python 3: a single code source base compatible with both Python 2 and Python 3
+  * `scaler` C++ extension: added alternative implementations of C99 features so that this extension is now compatible with Microsoft Visual C++ compiler (was only compatible with gcc)
   * Replaced all Fortran 77/90 extensions by Cython extensions:
     * Building `guiqwt` no longer requires a Fortran compiler (but only a C/C++ compiler for the C++ scaler extension and the C Cython extensions)
     * 2-D histogram items are drawn 3 times faster than before
