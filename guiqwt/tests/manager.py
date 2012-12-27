@@ -53,7 +53,7 @@ class Window(QMainWindow):
         filename = osp.join(osp.dirname(__file__), "brain.png")
         image1 = make.image(filename=filename, title="Original", colormap='gray')
         
-        from image import compute_image
+        from guiqwt.tests.image import compute_image
         image2 = make.image(compute_image())
         
         widget = CentralWidget(self)

@@ -32,7 +32,7 @@ class TestWindow(FormClass):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    from image import compute_image
+    from guiqwt.tests.image import compute_image
     form = TestWindow( compute_image() )
     form.show()
     sys.exit(app.exec_())
