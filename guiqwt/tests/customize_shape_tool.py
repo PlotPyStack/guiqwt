@@ -22,7 +22,7 @@ STYLE = style_generator()
 def customize_shape(shape):
     global STYLE
     param = shape.shapeparam
-    style = STYLE.next()
+    style = next(STYLE)
     update_style_attr(style, param)
     param.update_shape(shape)
     shape.plot().replot()

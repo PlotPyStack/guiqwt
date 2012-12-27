@@ -232,9 +232,9 @@ class PlotItemBuilder(object):
             else:
                 x, y = get_x_y_from_data(args[0])
                 if isinstance(y, ndarray):
-                    style = self.style.next()
+                    style = next(self.style)
                 else:
-                    style = [self.style.next() for yi in y]
+                    style = [next(self.style) for yi in y]
         elif len(args) == 2:
             a1, a2 = args
             if is_text_string(a2):
@@ -243,7 +243,7 @@ class PlotItemBuilder(object):
             else:
                 x = a1
                 y = a2
-                style = self.style.next()
+                style = next(self.style)
         elif len(args)==3:
             x, y, style = args
         else:
@@ -260,7 +260,7 @@ class PlotItemBuilder(object):
             y, dy = args
             x = arange(len(y))
             dx = zeros(len(y))
-            style = self.style.next()
+            style = next(self.style)
         elif len(args)==3:
             a1, a2, a3 = args
             if is_text_string(a3):
@@ -271,7 +271,7 @@ class PlotItemBuilder(object):
             else:
                 x, y, dy = args
                 dx = zeros(len(y))
-                style = self.style.next()
+                style = next(self.style)
         elif len(args)==4:
             a1, a2, a3, a4 = args
             if is_text_string(a4):
@@ -280,7 +280,7 @@ class PlotItemBuilder(object):
                 style = a4
             else:
                 x, y, dx, dy = args
-                style = self.style.next()
+                style = next(self.style)
         elif len(args)==5:
             x, y, dx, dy, style = args
         else:
