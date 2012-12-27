@@ -291,7 +291,7 @@ class PlotManager(object):
         just a tool which insert a separator in the plot context menu
         """
         if toolbar_id is None:
-            for _id, toolbar in self.toolbars.items():
+            for _id, toolbar in list(self.toolbars.items()):
                 if toolbar is self.get_default_toolbar():
                     toolbar_id = _id
                     break

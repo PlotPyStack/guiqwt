@@ -986,7 +986,7 @@ class ErrorBarCurveItem(CurveItem):
         x, y, xmin, xmax, ymin, ymax = self.get_minmax_arrays(all_values=False)
         tx = vmap(xMap, x)
         ty = vmap(yMap, y)
-        RN = range(len(tx))
+        RN = list(range(len(tx)))
         if self.errorOnTop:
             QwtPlotCurve.draw(self, painter, xMap, yMap, canvasRect)
         

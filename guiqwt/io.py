@@ -218,7 +218,7 @@ def _imwrite_pil(filename, arr):
     """Write `arr` NumPy array to `filename` using PIL"""
     import PIL.Image
     import PIL.TiffImagePlugin # py2exe
-    for mode, (dtype_str, _extra) in DTYPES.items():
+    for mode, (dtype_str, _extra) in list(DTYPES.items()):
         if dtype_str == arr.dtype.str:
             break
     else:
@@ -451,7 +451,7 @@ def item_class_from_name(name):
     """Return plot item class from class name"""
     global SERIALIZABLE_ITEMS, ITEM_MODULES
     assert name in SERIALIZABLE_ITEMS, "Unknown class %r" % name
-    for modname, names in ITEM_MODULES.items():
+    for modname, names in list(ITEM_MODULES.items()):
         if name in names:
             return getattr(__import__(modname, fromlist=[name]), name)
 

@@ -493,7 +493,7 @@ class CrossSectionPlot(CurvePlot):
             return
         if self.label.isVisible():
             self.label.hide()
-        for index, (_item, curve) in enumerate(iter(self.known_items.items())):
+        for index, (_item, curve) in enumerate(iter(list(self.known_items.items()))):
             if not self.perimage_mode and index > 0:
                 curve.hide()
             else:
