@@ -47,7 +47,7 @@ class FilterTestWidget(QWidget):
         self.plot.set_antialiasing(True)
         #---
         
-        button = QPushButton(u"Test filter: %s" % title)
+        button = QPushButton("Test filter: %s" % title)
         self.connect(button, SIGNAL('clicked()'), self.process_data)
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.plot)

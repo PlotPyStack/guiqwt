@@ -482,10 +482,10 @@ class SelectedLegendBoxItem(LegendBoxItem):
 
 class ObjectInfo(object):
     def get_text(self):
-        return u""
+        return ""
 
 class RangeInfo(ObjectInfo):
-    u"""ObjectInfo handling XRangeSelection shape informations: x, dx
+    """ObjectInfo handling XRangeSelection shape informations: x, dx
     
     label: formatted string
     xrangeselection: XRangeSelection object
@@ -516,7 +516,7 @@ class RangeInfo(ObjectInfo):
         return self.label % self.func(x, dx)
 
 class RangeComputation(ObjectInfo):
-    u"""ObjectInfo showing curve computations relative to a XRangeSelection 
+    """ObjectInfo showing curve computations relative to a XRangeSelection 
     shape.
     
     label: formatted string
@@ -591,4 +591,4 @@ class DataInfoLabel(LabelItem):
             text = []
         for info in self.infos:
             text.append(info.get_text())
-        self.set_text( u"<br/>".join(text) )
+        self.set_text( "<br/>".join(text) )

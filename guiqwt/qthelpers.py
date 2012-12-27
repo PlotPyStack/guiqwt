@@ -70,7 +70,7 @@ def exec_image_save_dialog(data, parent, basedir='', app_name=None):
             traceback.print_exc()
             QMessageBox.critical(parent,
                  _('Error') if app_name is None else app_name,
-                 (_(u"%s could not be written:") % osp.basename(filename))+\
+                 (_("%s could not be written:") % osp.basename(filename))+\
                  "\n"+str(msg))
             return
 
@@ -99,7 +99,7 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
         traceback.print_exc()
         QMessageBox.critical(parent,
              _('Error') if app_name is None else app_name,
-             (_(u"%s could not be opened:") % osp.basename(filename))+\
+             (_("%s could not be opened:") % osp.basename(filename))+\
              "\n"+str(msg))
         return
     return filename, data
@@ -130,7 +130,7 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
             traceback.print_exc()
             QMessageBox.critical(parent,
                  _('Error') if app_name is None else app_name,
-                 (_(u"%s could not be opened:") % osp.basename(filename))+\
+                 (_("%s could not be opened:") % osp.basename(filename))+\
                  "\n"+str(msg))
             return
         yield filename, data

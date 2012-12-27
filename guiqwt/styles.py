@@ -116,7 +116,7 @@ from guidata.dataset.dataitems import (ChoiceItem, BoolItem, FloatItem, IntItem,
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string
+from guidata.py3compat import to_text_string, u
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
@@ -587,8 +587,8 @@ class GridParam(DataSet):
 # Axes style parameters
 # ===================================================
 class AxeStyleParam(DataSet):
-    title = StringItem(_("Title"), default=u"")
-    unit = StringItem(_("Unit"), default=u"")
+    title = StringItem(_("Title"), default="")
+    unit = StringItem(_("Unit"), default="")
     color = ColorItem(_("Color"), default="black").set_pos(col=1)
     title_font = FontItem(_("Title font"))
     ticks_font = FontItem(_("Values font"))
@@ -732,10 +732,10 @@ class LabelParam(DataSet):
                          help=_("Label position relative to anchor point")) \
                          .set_prop("display",
                                    hide=GetAttrProp("_multiselection"))
-    xc = IntItem(_(u"ΔX"), default=5,
+    xc = IntItem(_(u("ΔX")), default=5,
                  help=_("Horizontal offset (pixels) relative to anchor point"))\
                  .set_prop("display", hide=GetAttrProp("_multiselection"))
-    yc = IntItem(_(u"ΔY"), default=5,
+    yc = IntItem(_(u("ΔY")), default=5,
                  help=_("Vertical offset (pixels) relative to anchor point")
                  ).set_pos(col=1).set_prop("display",
                                            hide=GetAttrProp("_multiselection"))
@@ -757,7 +757,7 @@ class LabelParam(DataSet):
                    ).set_pos(col=1) \
                     .set_prop("display", active=NotProp(_abspos_prop)) \
                     .set_prop("display", hide=GetAttrProp("_multiselection"))
-    move_anchor = ChoiceItem(_(u"Interact"),
+    move_anchor = ChoiceItem(_("Interact"),
                          ((True, _("moving object changes anchor position")),
                           (False, _("moving object changes label position"))),
                          default=True
@@ -1375,7 +1375,7 @@ class MarkerParam(DataSet):
         self.markerstyle = MARKERSTYLES.get(style, style)
 
 class ShapeParam(DataSet):
-    label = StringItem(_("Title"), default=u"")
+    label = StringItem(_("Title"), default="")
     _styles = BeginTabGroup("Styles")
     #------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
@@ -1462,8 +1462,8 @@ class AnnotationParam(DataSet):
     show_label = BoolItem(_("Show annotation"), default=True)
     show_computations = BoolItem(_("Show informations on area "
                                    "covered by this shape"), default=True)
-    title = StringItem(_("Title"), default=u"")
-    subtitle = StringItem(_("Subtitle"), default=u"")
+    title = StringItem(_("Title"), default="")
+    subtitle = StringItem(_("Subtitle"), default="")
     format = StringItem(_("String formatting"), default="%.1f")
     uncertainty = FloatItem(_("Uncertainty"), default=0., min=0., max=1.,
                             help=_("Measurement relative uncertainty")

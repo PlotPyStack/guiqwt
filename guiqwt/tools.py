@@ -262,7 +262,7 @@ from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
-from guidata.py3compat import is_text_string, to_text_string
+from guidata.py3compat import is_text_string, to_text_string, u
 
 #Local imports
 from guiqwt.transitional import QwtPlotPrintFilter
@@ -1213,9 +1213,9 @@ class SignalStatsTool(BaseCursorTool):
                (curve, "%g &lt; y &lt; %g", 
                 lambda *args: (args[1].min(), args[1].max())),
                (curve, "&lt;y&gt;=%g", lambda *args: args[1].mean()),
-               (curve, u"σ(y)=%g", lambda *args: args[1].std()),
-               (curve, u"∑(y)=%g", lambda *args: np.trapz(args[1])),
-               (curve, u"∫ydx=%g", lambda *args: np.trapz(args[1], args[0])),
+               (curve, u("σ(y)=%g"), lambda *args: args[1].std()),
+               (curve, u("∑(y)=%g"), lambda *args: np.trapz(args[1])),
+               (curve, u("∫ydx=%g"), lambda *args: np.trapz(args[1], args[0])),
               ])
             self.label.attach(plot)
             self.label.setZ(plot.get_max_z()+1)
@@ -1565,9 +1565,9 @@ def save_snapshot(plot, p0, p1):
                               default=False)
         _end_levels = EndGroup(_("Image levels adjustments"))
         _multiple = BeginGroup(_("Superimposed images"))
-        add_images = ChoiceItem(_(u"If image B is behind image A, "
-                                  u"replace intersection by"),
-                               [(False, _(u"A")), (True, _(u"A+B"))],
+        add_images = ChoiceItem(_("If image B is behind image A, "
+                                  "replace intersection by"),
+                               [(False, "A"), (True, "A+B")],
                                default=None)
         _end_multiple = EndGroup(_("Superimposed images"))
     

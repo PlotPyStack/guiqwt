@@ -71,6 +71,7 @@ Reference
 import numpy as np
 
 from guidata.utils import update_dataset, assert_interfaces_valid
+from guidata.py3compat import u
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -202,7 +203,7 @@ class AnnotatedShape(AbstractShape):
             xunit = self.plot().get_axis_unit(self.xAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u" ± "+(fmt % (x*param.uncertainty))
+                fmt += u(" ± ")+(fmt % (x*param.uncertainty))
             return (fmt+" "+xunit) % x
 
     def y_to_str(self, y):
@@ -215,7 +216,7 @@ class AnnotatedShape(AbstractShape):
             yunit = self.plot().get_axis_unit(self.yAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u" ± "+(fmt % (y*param.uncertainty))
+                fmt += u(" ± ")+(fmt % (y*param.uncertainty))
             return (fmt+" "+yunit) % y
                 
     def get_center(self):
@@ -436,7 +437,7 @@ class AnnotatedRectangle(AnnotatedShape):
     def get_computations_text(self):
         """Return formatted string with informations on current shape"""
         tdict = self.get_string_dict()
-        return u"%(center_n)s ( %(center)s )<br>%(size_n)s %(size)s" % tdict
+        return "%(center_n)s ( %(center)s )<br>%(size_n)s %(size)s" % tdict
         
     def get_tr_center(self):
         """Return shape center coordinates after applying transform matrix"""
@@ -493,7 +494,7 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
         
     #----RectangleShape API-----------------------------------------------------
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
-        u"""
+        """
         Set the rectangle corners coordinates:
             (x0, y0): top-left corner
             (x1, y1): top-right corner
@@ -525,7 +526,7 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
         return "<br>".join([
                             _("Center:") + " " + self.get_tr_center_str(),
                             _("Size:") + " " + self.get_tr_size_str(),
-                            _(u"Angle:") + u" %.1f°" % self.get_tr_angle(),
+                            _("Angle:") + u(" %.1f°") % self.get_tr_angle(),
                             ])
     
 
@@ -604,7 +605,7 @@ class AnnotatedEllipse(AnnotatedShape):
         return "<br>".join([
                             _("Center:") + " " + self.get_tr_center_str(),
                             _("Size:") + " " + self.get_tr_size_str(),
-                            _(u"Angle:") + u" %.1f°" % self.get_tr_angle(),
+                            _("Angle:") + u(" %.1f°") % self.get_tr_angle(),
                             ])
         
 

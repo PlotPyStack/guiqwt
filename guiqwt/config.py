@@ -58,7 +58,7 @@ DEFAULTS = {
 
               # Default parameters for X/Y image axes
               "image_axis/title": "",
-              "image_axis/unit": _(u"pixels"),
+              "image_axis/unit": _("pixels"),
               "image_axis/color": "black",
               "image_axis/title_font/size": 8,
               "image_axis/title_font/family": "default",
@@ -70,8 +70,8 @@ DEFAULTS = {
               "image_axis/ticks_font/italic": False,
 
               # Default parameters for color scale
-              "color_axis/title": _(u"Intensity"),
-              "color_axis/unit": _(u"lsb"),
+              "color_axis/title": _("Intensity"),
+              "color_axis/unit": _("lsb"),
               "color_axis/color": "black",
               "color_axis/title_font/size": 8,
               "color_axis/title_font/family": "default",

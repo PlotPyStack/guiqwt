@@ -150,7 +150,7 @@ from guidata.qt.QtGui import QColor, QImage
 from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from guidata.py3compat import getcwd, is_text_string
+from guidata.py3compat import getcwd, is_text_string, u
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
@@ -711,17 +711,17 @@ class BaseImageItem(QwtPlotItem):
         yfmt = self.imageparam.yformat
         zfmt = self.imageparam.zformat
         return "<br>".join([
-                            u"<b>%s</b>" % self.imageparam.label,
-                            u"%sx%s %s" % (self.data.shape[1],
+                            "<b>%s</b>" % self.imageparam.label,
+                            "%sx%s %s" % (self.data.shape[1],
                                            self.data.shape[0],
                                            str(self.data.dtype)),
-                            u"",
-                            u"%s ≤ x ≤ %s" % (xfmt % x0, xfmt % x1),
-                            u"%s ≤ y ≤ %s" % (yfmt % y0, yfmt % y1),
-                            u"%s ≤ z ≤ %s" % (zfmt % data.min(),
+                            "",
+                            "%s ≤ x ≤ %s" % (xfmt % x0, xfmt % x1),
+                            "%s ≤ y ≤ %s" % (yfmt % y0, yfmt % y1),
+                            "%s ≤ z ≤ %s" % (zfmt % data.min(),
                                               zfmt % data.max()),
-                            u"‹z› = " + zfmt % data.mean(),
-                            u"σ(z) = " + zfmt % data.std(),
+                            "‹z› = " + zfmt % data.mean(),
+                            u("σ(z) = ") + zfmt % data.std(),
                             ])
 
     def get_xsection(self, y0, apply_lut=False):

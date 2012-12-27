@@ -146,7 +146,7 @@ def test():
         img = np.array(a1+info.min, type)
         txtwrite(img, 0, 0, N/15., str(type))
         items.append(make.trimage(img, colormap="jet"))
-    imshow(items, title=u"Transform test (%dx%d images)" % (N, N))
+    imshow(items, title="Transform test (%dx%d images)" % (N, N))
     return items
 
 if __name__ == "__main__":

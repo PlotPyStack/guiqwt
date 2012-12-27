@@ -333,7 +333,7 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
 
-    def curve(self, x, y, title=u"",
+    def curve(self, x, y, title="",
               color=None, linestyle=None, linewidth=None,
               marker=None, markersize=None, markerfacecolor=None,
               markeredgecolor=None, shade=None, fitted=None,
@@ -431,7 +431,7 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
         
-    def error(self, x, y, dx, dy, title=u"",
+    def error(self, x, y, dx, dy, title="",
               color=None, linestyle=None, linewidth=None,
               errorbarwidth=None, errorbarcap=None, errorbarmode=None,
               errorbaralpha=None, marker=None,
@@ -501,7 +501,7 @@ class PlotItemBuilder(object):
                            xaxis, yaxis)
     
     def histogram(self, data, bins=None, logscale=None,
-                  title=u"", color=None, xaxis="bottom", yaxis="left"):
+                  title="", color=None, xaxis="bottom", yaxis="left"):
         """
         Make 1D Histogram `plot item` 
         (:py:class:`guiqwt.histogram.HistogramItem` object)
@@ -1150,7 +1150,7 @@ class PlotItemBuilder(object):
         x = linspace(-10, 10, 10)
         y = sin(sin(sin(x)))
         range = make.range(-2, 2)
-        disp = make.range_info_label(range, 'BL', u"x = %.1f ± %.1f cm",
+        disp = make.range_info_label(range, 'BL', "x = %.1f ± %.1f cm",
                                      lambda x, dx: (x, dx))
         
         (:py:class:`guiqwt.label.DataInfoLabel` object)

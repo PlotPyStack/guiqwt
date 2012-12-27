@@ -11,6 +11,7 @@ SHOW = True # Show test in GUI-based test launcher
 
 from guiqwt.plot import CurveDialog
 from guiqwt.builder import make
+from guidata.py3compat import u # Python 3 unicode compatibility
 
 def plot( *items ):
     win = CurveDialog(edit=False, toolbar=True)
@@ -33,7 +34,7 @@ def test():
 
     curve = make.curve(x, y, "ab", "b")
     range = make.range(-2, 2)
-    disp0 = make.range_info_label(range, 'BR', u"x = %.1f ± %.1f cm",
+    disp0 = make.range_info_label(range, 'BR', u("x = %.1f ± %.1f cm"),
                                   title="Range infos")
 
     disp1 = make.computation(range, "BL", "trapz=%g",

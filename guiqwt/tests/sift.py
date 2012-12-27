@@ -30,7 +30,7 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string
+from guidata.py3compat import to_text_string, u
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
@@ -334,7 +334,7 @@ class ObjectFT(QSplitter):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         self.add_object(sumobj)
     
@@ -355,7 +355,7 @@ class ObjectFT(QSplitter):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         sumobj.data /= float(len(rows))
         sumobj.change_data_type(dtype=original_dtype)
@@ -376,7 +376,7 @@ class ObjectFT(QSplitter):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         self.add_object(sumobj)
     
@@ -393,7 +393,7 @@ class ObjectFT(QSplitter):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         self.add_object(diffobj)
     
@@ -410,7 +410,7 @@ class ObjectFT(QSplitter):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         self.add_object(diffobj)
                                      
@@ -447,7 +447,7 @@ class ObjectFT(QSplitter):
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
-                                     _(u"Error:")+"\n%s" % str(msg))
+                                     _("Error:")+"\n%s" % str(msg))
                 return
             finally:
                 self.emit(SIGNAL("status_message(QString)"), "")
@@ -544,7 +544,7 @@ class SignalFT(ObjectFT):
         self.compute_11("ROI", lambda x, y, p: (x.copy()[p.row1:p.row2],
                                                 y.copy()[p.row1:p.row2]),
                         param, suffix=lambda p:
-                                      u"rows=%d:%d" % (p.row1, p.row2))
+                                      "rows=%d:%d" % (p.row1, p.row2))
     
     def swap_axes(self):
         self.compute_11("SwapAxes", lambda x, y: (y, x))
@@ -579,7 +579,7 @@ class SignalFT(ObjectFT):
         def func(x, y, p):
             return x, normalize(y, p.method)
         self.compute_11("Normalize", func, param,
-                        suffix=lambda p: u"ref=%s" % p.method)
+                        suffix=lambda p: "ref=%s" % p.method)
     
     def calibrate(self):
         axes = (('x', _("X-axis")), ('y', _("Y-axis")))
@@ -594,8 +594,8 @@ class SignalFT(ObjectFT):
             else:
                 return x, p.a*y+p.b
         self.compute_11("LinearCal", func, param,
-                        suffix=lambda p: u"%s=%s*%s+%s" % (p.axis, p.a,
-                                                           p.axis, p.b))
+                        suffix=lambda p: "%s=%s*%s+%s" % (p.axis, p.a,
+                                                          p.axis, p.b))
     
     def compute_wiener(self):
         import scipy.signal as sps
@@ -605,13 +605,13 @@ class SignalFT(ObjectFT):
     
     def compute_gaussian(self):
         class GaussianParam(DataSet):
-            sigma = FloatItem(u"σ", default=1.)
+            sigma = FloatItem(u("σ"), default=1.)
         param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
         def func(x, y, p):
             return x, spi.gaussian_filter1d(y, p.sigma)
         self.compute_11("GaussianFilter", func, param,
-                        suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
+                        suffix=lambda p: u("σ=%.3f pixels") % p.sigma)
                          
     def compute_fft(self):
         self.compute_11("FFT", xy_fft)
@@ -641,7 +641,7 @@ class SignalFT(ObjectFT):
             class GaussParam(DataSet):
                 a = FloatItem("Norm", default=1.)
                 x0 = FloatItem("X0", default=0.0)
-                sigma = FloatItem(u"σ", default=5.)
+                sigma = FloatItem(u("σ"), default=5.)
             param = GaussParam(_("New gaussian function"))
             if not param.edit(parent=self.parent()):
                 return
@@ -654,7 +654,7 @@ class SignalFT(ObjectFT):
         saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
         sys.stdout = None
         filters = '%s (*.txt *.csv)\n%s (*.npy)'\
-                  % (_(u"Text files"), _(u"NumPy arrays"))
+                  % (_("Text files"), _("NumPy arrays"))
         filenames, _filter = getopenfilenames(self.parent(), _("Open"), '',
                                               filters)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
@@ -681,7 +681,7 @@ class SignalFT(ObjectFT):
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
-                     (_(u"%s could not be opened:") % osp.basename(filename))+\
+                     (_("%s could not be opened:") % osp.basename(filename))+\
                      "\n"+str(msg))
                 return
             if len(xydata.shape) == 1:
@@ -705,7 +705,7 @@ class SignalFT(ObjectFT):
         rows = self._get_selected_rows()
         for row in rows:
             filename, _filter = getsavefilename(self, _("Save as"), '',
-                                                _(u"CSV files")+" (*.csv)")
+                                                _("CSV files")+" (*.csv)")
             if not filename:
                 return
             filename = to_text_string(filename)
@@ -717,7 +717,7 @@ class SignalFT(ObjectFT):
                 import traceback
                 traceback.print_exc()
                 QMessageBox.critical(self.parent(), APP_NAME,
-                     (_(u"%s could not be written:") % osp.basename(filename))+\
+                     (_("%s could not be written:") % osp.basename(filename))+\
                      "\n"+str(msg))
                 return
 
@@ -822,20 +822,20 @@ class ImageFT(ObjectFT):
         boundaries = ('constant', 'nearest', 'reflect', 'wrap')
         prop = ValueProp(False)
         class RotateParam(DataSet):
-            angle = FloatItem(u"%s (°)" % _(u"Angle"))
-            mode = ChoiceItem(_(u"Mode"), list(zip(boundaries, boundaries)),
+            angle = FloatItem(u("%s (°)") % _("Angle"))
+            mode = ChoiceItem(_("Mode"), list(zip(boundaries, boundaries)),
                               default=boundaries[0])
             cval = FloatItem(_("cval"), default=0.,
-                             help=_(u"Value used for points outside the "
-                                    u"boundaries of the input if mode is "
-                                    u"'constant'"))
-            reshape = BoolItem(_(u"Reshape the output array"), default=True,
-                               help=_(u"Reshape the output array "
-                                      u"so that the input array is "
-                                      u"contained completely in the output"))
-            prefilter = BoolItem(_(u"Prefilter the input image"),
+                             help=_("Value used for points outside the "
+                                    "boundaries of the input if mode is "
+                                    "'constant'"))
+            reshape = BoolItem(_("Reshape the output array"), default=True,
+                               help=_("Reshape the output array "
+                                      "so that the input array is "
+                                      "contained completely in the output"))
+            prefilter = BoolItem(_("Prefilter the input image"),
                                  default=True).set_prop("display", store=prop)
-            order = IntItem(_(u"Order"), default=3, min=0, max=5,
+            order = IntItem(_("Order"), default=3, min=0, max=5,
                             help=_("Spline interpolation order")
                             ).set_prop("display", active=prop)
         param = RotateParam(_("Rotation"))
@@ -845,7 +845,7 @@ class ImageFT(ObjectFT):
                         spi.rotate(x, p.angle, reshape=p.reshape,
                                    order=p.order, mode=p.mode,
                                    cval=p.cval, prefilter=p.prefilter),
-                        param, suffix=lambda p: u"α=%.3f°, mode='%s'"\
+                        param, suffix=lambda p: u("α=%.3f°, mode='%s'")\
                                                 % (p.angle, p.mode))
     
     def rotate_90(self):
@@ -873,16 +873,16 @@ class ImageFT(ObjectFT):
         boundaries = ('constant', 'nearest', 'reflect', 'wrap')
         prop = ValueProp(False)
         class ResizeParam(DataSet):
-            zoom = FloatItem(_(u"Zoom"), default=dlg.get_zoom())
-            mode = ChoiceItem(_(u"Mode"), list(zip(boundaries, boundaries)),
+            zoom = FloatItem(_("Zoom"), default=dlg.get_zoom())
+            mode = ChoiceItem(_("Mode"), list(zip(boundaries, boundaries)),
                               default=boundaries[0])
             cval = FloatItem(_("cval"), default=0.,
-                             help=_(u"Value used for points outside the "
-                                    u"boundaries of the input if mode is "
-                                    u"'constant'"))
-            prefilter = BoolItem(_(u"Prefilter the input image"),
+                             help=_("Value used for points outside the "
+                                    "boundaries of the input if mode is "
+                                    "'constant'"))
+            prefilter = BoolItem(_("Prefilter the input image"),
                                  default=True).set_prop("display", store=prop)
-            order = IntItem(_(u"Order"), default=3, min=0, max=5,
+            order = IntItem(_("Order"), default=3, min=0, max=5,
                             help=_("Spline interpolation order")
                             ).set_prop("display", active=prop)
         param = ResizeParam(_("Resize"))
@@ -891,7 +891,7 @@ class ImageFT(ObjectFT):
                         spi.interpolation.zoom(x, p.zoom, order=p.order,
                                                mode=p.mode, cval=p.cval,
                                                prefilter=p.prefilter),
-                        param, suffix=lambda p: u"zoom=%.3f" % p.zoom)
+                        param, suffix=lambda p: "zoom=%.3f" % p.zoom)
                         
     def extract_roi(self):
         class ROIParam(DataSet):
@@ -902,7 +902,7 @@ class ImageFT(ObjectFT):
         param = ROIParam(_("ROI extraction"))
         self.compute_11("ROI", lambda x, p:
                         x.copy()[p.row1:p.row2, p.col1:p.col2],
-                        param, suffix=lambda p: u"rows=%d:%d,cols=%d:%d" 
+                        param, suffix=lambda p: "rows=%d:%d,cols=%d:%d" 
                         % (p.row1, p.row2, p.col1, p.col2))
     
     def swap_axes(self):
@@ -920,7 +920,7 @@ class ImageFT(ObjectFT):
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self.parent(), APP_NAME,
-                                 _(u"Error:")+"\n%s" % str(msg))
+                                 _("Error:")+"\n%s" % str(msg))
             return
         self.add_object(robj)
         
@@ -931,21 +931,21 @@ class ImageFT(ObjectFT):
             b = FloatItem('b', default=0.)
         param = CalibrateParam(_("Linear calibration"), "y = a.x + b")
         self.compute_11("LinearCal", lambda x, p: p.a*x+p.b, param,
-                        suffix=lambda p: u"z=%s*z+%s" % (p.a, p.b))
+                        suffix=lambda p: "z=%s*z+%s" % (p.a, p.b))
     
     def compute_threshold(self):
         class ThresholdParam(DataSet):
-            value = FloatItem(_(u"Threshold"))
+            value = FloatItem(_("Threshold"))
         self.compute_11("Threshold", lambda x, p: np.clip(x, p.value, x.max()),
                         ThresholdParam(_("Thresholding")),
-                        suffix=lambda p: u"min=%s lsb" % p.value)
+                        suffix=lambda p: "min=%s lsb" % p.value)
                         
     def compute_clip(self):
         class ClipParam(DataSet):
-            value = FloatItem(_(u"Clipping value"))
+            value = FloatItem(_("Clipping value"))
         self.compute_11("Clip", lambda x, p: np.clip(x, x.min(), p.value),
                         ClipParam(_("Clipping")),
-                        suffix=lambda p: u"max=%s lsb" % p.value)
+                        suffix=lambda p: "max=%s lsb" % p.value)
                         
     def compute_wiener(self):
         import scipy.signal as sps
@@ -953,12 +953,12 @@ class ImageFT(ObjectFT):
     
     def compute_gaussian(self):
         class GaussianParam(DataSet):
-            sigma = FloatItem(u"σ", default=1.)
+            sigma = FloatItem(u("σ"), default=1.)
         param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
         self.compute_11("GaussianFilter",
                         lambda x, p: spi.gaussian_filter(x, p.sigma), param,
-                        suffix=lambda p: u"σ=%.3f pixels" % p.sigma)
+                        suffix=lambda p: u("σ=%.3f pixels") % p.sigma)
                          
     def compute_fft(self):
         self.compute_11("FFT", np.fft.fft2)
@@ -1130,7 +1130,7 @@ class MainWindow(QMainWindow):
                               _("Signals"))
         self.tabwidget.addTab(self.imageft, get_icon('image.png'),
                               _("Images"))
-        self.add_dockwidget(self.tabwidget, _(u"Main panel"))
+        self.add_dockwidget(self.tabwidget, _("Main panel"))
 #        self.setCentralWidget(self.tabwidget)
         self.curve_dock = self.add_dockwidget(self.curvewidget,
                                               title=_("Curve plotting panel"))
@@ -1170,7 +1170,7 @@ class MainWindow(QMainWindow):
         
         # View menu
         self.view_menu = view_menu = self.createPopupMenu()
-        view_menu.setTitle(_(u"&View"))
+        view_menu.setTitle(_("&View"))
         self.menuBar().addMenu(view_menu)
         
         # Help menu
@@ -1194,7 +1194,7 @@ class MainWindow(QMainWindow):
                   "os, sys, os.path as osp, time, "\
                   "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
             self.console = DockableConsole(self, namespace=ns, message=msg)
-            self.add_dockwidget(self.console, _(u"Console"))
+            self.add_dockwidget(self.console, _("Console"))
             self.connect(self.console.interpreter.widget_proxy,
                          SIGNAL("new_prompt(QString)"),
                          lambda txt: self.refresh_lists())

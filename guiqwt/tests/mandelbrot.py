@@ -22,7 +22,7 @@ from guiqwt.mandelbrot import mandelbrot
 
 class FullScale(ToggleTool):
     def __init__(self, parent, image):
-        super(FullScale, self).__init__(parent, _(u"MAX resolution"), None)
+        super(FullScale, self).__init__(parent, _("MAX resolution"), None)
         self.image = image
         self.minprec = image.IMAX
         self.maxprec = 5*image.IMAX

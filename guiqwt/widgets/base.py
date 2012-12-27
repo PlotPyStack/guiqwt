@@ -42,7 +42,7 @@ class BaseTransformMixin(object):
     #------Public API----------------------------------------------------------
     def add_reset_button(self, layout):
         """Add the standard reset button"""
-        edit_options_btn = create_toolbutton(self, text=_(u"Reset"),
+        edit_options_btn = create_toolbutton(self, text=_("Reset"),
                                              icon=get_icon("eraser.png"),
                                              triggered=self.reset,
                                              autoraise=False)
@@ -51,7 +51,7 @@ class BaseTransformMixin(object):
 
     def add_apply_button(self, layout):
         """Add the standard apply button"""
-        apply_btn = create_toolbutton(self, text=_(u"Apply"),
+        apply_btn = create_toolbutton(self, text=_("Apply"),
                                       icon=get_icon("apply.png"),
                                       triggered=self.apply_transformation,
                                       autoraise=False)
@@ -147,7 +147,7 @@ class BaseTransformDialog(ImageDialog):
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
         if wintitle is None:
-            wintitle = _(u"Rotate & Crop")
+            wintitle = _("Rotate & Crop")
         ImageDialog.__init__(self, wintitle=wintitle, edit=True,
                              toolbar=False, options=options, parent=parent)
         if resize_to is not None:

@@ -20,8 +20,8 @@ from guiqwt.tests import sift
 def create_executable():
     """Build executable using ``guidata.disthelpers``"""
     dist = Distribution()
-    dist.setup(name=u"Sift", version=sift.VERSION,
-               description=u"Signal and Image Filtering Tool",
+    dist.setup(name="Sift", version=sift.VERSION,
+               description="Signal and Image Filtering Tool",
                script="sift.pyw", target_name="sift.exe", icon="sift.ico")
     dist.add_modules('guidata', 'guiqwt')
     try:

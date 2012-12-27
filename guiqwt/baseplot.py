@@ -132,10 +132,10 @@ class BasePlot(QwtPlot):
         self.items = []
         self.active_item = None
         self.last_selected = {} # a mapping from item type to last selected item
-        self.axes_styles = [AxeStyleParam(_(u"Left")),
-                            AxeStyleParam(_(u"Right")),
-                            AxeStyleParam(_(u"Bottom")),
-                            AxeStyleParam(_(u"Top"))]
+        self.axes_styles = [AxeStyleParam(_("Left")),
+                            AxeStyleParam(_("Right")),
+                            AxeStyleParam(_("Bottom")),
+                            AxeStyleParam(_("Top"))]
         self._active_xaxis = self.DEFAULT_ACTIVE_XAXIS
         self._active_yaxis = self.DEFAULT_ACTIVE_YAXIS
         self.read_axes_styles(section, self.AXIS_CONF_OPTIONS)

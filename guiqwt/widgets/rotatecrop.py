@@ -47,7 +47,7 @@ class RotateCropMixin(base.BaseTransformMixin):
     def add_buttons_to_layout(self, layout):
         """Add tool buttons to layout"""
         # Show crop rectangle checkbox
-        show_crop = QCheckBox(_(u"Show cropping rectangle"), self)
+        show_crop = QCheckBox(_("Show cropping rectangle"), self)
         show_crop.setChecked(True)
         self.connect(show_crop, SIGNAL("toggled(bool)"), self.show_crop_rect)
         layout.addWidget(show_crop)
@@ -57,7 +57,7 @@ class RotateCropMixin(base.BaseTransformMixin):
     def set_item(self, item):
         """Set associated item -- must be a TrImageItem object"""
         base.BaseTransformMixin.set_item(self, item)
-        crect = make.annotated_rectangle(0, 0, 1, 1, _(u"Cropping rectangle"))
+        crect = make.annotated_rectangle(0, 0, 1, 1, _("Cropping rectangle"))
         self.crop_rect = crect
         crect.annotationparam.format = "%.1f cm"
         plot = self.get_plot()

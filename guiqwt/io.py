@@ -337,19 +337,19 @@ def _imwrite_txt(filename, arr):
 #==============================================================================
 # Registering I/O functions
 #==============================================================================
-iohandler.add(_(u"PNG files"), '*.png',
+iohandler.add(_("PNG files"), '*.png',
               read_func=_imread_pil, write_func=_imwrite_pil,
               data_types=(np.uint8, np.uint16))
-iohandler.add(_(u"TIFF files"), '*.tif *.tiff',
+iohandler.add(_("TIFF files"), '*.tif *.tiff',
               read_func=_imread_pil, write_func=_imwrite_pil)
-iohandler.add(_(u"8-bit images"), '*.jpg *.gif',
+iohandler.add(_("8-bit images"), '*.jpg *.gif',
               read_func=_imread_pil, write_func=_imwrite_pil,
               data_types=(np.uint8,))
-iohandler.add(_(u"NumPy arrays"), '*.npy',
+iohandler.add(_("NumPy arrays"), '*.npy',
               read_func=np.load, write_func=np.save)
-iohandler.add(_(u"Text files"), '*.txt *.csv *.asc',
+iohandler.add(_("Text files"), '*.txt *.csv *.asc',
               read_func=_imread_txt, write_func=_imwrite_txt)
-iohandler.add(_(u"DICOM files"), '*.dcm', read_func=_imread_dcm,
+iohandler.add(_("DICOM files"), '*.dcm', read_func=_imread_dcm,
               write_func=_imwrite_dcm, import_func=_import_dcm,
               data_types=(np.int8, np.uint8, np.int16, np.uint16),
               requires_template=True)
