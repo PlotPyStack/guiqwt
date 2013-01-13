@@ -35,8 +35,7 @@ def is_edit_valid(edit):
     text = edit.text()
     state = edit.validator().validate(text, 0)
     if isinstance(state, (tuple, list)):
-        # PyQt API v1
-        state, _t = state
+        state = state[0]
     return state == QIntValidator.Acceptable
 
 
