@@ -1377,7 +1377,7 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
         print("guiqwt.image.assemble_imageitems: since v2.2, "\
                             "the `align` option is ignored", file=sys.stderr)
     align = 1  #XXX: byte alignment is disabled until further notice!
-    aligned_destw = align*((int(destw)+align-1)/align)
+    aligned_destw = int(align*((int(destw)+align-1)/align))
     aligned_desth = int(desth*aligned_destw/destw)
 
     try:
