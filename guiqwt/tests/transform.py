@@ -48,13 +48,19 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     paint.setBrush( QColor(0, 0, 0) )
     paint.drawText(0, paint.fontMetrics().ascent(), chars)
     paint.end()
-    data = img.bits().asstring(img.numBytes())
+    try:
+        data = img.bits().asstring(img.numBytes())
+    except SystemError:
+        # Python 3
+        return
     npy = np.frombuffer(data, np.uint8)
     npy.shape = img.height(), img.bytesPerLine()/4, 4
     return npy[:,:, 0]
 
 def txtwrite(data, x, y, sz, txt, range=None):
     arr = get_font_array(sz, txt)
+    if arr is None:
+        return
     if range is None:
         m, M = data.min(), data.max()
     else:
