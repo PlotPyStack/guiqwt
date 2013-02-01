@@ -186,12 +186,16 @@ LUT_SIZE = 1024
 LUT_MAX  = float(LUT_SIZE-1)
 
 def _nanmin(data):
-    if data.dtype.name in ("float32","float64", "float128"):
+    if isinstance(data, np.ma.MaskedArray):
+        data = data.data
+    if data.dtype.name in ("float32","float64", "float128"):    
         return np.nanmin(data)
     else:
         return data.min()
 
 def _nanmax(data):
+    if isinstance(data, np.ma.MaskedArray):
+        data = data.data
     if data.dtype.name in ("float32","float64", "float128"):
         return np.nanmax(data)
     else:
