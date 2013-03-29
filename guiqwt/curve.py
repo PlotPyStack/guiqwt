@@ -569,7 +569,7 @@ class CurveItem(QwtPlotCurve):
         self._y += delta_y
         self.setData(self._x, self._y)
 
-    def update_params(self):
+    def update_params(self):        
         self.curveparam.update_curve(self)
         if self.selected:
             self.select()
