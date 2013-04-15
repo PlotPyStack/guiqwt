@@ -203,7 +203,10 @@ class AnnotatedShape(AbstractShape):
             fmt = param.format
             if param.uncertainty:
                 fmt += u" ± "+(fmt % (x*param.uncertainty))
-            return (fmt+" "+xunit) % x
+            if xunit is not None:
+                return (fmt+" "+xunit) % x
+            else:
+                return (fmt) % x    
 
     def y_to_str(self, y):
         """Convert y (float) to a string
@@ -216,7 +219,10 @@ class AnnotatedShape(AbstractShape):
             fmt = param.format
             if param.uncertainty:
                 fmt += u" ± "+(fmt % (y*param.uncertainty))
-            return (fmt+" "+yunit) % y
+            if yunit is not None:
+                return (fmt+" "+yunit) % y
+            else:
+                return (fmt) % y
                 
     def get_center(self):
         """Return shape center coordinates: (xc, yc)"""
