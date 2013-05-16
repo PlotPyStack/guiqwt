@@ -164,8 +164,8 @@ class ItemParameters(object):
         self.__add(key, item, param)
         
     def get(self, key):
-        from copy import copy
-        return copy(self.paramdict.get(key))
+        from copy import deepcopy
+        return deepcopy(self.paramdict.get(key))
     
     def update(self, plot):
         #FIXME: without the following workaround, ImagePlot object aspect ratio

@@ -802,7 +802,7 @@ class BasePlot(QwtPlot):
             
     def set_item_parameters(self, itemparams):
         """Set item (plot, here) parameters"""
-        # Axe styles
+        # Axe styles        
         datasets = [itemparams.get("AxeStyleParam%d" % i) for i in range(4)]
         if datasets[0] is not None:
             self.axes_styles = datasets
