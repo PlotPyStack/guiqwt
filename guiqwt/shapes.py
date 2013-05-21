@@ -568,10 +568,8 @@ class PolygonShape(AbstractShape):
         return (PolygonShape, (), state)
 
     def __setstate__(self, state):
-        param, points, z = state
-        self.points = points
+        self.shapeparam, self.points, self.closed, z = state
         self.setZ(z)
-        self.shapeparam = param
         self.shapeparam.update_shape(self)
     
     def serialize(self, writer):
@@ -759,6 +757,11 @@ class PointShape(PolygonShape):
         state = (self.shapeparam, self.points, self.z())
         return (self.__class__, (), state)
 
+    def __setstate__(self, state):
+        self.shapeparam, self.points, z = state
+        self.setZ(z)
+        self.shapeparam.update_shape(self)
+
 assert_interfaces_valid(PointShape)
 
 
@@ -852,6 +855,11 @@ class RectangleShape(PolygonShape):
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
         return (self.__class__, (), state)
+
+    def __setstate__(self, state):
+        self.shapeparam, self.points, z = state
+        self.setZ(z)
+        self.shapeparam.update_shape(self)
 
 assert_interfaces_valid(RectangleShape)
 
@@ -985,6 +993,11 @@ class ObliqueRectangleShape(PolygonShape):
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
         return (self.__class__, (), state)
+
+    def __setstate__(self, state):
+        self.shapeparam, self.points, z = state
+        self.setZ(z)
+        self.shapeparam.update_shape(self)
 
 assert_interfaces_valid(ObliqueRectangleShape)
 
@@ -1132,6 +1145,11 @@ class EllipseShape(PolygonShape):
     def __reduce__(self):
         state = (self.shapeparam, self.points, self.z())
         return (self.__class__, (), state)
+
+    def __setstate__(self, state):
+        self.shapeparam, self.points, z = state
+        self.setZ(z)
+        self.shapeparam.update_shape(self)
 
 assert_interfaces_valid(EllipseShape)
 

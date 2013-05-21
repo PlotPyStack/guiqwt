@@ -540,7 +540,7 @@ class BasePlot(QwtPlot):
         import pickle
         items = pickle.load(iofile)
         for item in items:
-            self.add_item(item, z=item.z())
+            self.add_item(item)
 
     def serialize(self, writer, selected=False):
         """
