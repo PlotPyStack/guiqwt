@@ -11,11 +11,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
-import sys, os
-
-from guidata.py3compat import u
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -46,10 +44,10 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u('guiqwt')
+project = 'guiqwt'
 import time
 this_year = time.strftime("%Y", time.localtime())
-copyright = u("2009-%s, CEA - Commissariat à l'Energie Atomique et aux Energies Alternatives" % this_year)
+copyright = "2009-%s, CEA - Commissariat à l'Energie Atomique et aux Energies Alternatives" % this_year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -185,8 +183,7 @@ htmlhelp_basename = 'guiqwtdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'guiqwt.tex', u('guiqwt Documentation'),
-   u('Pierre Raybaut'), 'manual'),
+  ('index', 'guiqwt.tex', 'guiqwt Documentation', 'Pierre Raybaut', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

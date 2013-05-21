@@ -238,6 +238,8 @@ Reference
 #TODO: z(long-terme) à partir d'une sélection rectangulaire sur une image
 #      afficher un ArrayEditor montrant les valeurs de la zone sélectionnée
 
+from __future__ import unicode_literals
+
 try:
     # PyQt4 4.3.3 on Windows (static DLLs) with py2exe installed:
     # -> pythoncom must be imported first, otherwise py2exe's boot_com_servers
@@ -262,7 +264,7 @@ from guidata.qthelpers import get_std_icon, add_actions, add_separator
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
-from guidata.py3compat import is_text_string, to_text_string, u
+from guidata.py3compat import is_text_string, to_text_string
 
 #Local imports
 from guiqwt.transitional import QwtPlotPrintFilter
@@ -1213,9 +1215,9 @@ class SignalStatsTool(BaseCursorTool):
                (curve, "%g &lt; y &lt; %g", 
                 lambda *args: (args[1].min(), args[1].max())),
                (curve, "&lt;y&gt;=%g", lambda *args: args[1].mean()),
-               (curve, u("σ(y)=%g"), lambda *args: args[1].std()),
-               (curve, u("∑(y)=%g"), lambda *args: np.trapz(args[1])),
-               (curve, u("∫ydx=%g"), lambda *args: np.trapz(args[1], args[0])),
+               (curve, "σ(y)=%g", lambda *args: args[1].std()),
+               (curve, "∑(y)=%g", lambda *args: np.trapz(args[1])),
+               (curve, "∫ydx=%g", lambda *args: np.trapz(args[1], args[0])),
               ])
             self.label.attach(plot)
             self.label.setZ(plot.get_max_z()+1)

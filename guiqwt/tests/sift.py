@@ -10,6 +10,8 @@ SIFT, the Signal and Image Filtering Tool
 Simple signal and image processing application based on guiqwt and guidata
 """
 
+from __future__ import unicode_literals
+
 SHOW = True # Show test in GUI-based test launcher
 
 from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
@@ -18,7 +20,10 @@ from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
 from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
 from guidata.qt.compat import getopenfilenames, getsavefilename
 
-import sys, platform, os.path as osp, os
+import sys
+import platform
+import os.path as osp
+import os
 import numpy as np
 
 from guidata.dataset.datatypes import DataSet, ValueProp
@@ -30,7 +35,7 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string, u
+from guidata.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
@@ -605,13 +610,13 @@ class SignalFT(ObjectFT):
     
     def compute_gaussian(self):
         class GaussianParam(DataSet):
-            sigma = FloatItem(u("σ"), default=1.)
+            sigma = FloatItem("σ", default=1.)
         param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
         def func(x, y, p):
             return x, spi.gaussian_filter1d(y, p.sigma)
         self.compute_11("GaussianFilter", func, param,
-                        suffix=lambda p: u("σ=%.3f pixels") % p.sigma)
+                        suffix=lambda p: "σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
         self.compute_11("FFT", xy_fft)
@@ -641,7 +646,7 @@ class SignalFT(ObjectFT):
             class GaussParam(DataSet):
                 a = FloatItem("Norm", default=1.)
                 x0 = FloatItem("X0", default=0.0)
-                sigma = FloatItem(u("σ"), default=5.)
+                sigma = FloatItem("σ", default=5.)
             param = GaussParam(_("New gaussian function"))
             if not param.edit(parent=self.parent()):
                 return
@@ -822,7 +827,7 @@ class ImageFT(ObjectFT):
         boundaries = ('constant', 'nearest', 'reflect', 'wrap')
         prop = ValueProp(False)
         class RotateParam(DataSet):
-            angle = FloatItem(u("%s (°)") % _("Angle"))
+            angle = FloatItem("%s (°)" % _("Angle"))
             mode = ChoiceItem(_("Mode"), list(zip(boundaries, boundaries)),
                               default=boundaries[0])
             cval = FloatItem(_("cval"), default=0.,
@@ -845,7 +850,7 @@ class ImageFT(ObjectFT):
                         spi.rotate(x, p.angle, reshape=p.reshape,
                                    order=p.order, mode=p.mode,
                                    cval=p.cval, prefilter=p.prefilter),
-                        param, suffix=lambda p: u("α=%.3f°, mode='%s'")\
+                        param, suffix=lambda p: "α=%.3f°, mode='%s'"\
                                                 % (p.angle, p.mode))
     
     def rotate_90(self):
@@ -953,12 +958,12 @@ class ImageFT(ObjectFT):
     
     def compute_gaussian(self):
         class GaussianParam(DataSet):
-            sigma = FloatItem(u("σ"), default=1.)
+            sigma = FloatItem("σ", default=1.)
         param = GaussianParam(_("Gaussian filter"))
         import scipy.ndimage as spi
         self.compute_11("GaussianFilter",
                         lambda x, p: spi.gaussian_filter(x, p.sigma), param,
-                        suffix=lambda p: u("σ=%.3f pixels") % p.sigma)
+                        suffix=lambda p: "σ=%.3f pixels" % p.sigma)
                          
     def compute_fft(self):
         self.compute_11("FFT", np.fft.fft2)

@@ -68,10 +68,11 @@ Reference
    :inherited-members:
 """
 
+from __future__ import unicode_literals
+
 import numpy as np
 
 from guidata.utils import update_dataset, assert_interfaces_valid
-from guidata.py3compat import u
 
 # Local imports
 from guiqwt.config import CONF, _
@@ -203,7 +204,7 @@ class AnnotatedShape(AbstractShape):
             xunit = self.plot().get_axis_unit(self.xAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u(" ± ")+(fmt % (x*param.uncertainty))
+                fmt += " ± " + (fmt % (x*param.uncertainty))
             if xunit is not None:
                 return (fmt+" "+xunit) % x
             else:
@@ -219,7 +220,7 @@ class AnnotatedShape(AbstractShape):
             yunit = self.plot().get_axis_unit(self.yAxis())
             fmt = param.format
             if param.uncertainty:
-                fmt += u(" ± ")+(fmt % (y*param.uncertainty))
+                fmt += " ± " + (fmt % (y*param.uncertainty))
             if yunit is not None:
                 return (fmt+" "+yunit) % y
             else:
@@ -532,7 +533,7 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
         return "<br>".join([
                             _("Center:") + " " + self.get_tr_center_str(),
                             _("Size:") + " " + self.get_tr_size_str(),
-                            _("Angle:") + u(" %.1f°") % self.get_tr_angle(),
+                            _("Angle:") + " %.1f°" % self.get_tr_angle(),
                             ])
     
 
@@ -611,7 +612,7 @@ class AnnotatedEllipse(AnnotatedShape):
         return "<br>".join([
                             _("Center:") + " " + self.get_tr_center_str(),
                             _("Size:") + " " + self.get_tr_size_str(),
-                            _("Angle:") + u(" %.1f°") % self.get_tr_angle(),
+                            _("Angle:") + " %.1f°" % self.get_tr_angle(),
                             ])
         
 

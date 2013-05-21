@@ -138,7 +138,7 @@ Reference
 
 #FIXME: traceback in scaler when adding here 'from __future__ import division'
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import sys
 import os.path as osp
@@ -150,7 +150,7 @@ from guidata.qt.QtGui import QColor, QImage
 from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from guidata.py3compat import getcwd, is_text_string, u
+from guidata.py3compat import getcwd, is_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
@@ -725,7 +725,7 @@ class BaseImageItem(QwtPlotItem):
                             "%s ≤ z ≤ %s" % (zfmt % data.min(),
                                               zfmt % data.max()),
                             "‹z› = " + zfmt % data.mean(),
-                            u("σ(z) = ") + zfmt % data.std(),
+                            "σ(z) = " + zfmt % data.std(),
                             ])
 
     def get_xsection(self, y0, apply_lut=False):
