@@ -9,6 +9,13 @@
     * 2-D histogram items are drawn 3 times faster than before
     * The Mandelbrot example runs faster too
 
+=== Bug fixes (since v2.2.1) ===
+
+  * `guiqwt.image_nanmin/_nanmax`: bug fixed when data is a numpy.ma.MaskedArray object
+  * `guiqwt.styles`: using copy.deepcopy instead of copy.copy in `ItemParameters.get` to avoid side effects when using more than one instance of a DataSet object
+  * `guiqwt.annotations`: fixed bug when showing an AnnotatedShape object on an empty plot (unit was None)
+  * Fixed `PolygonShape` items pickle support (save_items, restore_items)
+
 ----
 
 == Version 2.2.1 ==
