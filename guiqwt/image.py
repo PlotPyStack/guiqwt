@@ -426,7 +426,7 @@ class BaseImageItem(QwtPlotItem):
         if name_or_table is self.cmap_table:
             # This avoids rebuilding the LUT all the time
             return
-        if isinstance(name_or_table, str):
+        if is_text_string(name_or_table):
             table = get_cmap(name_or_table)
         else:
             table = name_or_table
