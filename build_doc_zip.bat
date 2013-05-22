@@ -1,5 +1,5 @@
 sphinx-build -b html doc doctmp
 cd doctmp
-zip ..\doc.zip -r *.*
+7z a -r ..\doc.zip *.*
 cd ..
 rmdir /S /Q doctmp
