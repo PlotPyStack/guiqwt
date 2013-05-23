@@ -4,7 +4,7 @@ recursive-include qtdesigner *.py
 recursive-include sift *.py *.pyw *.png *.svg *.ico *.bat
 prune sift/build
 prune sift/sift[0-9]
-recursive-include src *.hpp *.cpp
+recursive-include src *.hpp *.cpp *.pyx
 recursive-include doc *.py *.rst *.png *.ico
 include MANIFEST.in
 include Licence_CeCILL_V2-en.txt
