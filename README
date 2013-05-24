@@ -21,17 +21,17 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
     Dependencies
     
         Requirements
-            Python >=2.6 or Python >=3.0
-            PyQt4 4.x (x>=3 ; recommended x>=4)
-            PyQwt 5.x (x>=2)
-            guidata 1.3.2 or later
-            NumPy 1.x (x>=3) -- NumPy 1.6 or later is required for Windows binaries
-            SciPy 0.x (x>=7)
-            PIL 1.1.x (x>=6)
+            Python 2.6+ or Python 3
+            PyQt4 4.3+
+            PyQwt 5.2+
+            guidata 1.6.0+
+            NumPy 1.3+ -- NumPy 1.6 or later is required for Windows binaries
+            SciPy 0.7+
+            PIL 1.1.6+
             
 	    Optional modules
-            spyderlib 2.0.x (x>=10) or 2.1 for Sift embedded Python console
-	        pydicom v0.9.x (x>=4)
+            spyderlib 2.1+
+            pydicom 0.9.4+
 
     Building/Installation
 
