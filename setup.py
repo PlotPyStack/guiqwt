@@ -83,7 +83,9 @@ if sphinx:
 
     cmdclass['build_doc'] = build_doc
 
-CFLAGS = ["/EHsc", "-Wall"]
+CFLAGS = ["-Wall"]
+if os.name == 'nt':
+    CFLAGS.insert(0, "/EHsc")
 for arg, compile_arg in (("--sse2", "-msse2"),
                          ("--sse3", "-msse3"),):
     if arg in sys.argv:
