@@ -493,7 +493,7 @@ def save_items(writer, items):
         basename = item_name_from_object(item)
         count = counts[basename] = counts.setdefault(basename, 0) + 1
         name = '%s_%03d' % (basename, count)
-        names.append(name)
+        names.append(name.encode('utf-8'))
         return name
     for item in items:
         with writer.group(_get_name(item)):
@@ -509,7 +509,7 @@ def load_items(reader):
     items = []
     for name in names:
         klass_name = re.match(r'([A-Z]+[A-Za-z0-9\_]*)\_([0-9]*)',
-                              name).groups()[0]
+                              name.decode()).groups()[0]
         klass = item_class_from_name(klass_name)
         item = klass()
         with reader.group(name):
