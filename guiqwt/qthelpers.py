@@ -44,11 +44,13 @@ from guiqwt import io
 #===============================================================================
 # Ready-to-use open/save dialogs
 #===============================================================================
-def exec_image_save_dialog(parent, data, basedir='', app_name=None):
+def exec_image_save_dialog(parent, data, template=None,
+                           basedir='', app_name=None):
     """
     Executes an image save dialog box (QFileDialog.getSaveFileName)
         * parent: parent widget (None means no parent)
         * data: image pixel array data
+        * template: image template (pydicom dataset) for DICOM files
         * basedir: base directory ('' means current directory)
         * app_name (opt.): application name (used as a title for an eventual 
           error message box in case something goes wrong when saving image)
@@ -58,12 +60,15 @@ def exec_image_save_dialog(parent, data, basedir='', app_name=None):
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
     filename, _filter = getsavefilename(parent, _("Save as"), basedir,
-                            io.iohandler.get_filters('save', dtype=data.dtype))
+        io.iohandler.get_filters('save', dtype=data.dtype, template=template))
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
         filename = to_text_string(filename)
+        kwargs = {}
+        if osp.splitext(filename)[1].lower() == '.dcm':
+            kwargs['template'] = template
         try:
-            io.imwrite(filename, data)
+            io.imwrite(filename, data, **kwargs)
             return filename
         except Exception as msg:
             import traceback
