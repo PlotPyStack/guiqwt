@@ -44,11 +44,11 @@ from guiqwt import io
 #===============================================================================
 # Ready-to-use open/save dialogs
 #===============================================================================
-def exec_image_save_dialog(data, parent, basedir='', app_name=None):
+def exec_image_save_dialog(parent, data, basedir='', app_name=None):
     """
     Executes an image save dialog box (QFileDialog.getSaveFileName)
-        * data: image pixel array data
         * parent: parent widget (None means no parent)
+        * data: image pixel array data
         * basedir: base directory ('' means current directory)
         * app_name (opt.): application name (used as a title for an eventual 
           error message box in case something goes wrong when saving image)

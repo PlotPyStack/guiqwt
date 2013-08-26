@@ -1,3 +1,20 @@
+== Version 2.3.2 ==
+
+=== Possible API compatibility issues (since v2.3.1) ===
+
+  * qthelpers.exec_image_save_dialog: reversed the first two parameters (consistency with most Qt functions and with exec_image_open_dialog) ; parent widget is now the first argument, data to be saved being the second one.
+
+=== Bug fixes (since v2.3.1) ===
+
+  * Building process was failing (since v2.3.1) on Windows with C compiler other than Microsoft Visual C++
+
+=== Other changes (since v2.3.1) ===
+
+  * Updated py2exe example (switched to cxFreeze to show how it's done) following https://groups.google.com/group/guidata_guiqwt/browse_thread/thread/f8db01cf7149e964
+  * Updated the build in place batch script: building on Windows with Ms Visual C++
+
+----
+
 == Version 2.3.1 ==
 
 === Bug fixes (since v2.3.0) ===

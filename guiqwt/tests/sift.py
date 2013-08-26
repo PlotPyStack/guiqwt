@@ -1022,7 +1022,7 @@ class ImageFT(ObjectFT):
         for row in rows:
             obj = self.objects[row]
             from guiqwt.qthelpers import exec_image_save_dialog
-            filename = exec_image_save_dialog(obj.data, self, basedir='',
+            filename = exec_image_save_dialog(self, obj.data, basedir='',
                                               app_name=APP_NAME)
             if filename:
                 os.chdir(osp.dirname(filename))
