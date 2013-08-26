@@ -121,11 +121,16 @@ class SignalParamNew(DataSet):
 
 
 class ImageParam(DataSet):
+    def __init__(self, title=None, comment=None, icon=''):
+        DataSet.__init__(self, title, comment, icon)
+        self.template = None
+
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
     metadata = DictItem(_("Metadata"), default=None)
     def copy_data_from(self, other, dtype=None):
         self.data = np.array(other.data, copy=True, dtype=dtype)
+        self.template = other.template
     def change_data_type(self, dtype):
         self.data = np.array(self.data, dtype=dtype)
 
@@ -1014,6 +1019,7 @@ class ImageFT(ObjectFT):
                 for attr_str in dir(dcm):
                     if attr_str != 'GroupLength':
                         image.metadata[attr_str] = getattr(dcm, attr_str)
+                image.template = dcm
             self.add_object(image)
             
     def save_image(self):
@@ -1022,8 +1028,9 @@ class ImageFT(ObjectFT):
         for row in rows:
             obj = self.objects[row]
             from guiqwt.qthelpers import exec_image_save_dialog
-            filename = exec_image_save_dialog(self, obj.data, basedir='',
-                                              app_name=APP_NAME)
+            filename = exec_image_save_dialog(self, obj.data,
+                                              template=obj.template,
+                                              basedir='', app_name=APP_NAME)
             if filename:
                 os.chdir(osp.dirname(filename))
         
