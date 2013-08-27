@@ -44,7 +44,7 @@ from guiqwt.builder import make
 APP_NAME = _("Sift")
 APP_DESC = _("""Signal and Image Filtering Tool<br>
 Simple signal and image processing application based on guiqwt and guidata""")
-VERSION = '0.2.7'
+VERSION = '0.2.8'
 
 
 def normalize(yin, parameter='maximum'):
