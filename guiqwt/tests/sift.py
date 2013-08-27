@@ -123,7 +123,36 @@ class SignalParamNew(DataSet):
 class ImageParam(DataSet):
     def __init__(self, title=None, comment=None, icon=''):
         DataSet.__init__(self, title, comment, icon)
-        self.template = None
+        self._template = None
+
+    def update_metadata(self, value):
+        self.metadata = {}
+        for attr_str in dir(value):
+            if attr_str != 'GroupLength':
+                self.metadata[attr_str] = getattr(value, attr_str)
+
+    @property
+    def template(self):
+        return self._template
+    
+    @template.setter
+    def template(self, value):
+        self.update_metadata(value)
+        self._template = value
+
+    @property
+    def pixel_spacing(self):
+        if self.template is not None:
+            return self.template.PixelSpacing
+        else:
+            return None, None
+    
+    @pixel_spacing.setter
+    def pixel_spacing(self, value):
+        if self.template is not None:
+            dx, dy = value
+            self.template.PixelSpacing = [dx, dy]
+            self.update_metadata(self.template)
 
     title = StringItem(_("Title"), default=_("Untitled"))
     data = FloatArrayItem(_("Data"))
@@ -432,7 +461,7 @@ class ObjectFT(QSplitter):
             obj.data = func(orig.data, param)
     
     def compute_11(self, name, func, param=None, one_param_for_all=True,
-                   suffix=None):
+                   suffix=None, func_obj=None):
         if param is not None and one_param_for_all:
             if not param.edit(parent=self.parent()):
                 return
@@ -453,6 +482,8 @@ class ObjectFT(QSplitter):
             self.repaint()
             try:
                 self.apply_11_func(obj, orig, func, param)
+                if func_obj is not None:
+                    func_obj(obj)
             except Exception as msg:
                 import traceback
                 traceback.print_exc()
@@ -897,11 +928,17 @@ class ImageFT(ObjectFT):
                             ).set_prop("display", active=prop)
         param = ResizeParam(_("Resize"))
         import scipy.ndimage as spi
+        
+        def func_obj(obj):
+            dx, dy = obj.pixel_spacing
+            if dx is not None and dy is not None:
+                obj.pixel_spacing = dx/param.zoom, dy/param.zoom
         self.compute_11("Zoom", lambda x, p:
                         spi.interpolation.zoom(x, p.zoom, order=p.order,
                                                mode=p.mode, cval=p.cval,
                                                prefilter=p.prefilter),
-                        param, suffix=lambda p: "zoom=%.3f" % p.zoom)
+                        param, suffix=lambda p: "zoom=%.3f" % p.zoom,
+                        func_obj=func_obj)
                         
     def extract_roi(self):
         class ROIParam(DataSet):
@@ -1014,12 +1051,8 @@ class ImageFT(ObjectFT):
             image.data = data
             if osp.splitext(filename)[1].lower() == ".dcm":
                 import dicom
-                dcm = dicom.read_file(filename, stop_before_pixels=True)
-                image.metadata = {}
-                for attr_str in dir(dcm):
-                    if attr_str != 'GroupLength':
-                        image.metadata[attr_str] = getattr(dcm, attr_str)
-                image.template = dcm
+                image.template = dicom.read_file(filename,
+                                                 stop_before_pixels=True)
             self.add_object(image)
             
     def save_image(self):

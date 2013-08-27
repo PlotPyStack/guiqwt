@@ -32,7 +32,7 @@ def create_executable():
     dist.excludes += ['IPython']
 
     # Building executable
-    dist.build('cx_Freeze')
+    dist.build('cx_Freeze', create_archive='add')
 
 
 if __name__ == '__main__':
