@@ -125,6 +125,11 @@ class ImageParam(DataSet):
         DataSet.__init__(self, title, comment, icon)
         self._template = None
 
+    @property
+    def size(self):
+        """Returns (width, height)"""
+        return self.data.shape[1], self.data.shape[0]
+
     def update_metadata(self, value):
         self.metadata = {}
         for attr_str in dir(value):
@@ -805,9 +810,8 @@ class ImageFT(ObjectFT):
                                         triggered=self.swap_axes)
         flatfield_action = create_action(self, _("Flat-field correction"),
                                          triggered=self.flat_field_correction)
-        self.actlist_1 += [resize_action]
         self.actlist_2 += [flatfield_action]
-        self.actlist_1more += [roi_action, swapaxes_action,
+        self.actlist_1more += [roi_action, swapaxes_action, resize_action,
                                hflip_action, vflip_action,
                                rot90_action, rot270_action, rotate_action]
         add_actions(rotate_menu, [hflip_action, vflip_action,
@@ -903,8 +907,13 @@ class ImageFT(ObjectFT):
         
     def resize_image(self):
         rows = self._get_selected_rows()
-        obj = self.objects[rows[0]]
-        original_size = obj.data.shape[1], obj.data.shape[0]
+        objs = self.objects
+        for row in rows:
+            if objs[row].size != objs[rows[0]].size:
+                QMessageBox.warning(self.parent(), APP_NAME,
+                             _("Warning:")+"\n%s" % \
+                             "Selected images do not have the same size")
+        original_size = objs[rows[0]].size
         from guiqwt.widgets.resizedialog import ResizeDialog
         dlg = ResizeDialog(self.plot, new_size=original_size,
                            old_size=original_size,
@@ -1019,9 +1028,7 @@ class ImageFT(ObjectFT):
         imagenew = ImageParamNew(title=_("Create a new image"))
         rows = self._get_selected_rows()
         if rows:
-            data = self.objects[rows[-1]].data
-            imagenew.width = data.shape[1]
-            imagenew.height = data.shape[0]
+            imagenew.width, imagenew.height = self.objects[rows[-1]].size
         imagenew.title = "%s %d" % (imagenew.title, self.number+1)
         if not imagenew.edit(parent=self.parent()):
             return
