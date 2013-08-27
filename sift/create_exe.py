@@ -22,7 +22,8 @@ def create_executable():
     dist = Distribution()
     dist.setup(name="Sift", version=sift.VERSION,
                description="Signal and Image Filtering Tool",
-               script="sift.pyw", target_name="sift.exe", icon="sift.ico")
+               script="sift.pyw", target_name="sift.exe",
+               target_dir="%s-%s" % ("Sift", sift.VERSION), icon="sift.ico")
     dist.add_modules('guidata', 'guiqwt')
     try:
         import spyderlib
@@ -32,7 +33,7 @@ def create_executable():
     dist.excludes += ['IPython']
 
     # Building executable
-    dist.build('cx_Freeze', create_archive='add')
+    dist.build('cx_Freeze', create_archive='move')
 
 
 if __name__ == '__main__':
