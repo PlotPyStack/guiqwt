@@ -40,10 +40,15 @@ def is_edit_valid(edit):
 
 
 class ResizeDialog(QDialog):
-    def __init__(self, parent, new_size, old_size, text=""):
+    def __init__(self, parent, new_size, old_size, text="",
+                 keep_original_size=False):
         QDialog.__init__(self, parent)
         
-        self.keep_original_size = False
+        intfunc = lambda tup: [int(val) for val in tup]
+        if intfunc(new_size) == intfunc(old_size):
+            self.keep_original_size = True
+        else:
+            self.keep_original_size = keep_original_size
         self.width, self.height = new_size
         self.old_width, self.old_height = old_size
         self.ratio = self.width/self.height
@@ -97,6 +102,7 @@ class ResizeDialog(QDialog):
         self.connect(h_edit, SIGNAL("textChanged(QString)"),
                      self.height_changed)
         self.connect(zbox, SIGNAL("toggled(bool)"), self.toggled_no_zoom)
+        zbox.setChecked(self.keep_original_size)
 
     def update_widgets(self):
         valid = True
