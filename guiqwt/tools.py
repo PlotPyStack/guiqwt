@@ -1531,10 +1531,11 @@ class CopyToClipboardTool(CommandTool):
         plot.copy_to_clipboard()
 
 
-def save_snapshot(plot, p0, p1):
+def save_snapshot(plot, p0, p1, new_size=None):
     """
     Save rectangular plot area
     p0, p1: resp. top left and bottom right points (QPoint objects)
+    new_size: destination image size (tuple: (width, height))
     """
     from guiqwt.image import (get_image_from_plot, get_plot_qrect,
                               get_items_in_rectangle,
@@ -1547,10 +1548,12 @@ def save_snapshot(plot, p0, p1):
         return
     src_x, src_y, src_w, src_h = get_plot_qrect(plot, p0, p1).getRect()
     original_size = compute_trimageitems_original_size(items, src_w, src_h)
-    screen_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1)
+
+    if new_size is None:
+        new_size = (p1.x()-p0.x()+1, p1.y()-p0.y()+1) # Screen size
     
     from guiqwt.widgets.resizedialog import ResizeDialog
-    dlg = ResizeDialog(plot, new_size=screen_size, old_size=original_size,
+    dlg = ResizeDialog(plot, new_size=new_size, old_size=original_size,
                        text=_("Destination size:"))
     if not dlg.exec_():
         return
