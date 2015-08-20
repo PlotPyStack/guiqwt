@@ -1029,6 +1029,7 @@ class ImageItem(RawImageItem):
         if self.data is None:
             return
         src2 = self._rescale_src_rect(src_rect)
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_rect(self.data, src2, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1288,6 +1289,7 @@ class TrImageItem(RawImageItem):
                          [ 0,  0, 1]], float)
         mat = self.tr*tr
 
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_tr(self.data, mat, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1629,6 +1631,7 @@ class XYImageItem(RawImageItem):
 
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         xytr = (self.x, self.y, src_rect)
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_xy(self.data, xytr, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -2009,6 +2012,7 @@ class MaskedImageItem(ImageItem):
             lut = (1, 0, bg, cmap)
             shown_data = np.ma.getmaskarray(self.data)
             src2 = self._rescale_src_rect(src_rect)
+            dst_rect = tuple([int(i) for i in dst_rect])
             dest = _scale_rect(shown_data, src2, self._offscreen, dst_rect,
                                lut, (INTERP_NEAREST,))
             qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))

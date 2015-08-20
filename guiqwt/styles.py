@@ -104,7 +104,7 @@ import numpy as np
 
 from guidata.qt.QtGui import (QPen, QBrush, QColor, QFont, QFontDialog,
                               QTransform)
-from guidata.qt.QtCore import Qt, QSize, QPointF
+from guidata.qt.QtCore import Qt, QSizeF, QPointF
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,
@@ -216,7 +216,7 @@ MARKERS = {
           "o": QwtSymbol.Ellipse,
           "*": QwtSymbol.Star1,
           ".": QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black),
-                          QPen(Qt.black), QSize(3, 3)),
+                          QPen(Qt.black), QSizeF(3, 3)),
           "x": QwtSymbol.XCross,
           "s": QwtSymbol.Rect,
           "d": QwtSymbol.Diamond,
@@ -405,7 +405,7 @@ class SymbolParam(DataSet):
         color.setAlphaF(self.alpha)
         marker = QwtSymbol(marker_type, QBrush(color),
                            QPen(QColor(self.edgecolor)),
-                           QSize(self.size, self.size))
+                           QSizeF(self.size, self.size))
         return marker
     
     def update_symbol(self, obj):
@@ -559,7 +559,7 @@ class GridParam(DataSet):
     def update_param(self, grid):
         plot = grid.plot()
         if plot is not None:
-            self.background = str(plot.canvasBackground().name())
+            self.background = str(plot.canvasBackground().color().name())
         self.maj_xenabled = grid.xEnabled()
         self.maj_yenabled = grid.yEnabled()
         self.maj_line.update_param( grid.majPen() )
