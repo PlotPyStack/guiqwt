@@ -299,8 +299,6 @@ CURVESTYLE_CHOICES = [("Lines", _("Lines"), "lines.png"),
                       ("Dots", _("Dots"), "dots.png"),
                       ("NoCurve", _("No curve"), "none.png")
                       ]
-CURVETYPE_CHOICES = [("Yfx", _("Draws y as a function of x"), "yfx.png"),
-                     ("Xfy", _("Draws x as a function of y"), "xfy.png")]
 
 BRUSHSTYLE_CHOICES = [
     ("NoBrush", _("No brush pattern"), "nobrush.png"),
@@ -333,7 +331,6 @@ MARKERSTYLE_CHOICES = [("NoLine", _("None"), "none.png"),
 
 MARKER_NAME = build_reverse_map(MARKER_CHOICES, QwtSymbol)
 CURVESTYLE_NAME = build_reverse_map(CURVESTYLE_CHOICES, QwtPlotCurve)
-CURVETYPE_NAME = build_reverse_map(CURVETYPE_CHOICES, QwtPlotCurve)
 LINESTYLE_NAME = build_reverse_map(LINESTYLE_CHOICES, Qt)
 BRUSHSTYLE_NAME = build_reverse_map(BRUSHSTYLE_CHOICES, Qt)
 MARKERSTYLE_NAME = build_reverse_map(MARKERSTYLE_CHOICES, QwtPlotMarker)
@@ -866,15 +863,12 @@ class CurveParam(DataSet):
     fitted = BoolItem(_("Fit curve to data"), _("Fitting"), default=False)
     curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
                                  default="Lines")
-    curvetype = ImageChoiceItem(_("Curve type"), CURVETYPE_CHOICES,
-                                default="Yfx")
     baseline = FloatItem(_("Baseline"), default=0.)
 
     def update_param(self, curve):
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]
-        self.curvetype = CURVETYPE_NAME[curve.curveType()]
         self.baseline = curve.baseline()
     
     def update_curve(self, curve):
@@ -895,7 +889,6 @@ class CurveParam(DataSet):
         curve.setCurveAttribute(QwtPlotCurve.Fitted, self.fitted)
         # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
-        curve.setCurveType(getattr(QwtPlotCurve, self.curvetype))
         curve.setBaseline(self.baseline)
 
 class CurveParam_MS(CurveParam):

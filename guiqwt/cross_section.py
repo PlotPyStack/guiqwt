@@ -368,7 +368,6 @@ class CrossSectionPlot(CurvePlot):
 
     def set_curve_style(self, section, option):
         self.curveparam.read_config(CONF, section, option)
-        self.curveparam.curvetype = self.CURVETYPE
         self.curveparam.label = self.CURVE_LABEL
         
     def connect_plot(self, plot):

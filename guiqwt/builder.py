@@ -194,7 +194,7 @@ class PlotItemBuilder(object):
 
     def __set_param(self, param, title, color, linestyle, linewidth,
                     marker, markersize, markerfacecolor, markeredgecolor,
-                    shade, fitted, curvestyle, curvetype, baseline):
+                    shade, fitted, curvestyle, baseline):
         """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
         self.__set_baseparam(param, color, linestyle, linewidth, marker,
                              markersize, markerfacecolor, markeredgecolor)
@@ -206,8 +206,6 @@ class PlotItemBuilder(object):
             param.fitted = fitted
         if curvestyle is not None:
             param.curvestyle = curvestyle
-        if curvetype is not None:
-            param.curvetype = curvetype
         if baseline is not None:
             param.baseline = baseline
             
@@ -337,7 +335,7 @@ class PlotItemBuilder(object):
               color=None, linestyle=None, linewidth=None,
               marker=None, markersize=None, markerfacecolor=None,
               markeredgecolor=None, shade=None, fitted=None,
-              curvestyle=None, curvetype=None, baseline=None,
+              curvestyle=None, baseline=None,
               xaxis="bottom", yaxis="left"):
         """
         Make a curve `plot item` from x, y, data
@@ -362,9 +360,6 @@ class PlotItemBuilder(object):
             * curvestyle: attribute name from the 
               :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
-            * curvetype: attribute name from the 
-              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveType` enum
-              (i.e. "Yfx" or "Xfy")
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
               The interpretation of the baseline depends on the curve type 
@@ -384,7 +379,7 @@ class PlotItemBuilder(object):
             title = make_title(basename, CURVE_COUNT)
         self.__set_param(param, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle, curvetype, baseline)
+                         shade, fitted, curvestyle, baseline)
         return self.pcurve(x, y, param, xaxis, yaxis)
 
     def merror(self, *args, **kwargs):
@@ -436,7 +431,7 @@ class PlotItemBuilder(object):
               errorbarwidth=None, errorbarcap=None, errorbarmode=None,
               errorbaralpha=None, marker=None,
               markersize=None, markerfacecolor=None, markeredgecolor=None,
-              shade=None, fitted=None, curvestyle=None, curvetype=None,
+              shade=None, fitted=None, curvestyle=None,
               baseline=None, xaxis="bottom", yaxis="left"):
         """
         Make an errorbar curve `plot item` 
@@ -463,9 +458,6 @@ class PlotItemBuilder(object):
             * curvestyle: attribute name from the 
               :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
-            * curvetype: attribute name from the 
-              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveType` enum
-              (i.e. "Yfx" or "Xfy")
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
               The interpretation of the baseline depends on the curve type 
@@ -487,7 +479,7 @@ class PlotItemBuilder(object):
             curveparam.label = make_title(basename, CURVE_COUNT)
         self.__set_param(curveparam, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle, curvetype, baseline)
+                         shade, fitted, curvestyle, baseline)
         errorbarparam.color = curveparam.line.color
         if errorbarwidth is not None:
             errorbarparam.width = errorbarwidth
