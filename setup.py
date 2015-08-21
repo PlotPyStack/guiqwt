@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
+# Copyright © 2009-2015 CEA
 # Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
@@ -9,7 +9,7 @@
 guiqwt
 ======
 
-Copyright © 2009-2010 CEA
+Copyright © 2009-2015 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License
 (see guiqwt/__init__.py for details)
@@ -106,7 +106,7 @@ setup(name=LIBNAME, version=version,
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
                                                '.ui'))},
       requires=["PyQt4 (>4.3)", "NumPy (>=1.3)", "SciPy (>=0.7)",
-                "guidata (>=1.6.0)", "PIL (>=1.1.6)"],
+                "guidata (>=1.6.0)", "qwt (>=6.1.0)", "PIL (>=1.1.6)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'.histogram2d',
                              [join('src', 'histogram2d.c')],

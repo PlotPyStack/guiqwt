@@ -1,7 +1,7 @@
 guiqwt
 ======
 
-Copyright © 2009-2012 CEA
+Copyright © 2009-2015 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
 
@@ -23,7 +23,7 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
         Requirements
             Python 2.6+ or Python 3
             PyQt4 4.3+
-            PyQwt 5.2+
+            qwt 6.1+ (pure Python reimplementation of Qwt6 C++ library)
             guidata 1.6.0+
             NumPy 1.3+ -- NumPy 1.6 or later is required for Windows binaries
             SciPy 0.7+
