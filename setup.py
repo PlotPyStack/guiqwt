@@ -36,7 +36,7 @@ from guiqwt import __version__ as version
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to PyQwt 5.2)'
+DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `qwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Development Status :: 5 - Production/Stable',

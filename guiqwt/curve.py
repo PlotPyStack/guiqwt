@@ -1345,7 +1345,7 @@ class CurvePlot(BasePlot):
         self.axes_synchronised = axes_synchronised
         
         # Installing our own event filter:
-        # (PyQwt's event filter does not fit our needs)
+        # (qwt's event filter does not fit our needs)
         self.canvas().installEventFilter(self.filter)
         self.canvas().setMouseTracking(True)
     
