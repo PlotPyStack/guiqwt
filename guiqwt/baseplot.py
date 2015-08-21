@@ -58,7 +58,7 @@ from guidata.py3compat import to_text_string, is_text_string, maxsize
 
 # Local imports
 from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
-                                 QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
+                                 QwtLogScaleEngine, QwtText, QwtPlotCanvas)
 from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
@@ -67,7 +67,6 @@ from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam, AxisParam
 from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
                             SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_MOVED,
                             SIG_PLOT_LABELS_CHANGED, SIG_ITEM_REMOVED)
-
 
 #==============================================================================
 # Utilities for plot items
@@ -116,8 +115,7 @@ class BasePlot(QwtPlot):
     AXIS_IDS = (Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP)
     AXIS_NAMES = {'left': Y_LEFT, 'right': Y_RIGHT,
                   'bottom': X_BOTTOM, 'top': X_TOP}
-    AXIS_TYPES = {"lin" : QwtLinearScaleEngine,
-                  "log" : QwtLog10ScaleEngine }
+    AXIS_TYPES = {"lin" : QwtLinearScaleEngine, "log" : QwtLogScaleEngine}
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
     DEFAULT_ACTIVE_XAXIS = X_BOTTOM
     DEFAULT_ACTIVE_YAXIS = Y_LEFT
@@ -854,7 +852,7 @@ class BasePlot(QwtPlot):
         use instead of replot when only the content
         of the canvas needs redrawing (axes, shouldn't change)
         """
-        self.canvas().invalidatePaintCache()
+        self.canvas().replot()
         self.update()
 
 ## Keep this around to debug too many replots

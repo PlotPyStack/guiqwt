@@ -1405,8 +1405,8 @@ class CurvePlot(BasePlot):
     def set_marker_axes(self):
         curve = self.get_last_active_item(ITrackableItemType)
         if curve:
-            self.cross_marker.setAxis(curve.xAxis(), curve.yAxis())
-            self.curve_marker.setAxis(curve.xAxis(), curve.yAxis())
+            self.cross_marker.setAxes(curve.xAxis(), curve.yAxis())
+            self.curve_marker.setAxes(curve.xAxis(), curve.yAxis())
     
     def do_move_marker(self, event):
         pos = event.pos()
@@ -1573,7 +1573,7 @@ class CurvePlot(BasePlot):
         old_active = self.active_item
         BasePlot.set_active_item(self, item)
         if item is not None and old_active is not item:
-            self.grid.setAxis(item.xAxis(), item.yAxis())
+            self.grid.setAxes(item.xAxis(), item.yAxis())
 
     def get_plot_parameters(self, key, itemparams):
         if key == "grid":

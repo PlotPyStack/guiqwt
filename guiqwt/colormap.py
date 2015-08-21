@@ -20,7 +20,7 @@ from guidata.qt.QtGui import QColor, QIcon, QPixmap
 from numpy import array, uint8, linspace, zeros, newaxis
 
 # Local imports
-from guiqwt.transitional import QwtLinearColorMap, QwtDoubleInterval, toQImage
+from guiqwt.transitional import QwtLinearColorMap, QwtInterval, toQImage
 from guiqwt import _cm # Reuse matplotlib data
 
 
@@ -56,7 +56,7 @@ def _setup_colormap(cmap, cmdata):
         cmap.addColorStop(i, col)
 
 # usefull to obtain a full color map
-FULLRANGE = QwtDoubleInterval(0.0, 1.0)
+FULLRANGE = QwtInterval(0.0, 1.0)
 
 COLORMAPS = {}
 EXTRA_COLORMAPS = [] # custom build colormaps

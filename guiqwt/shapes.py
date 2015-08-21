@@ -664,8 +664,7 @@ class PolygonShape(AbstractShape):
         else:
             painter.drawPolyline(shape_points)
         if symbol != QwtSymbol.NoSymbol:
-            for i in range(points.size()):
-                symbol.draw(painter, points[i].toPoint())
+            symbol.drawSymbols(painter, points)
         if self.LINK_ADDITIONNAL_POINTS and other_points:
             pen2 = painter.pen()
             pen2.setStyle(Qt.DotLine)
@@ -1100,7 +1099,7 @@ class EllipseShape(PolygonShape):
         painter.restore()
         if symbol != QwtSymbol.NoSymbol:
             for i in range(points.size()):
-                symbol.draw(painter, points[i].toPoint())
+                symbol.drawSymbol(painter, points[i].toPoint())
 
     def get_xline(self):
         return QLineF(*(tuple(self.points[0])+tuple(self.points[1])))
@@ -1367,8 +1366,8 @@ class XRangeSelection(AbstractShape):
                          rct2.center().x(), rct2.bottom())
         painter.setPen(pen)
         x0, x1, y = self.get_handles_pos()        
-        sym.draw(painter, QPoint(x0, y))
-        sym.draw(painter, QPoint(x1, y))
+        sym.drawSymbol(painter, QPoint(x0, y))
+        sym.drawSymbol(painter, QPoint(x1, y))
         
     def hit_test(self, pos):
         x, _y = pos.x(), pos.y()

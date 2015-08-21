@@ -21,7 +21,6 @@ import sys
 
 print("Using experimental 'pure Python' qwt API", file=sys.stderr)
 from qwt import (QwtPlot, QwtSymbol, QwtLinearScaleEngine, QwtLogScaleEngine,
-                 QwtText, QwtPlotCanvas, QwtLinearColorMap, QwtDoubleInterval,
+                 QwtText, QwtPlotCanvas, QwtLinearColorMap, QwtInterval,
                  toQImage, QwtPlotGrid, QwtPlotItem, QwtScaleMap, QwtPlotCurve,
-                 QwtPlotMarker, QwtPlotRenderer, QwtLog10ScaleEngine,
-                 QwtPlotPrintFilter)
+                 QwtPlotMarker, QwtPlotRenderer)

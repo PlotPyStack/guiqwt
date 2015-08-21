@@ -562,10 +562,10 @@ class GridParam(DataSet):
             self.background = str(plot.canvasBackground().color().name())
         self.maj_xenabled = grid.xEnabled()
         self.maj_yenabled = grid.yEnabled()
-        self.maj_line.update_param( grid.majPen() )
+        self.maj_line.update_param( grid.majorPen() )
         self.min_xenabled = grid.xMinEnabled()
         self.min_yenabled = grid.yMinEnabled()
-        self.min_line.update_param( grid.minPen() )
+        self.min_line.update_param( grid.minorPen() )
 
     def update_grid(self, grid):
         plot = grid.plot()
@@ -576,7 +576,7 @@ class GridParam(DataSet):
         grid.setPen( self.maj_line.build_pen() )
         grid.enableXMin(self.min_xenabled)
         grid.enableYMin(self.min_yenabled)
-        grid.setMinPen( self.min_line.build_pen() )
+        grid.setMinorPen( self.min_line.build_pen() )
         grid.setTitle(self.get_title())
 
 
@@ -642,7 +642,7 @@ class AxesParam(DataSet):
 
     def update_axes(self, item):
         plot = item.plot()
-        plot.grid.setAxis(self.xaxis_id, self.yaxis_id)
+        plot.grid.setAxes(self.xaxis_id, self.yaxis_id)
         item.setXAxis(self.xaxis_id)
         self.xaxis.update_axis(plot, self.xaxis_id)
         item.setYAxis(self.yaxis_id)

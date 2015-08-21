@@ -47,7 +47,7 @@ Reference
 """
 
 from guidata.qt.QtGui import QPen, QColor, QTextDocument
-from guidata.qt.QtCore import QRectF
+from guidata.qt.QtCore import QRectF, QPointF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.py3compat import to_text_string
@@ -344,7 +344,7 @@ class LabelItem(AbstractLabelItem):
         x, y = self.get_top_left(xMap, yMap, canvasRect)
         x0, y0 = self.get_origin(xMap, yMap, canvasRect)
         painter.save()
-        self.marker.draw(painter, x0, y0)
+        self.marker.drawSymbols(painter, [QPointF(x0, y0)])
         painter.restore()
         sz = self.text.size()
         self.draw_frame(painter, x, y, sz.width(), sz.height())
@@ -426,7 +426,8 @@ class LegendBoxItem(AbstractLabelItem):
         y0 = y+LEGEND_SPACEV
         x0 = x+LEGEND_SPACEH
         for text, ipen, ibrush, isymbol in items:
-            isymbol.draw(painter, x0+LEGEND_WIDTH/2, y0+height/2)
+            isymbol.drawSymbols(painter,
+                                [QPointF(x0+LEGEND_WIDTH/2, y0+height/2)])
             painter.save()
             painter.setPen(ipen)
             painter.setBrush(ibrush)

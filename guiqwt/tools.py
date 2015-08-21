@@ -267,7 +267,6 @@ from guidata.dataset.dataitems import BoolItem, FloatItem
 from guidata.py3compat import is_text_string, to_text_string
 
 #Local imports
-from guiqwt.transitional import QwtPlotPrintFilter
 from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, StandardKeyMatch,
@@ -1680,29 +1679,6 @@ class RotateCropTool(CommandTool):
         self.action.setEnabled(status)
 
 
-class PrintFilter(QwtPlotPrintFilter):
-    def __init__(self):
-        super(PrintFilter, self).__init__()
-
-    def color(self, c, item):
-        if not (self.options() & QwtPlotPrintFilter.CanvasBackground):
-            if item == QwtPlotPrintFilter.MajorGrid:
-                return Qt.darkGray
-            elif item == QwtPlotPrintFilter.MinorGrid:
-                return Qt.gray
-        if item == QwtPlotPrintFilter.Title:
-            return Qt.red
-        elif item == QwtPlotPrintFilter.AxisScale:
-            return Qt.green
-        elif item == QwtPlotPrintFilter.AxisTitle:
-            return Qt.blue
-        return c
-
-    def font(self, f, _):
-        result = QFont(f)
-        result.setPointSize(int(f.pointSize()*1.25))
-        return result
-
 class PrintTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(PrintTool, self).__init__(manager, _("Print..."),
@@ -1717,12 +1693,7 @@ class PrintTool(CommandTool):
         ok = dialog.exec_()
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if ok:
-            filter = PrintFilter()
-            if (QPrinter.GrayScale == printer.colorMode()):
-                filter.setOptions(QwtPlotPrintFilter.PrintAll
-                                  & ~QwtPlotPrintFilter.PrintBackground
-                                  | QwtPlotPrintFilter.PrintFrameWithScales)
-            plot.print_(printer, filter)
+            plot.print_(printer)
 
 
 class OpenFileTool(CommandTool):

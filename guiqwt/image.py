@@ -153,7 +153,7 @@ from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.py3compat import getcwd, is_text_string
 
 # Local imports
-from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
+from guiqwt.transitional import QwtPlotItem, QwtInterval
 from guiqwt.config import _
 from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
@@ -2480,7 +2480,7 @@ class ImagePlot(CurvePlot):
         self.setAxisScale(zaxis, item.min, item.max)
         # XXX: the colormap can't be displayed if min>max, to fix this
         # we should pass an inverted colormap along with _max, _min values
-        axiswidget.setColorMap(QwtDoubleInterval(item.min, item.max),
+        axiswidget.setColorMap(QwtInterval(item.min, item.max),
                                item.get_color_map())
         self.updateAxes()
 
