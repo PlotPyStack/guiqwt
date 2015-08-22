@@ -39,8 +39,13 @@ del sys.modules['guiqwt']
 DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `qwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
-CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
-               'Topic :: Scientific/Engineering']
+CLASSIFIERS = ['Topic :: Scientific/Engineering']
+if 'alpha' in version:
+    CLASSIFIERS += ['Development Status :: 3 - Alpha']
+elif 'beta' in version:
+    CLASSIFIERS += ['Development Status :: 4 - Beta']
+else:
+    CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
 
 if os.name == 'nt':
     SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
@@ -98,8 +103,8 @@ for arg, compile_arg in (("--sse2", "-msse2"),
 cythonize_all('src')
 
 setup(name=LIBNAME, version=version,
-      download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
-                                                  LIBNAME, LIBNAME, version),
+#      download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
+#                                                  LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=get_subpackages(LIBNAME),
       package_data={LIBNAME:
