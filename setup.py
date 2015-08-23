@@ -20,6 +20,7 @@ Licensed under the terms of the CECILL License
 
 from __future__ import print_function
 
+import setuptools  # analysis:ignore
 import numpy
 import sys
 import os
@@ -40,10 +41,10 @@ DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension 
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Topic :: Scientific/Engineering']
-if 'alpha' in version:
-    CLASSIFIERS += ['Development Status :: 3 - Alpha']
-elif 'beta' in version:
+if 'beta' in version or 'b' in version:
     CLASSIFIERS += ['Development Status :: 4 - Beta']
+elif 'alpha' in version or 'a' in version:
+    CLASSIFIERS += ['Development Status :: 3 - Alpha']
 else:
     CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
 
@@ -103,8 +104,6 @@ for arg, compile_arg in (("--sse2", "-msse2"),
 cythonize_all('src')
 
 setup(name=LIBNAME, version=version,
-#      download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
-#                                                  LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=get_subpackages(LIBNAME),
       package_data={LIBNAME:
@@ -131,8 +130,9 @@ setup(name=LIBNAME, version=version,
                              ),
                    ],
       author = "Pierre Raybaut",
-      author_email = 'pierre.raybaut@cea.fr',
-      url = 'http://www.cea.fr',
+      author_email = 'pierre.raybaut@gmail.com',
+      url = 'https://github.com/PierreRaybaut/%s' % LIBNAME,
+      license = 'CeCILL V2',
       classifiers = CLASSIFIERS + [
         'Operating System :: MacOS',
         'Operating System :: Microsoft :: Windows',
