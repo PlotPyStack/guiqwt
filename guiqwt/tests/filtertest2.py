@@ -12,7 +12,6 @@ SHOW = True # Show test in GUI-based test launcher
 
 from guidata.qt.QtGui import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QMainWindow)
-from guidata.qt.QtCore import SIGNAL
 
 #---Import plot widget base class
 from guiqwt.curve import CurvePlot
@@ -48,7 +47,7 @@ class FilterTestWidget(QWidget):
         #---
         
         button = QPushButton("Test filter: %s" % title)
-        self.connect(button, SIGNAL('clicked()'), self.process_data)
+        button.clicked.connect(self.process_data)
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.plot)
         vlayout.addWidget(button)

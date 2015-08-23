@@ -1,8 +1,9 @@
-== Version 2.4.0 ==
+== Version 2.4.0beta2 ==
 
 === Possible API compatibility issues (since v2.3.2) ===
 
-  * Replaced PyQwt dependency by the new `qwt` package (pure Python reimplementation of the Qwt6 C++ library)
+  * Added support for PyQt5
+  * Replaced PyQwt dependency by the new [included since beta2] `qwt` package (pure Python reimplementation of the Qwt6 C++ library)
   * Removed "curvetype" feature (Yfx, Xfy) which is no longer supported in Qwt6
 
 === Bug fixes (since v2.3.2) ===

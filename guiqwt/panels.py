@@ -36,10 +36,8 @@ of panel:
         Module providing the `plot tools`
 """
 
+from guidata.qt.QtCore import Signal
 from guidata.qtwidgets import DockableWidget
-
-# Local imports
-from guiqwt.signals import SIG_VISIBILITY_CHANGED
 
 
 #===============================================================================
@@ -69,6 +67,7 @@ class PanelWidget(DockableWidget):
     PANEL_ID = None # string
     PANEL_TITLE = None # string
     PANEL_ICON = None # string
+    SIG_VISIBILITY_CHANGED = Signal(bool)
     
     def __init__(self, parent=None):
         super(PanelWidget, self).__init__(parent)
@@ -82,16 +81,16 @@ class PanelWidget(DockableWidget):
     def showEvent(self, event):
         DockableWidget.showEvent(self, event)
         if self.dockwidget is None:
-            self.emit(SIG_VISIBILITY_CHANGED, True)
+            self.SIG_VISIBILITY_CHANGED.emit(True)
         
     def hideEvent(self, event):
         DockableWidget.hideEvent(self, event)
         if self.dockwidget is None:
-            self.emit(SIG_VISIBILITY_CHANGED, False)
+            self.SIG_VISIBILITY_CHANGED.emit(False)
         
     def visibility_changed(self, enable):
         """DockWidget visibility has changed"""
         DockableWidget.visibility_changed(self, enable)
         # For compatibility with the guiqwt.panels.PanelWidget interface:
-        self.emit(SIG_VISIBILITY_CHANGED, self._isvisible)
+        self.SIG_VISIBILITY_CHANGED.emit(self._isvisible)
 

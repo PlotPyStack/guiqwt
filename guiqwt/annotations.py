@@ -81,7 +81,6 @@ from guiqwt.shapes import (AbstractShape, RectangleShape, EllipseShape,
                            SegmentShape, PointShape, ObliqueRectangleShape)
 from guiqwt.label import DataInfoLabel
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
-from guiqwt.signals import SIG_ANNOTATION_CHANGED, SIG_ITEM_MOVED
 from guiqwt.geometry import (compute_center, compute_rect_size,
                              compute_distance, compute_angle)
 from guiqwt.baseplot import canvas_to_axes
@@ -275,7 +274,7 @@ class AnnotatedShape(AbstractShape):
         self.shape.move_point_to(handle, pos, ctrl)
         self.set_label_position()
         if self.plot():
-            self.plot().emit(SIG_ANNOTATION_CHANGED, self)
+            self.plot().SIG_ANNOTATION_CHANGED.emit(self)
 
     def move_shape(self, old_pos, new_pos):
         self.shape.move_shape(old_pos, new_pos)
@@ -287,8 +286,8 @@ class AnnotatedShape(AbstractShape):
         self.shape.move_shape(old_pt, new_pt)
         self.set_label_position()
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
-            self.plot().emit(SIG_ANNOTATION_CHANGED, self)
+            self.plot().SIG_ITEM_MOVED.emit(self, *(old_pt+new_pt))
+            self.plot().SIG_ANNOTATION_CHANGED.emit(self)
             
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -297,7 +296,7 @@ class AnnotatedShape(AbstractShape):
         """
         self.shape.move_with_selection(delta_x, delta_y)
         self.label.move_with_selection(delta_x, delta_y)
-        self.plot().emit(SIG_ANNOTATION_CHANGED, self)
+        self.plot.SIG_ANNOTATION_CHANGED.emit(self)
 
     def select(self):
         """Select item"""

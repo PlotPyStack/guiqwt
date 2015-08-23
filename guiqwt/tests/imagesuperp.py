@@ -38,9 +38,9 @@ def test():
 
     win = create_window()
     image1 = make.image(filename=filename, title="Original",
-                        alpha_mask=True, colormap='gray')
+                        alpha_mask=False, colormap='gray')
     data2 = np.array(image1.data.T[200:], copy=True)
-    image2 = make.image(data2, title="Modified", alpha_mask=True)
+    image2 = make.image(data2, title="Modified")#, alpha_mask=True)
     plot = win.get_plot()
     plot.add_item(image1, z=0)
     plot.add_item(image2, z=1)

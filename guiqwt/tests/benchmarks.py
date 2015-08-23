@@ -123,7 +123,7 @@ def run():
     # Print informations banner
     from guidata import qt
     import guiqwt
-    qt_lib = {'pyqt': 'PyQt4', 'pyside': 'PySide'}[qt._modname]
+    qt_lib = {'pyqt': 'PyQt4', 'pyqt5': 'PyQt5', 'pyside': 'PySide'}[qt.API]
     title = "guiqwt plot benchmark [%s v%s (Qt v%s), guiqwt v%s]" %\
             (qt_lib, qt.__version__, qt.QtCore.__version__, guiqwt.__version__)
     print(title)

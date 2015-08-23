@@ -46,7 +46,8 @@ from __future__ import division, print_function
 from guidata.qt.QtGui import (QGridLayout, QLabel, QSlider, QPushButton,
                               QLineEdit, QDialog, QVBoxLayout, QHBoxLayout,
                               QWidget, QDialogButtonBox)
-from guidata.qt.QtCore import Qt, SIGNAL, QObject, SLOT
+from guidata.qt.QtCore import Qt
+from guidata.qt import PYQT5
 
 import numpy as np
 from numpy import inf # Do not remove this import (used by optimization funcs)
@@ -63,7 +64,6 @@ from guidata.dataset.dataitems import (StringItem, FloatItem, IntItem,
 from guiqwt.config import _
 from guiqwt.builder import make
 from guiqwt.plot import CurveWidgetMixin
-from guiqwt.signals import SIG_RANGE_CHANGED
 
 class AutoFitParam(DataSet):
     xmin = FloatItem("xmin")
@@ -133,17 +133,14 @@ class FitParam(object):
         self.button.setIcon(get_icon('settings.png'))
         self.button.setToolTip(
                         _("Edit '%s' fit parameter properties") % self.name)
-        QObject.connect(self.button, SIGNAL('clicked()'),
-                        lambda: self.edit_param(parent))
+        self.button.clicked.connect(lambda: self.edit_param(parent))
         self.lineedit = QLineEdit()
-        QObject.connect(self.lineedit, SIGNAL('editingFinished()'),
-                        self.line_editing_finished)
+        self.lineedit.editingFinished.connect(self.line_editing_finished)
         self.unit_label = QLabel(self.unit)
         self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setRange(0, self.steps-1)
-        QObject.connect(self.slider, SIGNAL("valueChanged(int)"),
-                        self.slider_value_changed)
+        self.slider.valueChanged.connect(self.slider_value_changed)
         self.update(refresh=False)
         self.add_widgets([self.prefix_label, self.lineedit, self.unit_label,
                           self.slider, self.button])
@@ -312,7 +309,7 @@ class FitWidgetMixin(CurveWidgetMixin):
     def create_plot(self, options):
         CurveWidgetMixin.create_plot(self, options)
         for plot in self.get_plots():
-            self.connect(plot, SIG_RANGE_CHANGED, self.range_changed)
+            plot.SIG_RANGE_CHANGED.connect(self.range_changed)
         
     # Public API ---------------------------------------------------------------  
     def set_data(self, x, y, fitfunc=None, fitparams=None,
@@ -360,13 +357,13 @@ class FitWidgetMixin(CurveWidgetMixin):
     
     def create_autofit_group(self):        
         auto_button = QPushButton(get_icon('apply.png'), _("Run"), self)
-        self.connect(auto_button, SIGNAL("clicked()"), self.autofit)
+        auto_button.clicked.connect(self.autofit)
         autoprm_button = QPushButton(get_icon('settings.png'), _("Settings"),
                                      self)
-        self.connect(autoprm_button, SIGNAL("clicked()"), self.edit_parameters)
+        autoprm_button.clicked.connect(self.edit_parameters)
         xrange_button = QPushButton(get_icon('xrange.png'), _("Bounds"), self)
         xrange_button.setCheckable(True)
-        self.connect(xrange_button, SIGNAL("toggled(bool)"), self.toggle_xrange)
+        xrange_button.toggled.connect(self.toggle_xrange)
         auto_layout = QVBoxLayout()
         auto_layout.addWidget(auto_button)
         auto_layout.addWidget(autoprm_button)
@@ -550,11 +547,19 @@ class FitDialog(QDialog, FitWidgetMixin):
     def __init__(self, wintitle=None, icon="guiqwt.svg", edit=True,
                  toolbar=False, options=None, parent=None, panels=None,
                  param_cols=1, legend_anchor='TR', auto_fit=False):
-        QDialog.__init__(self, parent)
+        if not PYQT5:
+            QDialog.__init__(self, parent)
         self.edit = edit
         self.button_layout = None
-        FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options, panels,
-                                param_cols, legend_anchor, auto_fit)
+        if PYQT5:
+            super(FitDialog, self).__init__(parent, wintitle=wintitle,
+                    icon=icon, toolbar=toolbar, options=options, panels=panels,
+                    param_cols=param_cols, legend_anchor=legend_anchor,
+                    auto_fit=auto_fit)
+        else:
+            FitWidgetMixin.__init__(self, wintitle, icon, toolbar, options,
+                                    panels, param_cols, legend_anchor,
+                                    auto_fit)
         self.setWindowFlags(Qt.Window)
         
     def setup_widget_layout(self):
@@ -564,8 +569,8 @@ class FitDialog(QDialog, FitWidgetMixin):
         
     def install_button_layout(self):        
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
-        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
         self.button_list += [bbox.button(QDialogButtonBox.Ok)]
 
         self.button_layout = QHBoxLayout()

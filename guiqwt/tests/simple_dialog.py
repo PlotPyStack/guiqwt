@@ -9,8 +9,6 @@
 
 SHOW = True # Show test in GUI-based test launcher
 
-from guidata.qt.QtCore import SIGNAL
-
 import scipy.ndimage
 
 from guidata.dataset.datatypes import DataSet
@@ -56,7 +54,7 @@ class ExampleDialog(ImageDialog):
         
     def register_tools(self):
         opentool = self.add_tool(OpenImageTool)
-        self.connect(opentool, SIGNAL("openfile(QString*)"), self.open_image)
+        opentool.SIG_OPEN_FILE.connect(self.open_image)
         self.register_all_image_tools()
         self.activate_default_tool()
 
@@ -64,8 +62,7 @@ class ExampleDialog(ImageDialog):
         self.filter_gbox = DataSetEditGroupBox(_("Filter parameters"),
                                                FilterParam)
         self.filter_gbox.setEnabled(False)
-        self.connect(self.filter_gbox, SIGNAL("apply_button_clicked()"),
-                     self.apply_filter)
+        self.filter_gbox.SIG_APPLY_BUTTON_CLICKED.connect(self.apply_filter)
         self.plot_layout.addWidget(self.filter_gbox, 0, 0)
         self.param_gbox = DataSetShowGroupBox(_("Image parameters"), ImageParam)
         self.plot_layout.addWidget(self.param_gbox, 0, 1)

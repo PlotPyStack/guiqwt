@@ -44,9 +44,6 @@ The `plot` module provides the following features:
     Module :py:mod:`guiqwt.panels`
         Module providing the `plot panels` IDs
         
-    Module :py:mod:`guiqwt.signals`
-        Module providing all the end-user Qt SIGNAL objects defined in `guiqwt`
-        
     Module :py:mod:`guiqwt.baseplot`
         Module providing the `guiqwt` plotting widget base class
 
@@ -108,7 +105,8 @@ from guidata.qt.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout,
                               QToolBar, QDialog, QHBoxLayout, QMenu,
                               QActionGroup, QSplitter, QSizePolicy,
                               QApplication, QWidget, QMainWindow)
-from guidata.qt.QtCore import Qt, SIGNAL, SLOT
+from guidata.qt.QtCore import Qt
+from guidata.qt import PYQT5
 
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid
@@ -130,8 +128,6 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           ImageStatsTool, ExportItemDataTool, EditItemDataTool,
                           ItemCenterTool, SignalStatsTool, CopyToClipboardTool)
 from guiqwt.interfaces import IPlotManager
-from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_VISIBILITY_CHANGED, SIG_PLOT_AXIS_CHANGED)
 
 
 class DefaultPlotID(object):
@@ -186,9 +182,9 @@ class PlotManager(object):
             self.default_plot = plot
         plot.set_manager(self, plot_id)
         # Connecting signals
-        plot.connect(plot, SIG_ITEMS_CHANGED, self.update_tools_status)
-        plot.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.update_tools_status)
-        plot.connect(plot, SIG_PLOT_AXIS_CHANGED, self.plot_axis_changed)
+        plot.SIG_ITEMS_CHANGED.connect(self.update_tools_status)
+        plot.SIG_ACTIVE_ITEM_CHANGED.connect(self.update_tools_status)
+        plot.SIG_PLOT_AXIS_CHANGED.connect(self.plot_axis_changed)
         
     def set_default_plot(self, plot):
         """
@@ -653,8 +649,9 @@ class SubplotWidget(QSplitter):
     the add_itemlist method can be called after having declared
     all the subplots
     """
-    def __init__(self, manager, parent=None):
-        QSplitter.__init__(self, Qt.Horizontal, parent)
+    def __init__(self, manager, parent=None, **kwargs):
+        super(SubplotWidget, self).__init__(parent, **kwargs)
+        self.setOrientation(Qt.Horizontal)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = manager
         self.plots = []
@@ -692,8 +689,12 @@ class BaseCurveWidget(QSplitter):
     def __init__(self, parent=None, title=None,
                  xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None,
-                 curve_antialiasing=None):
-        QSplitter.__init__(self, Qt.Horizontal, parent)
+                 curve_antialiasing=None, **kwargs):
+        if PYQT5:
+            super(BaseCurveWidget, self).__init__(parent, **kwargs)
+            self.setOrientation(Qt.Horizontal)
+        else:
+            QSplitter.__init__(self, Qt.Horizontal, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
@@ -724,10 +725,16 @@ class CurveWidget(BaseCurveWidget, PlotManager):
                  xlabel=None, ylabel=None, xunit=None, yunit=None,
                  section="plot", show_itemlist=False, gridparam=None,
                  panels=None):
-        BaseCurveWidget.__init__(self, parent, title,
-                                 xlabel, ylabel, xunit, yunit,
-                                 section, show_itemlist, gridparam)
-        PlotManager.__init__(self, main=self)
+        if PYQT5:
+            super(CurveWidget, self).__init__(parent=parent, title=title,
+                        xlabel=xlabel, ylabel=ylabel, xunit=xunit, yunit=yunit,
+                        section=section, show_itemlist=show_itemlist,
+                        gridparam=gridparam, main=self)
+        else:
+            BaseCurveWidget.__init__(self, parent, title,
+                                     xlabel, ylabel, xunit, yunit,
+                                     section, show_itemlist, gridparam)
+            PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
         self.add_plot(self.plot)
@@ -819,13 +826,18 @@ class CurveDialog(QDialog, CurveWidgetMixin):
     """
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg", edit=False,
                  toolbar=False, options=None, parent=None, panels=None):
-        QDialog.__init__(self, parent)
+        if not PYQT5:
+            QDialog.__init__(self, parent)
         self.edit = edit
         self.button_box = None
         self.button_layout = None
-        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
-                                  toolbar=toolbar, options=options,
-                                  panels=panels)
+        if PYQT5:
+            super(CurveDialog, self).__init__(parent, wintitle=wintitle,
+                    icon=icon, toolbar=toolbar, options=options, panels=panels)
+        else:
+            CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                      toolbar=toolbar, options=options,
+                                      panels=panels)
         self.setWindowFlags(Qt.Window)
         
     def setup_widget_layout(self):
@@ -846,8 +858,8 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         This method may be overriden to customize the button box
         """
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
-        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
         self.button_layout.addWidget(bbox)
         self.button_box = bbox
         
@@ -864,10 +876,14 @@ class CurveWindow(QMainWindow, CurveWidgetMixin):
     """
     def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
                  toolbar=False, options=None, parent=None, panels=None):
-        QMainWindow.__init__(self, parent)
-        CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
-                                 toolbar=toolbar, options=options,
-                                 panels=panels)
+        if PYQT5:
+            super(CurveWindow, self).__init__(parent, wintitle=wintitle,
+                    icon=icon, toolbar=toolbar, options=options, panels=panels)
+        else:
+            QMainWindow.__init__(self, parent)
+            CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
+                                     toolbar=toolbar, options=options,
+                                     panels=panels)
         
     def setup_widget_layout(self):
         self.addToolBar(self.toolbar)
@@ -909,8 +925,12 @@ class BaseImageWidget(QSplitter):
                  colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None, curve_antialiasing=None):
-        QSplitter.__init__(self, Qt.Vertical, parent)
+                 gridparam=None, curve_antialiasing=None, **kwargs):
+        if PYQT5:
+            super(BaseImageWidget, self).__init__(parent, **kwargs)
+            self.setOrientation(Qt.Vertical)
+        else:
+            QSplitter.__init__(self, Qt.Vertical, parent)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
@@ -933,7 +953,7 @@ class BaseImageWidget(QSplitter):
         self.xcsw = XCrossSection(self)
         self.xcsw.setVisible(show_xsection)
         
-        self.connect(self.xcsw, SIG_VISIBILITY_CHANGED, self.xcsw_is_visible)
+        self.xcsw.SIG_VISIBILITY_CHANGED.connect(self.xcsw_is_visible)
         
         self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
@@ -942,8 +962,8 @@ class BaseImageWidget(QSplitter):
         else:
             self.xcsw_splitter.addWidget(self.plot)
             self.xcsw_splitter.addWidget(self.xcsw)
-        self.connect(self.xcsw_splitter, SIGNAL('splitterMoved(int,int)'),
-                     lambda pos, index: self.adjust_ycsw_height())
+        self.xcsw_splitter.splitterMoved.connect(
+                                 lambda pos, index: self.adjust_ycsw_height())
         
         self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
         if ysection_pos == "left":
@@ -1015,12 +1035,23 @@ class ImageWidget(BaseImageWidget, PlotManager):
                  show_contrast=False, show_itemlist=False, show_xsection=False,
                  show_ysection=False, xsection_pos="top", ysection_pos="right",
                  gridparam=None, panels=None):
-        BaseImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
-                 xunit, yunit, zunit, yreverse, colormap, aspect_ratio,
-                 lock_aspect_ratio, show_contrast, show_itemlist,
-                 show_xsection, show_ysection, xsection_pos, ysection_pos,
-                 gridparam)
-        PlotManager.__init__(self, main=self)
+        if PYQT5:
+            super(ImageWidget, self).__init__(parent=parent, title=title,
+                     xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
+                     xunit=xunit, yunit=yunit, zunit=zunit, yreverse=yreverse,
+                     colormap=colormap, aspect_ratio=aspect_ratio,
+                     lock_aspect_ratio=lock_aspect_ratio,
+                     show_contrast=show_contrast, show_itemlist=show_itemlist,
+                     show_xsection=show_xsection, show_ysection=show_ysection,
+                     xsection_pos=xsection_pos, ysection_pos=ysection_pos,
+                     gridparam=gridparam, main=self)
+        else:
+            BaseImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
+                     xunit, yunit, zunit, yreverse, colormap, aspect_ratio,
+                     lock_aspect_ratio, show_contrast, show_itemlist,
+                     show_xsection, show_ysection, xsection_pos, ysection_pos,
+                     gridparam)
+            PlotManager.__init__(self, main=self)
         
         # Configuring plot manager
         self.add_plot(self.plot)

@@ -167,7 +167,6 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RawImageParam)
 from guiqwt.shapes import RectangleShape
 from guiqwt import io
-from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 from guiqwt.geometry import translate, scale, rotate, colvector
 from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
@@ -1356,7 +1355,7 @@ class TrImageItem(RawImageItem):
         ox, oy = canvas_to_axes(self, old_pos)
         self.set_transform(x0+nx-ox, y0+ny-oy, angle, dx, dy, hflip, vflip)
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
+            self.plot().SIG_ITEM_MOVED.emit(self, ox, oy, nx, ny)
 
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -1922,7 +1921,7 @@ class MaskedImageItem(ImageItem):
         """Emit the SIG_MASK_CHANGED signal (emitter: plot)"""
         plot = self.plot()
         if plot is not None:
-            plot.emit(SIG_MASK_CHANGED, self)
+            plot.SIG_MASK_CHANGED.emit(self)
 
     def apply_masked_areas(self):
         """Apply masked areas"""
@@ -2119,7 +2118,7 @@ class ImageFilterItem(BaseImageItem):
         new_pt = canvas_to_axes(self, new_pos)
         self.border_rect.move_shape(old_pt, new_pt)
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
+            self.plot().SIG_ITEM_MOVED.emit(self, *(old_pt+new_pt))
 
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -2479,7 +2478,7 @@ class ImagePlot(CurvePlot):
         if item is not None:
             self.update_colormap_axis(item)
         self.replot()
-        self.emit(SIG_LUT_CHANGED, self)
+        self.SIG_LUT_CHANGED.emit(self)
 
     def update_colormap_axis(self, item):
         if IColormapImageItemType not in item.types():

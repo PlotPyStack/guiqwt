@@ -49,7 +49,11 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     paint.drawText(0, paint.fontMetrics().ascent(), chars)
     paint.end()
     try:
-        data = img.bits().asstring(img.numBytes())
+        try:
+            data = img.bits().asstring(img.numBytes())
+        except AttributeError:
+            # PyQt5
+            data = img.bits().asstring(img.byteCount())
     except SystemError:
         # Python 3
         return

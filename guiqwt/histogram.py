@@ -46,7 +46,7 @@ Reference
 
 import weakref
 import numpy as np
-from guidata.qt.QtCore import Qt
+from guidata.qt.QtCore import Qt, Signal
 from guidata.qt.QtGui import QHBoxLayout, QVBoxLayout, QToolBar
 
 from guidata.dataset.datatypes import DataSet
@@ -67,9 +67,6 @@ from guiqwt.styles import HistogramParam, CurveParam
 from guiqwt.shapes import XRangeSelection
 from guiqwt.tools import (SelectTool, BasePlotMenuTool, SelectPointTool,
                           AntiAliasingTool)
-from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_VOI_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_REMOVED,
-                            SIG_ACTIVE_ITEM_CHANGED)
 from guiqwt.plot import PlotManager
 
 
@@ -201,6 +198,7 @@ assert_interfaces_valid(HistogramItem)
 
 class LevelsHistogram(CurvePlot):
     """Image levels histogram widget"""
+    SIG_VOI_CHANGED = Signal()
     def __init__(self, parent=None):
         super(LevelsHistogram, self).__init__(parent=parent, title="",
                                               section="histogram")
@@ -221,7 +219,7 @@ class LevelsHistogram(CurvePlot):
                                           "range/multi/color", "red")
         
         self.add_item(self.range, z=5)
-        self.connect(self, SIG_RANGE_CHANGED, self.range_changed)
+        self.SIG_RANGE_CHANGED.connect(self.range_changed)
         self.set_active_item(self.range)
 
         self.setMinimumHeight(80)
@@ -236,10 +234,10 @@ class LevelsHistogram(CurvePlot):
             # Connecting only to image plot widgets (allow mixing image and 
             # curve widgets for the same plot manager -- e.g. in pyplot)
             return
-        self.connect(self, SIG_VOI_CHANGED, plot.notify_colormap_changed)
-        self.connect(plot, SIG_ITEM_SELECTION_CHANGED, self.selection_changed)
-        self.connect(plot, SIG_ITEM_REMOVED, self.item_removed)
-        self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
+        self.SIG_VOI_CHANGED.connect(plot.notify_colormap_changed)
+        plot.SIG_ITEM_SELECTION_CHANGED.connect(self.selection_changed)
+        plot.SIG_ITEM_REMOVED.connect(self.item_removed)
+        plot.SIG_ACTIVE_ITEM_CHANGED.connect(self.active_item_changed)
 
     def tracked_items_gen(self):
         for plot, items in list(self._tracked_items.items()):
@@ -355,7 +353,7 @@ class LevelsHistogram(CurvePlot):
     def range_changed(self, _rangesel, _min, _max):
         for item, curve in self.tracked_items_gen():
             item.set_lut_range([_min, _max])
-        self.emit(SIG_VOI_CHANGED)
+        self.SIG_VOI_CHANGED.emit()
         
     def set_full_range(self):
         """Set range bounds to image min/max levels"""
@@ -385,7 +383,7 @@ class LevelsHistogram(CurvePlot):
         for item, curve in self.tracked_items_gen():
             _min, _max = func(item, curve, *args, **kwargs)
             item.set_lut_range([_min, _max])
-        self.emit(SIG_VOI_CHANGED)
+        self.SIG_VOI_CHANGED.emit()
         if item is not None:
             self.active_item_changed(item.plot())
         

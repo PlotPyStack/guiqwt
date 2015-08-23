@@ -122,7 +122,6 @@ from guidata.py3compat import to_text_string
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
-from guiqwt.signals import SIG_ITEMS_CHANGED
 
 class ItemParameters(object):
     """Class handling QwtPlotItem-like parameters"""
@@ -180,7 +179,7 @@ class ItemParameters(object):
         if isinstance(plot, ImagePlot):
             plot.set_aspect_ratio(ratio=ratio)
             plot.replot()
-        plot.emit(SIG_ITEMS_CHANGED, plot)
+        plot.SIG_ITEMS_CHANGED.emit(plot)
     
     def edit(self, plot, title, icon):
         paramdict = self.paramdict.copy()

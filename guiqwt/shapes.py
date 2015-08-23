@@ -89,8 +89,6 @@ from guiqwt.config import CONF, _
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import (MarkerParam, ShapeParam, RangeShapeParam,
                            AxesShapeParam, MARKERSTYLES)
-from guiqwt.signals import (SIG_RANGE_CHANGED, SIG_MARKER_CHANGED,
-                            SIG_AXES_CHANGED, SIG_ITEM_MOVED)
 from guiqwt.geometry import (vector_norm, vector_projection, vector_rotation,
                              compute_center)
 from guiqwt.baseplot import canvas_to_axes
@@ -220,7 +218,7 @@ class AbstractShape(QwtPlotItem):
         new_pt = canvas_to_axes(self, new_pos)
         self.move_shape(old_pt, new_pt)
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
+            self.plot().SIG_ITEM_MOVED.emit(self, *(old_pt+new_pt))
 
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -445,7 +443,7 @@ class Marker(QwtPlotMarker):
             x, y = self.constraint_cb(x, y)
         self.setValue(x, y)
         if self.plot():
-            self.plot().emit(SIG_MARKER_CHANGED, self)
+            self.plot().SIG_MARKER_CHANGED.emit(self)
             
     def get_pos(self):
         return self.xValue(), self.yValue()
@@ -1252,13 +1250,13 @@ class Axes(PolygonShape):
             pp0 = p0
         self.set_rect(pp0, pp1, pp2)
         if self.plot():
-            self.plot().emit(SIG_AXES_CHANGED, self)
+            self.plot().SIG_AXES_CHANGED.emit(self)
             
     def move_shape(self, old_pos, new_pos):
         """Overriden to emit the axes_changed signal"""
         PolygonShape.move_shape(self, old_pos, new_pos)
         if self.plot():
-            self.plot().emit(SIG_AXES_CHANGED, self)
+            self.plot().SIG_AXES_CHANGED.emit(self)
 
     def draw(self, painter, xMap, yMap, canvasRect):
         PolygonShape.draw(self, painter, xMap, yMap, canvasRect)
@@ -1398,7 +1396,7 @@ class XRangeSelection(AbstractShape):
             self._min += move
             self._max += move
 
-        self.plot().emit(SIG_RANGE_CHANGED, self, self._min, self._max)
+        self.plot().SIG_RANGE_CHANGED.emit(self, self._min, self._max)
         #self.plot().replot()
 
     def get_range(self):
@@ -1408,13 +1406,13 @@ class XRangeSelection(AbstractShape):
         self._min = _min
         self._max = _max
         if dosignal:
-            self.plot().emit(SIG_RANGE_CHANGED, self, self._min, self._max)
+            self.plot().SIG_RANGE_CHANGED.emit(self, self._min, self._max)
 
     def move_shape(self, old_pos, new_pos):
         dx = new_pos[0]-old_pos[0]
         self._min += dx
         self._max += dx
-        self.plot().emit(SIG_RANGE_CHANGED, self, self._min, self._max)
+        self.plot().SIG_RANGE_CHANGED.emit(self, self._min, self._max)
         self.plot().replot()
         
     def get_item_parameters(self, itemparams):

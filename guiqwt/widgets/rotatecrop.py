@@ -26,8 +26,7 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import QCheckBox
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtGui import QCheckBox
 
 # Local imports
 from guiqwt.config import _
@@ -49,7 +48,7 @@ class RotateCropMixin(base.BaseTransformMixin):
         # Show crop rectangle checkbox
         show_crop = QCheckBox(_("Show cropping rectangle"), self)
         show_crop.setChecked(True)
-        self.connect(show_crop, SIGNAL("toggled(bool)"), self.show_crop_rect)
+        show_crop.toggled.connect(self.show_crop_rect)
         layout.addWidget(show_crop)
         layout.addSpacing(15)
         base.BaseTransformMixin.add_buttons_to_layout(self, layout)

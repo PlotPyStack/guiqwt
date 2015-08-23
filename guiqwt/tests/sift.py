@@ -17,7 +17,8 @@ SHOW = True # Show test in GUI-based test launcher
 from guidata.qt.QtGui import (QMainWindow, QMessageBox, QSplitter, QListWidget,
                               QVBoxLayout, QHBoxLayout, QWidget, QTabWidget,
                               QMenu, QApplication, QCursor, QFont)
-from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, SIGNAL
+from guidata.qt.QtCore import Qt, QT_VERSION_STR, PYQT_VERSION_STR, Signal
+from guidata.qt import PYQT5
 from guidata.qt.compat import getopenfilenames, getsavefilename
 
 import sys
@@ -188,6 +189,8 @@ class ObjectFT(QSplitter):
     """Object handling the item list, the selected item properties and plot"""
     PARAMCLASS = None
     PREFIX = None
+    SIG_OBJECT_ADDED = Signal()
+    SIG_STATUS_MESSAGE = Signal(str)
     def __init__(self, parent, plot):
         super(ObjectFT, self).__init__(Qt.Vertical, parent)
         self.plot = plot
@@ -218,12 +221,9 @@ class ObjectFT(QSplitter):
         self.properties = DataSetEditGroupBox(_("Properties"), self.PARAMCLASS)
         self.properties.setEnabled(False)
 
-        self.connect(self.listwidget, SIGNAL("currentRowChanged(int)"),
-                     self.current_item_changed)
-        self.connect(self.listwidget, SIGNAL("itemSelectionChanged()"),
-                     self.selection_changed)
-        self.connect(self.properties, SIGNAL("apply_button_clicked()"),
-                     self.properties_changed)
+        self.listwidget.currentRowChanged.connect(self.current_item_changed)
+        self.listwidget.itemSelectionChanged.connect(self.selection_changed)
+        self.properties.SIG_APPLY_BUTTON_CLICKED.connect(self.properties_changed)
         
         properties_stretched = QWidget()
         hlayout = QHBoxLayout()
@@ -339,7 +339,7 @@ class ObjectFT(QSplitter):
         self.items.append(None)
         self.refresh_list(new_current_row='last')
         self.listwidget.setCurrentRow(len(self.objects)-1)
-        self.emit(SIGNAL('object_added()'))
+        self.SIG_OBJECT_ADDED.emit()
         
     #------Edit operations
     def duplicate_object(self):
@@ -481,8 +481,7 @@ class ObjectFT(QSplitter):
             if suffix is not None:
                 obj.title += "|"+suffix(param)
             obj.copy_data_from(orig)
-            self.emit(SIGNAL("status_message(QString)"),
-                      _("Computing:")+" "+obj.title)
+            self.SIG_STATUS_MESSAGE.emit(_("Computing:")+" "+obj.title)
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
             self.repaint()
             try:
@@ -496,7 +495,7 @@ class ObjectFT(QSplitter):
                                      _("Error:")+"\n%s" % str(msg))
                 return
             finally:
-                self.emit(SIGNAL("status_message(QString)"), "")
+                self.SIG_STATUS_MESSAGE.emit("")
                 QApplication.restoreOverrideCursor()
             self.add_object(obj)
         
@@ -1107,8 +1106,11 @@ class DockablePlotWidget(DockableWidget):
 class DockableTabWidget(QTabWidget, DockableWidgetMixin):
     LOCATION = Qt.LeftDockWidgetArea
     def __init__(self, parent):
-        QTabWidget.__init__(self, parent)
-        DockableWidgetMixin.__init__(self, parent)
+        if PYQT5:
+            super(DockableTabWidget, self).__init__(parent, parent=parent)
+        else:
+            QTabWidget.__init__(self, parent)
+            DockableWidgetMixin.__init__(self, parent)
 
 
 try:
@@ -1128,7 +1130,6 @@ try:
             self.set_font(font)
             self.set_codecompletion_auto(True)
             self.set_calltips(True)
-            self.setup_calltips(size=600, font=font)
             self.setup_completion(size=(300, 180), font=font)
 except ImportError:
     DockableConsole = None
@@ -1172,8 +1173,7 @@ class MainWindow(QMainWindow):
         self.imageft.setup(self.image_toolbar)
 
         for objectft in (self.signalft, self.imageft):
-            self.connect(objectft, SIGNAL("status_message(QString)"),
-                         status.showMessage)
+            objectft.SIG_STATUS_MESSAGE.connect(status.showMessage)
         
         # Main window widgets
         self.tabwidget = DockableTabWidget(self)
@@ -1189,12 +1189,11 @@ class MainWindow(QMainWindow):
         self.image_dock = self.add_dockwidget(self.imagewidget,
                                           title=_("Image visualization panel"))
         self.tabifyDockWidget(self.curve_dock, self.image_dock)
-        self.connect(self.tabwidget, SIGNAL('currentChanged(int)'),
-                     self.tab_index_changed)
-        self.connect(self.signalft, SIGNAL('object_added()'),
-                     lambda: self.tabwidget.setCurrentIndex(0))
-        self.connect(self.imageft, SIGNAL('object_added()'),
-                     lambda: self.tabwidget.setCurrentIndex(1))
+        self.tabwidget.currentChanged.connect(self.tab_index_changed)
+        self.signalft.SIG_OBJECT_ADDED.connect(
+                                    lambda: self.tabwidget.setCurrentIndex(0))
+        self.imageft.SIG_OBJECT_ADDED.connect(
+                                    lambda: self.tabwidget.setCurrentIndex(1))
         
         # File menu
         self.quit_action = create_action(self, _("Quit"), shortcut="Ctrl+Q",
@@ -1202,23 +1201,19 @@ class MainWindow(QMainWindow):
                                     tip=_("Quit application"),
                                     triggered=self.close)
         self.file_menu = self.menuBar().addMenu(_("File"))
-        self.connect(self.file_menu, SIGNAL("aboutToShow()"),
-                     self.update_file_menu)
+        self.file_menu.aboutToShow.connect(self.update_file_menu)
         
         # Edit menu
         self.edit_menu = self.menuBar().addMenu(_("&Edit"))
-        self.connect(self.edit_menu, SIGNAL("aboutToShow()"),
-                     self.update_edit_menu)
+        self.edit_menu.aboutToShow.connect(self.update_edit_menu)
         
         # Operation menu
         self.operation_menu = self.menuBar().addMenu(_("Operations"))
-        self.connect(self.operation_menu, SIGNAL("aboutToShow()"),
-                     self.update_operation_menu)
+        self.operation_menu.aboutToShow.connect(self.update_operation_menu)
         
         # Processing menu
         self.proc_menu = self.menuBar().addMenu(_("Processing"))
-        self.connect(self.proc_menu, SIGNAL("aboutToShow()"),
-                     self.update_proc_menu)
+        self.proc_menu.aboutToShow.connect(self.update_proc_menu)
         
         # View menu
         self.view_menu = view_menu = self.createPopupMenu()
@@ -1247,9 +1242,8 @@ class MainWindow(QMainWindow):
                   "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
             self.console = DockableConsole(self, namespace=ns, message=msg)
             self.add_dockwidget(self.console, _("Console"))
-            self.connect(self.console.interpreter.widget_proxy,
-                         SIGNAL("new_prompt(QString)"),
-                         lambda txt: self.refresh_lists())
+            self.console.interpreter.widget_proxy.sig_new_prompt.connect(
+                                            lambda txt: self.refresh_lists())
         
         # Update selection dependent actions
         self.update_actions()

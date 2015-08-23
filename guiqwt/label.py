@@ -58,7 +58,6 @@ from guiqwt.config import CONF, _
 from guiqwt.curve import CurveItem
 from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
 from guiqwt.styles import LabelParam
-from guiqwt.signals import SIG_ITEM_MOVED
 
 
 ANCHORS = {
@@ -267,7 +266,7 @@ class AbstractLabelItem(QwtPlotItem):
             ly1 = plot.invTransform(self.yAxis(), cy)
             self.G = lx1, ly1
             self.labelparam.xg, self.labelparam.yg = lx1, ly1
-            plot.emit(SIG_ITEM_MOVED, self, lx0, ly0, lx1, ly1)
+            plot.SIG_ITEM_MOVED.emit(self, lx0, ly0, lx1, ly1)
         
     def move_with_selection(self, delta_x, delta_y):
         """

@@ -19,15 +19,13 @@ The `event` module handles event management (states, event filter, ...).
 from __future__ import print_function
 
 import weakref
-from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint
+from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint, Signal
 from guidata.qt.QtGui import QKeySequence
 
 CursorShape = type(Qt.ArrowCursor)
 
 from guiqwt.config import CONF
 from guiqwt.debug import evt_type_to_str, buttons_to_str
-from guiqwt.signals import (SIG_CLICK_EVENT, SIG_START_TRACKING, SIG_END_RECT,
-                            SIG_STOP_NOT_MOVING, SIG_STOP_MOVING, SIG_MOVE)
 
 
 # Sélection d'événements  ---------
@@ -309,6 +307,7 @@ class ClickHandler(QObject):
     """Classe de base pour les gestionnaires d'événements du type
     click - release
     """
+    SIG_CLICK_EVENT = Signal("PyQt_PyObject", "QEvent")
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(ClickHandler, self).__init__()
         self.state0 = filter.add_event(start_state,
@@ -318,7 +317,7 @@ class ClickHandler(QObject):
                          self.click, start_state)
 
     def click(self, filter, event):
-        self.emit(SIG_CLICK_EVENT, filter, event)
+        self.SIG_CLICK_EVENT.emit(filter, event)
 
 
 class PanHandler(DragHandler):
@@ -343,18 +342,22 @@ class MenuHandler(ClickHandler):
 
 
 class QtDragHandler(DragHandler):
+    SIG_START_TRACKING = Signal("PyQt_PyObject", "QEvent")
+    SIG_STOP_NOT_MOVING = Signal("PyQt_PyObject", "QEvent")
+    SIG_STOP_MOVING = Signal("PyQt_PyObject", "QEvent")
+    SIG_MOVE = Signal("PyQt_PyObject", "QEvent")
     def start_tracking(self, filter, event):
         DragHandler.start_tracking(self, filter, event)
-        self.emit(SIG_START_TRACKING, filter, event)
+        self.SIG_START_TRACKING.emit(filter, event)
 
     def stop_notmoving(self, filter, event):
-        self.emit(SIG_STOP_NOT_MOVING, filter, event)
+        self.SIG_STOP_NOT_MOVING.emit(filter, event)
 
     def stop_moving(self, filter, event):
-        self.emit(SIG_STOP_MOVING, filter, event)
+        self.SIG_STOP_MOVING.emit(filter, event)
 
     def move(self, filter, event):
-        self.emit(SIG_MOVE, filter, event)
+        self.SIG_MOVE.emit(filter, event)
 
 
 class AutoZoomHandler(ClickHandler):
@@ -581,6 +584,8 @@ class ObjectHandler(object):
 
 
 class RectangularSelectionHandler(DragHandler):
+    SIG_END_RECT = Signal("PyQt_PyObject", "QPoint", "QPoint")
+    
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(RectangularSelectionHandler, self).__init__(filter, btn, mods,
                                                           start_state)
@@ -630,7 +635,7 @@ class RectangularSelectionHandler(DragHandler):
         
     def stop_moving_action(self, filter, event):
         """Les classes derivees peuvent surcharger cette methode"""
-        self.emit(SIG_END_RECT, filter, self.start, event.pos())
+        self.SIG_END_RECT.emit(filter, self.start, event.pos())
 
 
 class ZoomRectHandler(RectangularSelectionHandler):
