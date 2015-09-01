@@ -3,6 +3,25 @@
   Copyright © 2009-2010 CEA
   Licensed under the terms of the CECILL License
   (see guiqwt/__init__.py for details)
+
+  
+  Two lines of the following code are distributed under LGPL license terms and 
+  with a different copyright. These two lines are the Visual Studio x86_64 
+  (_M_X64) inline versions of lrint() and lrintf() functions was adapted from 
+  fast_convert.h (SpanDSP), which is:
+
+  Copyright © 2009 Steve Underwood
+  All rights reserved.
+ 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License version 2.1,
+  as published by the Free Software Foundation.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+  
 */
 #ifndef __TRAITS_HPP__
 #define __TRAITS_HPP__
@@ -20,35 +39,35 @@
 
 /* MSVC does not have lrint/lrintf */
 #ifdef _MSC_VER
-__inline long int
-lrint (double f)
-{
-#ifdef _M_X64
-    return (long)((f>0.0f) ? (f + 0.5f):(f -0.5f));
-#else
-    int i; 
-    _asm{
-        fld f
-        fistp i
-    };
-    return i;
-#endif
-}
+    __inline long int lrint (double f)
+    {
+    #ifdef _M_X64
+        return (long int)_mm_cvtsd_si64x(_mm_loadu_pd((const double*)&f));
+    #else
+        int i; 
+        _asm
+        {
+            fld f
+            fistp i
+        }
+        return i;
+    #endif
+    }
 
-__inline long int
-lrintf (float f)
-{
-#ifdef _M_X64
-    return (long)((f>0.0f) ? (f + 0.5f):(f -0.5f));
-#else
-    int i;
-    _asm{
-        fld f
-        fistp i
-    };
-    return i;
-#endif
-}
+    __inline long int lrintf (float f)
+    {
+    #ifdef _M_X64
+        return _mm_cvt_ss2si(_mm_load_ss((const float*)&f));
+    #else
+        int i;
+        _asm
+        {
+            fld f
+            fistp i
+        }
+        return i;
+    #endif
+    }
 #endif
 
 typedef int fixed;
