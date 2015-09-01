@@ -10,8 +10,7 @@
 SHOW = True # Show test in GUI-based test launcher
 
 from guidata.qt.QtGui import QMainWindow, QMessageBox, QSplitter, QListWidget
-from guidata.qt.QtCore import (QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt,
-                               SIGNAL)
+from guidata.qt.QtCore import QSize, QT_VERSION_STR, PYQT_VERSION_STR, Qt
 from guidata.qt.compat import getopenfilename
 
 import sys, platform
@@ -29,7 +28,6 @@ from guidata.py3compat import to_text_string
 from guiqwt.config import _
 from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
-from guiqwt.signals import SIG_LUT_CHANGED
 from guiqwt import io
 
 APP_NAME = _("Application example")
@@ -72,17 +70,13 @@ class CentralWidget(QSplitter):
         imagelistwithproperties = ImageListWithProperties(self)
         self.addWidget(imagelistwithproperties)
         self.imagelist = imagelistwithproperties.imagelist
-        self.connect(self.imagelist, SIGNAL("currentRowChanged(int)"),
-                     self.current_item_changed)
-        self.connect(self.imagelist, SIGNAL("itemSelectionChanged()"),
-                     self.selection_changed)
+        self.imagelist.currentRowChanged.connect(self.current_item_changed)
+        self.imagelist.itemSelectionChanged.connect(self.selection_changed)
         self.properties = imagelistwithproperties.properties
-        self.connect(self.properties, SIGNAL("apply_button_clicked()"),
-                     self.properties_changed)
+        self.properties.SIG_APPLY_BUTTON_CLICKED.connect(self.properties_changed)
         
         self.imagewidget = ImageWidget(self)
-        self.connect(self.imagewidget.plot, SIG_LUT_CHANGED,
-                     self.lut_range_changed)
+        self.imagewidget.plot.SIG_LUT_CHANGED.connect(self.lut_range_changed)
         self.item = None # image item
         
         self.imagewidget.add_toolbar(toolbar, "default")

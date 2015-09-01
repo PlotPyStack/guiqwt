@@ -104,7 +104,7 @@ import numpy as np
 
 from guidata.qt.QtGui import (QPen, QBrush, QColor, QFont, QFontDialog,
                               QTransform)
-from guidata.qt.QtCore import Qt, QSize, QPointF
+from guidata.qt.QtCore import Qt, QSizeF, QPointF
 
 from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
                                        EndGroup, Obj, DataSetGroup,
@@ -122,7 +122,6 @@ from guidata.py3compat import to_text_string
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
-from guiqwt.signals import SIG_ITEMS_CHANGED
 
 class ItemParameters(object):
     """Class handling QwtPlotItem-like parameters"""
@@ -180,7 +179,7 @@ class ItemParameters(object):
         if isinstance(plot, ImagePlot):
             plot.set_aspect_ratio(ratio=ratio)
             plot.replot()
-        plot.emit(SIG_ITEMS_CHANGED, plot)
+        plot.SIG_ITEMS_CHANGED.emit(plot)
     
     def edit(self, plot, title, icon):
         paramdict = self.paramdict.copy()
@@ -216,7 +215,7 @@ MARKERS = {
           "o": QwtSymbol.Ellipse,
           "*": QwtSymbol.Star1,
           ".": QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black),
-                          QPen(Qt.black), QSize(3, 3)),
+                          QPen(Qt.black), QSizeF(3, 3)),
           "x": QwtSymbol.XCross,
           "s": QwtSymbol.Rect,
           "d": QwtSymbol.Diamond,
@@ -299,8 +298,6 @@ CURVESTYLE_CHOICES = [("Lines", _("Lines"), "lines.png"),
                       ("Dots", _("Dots"), "dots.png"),
                       ("NoCurve", _("No curve"), "none.png")
                       ]
-CURVETYPE_CHOICES = [("Yfx", _("Draws y as a function of x"), "yfx.png"),
-                     ("Xfy", _("Draws x as a function of y"), "xfy.png")]
 
 BRUSHSTYLE_CHOICES = [
     ("NoBrush", _("No brush pattern"), "nobrush.png"),
@@ -333,7 +330,6 @@ MARKERSTYLE_CHOICES = [("NoLine", _("None"), "none.png"),
 
 MARKER_NAME = build_reverse_map(MARKER_CHOICES, QwtSymbol)
 CURVESTYLE_NAME = build_reverse_map(CURVESTYLE_CHOICES, QwtPlotCurve)
-CURVETYPE_NAME = build_reverse_map(CURVETYPE_CHOICES, QwtPlotCurve)
 LINESTYLE_NAME = build_reverse_map(LINESTYLE_CHOICES, Qt)
 BRUSHSTYLE_NAME = build_reverse_map(BRUSHSTYLE_CHOICES, Qt)
 MARKERSTYLE_NAME = build_reverse_map(MARKERSTYLE_CHOICES, QwtPlotMarker)
@@ -408,7 +404,7 @@ class SymbolParam(DataSet):
         color.setAlphaF(self.alpha)
         marker = QwtSymbol(marker_type, QBrush(color),
                            QPen(QColor(self.edgecolor)),
-                           QSize(self.size, self.size))
+                           QSizeF(self.size, self.size))
         return marker
     
     def update_symbol(self, obj):
@@ -562,13 +558,13 @@ class GridParam(DataSet):
     def update_param(self, grid):
         plot = grid.plot()
         if plot is not None:
-            self.background = str(plot.canvasBackground().name())
+            self.background = str(plot.canvasBackground().color().name())
         self.maj_xenabled = grid.xEnabled()
         self.maj_yenabled = grid.yEnabled()
-        self.maj_line.update_param( grid.majPen() )
+        self.maj_line.update_param( grid.majorPen() )
         self.min_xenabled = grid.xMinEnabled()
         self.min_yenabled = grid.yMinEnabled()
-        self.min_line.update_param( grid.minPen() )
+        self.min_line.update_param( grid.minorPen() )
 
     def update_grid(self, grid):
         plot = grid.plot()
@@ -579,7 +575,7 @@ class GridParam(DataSet):
         grid.setPen( self.maj_line.build_pen() )
         grid.enableXMin(self.min_xenabled)
         grid.enableYMin(self.min_yenabled)
-        grid.setMinPen( self.min_line.build_pen() )
+        grid.setMinorPen( self.min_line.build_pen() )
         grid.setTitle(self.get_title())
 
 
@@ -645,7 +641,7 @@ class AxesParam(DataSet):
 
     def update_axes(self, item):
         plot = item.plot()
-        plot.grid.setAxis(self.xaxis_id, self.yaxis_id)
+        plot.grid.setAxes(self.xaxis_id, self.yaxis_id)
         item.setXAxis(self.xaxis_id)
         self.xaxis.update_axis(plot, self.xaxis_id)
         item.setYAxis(self.yaxis_id)
@@ -866,15 +862,12 @@ class CurveParam(DataSet):
     fitted = BoolItem(_("Fit curve to data"), _("Fitting"), default=False)
     curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
                                  default="Lines")
-    curvetype = ImageChoiceItem(_("Curve type"), CURVETYPE_CHOICES,
-                                default="Yfx")
     baseline = FloatItem(_("Baseline"), default=0.)
 
     def update_param(self, curve):
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]
-        self.curvetype = CURVETYPE_NAME[curve.curveType()]
         self.baseline = curve.baseline()
     
     def update_curve(self, curve):
@@ -895,7 +888,6 @@ class CurveParam(DataSet):
         curve.setCurveAttribute(QwtPlotCurve.Fitted, self.fitted)
         # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
-        curve.setCurveType(getattr(QwtPlotCurve, self.curvetype))
         curve.setBaseline(self.baseline)
 
 class CurveParam_MS(CurveParam):

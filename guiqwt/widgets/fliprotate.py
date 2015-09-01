@@ -26,8 +26,7 @@ Reference
    :inherited-members:
 """
 
-from PyQt4.QtGui import QLabel, QComboBox
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtGui import QLabel, QComboBox
 
 import numpy as np
 
@@ -53,8 +52,8 @@ class FlipRotateMixin(base.BaseTransformMixin):
         self.angle_combo = QComboBox(self)
         self.angle_combo.addItems(self.ROTATION_ANGLES)
         self.angle_combo.setCurrentIndex(1)
-        self.connect(self.angle_combo, SIGNAL("currentIndexChanged(int)"),
-                     lambda index: self.apply_transformation())
+        self.angle_combo.currentIndexChanged.connect(
+                                 lambda index: self.apply_transformation())
         layout.addWidget(self.angle_combo)
         layout.addSpacing(10)
         

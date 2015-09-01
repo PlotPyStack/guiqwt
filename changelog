@@ -1,3 +1,17 @@
+== Version 2.4.0beta2 ==
+
+=== Possible API compatibility issues (since v2.3.2) ===
+
+  * Added support for PyQt5
+  * Replaced PyQwt dependency by the new [included since beta2] `qwt` package (pure Python reimplementation of the Qwt6 C++ library)
+  * Removed "curvetype" feature (Yfx, Xfy) which is no longer supported in Qwt6
+
+=== Bug fixes (since v2.3.2) ===
+
+  * scaler.cpp: fixed destination rectangle ValueError test (was continuing execution instead of returning immediately)
+
+----
+
 == Version 2.3.2 ==
 
 === Possible API compatibility issues (since v2.3.1) ===

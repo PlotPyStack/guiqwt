@@ -254,10 +254,9 @@ import numpy as np
 import weakref
 import os.path as osp
 
-from guidata.qt.QtCore import Qt, QObject, SIGNAL, QPoint
+from guidata.qt.QtCore import Qt, QObject, QPoint, Signal
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
-                              QPrintDialog, QFont, QAction, QToolButton,
-                              QKeySequence)
+                              QPrintDialog, QAction, QToolButton, QKeySequence)
 from guidata.qt.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
@@ -267,7 +266,6 @@ from guidata.dataset.dataitems import BoolItem, FloatItem
 from guidata.py3compat import is_text_string, to_text_string
 
 #Local imports
-from guiqwt.transitional import QwtPlotPrintFilter
 from guiqwt.config import _
 from guiqwt.events import (setup_standard_tool_filter, ObjectHandler,
                            KeyEventMatch, StandardKeyMatch,
@@ -283,12 +281,6 @@ from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
 from guiqwt.interfaces import (IColormapImageItemType, IPlotManager,
                                IVoiImageItemType, IStatsImageItemType,
                                ICurveItemType)
-from guiqwt.signals import (SIG_VISIBILITY_CHANGED, SIG_CLICK_EVENT,
-                            SIG_START_TRACKING, SIG_STOP_NOT_MOVING,
-                            SIG_STOP_MOVING, SIG_MOVE, SIG_END_RECT,
-                            SIG_VALIDATE_TOOL, SIG_ITEMS_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_APPLIED_MASK_TOOL,
-                            SIG_TOOL_JOB_FINISHED)
 from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
 
 
@@ -372,6 +364,8 @@ class InteractiveTool(GuiTool):
     TIP = None
     CURSOR = Qt.CrossCursor
     SWITCH_TO_DEFAULT_TOOL = False # switch to default tool when finished
+    SIG_VALIDATE_TOOL = Signal()
+    SIG_TOOL_JOB_FINISHED = Signal()
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
                  title=None, icon=None, tip=None,
@@ -389,8 +383,8 @@ class InteractiveTool(GuiTool):
         if switch_to_default_tool is None:
             switch_to_default_tool = self.SWITCH_TO_DEFAULT_TOOL
         if switch_to_default_tool:
-            self.connect(self, SIG_TOOL_JOB_FINISHED,
-                         self.manager.activate_default_tool)
+            self.SIG_TOOL_JOB_FINISHED.connect(
+                                        self.manager.activate_default_tool)
                         
     def create_action(self, manager):
         """Create and return tool's action"""
@@ -399,8 +393,7 @@ class InteractiveTool(GuiTool):
         action.setCheckable(True)
         group = self.manager.get_tool_group("interactive")
         group.addAction(action)
-        QObject.connect(group, SIGNAL("triggered(QAction*)"),
-                        self.interactive_triggered)
+        group.triggered.connect(self.interactive_triggered)
         return action
 
     def cursor(self):
@@ -440,8 +433,8 @@ class InteractiveTool(GuiTool):
         self.action.setChecked(False)
 
     def validate(self, filter, event):
-        self.emit(SIG_VALIDATE_TOOL, filter)
-        self.emit(SIG_TOOL_JOB_FINISHED)
+        self.SIG_VALIDATE_TOOL.emit(filter)
+        self.SIG_TOOL_JOB_FINISHED.emit()
 
 
 class SelectTool(InteractiveTool):
@@ -509,10 +502,10 @@ class SelectPointTool(InteractiveTool):
         start_state = filter.new_state()
         # Bouton gauche :
         handler = QtDragHandler(filter, Qt.LeftButton, start_state=start_state)
-        self.connect(handler, SIG_START_TRACKING, self.start)
-        self.connect(handler, SIG_MOVE, self.move)
-        self.connect(handler, SIG_STOP_NOT_MOVING, self.stop)
-        self.connect(handler, SIG_STOP_MOVING, self.stop)
+        handler.SIG_START_TRACKING.connect(self.start)
+        handler.SIG_MOVE.connect(self.move)
+        handler.SIG_STOP_NOT_MOVING.connect(self.stop)
+        handler.SIG_STOP_MOVING.connect(self.stop)
         return setup_standard_tool_filter(filter, start_state)
 
     def start(self, filter, event):
@@ -603,10 +596,10 @@ class MultiLineTool(InteractiveTool):
         filter.add_event(start_state,
                          KeyEventMatch( (Qt.Key_Backspace, Qt.Key_Escape,) ),
                          self.cancel_point, start_state)
-        self.connect(handler, SIG_START_TRACKING, self.mouse_press)
-        self.connect(handler, SIG_MOVE, self.move)
-        self.connect(handler, SIG_STOP_NOT_MOVING, self.mouse_release)
-        self.connect(handler, SIG_STOP_MOVING, self.mouse_release)
+        handler.SIG_START_TRACKING.connect(self.mouse_press)
+        handler.SIG_MOVE.connect(self.move)
+        handler.SIG_STOP_NOT_MOVING.connect(self.mouse_release)
+        handler.SIG_STOP_MOVING.connect(self.mouse_release)
         return setup_standard_tool_filter(filter, start_state)
 
     def validate(self, filter, event):
@@ -708,7 +701,7 @@ class LabelTool(InteractiveTool):
         filter = baseplot.filter
         start_state = filter.new_state()
         handler = ClickHandler(filter, Qt.LeftButton, start_state=start_state)
-        self.connect(handler, SIG_CLICK_EVENT, self.add_label_to_plot)
+        handler.SIG_CLICK_EVENT.connect(self.add_label_to_plot)
         return setup_standard_tool_filter(filter, start_state)
 
     def add_label_to_plot(self, filter, event):
@@ -730,7 +723,7 @@ class LabelTool(InteractiveTool):
             if self.handle_label_cb is not None:
                 self.handle_label_cb(label)
             plot.replot()
-            self.emit(SIG_TOOL_JOB_FINISHED)
+            self.SIG_TOOL_JOB_FINISHED.emit()
         
 
 class RectangularActionTool(InteractiveTool):
@@ -792,7 +785,7 @@ class RectangularActionTool(InteractiveTool):
         shape, h0, h1 = self.get_shape()
         handler.set_shape(shape, h0, h1, self.setup_shape,
                           avoid_null_shape=self.AVOID_NULL_SHAPE)
-        self.connect(handler, SIG_END_RECT, self.end_rect)
+        handler.SIG_END_RECT.connect(self.end_rect)
         return setup_standard_tool_filter(filter, start_state)
 
     def end_rect(self, filter, p0, p1):
@@ -803,7 +796,7 @@ class RectangularActionTool(InteractiveTool):
             self.action_func(plot, QPoint(left, top), QPoint(right, bottom))
         else:
             self.action_func(plot, p0, p1)
-        self.emit(SIG_TOOL_JOB_FINISHED)
+        self.SIG_TOOL_JOB_FINISHED.emit()
         if self.switch_to_default_tool:
             shape = self.get_last_final_shape()
             plot.set_active_item(shape)
@@ -1125,9 +1118,9 @@ class BaseCursorTool(InteractiveTool):
         # Bouton gauche :
         self.handler = QtDragHandler(filter, Qt.LeftButton,
                                      start_state=start_state )
-        self.connect(self.handler, SIG_MOVE, self.move)
-        self.connect(self.handler, SIG_STOP_NOT_MOVING, self.end_move)
-        self.connect(self.handler, SIG_STOP_MOVING, self.end_move)
+        self.handler.SIG_MOVE.connect(self.move)
+        self.handler.SIG_STOP_NOT_MOVING.connect(self.end_move)
+        self.handler.SIG_STOP_MOVING.connect(self.end_move)
         return setup_standard_tool_filter(filter, start_state)
 
     def move(self, filter, event):
@@ -1146,7 +1139,7 @@ class BaseCursorTool(InteractiveTool):
             assert self.shape.plot() == filter.plot
             filter.plot.add_item_with_z_offset(self.shape, SHAPE_Z_OFFSET)
             self.shape = None
-            self.emit(SIG_TOOL_JOB_FINISHED)
+            self.SIG_TOOL_JOB_FINISHED.emit()
 
 class HRangeTool(BaseCursorTool):
     TITLE = _("Horizontal selection")
@@ -1457,8 +1450,8 @@ class PanelTool(ToggleTool):
     panel_name = None
     def __init__(self, manager):
         super(PanelTool, self).__init__(manager, self.panel_name)
-        self.connect(manager.get_panel(self.panel_id),
-                     SIG_VISIBILITY_CHANGED, self.action.setChecked)
+        manager.get_panel(self.panel_id).SIG_VISIBILITY_CHANGED.connect(
+                                                        self.action.setChecked)
 
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1683,29 +1676,6 @@ class RotateCropTool(CommandTool):
         self.action.setEnabled(status)
 
 
-class PrintFilter(QwtPlotPrintFilter):
-    def __init__(self):
-        super(PrintFilter, self).__init__()
-
-    def color(self, c, item):
-        if not (self.options() & QwtPlotPrintFilter.CanvasBackground):
-            if item == QwtPlotPrintFilter.MajorGrid:
-                return Qt.darkGray
-            elif item == QwtPlotPrintFilter.MinorGrid:
-                return Qt.gray
-        if item == QwtPlotPrintFilter.Title:
-            return Qt.red
-        elif item == QwtPlotPrintFilter.AxisScale:
-            return Qt.green
-        elif item == QwtPlotPrintFilter.AxisTitle:
-            return Qt.blue
-        return c
-
-    def font(self, f, _):
-        result = QFont(f)
-        result.setPointSize(int(f.pointSize()*1.25))
-        return result
-
 class PrintTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(PrintTool, self).__init__(manager, _("Print..."),
@@ -1720,15 +1690,11 @@ class PrintTool(CommandTool):
         ok = dialog.exec_()
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         if ok:
-            filter = PrintFilter()
-            if (QPrinter.GrayScale == printer.colorMode()):
-                filter.setOptions(QwtPlotPrintFilter.PrintAll
-                                  & ~QwtPlotPrintFilter.PrintBackground
-                                  | QwtPlotPrintFilter.PrintFrameWithScales)
-            plot.print_(printer, filter)
+            plot.print_(printer)
 
 
 class OpenFileTool(CommandTool):
+    SIG_OPEN_FILE = Signal(str)
     def __init__(self, manager, title=_("Open..."), formats='*.*',
                  toolbar_id=DefaultToolbarID):
         super(OpenFileTool, self).__init__(manager, title,
@@ -1751,7 +1717,7 @@ class OpenFileTool(CommandTool):
         """Activate tool"""
         filename = self.get_filename(plot)
         if filename:
-            self.emit(SIGNAL("openfile(QString*)"), filename)
+            self.SIG_OPEN_FILE.emit(filename)
 
 
 class SaveItemsTool(CommandTool):
@@ -2072,8 +2038,7 @@ class ColormapTool(CommandTool):
             icon = build_icon_from_cmap(cmap)
             action = menu.addAction(icon, cmap_name)
             action.setEnabled(True)
-        QObject.connect(menu, SIGNAL("triggered(QAction*)"),
-                        self.activate_cmap)
+        menu.triggered.connect(self.activate_cmap)
         return menu
 
     def activate_command(self, plot, checked):
@@ -2116,6 +2081,8 @@ class ColormapTool(CommandTool):
 
 
 class ImageMaskTool(CommandTool):
+    SIG_APPLIED_MASK_TOOL = Signal()
+
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         self._mask_shapes = {}
         self._mask_already_restored = {}
@@ -2177,9 +2144,9 @@ class ImageMaskTool(CommandTool):
     def register_plot(self, baseplot):
         super(ImageMaskTool, self).register_plot(baseplot)
         self._mask_shapes.setdefault(baseplot, [])
-        self.connect(baseplot, SIG_ITEMS_CHANGED, self.items_changed)
-        self.connect(baseplot, SIG_ITEM_SELECTION_CHANGED,
-                     self.item_selection_changed)
+        baseplot.SIG_ITEMS_CHANGED.connect(self.items_changed)
+        baseplot.SIG_ITEM_SELECTION_CHANGED.connect(
+                                                self.item_selection_changed)
 
     def show_mask(self, state):
         if self.masked_image is not None:
@@ -2200,7 +2167,7 @@ class ImageMaskTool(CommandTool):
                                                      inside=inside)
         self.masked_image.set_mask(mask)
         plot.replot()
-        self.emit(SIG_APPLIED_MASK_TOOL)
+        self.SIG_APPLIED_MASK_TOOL.emit()
         
     def remove_all_shapes(self):
         message = _("Do you really want to remove all masking shapes?")

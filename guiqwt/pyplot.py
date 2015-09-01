@@ -107,6 +107,7 @@ from guidata.qt.QtGui import (QMainWindow, QPrinter, QPainter, QFrame,
                               QVBoxLayout, QGridLayout, QToolBar, QPixmap,
                               QImageWriter)
 from guidata.qt.QtCore import QRect, Qt, QBuffer, QIODevice
+from guidata.qt import PYQT5
 
 import guidata
 from guidata.configtools import get_icon
@@ -249,7 +250,10 @@ class Figure(object):
             else:
                 if self.win is None:
                     self.show()
-                pixmap = QPixmap.grabWidget(self.win.centralWidget())
+                if PYQT5:
+                    pixmap = self.win.centralWidget().grab()
+                else:
+                    pixmap = QPixmap.grabWidget(self.win.centralWidget())
                 pixmap.save(fname, format.upper())
         else:
             # Buffer

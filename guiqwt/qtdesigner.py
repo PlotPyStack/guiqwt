@@ -22,9 +22,9 @@ Reference
 .. autofunction:: create_qtdesigner_plugin
 """
 
-from PyQt4 import uic
-from PyQt4.QtDesigner import QPyDesignerCustomWidgetPlugin
-from PyQt4.QtGui import QIcon
+from guidata.qt import uic
+from guidata.qt.QtDesigner import QPyDesignerCustomWidgetPlugin
+from guidata.qt.QtGui import QIcon
 
 from guidata.configtools import get_icon
 from guidata.py3compat import io

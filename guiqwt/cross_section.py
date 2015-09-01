@@ -43,7 +43,7 @@ import weakref
 
 from guidata.qt.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
                               QSpacerItem)
-from guidata.qt.QtCore import QSize, QPoint, Qt, SIGNAL
+from guidata.qt.QtCore import QSize, QPoint, Qt
 
 import numpy as np
 
@@ -61,11 +61,6 @@ from guiqwt.styles import CurveParam
 from guiqwt.tools import ExportItemDataTool
 from guiqwt.geometry import translate, rotate, vector_norm, vector_angle
 from guiqwt.image import _scale_tr, INTERP_LINEAR
-from guiqwt.signals import (SIG_MARKER_CHANGED, SIG_PLOT_LABELS_CHANGED,
-                            SIG_ANNOTATION_CHANGED, SIG_AXIS_DIRECTION_CHANGED,
-                            SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_LUT_CHANGED, SIG_CS_CURVE_CHANGED,
-                            SIG_MASK_CHANGED)
 from guiqwt.plot import PlotManager
 from guiqwt.builder import make
 from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
@@ -101,7 +96,7 @@ class CrossSectionItem(ErrorBarCurveItem):
         
     def clear_data(self):
         self.set_data(np.array([]), np.array([]), None, None)
-        self.plot().emit(SIG_CS_CURVE_CHANGED, self)
+        self.plot().SIG_CS_CURVE_CHANGED.emit(self)
 
     def update_curve_data(self, obj):
         sectx, secty = self.get_cross_section(obj)
@@ -127,7 +122,7 @@ class CrossSectionItem(ErrorBarCurveItem):
         if source is None or not plot.isVisible():
             return
         self.update_curve_data(obj)
-        self.plot().emit(SIG_CS_CURVE_CHANGED, self)
+        self.plot().SIG_CS_CURVE_CHANGED.emit(self)
         if not self.autoscale_mode:
             self.update_scale()
 
@@ -368,7 +363,6 @@ class CrossSectionPlot(CurvePlot):
 
     def set_curve_style(self, section, option):
         self.curveparam.read_config(CONF, section, option)
-        self.curveparam.curvetype = self.CURVETYPE
         self.curveparam.label = self.CURVE_LABEL
         
     def connect_plot(self, plot):
@@ -376,14 +370,14 @@ class CrossSectionPlot(CurvePlot):
             # Connecting only to image plot widgets (allow mixing image and 
             # curve widgets for the same plot manager -- e.g. in pyplot)
             return
-        self.connect(plot, SIG_ITEMS_CHANGED, self.items_changed)
-        self.connect(plot, SIG_LUT_CHANGED, self.lut_changed)
-        self.connect(plot, SIG_MASK_CHANGED, lambda item: self.update_plot())
-        self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.active_item_changed)
-        self.connect(plot, SIG_MARKER_CHANGED, self.marker_changed)
-        self.connect(plot, SIG_ANNOTATION_CHANGED, self.shape_changed)
-        self.connect(plot, SIG_PLOT_LABELS_CHANGED, self.plot_labels_changed)
-        self.connect(plot, SIG_AXIS_DIRECTION_CHANGED, self.axis_dir_changed)
+        plot.SIG_ITEMS_CHANGED.connect(self.items_changed)
+        plot.SIG_LUT_CHANGED.connect(self.lut_changed)
+        plot.SIG_MASK_CHANGED.connect(lambda item: self.update_plot())
+        plot.SIG_ACTIVE_ITEM_CHANGED.connect(self.active_item_changed)
+        plot.SIG_MARKER_CHANGED.connect(self.marker_changed)
+        plot.SIG_ANNOTATION_CHANGED.connect(self.shape_changed)
+        plot.SIG_PLOT_LABELS_CHANGED.connect(self.plot_labels_changed)
+        plot.SIG_AXIS_DIRECTION_CHANGED.connect(self.axis_dir_changed)
         self.plot_labels_changed(plot)
         for axis_id in plot.AXIS_IDS:
             self.axis_dir_changed(plot, axis_id)
@@ -608,8 +602,7 @@ class CrossSectionWidget(PanelWidget):
         
         self.local_manager = PlotManager(self)
         self.cs_plot = self.CrossSectionPlotKlass(parent)
-        self.connect(self.cs_plot, SIG_CS_CURVE_CHANGED,
-                     self.cs_curve_has_changed)
+        self.cs_plot.SIG_CS_CURVE_CHANGED.connect(self.cs_curve_has_changed)
         self.export_tool = None
         self.setup_plot()
         
@@ -736,16 +729,11 @@ class XCrossSection(CrossSectionWidget):
                         (other.peritem_ac, other.applylut_ac, None,
                          self.export_ac, other.autoscale_ac,
                          other.refresh_ac, other.autorefresh_ac))
-            self.connect(other.peritem_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_perimage_mode)
-            self.connect(other.applylut_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_apply_lut)
-            self.connect(other.autoscale_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_autoscale)
-            self.connect(other.refresh_ac, SIGNAL("triggered()"),
-                         lambda: self.cs_plot.update_plot())
-            self.connect(other.autorefresh_ac, SIGNAL("toggled(bool)"),
-                         self.cs_plot.toggle_autorefresh)
+            other.peritem_ac.toggled.connect(self.cs_plot.toggle_perimage_mode)
+            other.applylut_ac.toggled.connect(self.cs_plot.toggle_apply_lut)
+            other.autoscale_ac.toggled.connect(self.cs_plot.toggle_autoscale)
+            other.refresh_ac.triggered.connect(lambda: self.cs_plot.update_plot())
+            other.autorefresh_ac.toggled.connect(self.cs_plot.toggle_autorefresh)
         
     def closeEvent(self, event):
         self.hide()

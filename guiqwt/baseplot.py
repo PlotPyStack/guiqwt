@@ -13,7 +13,7 @@ guiqwt.baseplot
 
 The `baseplot` module provides the `guiqwt` plotting widget base class: 
 :py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
-`PyQwt`'s QwtPlot plotting widget which supports the following features:
+`qwt`'s QwtPlot plotting widget which supports the following features:
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
     * item selection and multiple selection
     * active item
@@ -51,23 +51,20 @@ import numpy as np
 
 from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
                               QApplication)
-from guidata.qt.QtCore import QSize, Qt
+from guidata.qt.QtCore import QSize, Qt, Signal
+from guidata.qt import PYQT5
 
 from guidata.configtools import get_font
 from guidata.py3compat import to_text_string, is_text_string, maxsize
 
 # Local imports
 from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
-                                 QwtLog10ScaleEngine, QwtText, QwtPlotCanvas)
+                                 QwtLogScaleEngine, QwtText, QwtPlotCanvas)
 from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
 from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam, AxisParam
-from guiqwt.signals import (SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED,
-                            SIG_ITEM_SELECTION_CHANGED, SIG_ITEM_MOVED,
-                            SIG_PLOT_LABELS_CHANGED, SIG_ITEM_REMOVED)
-
 
 #==============================================================================
 # Utilities for plot items
@@ -116,11 +113,53 @@ class BasePlot(QwtPlot):
     AXIS_IDS = (Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP)
     AXIS_NAMES = {'left': Y_LEFT, 'right': Y_RIGHT,
                   'bottom': X_BOTTOM, 'top': X_TOP}
-    AXIS_TYPES = {"lin" : QwtLinearScaleEngine,
-                  "log" : QwtLog10ScaleEngine }
+    AXIS_TYPES = {"lin" : QwtLinearScaleEngine, "log" : QwtLogScaleEngine}
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
     DEFAULT_ACTIVE_XAXIS = X_BOTTOM
     DEFAULT_ACTIVE_YAXIS = Y_LEFT
+    
+    # Emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
+    SIG_ITEM_MOVED = Signal("PyQt_PyObject", float, float, float, float)
+    
+    # Emitted by plot when a shapes.Marker position changes
+    SIG_MARKER_CHANGED = Signal("PyQt_PyObject")
+    
+    # Emitted by plot when a shapes.Axes position (or the angle) changes
+    SIG_AXES_CHANGED = Signal("PyQt_PyObject")
+    
+    # Emitted by plot when an annotation.AnnotatedShape position changes
+    SIG_ANNOTATION_CHANGED = Signal("PyQt_PyObject")
+    
+    # Emitted by plot when the a shapes.XRangeSelection range changes
+    SIG_RANGE_CHANGED = Signal("PyQt_PyObject", float, float)
+    
+    # Emitted by plot when item list has changed (item removed, added, ...)
+    SIG_ITEMS_CHANGED = Signal('PyQt_PyObject')
+    
+    # Emitted by plot when selected item has changed
+    SIG_ACTIVE_ITEM_CHANGED = Signal('PyQt_PyObject')
+    
+    # Emitted by plot when an item was deleted from the item list or using the 
+    # delete item tool
+    SIG_ITEM_REMOVED = Signal('PyQt_PyObject')
+    
+    # Emitted by plot when an item is selected
+    SIG_ITEM_SELECTION_CHANGED = Signal('PyQt_PyObject')
+    
+    # Emitted by plot when plot's title or any axis label has changed
+    SIG_PLOT_LABELS_CHANGED = Signal('PyQt_PyObject')
+    
+    # Emitted by plot when any plot axis direction has changed
+    SIG_AXIS_DIRECTION_CHANGED = Signal('PyQt_PyObject', 'PyQt_PyObject')
+    
+    # Emitted by plot when LUT has been changed by the user
+    SIG_LUT_CHANGED = Signal("PyQt_PyObject")
+    
+    # Emitted by plot when image mask has changed
+    SIG_MASK_CHANGED = Signal("PyQt_PyObject")
+
+    # Emitted by cross section plot when cross section curve data has changed
+    SIG_CS_CURVE_CHANGED = Signal("PyQt_PyObject")
 
     def __init__(self, parent=None, section="plot"):
         super(BasePlot, self).__init__(parent)
@@ -143,7 +182,7 @@ class BasePlot(QwtPlot):
         canvas = self.canvas()
         canvas.setFocusPolicy(Qt.StrongFocus)
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
-        self.connect(self, SIG_ITEM_MOVED, self._move_selected_items_together)
+        self.SIG_ITEM_MOVED.connect(self._move_selected_items_together)
 
     #---- QWidget API ---------------------------------------------------------
     def mouseDoubleClickEvent(self, event):
@@ -185,7 +224,7 @@ class BasePlot(QwtPlot):
         text = QwtText(title)
         text.setFont(self.font_title)
         self.setTitle(text)
-        self.emit(SIG_PLOT_LABELS_CHANGED, self)
+        self.SIG_PLOT_LABELS_CHANGED.emit(self)
 
     def get_axis_id(self, axis_name):
         """Return axis ID from axis name
@@ -276,7 +315,7 @@ class BasePlot(QwtPlot):
         axis_text.setText(title)
         axis_text.setColor(QColor(style.color))
         self.setAxisTitle(axis_id, axis_text)
-        self.emit(SIG_PLOT_LABELS_CHANGED, self)
+        self.SIG_PLOT_LABELS_CHANGED.emit(self)
 
     def update_all_axes_styles(self):
         """Update all axes styles"""
@@ -384,7 +423,11 @@ class BasePlot(QwtPlot):
     def copy_to_clipboard(self):
         """Copy widget's window to clipboard"""
         clipboard = QApplication.clipboard()
-        clipboard.setPixmap(QPixmap.grabWidget(self))
+        if PYQT5:
+            pixmap = self.grab()
+        else:
+            pixmap = QPixmap.grabWidget(self)
+        clipboard.setPixmap(pixmap)
             
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (*.png, *.pdf)"""
@@ -397,7 +440,10 @@ class BasePlot(QwtPlot):
             printer.setCreator('guidata')
             self.print_(printer)
         elif fname.lower().endswith('.png'):
-            pixmap = QPixmap.grabWidget(self)
+            if PYQT5:
+                pixmap = self.grab()
+            else:
+                pixmap = QPixmap.grabWidget(self)
             pixmap.save(fname, 'PNG')
         else:
             raise RuntimeError(_("Unknown file extension"))
@@ -436,7 +482,7 @@ class BasePlot(QwtPlot):
             print("Warning: item %r is already attached to plot" % item, file=sys.stderr)
         else:
             self.items.append(item)
-        self.emit(SIG_ITEMS_CHANGED, self)
+        self.SIG_ITEMS_CHANGED.emit(self)
         
     def add_item_with_z_offset(self, item, zoffset):
         """
@@ -472,10 +518,10 @@ class BasePlot(QwtPlot):
             # raises ValueError if item not in list
             self.items.remove(item)
             self.__clean_item_references(item)
-            self.emit(SIG_ITEM_REMOVED, item)
-        self.emit(SIG_ITEMS_CHANGED, self)
+            self.SIG_ITEM_REMOVED.emit(item)
+        self.SIG_ITEMS_CHANGED.emit(self)
         if active_item is not self.get_active_item():
-            self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
+            self.SIG_ACTIVE_ITEM_CHANGED.emit(self)
 
     def del_item(self, item):
         """
@@ -493,7 +539,7 @@ class BasePlot(QwtPlot):
         if item is self.active_item and not state:
             self.set_active_item(None) # Notify the item list (see baseplot)
         if notify:
-            self.emit(SIG_ITEMS_CHANGED, self)
+            self.SIG_ITEMS_CHANGED.emit(self)
         if replot:
             self.replot()
 
@@ -503,7 +549,7 @@ class BasePlot(QwtPlot):
             items = self.get_items(item_type=item_type)
         for item in items:
             self.set_item_visible(item, state, notify=False, replot=False)
-        self.emit(SIG_ITEMS_CHANGED, self)
+        self.SIG_ITEMS_CHANGED.emit(self)
         self.replot()
         
     def show_items(self, items=None, item_type=None):
@@ -601,7 +647,7 @@ class BasePlot(QwtPlot):
                 self.__swap_items_z(item, objects[index-1])
                 changed = True
         if changed:
-            self.emit(SIG_ITEMS_CHANGED, self)
+            self.SIG_ITEMS_CHANGED.emit(self)
         return changed
     
     def move_down(self, item_list):
@@ -621,7 +667,7 @@ class BasePlot(QwtPlot):
                 self.__swap_items_z(item, objects[index+1])
                 changed = True
         if changed:
-            self.emit(SIG_ITEMS_CHANGED, self)
+            self.SIG_ITEMS_CHANGED.emit(self)
         return changed
 
     def set_items_readonly(self, state):
@@ -629,19 +675,19 @@ class BasePlot(QwtPlot):
         Default item's readonly state: False (items may be deleted)"""
         for item in self.get_items():
             item.set_readonly(state)
-        self.emit(SIG_ITEMS_CHANGED, self)
+        self.SIG_ITEMS_CHANGED.emit(self)
 
     def select_item(self, item):
         """Select item"""
         item.select()
         for itype in item.types():
             self.last_selected[itype] = item
-        self.emit(SIG_ITEM_SELECTION_CHANGED, self)
+        self.SIG_ITEM_SELECTION_CHANGED.emit(self)
 
     def unselect_item(self, item):
         """Unselect item"""
         item.unselect()
-        self.emit(SIG_ITEM_SELECTION_CHANGED, self)
+        self.SIG_ITEM_SELECTION_CHANGED.emit(self)
 
     def get_last_active_item(self, item_type):
         """Return last active item corresponding to passed `item_type`"""
@@ -657,7 +703,7 @@ class BasePlot(QwtPlot):
                 self.select_item(item)
                 last_item = item
         self.blockSignals(block)
-        self.emit(SIG_ITEM_SELECTION_CHANGED, self)
+        self.SIG_ITEM_SELECTION_CHANGED.emit(self)
         self.set_active_item(last_item)
 
     def unselect_all(self):
@@ -666,7 +712,7 @@ class BasePlot(QwtPlot):
             if item.can_select():
                 item.unselect()
         self.set_active_item(None)
-        self.emit(SIG_ITEM_SELECTION_CHANGED, self)
+        self.SIG_ITEM_SELECTION_CHANGED.emit(self)
 
     def select_some_items(self, items):
         """Select items"""
@@ -686,8 +732,8 @@ class BasePlot(QwtPlot):
         if new_active_item is not active:
             # if the new selection doesn't include the
             # previously active item
-            self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
-        self.emit(SIG_ITEM_SELECTION_CHANGED, self)
+            self.SIG_ACTIVE_ITEM_CHANGED.emit(self)
+        self.SIG_ITEM_SELECTION_CHANGED.emit(self)
         
     def set_active_item(self, item):
         """Set active item, and unselect the old active item"""
@@ -697,7 +743,7 @@ class BasePlot(QwtPlot):
                 self.select_item(self.active_item)
             self._active_xaxis = item.xAxis()
             self._active_yaxis = item.yAxis()
-        self.emit(SIG_ACTIVE_ITEM_CHANGED, self)
+        self.SIG_ACTIVE_ITEM_CHANGED.emit(self)
 
     def get_active_axes(self):
         """Return active axes"""
@@ -854,7 +900,7 @@ class BasePlot(QwtPlot):
         use instead of replot when only the content
         of the canvas needs redrawing (axes, shouldn't change)
         """
-        self.canvas().invalidatePaintCache()
+        self.canvas().replot()
         self.update()
 
 ## Keep this around to debug too many replots

@@ -10,15 +10,17 @@ guiqwt.transitional
 -------------------
 
 The purpose of this transitional package is to regroup all the references to 
-the ``PyQwt`` library.
+the ``qwt`` library.
 
-No other ``guiqwt`` module should import ``PyQwt`` or use any of its 
+No other ``guiqwt`` module should import ``qwt`` or use any of its 
 interfaces directly.
 """
 
-from PyQt4.Qwt5 import (QwtPlot, QwtSymbol, QwtLinearScaleEngine,
-                        QwtLog10ScaleEngine, QwtText, QwtPlotCanvas,
-                        QwtLinearColorMap, QwtDoubleInterval, toQImage,
-                        QwtPlotCurve, QwtPlotGrid, QwtPlotItem, QwtScaleMap,
-                        QwtPlotMarker, QwtPlotPrintFilter)
+from __future__ import print_function
+import sys
 
+print("Using experimental 'pure Python' qwt API", file=sys.stderr)
+from qwt import (QwtPlot, QwtSymbol, QwtLinearScaleEngine, QwtLogScaleEngine,
+                 QwtText, QwtPlotCanvas, QwtLinearColorMap, QwtInterval,
+                 toQImage, QwtPlotGrid, QwtPlotItem, QwtScaleMap, QwtPlotCurve,
+                 QwtPlotMarker, QwtPlotRenderer)

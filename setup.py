@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
+# Copyright © 2009-2015 CEA
 # Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
@@ -9,7 +9,7 @@
 guiqwt
 ======
 
-Copyright © 2009-2010 CEA
+Copyright © 2009-2015 CEA
 Pierre Raybaut
 Licensed under the terms of the CECILL License
 (see guiqwt/__init__.py for details)
@@ -20,6 +20,7 @@ Licensed under the terms of the CECILL License
 
 from __future__ import print_function
 
+import setuptools  # analysis:ignore
 import numpy
 import sys
 import os
@@ -36,11 +37,16 @@ from guiqwt import __version__ as version
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to PyQwt 5.2)'
+DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `qwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
-CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
-               'Topic :: Scientific/Engineering']
+CLASSIFIERS = ['Topic :: Scientific/Engineering']
+if 'beta' in version or 'b' in version:
+    CLASSIFIERS += ['Development Status :: 4 - Beta']
+elif 'alpha' in version or 'a' in version:
+    CLASSIFIERS += ['Development Status :: 3 - Alpha']
+else:
+    CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
 
 if os.name == 'nt':
     SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
@@ -84,7 +90,18 @@ if sphinx:
     cmdclass['build_doc'] = build_doc
 
 CFLAGS = ["-Wall"]
-if os.name == 'nt' and 'mingw' not in ''.join(sys.argv):
+
+# checking if mingw is the compiler
+# mingw32 compiler configured in %USERPROFILE%\pydistutils.cfg 
+# or distutils\distutils.cfg
+is_mingw = False
+from distutils.dist import Distribution
+_dist = Distribution()
+_dist.parse_config_files()
+_bld = _dist.get_option_dict('build')
+if _bld and 'mingw32' in _bld.get('compiler'):
+    is_mingw =  True 
+if os.name == 'nt' and 'mingw' not in ''.join(sys.argv) and not is_mingw:
     CFLAGS.insert(0, "/EHsc")
 for arg, compile_arg in (("--sse2", "-msse2"),
                          ("--sse3", "-msse3"),):
@@ -98,15 +115,13 @@ for arg, compile_arg in (("--sse2", "-msse2"),
 cythonize_all('src')
 
 setup(name=LIBNAME, version=version,
-      download_url='http://%s.googlecode.com/files/%s-%s.zip' % (
-                                                  LIBNAME, LIBNAME, version),
       description=DESCRIPTION, long_description=LONG_DESCRIPTION,
       packages=get_subpackages(LIBNAME),
       package_data={LIBNAME:
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
                                                '.ui'))},
       requires=["PyQt4 (>4.3)", "NumPy (>=1.3)", "SciPy (>=0.7)",
-                "guidata (>=1.6.0)", "PIL (>=1.1.6)"],
+                "guidata (>=1.6.0)", "qwt (>=6.1.0)", "PIL (>=1.1.6)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'.histogram2d',
                              [join('src', 'histogram2d.c')],
@@ -126,8 +141,9 @@ setup(name=LIBNAME, version=version,
                              ),
                    ],
       author = "Pierre Raybaut",
-      author_email = 'pierre.raybaut@cea.fr',
-      url = 'http://www.cea.fr',
+      author_email = 'pierre.raybaut@gmail.com',
+      url = 'https://github.com/PierreRaybaut/%s' % LIBNAME,
+      license = 'CeCILL V2',
       classifiers = CLASSIFIERS + [
         'Operating System :: MacOS',
         'Operating System :: Microsoft :: Windows',

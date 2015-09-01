@@ -3,7 +3,7 @@
 guiqwt
 ======
 
-Based on PyQwt (plotting widgets for PyQt4 graphical user interfaces) and 
+Based on `qwt` (plotting widgets for PyQt4 graphical user interfaces) and 
 on the scientific modules NumPy and SciPy, `guiqwt` is a Python library 
 providing efficient 2D data-plotting features (curve/image visualization 
 and related tools) for interactive computing and signal/image processing 
@@ -21,17 +21,17 @@ External resources:
 """
 
 
-# Summer'11 Internal Sprint
-# =========================
-#
-# 1. Merge ImagePlot/CurvePlot widgets (issues: autoscale, aspect ratio, ...)
-# 2. Should we use the middle mouse button for all zoom features (interactive + 
-#    reset) and use the right mouse button for the pan feature?
-# 
+__version__ = '2.4.0b2'
+
+# Dear (Debian, RPM, ...) package makers, please feel free to customize the
+# following path to module's data (images) and translations:
+DATAPATH = LOCALEPATH = ''
+
+#XXX: image.py: BaseImageItem.get_histogram: histo1 or histo2 ???
+#     one version is faster but currently buggy for integers
 
 
-
-#    Copyright © 2009-2010 CEA
+#    Copyright © 2009-2015 CEA
 #    Pierre Raybaut
 #    Licensed under the terms of the CECILL License (see below)
 
@@ -544,13 +544,3 @@ External resources:
 #    
 #    
 #    Version 2.0 dated 2006-09-05.
-
-
-__version__ = '2.3.2'
-
-# Dear (Debian, RPM, ...) package makers, please feel free to customize the
-# following path to module's data (images) and translations:
-DATAPATH = LOCALEPATH = ''
-
-#XXX: image.py: BaseImageItem.get_histogram: histo1 or histo2 ???
-#     one version is faster but currently buggy for integers

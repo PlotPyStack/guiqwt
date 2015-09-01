@@ -539,7 +539,8 @@ static PyObject* dispatch_source(Params& p)
 
     if (!PyArg_ParseTuple(p.p_dst_data,"iiii",
 			  &p.dx1, &p.dy1, &p.dx2, &p.dy2)) {
-	PyErr_SetString(PyExc_ValueError, "Invalid destination rectangle");
+	PyErr_SetString(PyExc_ValueError, "Invalid destination rectangle (expected tuple of 4 integers)");
+	return NULL;
     }
     if (p.dx2<p.dx1) swap(p.dx1,p.dx2);
     if (p.dy2<p.dy1) swap(p.dy1,p.dy2);

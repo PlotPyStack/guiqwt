@@ -108,8 +108,7 @@ import numpy as np
 from guidata.qt.QtGui import (QMenu, QListWidget, QListWidgetItem, QVBoxLayout,
                               QToolBar, QMessageBox, QBrush, QColor, QPen,
                               QPolygonF)
-from guidata.qt.QtCore import (Qt, QPoint, QPointF, QLineF, SIGNAL, QRectF,
-                               QLine)
+from guidata.qt.QtCore import Qt, QPointF, QLineF, QRectF, Signal
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
@@ -127,8 +126,6 @@ from guiqwt.panels import PanelWidget, ID_ITEMLIST
 from guiqwt.baseplot import BasePlot, canvas_to_axes
 from guiqwt.styles import GridParam, CurveParam, ErrorBarParam, SymbolParam
 from guiqwt.shapes import Marker
-from guiqwt.signals import (SIG_ACTIVE_ITEM_CHANGED, SIG_ITEMS_CHANGED,
-                            SIG_AXIS_DIRECTION_CHANGED, SIG_PLOT_AXIS_CHANGED)
 
 def _simplify_poly(pts, off, scale, bounds):
     ax, bx, ay, by = scale
@@ -522,10 +519,9 @@ class CurveItem(QwtPlotCurve):
         ay = self.yAxis()
         xc = plot.transform(ax, x)
         yc = plot.transform(ay, y)
-        _distance, i, _inside, _other = self.hit_test(QPoint(xc, yc))
-        x = self.x(i)
-        y = self.y(i)
-        return x, y
+        _distance, i, _inside, _other = self.hit_test(QPointF(xc, yc))
+        point = self.sample(i)
+        return point.x(), point.y()
 
     def get_coordinates_label(self, xc, yc):
         title = self.title().text()
@@ -948,7 +944,7 @@ class ErrorBarCurveItem(CurveItem):
         ay = self.yAxis()
         xc = plot.transform(ax, x)
         yc = plot.transform(ay, y)
-        _distance, i, _inside, _other = self.hit_test(QPoint(xc, yc))
+        _distance, i, _inside, _other = self.hit_test(QPointF(xc, yc))
         x0, y0 = self.plot().canvas2plotitem(self, xc, yc)
         x = self.x(i)
         y = self.y(i)
@@ -1001,14 +997,14 @@ class ErrorBarCurveItem(CurveItem):
             lines = []
             for i in RN:
                 yi = ty[i]
-                lines.append(QLine(txmin[i], yi, txmax[i], yi))
+                lines.append(QLineF(txmin[i], yi, txmax[i], yi))
             painter.drawLines(lines)
             if cap > 0:
                 lines = []
                 for i in RN:
                     yi = ty[i]
-                    lines.append(QLine(txmin[i], yi-cap, txmin[i], yi+cap))
-                    lines.append(QLine(txmax[i], yi-cap, txmax[i], yi+cap))
+                    lines.append(QLineF(txmin[i], yi-cap, txmin[i], yi+cap))
+                    lines.append(QLineF(txmax[i], yi-cap, txmax[i], yi+cap))
             painter.drawLines(lines)
             
         if self._dy is not None:
@@ -1019,15 +1015,15 @@ class ErrorBarCurveItem(CurveItem):
                 lines = []
                 for i in RN:
                     xi = tx[i]
-                    lines.append(QLine(xi, tymin[i], xi, tymax[i]))
+                    lines.append(QLineF(xi, tymin[i], xi, tymax[i]))
                 painter.drawLines(lines)
                 if cap > 0:
                     # Cap
                     lines = []
                     for i in RN:
                         xi = tx[i]
-                        lines.append(QLine(xi-cap, tymin[i], xi+cap, tymin[i]))
-                        lines.append(QLine(xi-cap, tymax[i], xi+cap, tymax[i]))
+                        lines.append(QLineF(xi-cap, tymin[i], xi+cap, tymin[i]))
+                        lines.append(QLineF(xi-cap, tymax[i], xi+cap, tymax[i]))
                 painter.drawLines(lines)
             else:
                 # Error area
@@ -1035,8 +1031,8 @@ class ErrorBarCurveItem(CurveItem):
                 rpoints = []
                 for i in RN:
                     xi = tx[i]
-                    points.append(QPoint(xi, tymin[i]))
-                    rpoints.append(QPoint(xi, tymax[i]))
+                    points.append(QPointF(xi, tymin[i]))
+                    rpoints.append(QPointF(xi, tymax[i]))
                 points += reversed(rpoints)
                 painter.setBrush(QBrush(self.errorBrush))
                 painter.drawPolygon(*points)
@@ -1077,14 +1073,10 @@ class ItemListWidget(QListWidget):
         self.plot = None # the default plot...
         self.items = []
         
-        self.connect(self, SIGNAL('currentRowChanged(int)'),
-                     self.current_row_changed)
-        self.connect(self, SIGNAL('itemChanged(QListWidgetItem*)'),
-                     self.item_changed)
-        self.connect(self, SIGNAL('itemSelectionChanged()'),
-                     self.refresh_actions)
-        self.connect(self, SIGNAL('itemSelectionChanged()'),
-                     self.selection_changed)
+        self.currentRowChanged.connect(self.current_row_changed)
+        self.itemChanged.connect(self.item_changed)
+        self.itemSelectionChanged.connect(self.refresh_actions)
+        self.itemSelectionChanged.connect(self.selection_changed)
         
         self.setWordWrap(True)
         self.setMinimumWidth(140)
@@ -1100,8 +1092,8 @@ class ItemListWidget(QListWidget):
         self.manager = manager
 
         for plot in self.manager.get_plots():
-            self.connect(plot, SIG_ITEMS_CHANGED, self.items_changed)
-            self.connect(plot, SIG_ACTIVE_ITEM_CHANGED, self.items_changed)
+            plot.SIG_ITEMS_CHANGED.connect(self.items_changed)
+            plot.SIG_ACTIVE_ITEM_CHANGED.connect(self.items_changed)
         self.plot = self.manager.get_plot()
 
     def contextMenuEvent(self, event):
@@ -1330,6 +1322,10 @@ class CurvePlot(BasePlot):
     """
     DEFAULT_ITEM_TYPE = ICurveItemType
     AUTOSCALE_TYPES = (CurveItem, PolygonMapItem)
+    
+    # Signals
+    SIG_PLOT_AXIS_CHANGED = Signal("PyQt_PyObject")
+    
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
                  xunit=None, yunit=None, gridparam=None,
                  section="plot", axes_synchronised=False):
@@ -1347,7 +1343,7 @@ class CurvePlot(BasePlot):
         self.axes_synchronised = axes_synchronised
         
         # Installing our own event filter:
-        # (PyQwt's event filter does not fit our needs)
+        # (qwt's event filter does not fit our needs)
         self.canvas().installEventFilter(self.filter)
         self.canvas().setMouseTracking(True)
     
@@ -1407,8 +1403,8 @@ class CurvePlot(BasePlot):
     def set_marker_axes(self):
         curve = self.get_last_active_item(ITrackableItemType)
         if curve:
-            self.cross_marker.setAxis(curve.xAxis(), curve.yAxis())
-            self.curve_marker.setAxis(curve.xAxis(), curve.yAxis())
+            self.cross_marker.setAxes(curve.xAxis(), curve.yAxis())
+            self.curve_marker.setAxes(curve.xAxis(), curve.yAxis())
     
     def do_move_marker(self, event):
         pos = event.pos()
@@ -1471,7 +1467,7 @@ class CurvePlot(BasePlot):
         self.replot()
         # the signal MUST be emitted after replot, otherwise
         # we receiver won't see the new bounds (don't know why?)
-        self.emit(SIG_PLOT_AXIS_CHANGED, self)
+        self.SIG_PLOT_AXIS_CHANGED.emit(self)
 
     def do_zoom_view(self, dx, dy, lock_aspect_ratio=False):
         """
@@ -1520,7 +1516,7 @@ class CurvePlot(BasePlot):
         self.replot()
         # the signal MUST be emitted after replot, otherwise
         # we receiver won't see the new bounds (don't know why?)
-        self.emit(SIG_PLOT_AXIS_CHANGED, self)
+        self.SIG_PLOT_AXIS_CHANGED.emit(self)
         
     def do_zoom_rect_view(self, start, end):
         # XXX implement the case when axes are synchronised
@@ -1575,7 +1571,7 @@ class CurvePlot(BasePlot):
         old_active = self.active_item
         BasePlot.set_active_item(self, item)
         if item is not None and old_active is not item:
-            self.grid.setAxis(item.xAxis(), item.yAxis())
+            self.grid.setAxes(item.xAxis(), item.yAxis())
 
     def get_plot_parameters(self, key, itemparams):
         if key == "grid":
@@ -1670,7 +1666,7 @@ class CurvePlot(BasePlot):
             axis_map = self.canvasMap(axis_id)
             self.setAxisScale(axis_id, axis_map.s2(), axis_map.s1())
             self.updateAxes()
-            self.emit(SIG_AXIS_DIRECTION_CHANGED, self, axis_id)
+            self.SIG_AXIS_DIRECTION_CHANGED.emit(self, axis_id)
             
     def set_titles(self, title=None, xlabel=None, ylabel=None,
                    xunit=None, yunit=None):
@@ -1741,8 +1737,8 @@ class CurvePlot(BasePlot):
         self.set_axis_limits(yaxis, y0, y1)
         self.set_axis_limits(xaxis, x0, x1)     
         self.updateAxes()
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(yaxis))
-        self.emit(SIG_AXIS_DIRECTION_CHANGED, self, self.get_axis_id(xaxis))
+        self.SIG_AXIS_DIRECTION_CHANGED.emit(self, self.get_axis_id(yaxis))
+        self.SIG_AXIS_DIRECTION_CHANGED.emit(self, self.get_axis_id(xaxis))
         
     def set_plot_limits_synchronised(self, x0, x1, y0, y1):
         for yaxis, xaxis in (("left", "bottom"), ("right", "top")):

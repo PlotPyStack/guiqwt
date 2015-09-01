@@ -153,7 +153,7 @@ from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.py3compat import getcwd, is_text_string
 
 # Local imports
-from guiqwt.transitional import QwtPlotItem, QwtDoubleInterval
+from guiqwt.transitional import QwtPlotItem, QwtInterval
 from guiqwt.config import _
 from guiqwt.interfaces import (IBasePlotItem, IBaseImageItem, IHistDataSource,
                                IImageItemType, ITrackableItemType,
@@ -167,7 +167,6 @@ from guiqwt.styles import (ImageParam, ImageAxesParam, TrImageParam,
                            RawImageParam)
 from guiqwt.shapes import RectangleShape
 from guiqwt import io
-from guiqwt.signals import SIG_ITEM_MOVED, SIG_LUT_CHANGED, SIG_MASK_CHANGED
 from guiqwt.geometry import translate, scale, rotate, colvector
 from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 
@@ -1029,6 +1028,7 @@ class ImageItem(RawImageItem):
         if self.data is None:
             return
         src2 = self._rescale_src_rect(src_rect)
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_rect(self.data, src2, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1288,6 +1288,7 @@ class TrImageItem(RawImageItem):
                          [ 0,  0, 1]], float)
         mat = self.tr*tr
 
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_tr(self.data, mat, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1354,7 +1355,7 @@ class TrImageItem(RawImageItem):
         ox, oy = canvas_to_axes(self, old_pos)
         self.set_transform(x0+nx-ox, y0+ny-oy, angle, dx, dy, hflip, vflip)
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, ox, oy, nx, ny)
+            self.plot().SIG_ITEM_MOVED.emit(self, ox, oy, nx, ny)
 
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -1547,6 +1548,15 @@ class XYImageItem(RawImageItem):
     """
     __implements__ = (IBasePlotItem, IBaseImageItem, ISerializableType)
     def __init__(self, x=None, y=None, data=None, param=None):
+        # if x and y are not increasing arrays, sort them and data accordingly
+        if not np.all(np.diff(x) >= 0):
+            x_idx = np.argsort(x)
+            x = x[x_idx]
+            data = data[:, x_idx]
+        if not np.all(np.diff(y) >= 0):
+            y_idx = np.argsort(y)
+            y = y[y_idx]
+            data = data[y_idx, :]
         super(XYImageItem, self).__init__(data, param)
         self.x = None
         self.y = None
@@ -1600,9 +1610,9 @@ class XYImageItem(RawImageItem):
         ni, nj = self.data.shape
         x = np.array(x, float)
         y = np.array(y, float)
-        if not np.all(np.diff(x) > 0):
+        if not np.all(np.diff(x) >= 0):
             raise ValueError("x must be an increasing 1D array")
-        if not np.all(np.diff(y) > 0):
+        if not np.all(np.diff(y) >= 0):
             raise ValueError("y must be an increasing 1D array")
         if x.shape[0] == nj:
             self.x = to_bins(x)
@@ -1629,6 +1639,7 @@ class XYImageItem(RawImageItem):
 
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         xytr = (self.x, self.y, src_rect)
+        dst_rect = tuple([int(i) for i in dst_rect])
         dest = _scale_xy(self.data, xytr, self._offscreen, dst_rect,
                          self.lut, self.interpolate)
         qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -1910,7 +1921,7 @@ class MaskedImageItem(ImageItem):
         """Emit the SIG_MASK_CHANGED signal (emitter: plot)"""
         plot = self.plot()
         if plot is not None:
-            plot.emit(SIG_MASK_CHANGED, self)
+            plot.SIG_MASK_CHANGED.emit(self)
 
     def apply_masked_areas(self):
         """Apply masked areas"""
@@ -2009,6 +2020,7 @@ class MaskedImageItem(ImageItem):
             lut = (1, 0, bg, cmap)
             shown_data = np.ma.getmaskarray(self.data)
             src2 = self._rescale_src_rect(src_rect)
+            dst_rect = tuple([int(i) for i in dst_rect])
             dest = _scale_rect(shown_data, src2, self._offscreen, dst_rect,
                                lut, (INTERP_NEAREST,))
             qrect = QRectF(QPointF(dest[0], dest[1]), QPointF(dest[2], dest[3]))
@@ -2106,7 +2118,7 @@ class ImageFilterItem(BaseImageItem):
         new_pt = canvas_to_axes(self, new_pos)
         self.border_rect.move_shape(old_pt, new_pt)
         if self.plot():
-            self.plot().emit(SIG_ITEM_MOVED, self, *(old_pt+new_pt))
+            self.plot().SIG_ITEM_MOVED.emit(self, *(old_pt+new_pt))
 
     def move_with_selection(self, delta_x, delta_y):
         """
@@ -2466,7 +2478,7 @@ class ImagePlot(CurvePlot):
         if item is not None:
             self.update_colormap_axis(item)
         self.replot()
-        self.emit(SIG_LUT_CHANGED, self)
+        self.SIG_LUT_CHANGED.emit(self)
 
     def update_colormap_axis(self, item):
         if IColormapImageItemType not in item.types():
@@ -2476,7 +2488,7 @@ class ImagePlot(CurvePlot):
         self.setAxisScale(zaxis, item.min, item.max)
         # XXX: the colormap can't be displayed if min>max, to fix this
         # we should pass an inverted colormap along with _max, _min values
-        axiswidget.setColorMap(QwtDoubleInterval(item.min, item.max),
+        axiswidget.setColorMap(QwtInterval(item.min, item.max),
                                item.get_color_map())
         self.updateAxes()
 

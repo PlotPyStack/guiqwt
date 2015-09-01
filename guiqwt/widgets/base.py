@@ -14,8 +14,7 @@ The `base` module provides base objects for internal use of the
 
 """
 
-from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget
-from PyQt4.QtCore import SIGNAL
+from guidata.qt.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget
 
 from guidata.qthelpers import create_toolbutton
 from guidata.configtools import get_icon
@@ -153,8 +152,8 @@ class BaseTransformDialog(ImageDialog):
         if resize_to is not None:
             width, height = resize_to
             self.resize(width, height)
-        self.connect(self, SIGNAL('accepted()'), self.accept_changes)
-        self.connect(self, SIGNAL('rejected()'), self.reject_changes)
+        self.accepted.connect(self.accept_changes)
+        self.rejected.connect(self.reject_changes)
         
     def install_button_layout(self):
         """Reimplemented ImageDialog method"""

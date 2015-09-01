@@ -25,7 +25,7 @@ from __future__ import division, print_function
 
 from guidata.qt.QtGui import (QDialog, QDialogButtonBox, QVBoxLayout, QLabel,
                               QFormLayout, QLineEdit, QIntValidator, QCheckBox)
-from guidata.qt.QtCore import SIGNAL, SLOT, Qt
+from guidata.qt.QtCore import Qt
 
 
 from guiqwt.config import _
@@ -87,8 +87,8 @@ class ResizeDialog(QDialog):
         # Button box
         self.bbox = bbox = QDialogButtonBox(QDialogButtonBox.Ok|
                                             QDialogButtonBox.Cancel)
-        self.connect(bbox, SIGNAL("accepted()"), SLOT("accept()"))
-        self.connect(bbox, SIGNAL("rejected()"), SLOT("reject()"))
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
         layout.addWidget(bbox)
 
         self.w_edit.setText(str(self.width))
@@ -97,11 +97,9 @@ class ResizeDialog(QDialog):
         
         self.setWindowTitle(_("Resize"))
         
-        self.connect(w_edit, SIGNAL("textChanged(QString)"),
-                     self.width_changed)
-        self.connect(h_edit, SIGNAL("textChanged(QString)"),
-                     self.height_changed)
-        self.connect(zbox, SIGNAL("toggled(bool)"), self.toggled_no_zoom)
+        w_edit.textChanged.connect(self.width_changed)
+        h_edit.textChanged.connect(self.height_changed)
+        zbox.toggled.connect(self.toggled_no_zoom)
         zbox.setChecked(self.keep_original_size)
 
     def update_widgets(self):
