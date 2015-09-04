@@ -1242,9 +1242,16 @@ class MainWindow(QMainWindow):
                   "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
             self.console = DockableConsole(self, namespace=ns, message=msg)
             self.add_dockwidget(self.console, _("Console"))
-            self.console.interpreter.widget_proxy.sig_new_prompt.connect(
-                                            lambda txt: self.refresh_lists())
-        
+            try:
+                self.console.interpreter.widget_proxy.sig_new_prompt.connect(
+                                                lambda txt: self.refresh_lists())
+            except AttributeError:
+                from spyderlib.widgets.internalshell import SIGNAL
+                self.connect(self.console.interpreter.widget_proxy,
+                         SIGNAL("new_prompt(QString)"),
+                         lambda txt: self.refresh_lists())
+
+
         # Update selection dependent actions
         self.update_actions()
         
