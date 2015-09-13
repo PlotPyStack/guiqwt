@@ -7,8 +7,8 @@
   
   Two lines of the following code are distributed under LGPL license terms and 
   with a different copyright. These two lines are the Visual Studio x86_64 
-  (_M_X64) inline versions of lrint() and lrintf() functions was adapted from 
-  fast_convert.h (SpanDSP), which is:
+  (_M_X64) inline versions of lrint() and lrintf() functions, and were adapted 
+  from fast_convert.h (SpanDSP), which is:
 
   Copyright © 2009 Steve Underwood
   All rights reserved.
