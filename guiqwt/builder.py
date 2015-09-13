@@ -229,10 +229,11 @@ class PlotItemBuilder(object):
                 style = args[0]
             else:
                 x, y = get_x_y_from_data(args[0])
-                if isinstance(y, ndarray):
-                    style = next(self.style)
-                else:
+                y_matrix = not isinstance(y, ndarray)
+                if y_matrix:
                     style = [next(self.style) for yi in y]
+                else:
+                    style = next(self.style)
         elif len(args) == 2:
             a1, a2 = args
             if is_text_string(a2):
@@ -248,7 +249,7 @@ class PlotItemBuilder(object):
             raise TypeError("Wrong number of arguments")
         if isinstance(x, (list, tuple)):
             x = array(x)
-        if isinstance(y, (list, tuple)):
+        if isinstance(y, (list, tuple)) and not y_matrix:
             y = array(y)
         return x, y, style
         
