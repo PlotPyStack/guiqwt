@@ -1,5 +1,7 @@
 .spyderproject
 Thumbs.db
+src/histogram2d.c
+src/mandelbrot.c
 
 # Created by https://www.gitignore.io/api/python
 
