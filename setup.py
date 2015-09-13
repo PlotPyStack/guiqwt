@@ -89,19 +89,24 @@ if sphinx:
 
     cmdclass['build_doc'] = build_doc
 
-CFLAGS = ["-Wall"]
 
-# checking if mingw is the compiler
-# mingw32 compiler configured in %USERPROFILE%\pydistutils.cfg 
-# or distutils\distutils.cfg
-is_mingw = False
-from distutils.dist import Distribution
-_dist = Distribution()
-_dist.parse_config_files()
-_bld = _dist.get_option_dict('build')
-if _bld and 'mingw32' in _bld.get('compiler'):
-    is_mingw =  True 
-if os.name == 'nt' and 'mingw' not in ''.join(sys.argv) and not is_mingw:
+def is_msvc():
+    """Detect if Microsoft Visual C++ compiler was chosen to build package"""
+    # checking if mingw is the compiler
+    # mingw32 compiler configured in %USERPROFILE%\pydistutils.cfg 
+    # or distutils\distutils.cfg
+    from distutils.dist import Distribution
+    dist = Distribution()
+    dist.parse_config_files()
+    bld = dist.get_option_dict('build')
+    if bld:
+        comp = bld.get('compiler')
+        if comp is not None and 'mingw32' in comp:
+            return False  # mingw is the compiler
+    return os.name == 'nt' and 'mingw' not in ''.join(sys.argv)
+
+CFLAGS = ["-Wall"]
+if is_msvc():
     CFLAGS.insert(0, "/EHsc")
 for arg, compile_arg in (("--sse2", "-msse2"),
                          ("--sse3", "-msse3"),):
