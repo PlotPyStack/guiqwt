@@ -16,7 +16,7 @@
     #include <fenv.h>
 #endif
 #include <math.h>
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
     #define isnan(x) _isnan(x)
 #endif
 #include <stdio.h>
