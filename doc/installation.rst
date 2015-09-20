@@ -7,7 +7,7 @@ Dependencies
 Requirements:
     * Python 2.x (x>=6)
     * PyQt4 4.x (x>=3 ; recommended x>=4) or PyQt5 5.x (x>=5)
-    * qwt 6.x (x>=1)
+    * qwt 0.x (x>=1)
     * guidata 1.7 or later
     * NumPy 1.x (x>=3) -- NumPy 1.6 or later is required for Windows binaries
     * SciPy 0.x (x>=7)

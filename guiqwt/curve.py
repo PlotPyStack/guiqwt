@@ -873,6 +873,7 @@ class ErrorBarCurveItem(CurveItem):
     def get_data(self):
         """
         Return error-bar curve data: x, y, dx, dy
+
             * x: NumPy array
             * y: NumPy array
             * dx: float or NumPy array (non-constant error bars)
@@ -883,6 +884,7 @@ class ErrorBarCurveItem(CurveItem):
     def set_data(self, x, y, dx=None, dy=None):
         """
         Set error-bar curve data:
+            
             * x: NumPy array
             * y: NumPy array
             * dx: float or NumPy array (non-constant error bars)
@@ -1127,8 +1129,12 @@ class ItemListWidget(QListWidget):
         
     def get_selected_items(self):
         """Return selected QwtPlot items
-        Warning: this is not the same as self.plot.get_selected_items
-        --> some items could appear in itemlist without being registered in 
+        
+        .. warning::
+
+            This is not the same as 
+            :py:data:`guiqwt.baseplot.BasePlot.get_selected_items`.
+            Some items could appear in itemlist without being registered in 
             plot widget items (in particular, some items could be selected in 
             itemlist without being selected in plot widget)
         """
@@ -1310,6 +1316,7 @@ class CurvePlot(BasePlot):
     """
     Construct a 2D curve plotting widget 
     (this class inherits :py:class:`guiqwt.baseplot.BasePlot`)
+    
         * parent: parent widget
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
@@ -1318,12 +1325,12 @@ class CurvePlot(BasePlot):
         * yunit: (left axis unit, right axis unit) or left axis unit only
         * gridparam: GridParam instance
         * axes_synchronised: keep all x and y axes synchronised when zomming or
-                             panning
+          panning
     """
     DEFAULT_ITEM_TYPE = ICurveItemType
     AUTOSCALE_TYPES = (CurveItem, PolygonMapItem)
     
-    # Signals
+    #: Signal emitted by plot when plot axis has changed, e.g. when panning/zooming (arg: plot))
     SIG_PLOT_AXIS_CHANGED = Signal("PyQt_PyObject")
     
     def __init__(self, parent=None, title=None, xlabel=None, ylabel=None,
@@ -1551,8 +1558,9 @@ class CurvePlot(BasePlot):
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
-            * item: QwtPlotItem (PyQt4.Qwt5) object implementing
-              the IBasePlotItem interface (guiqwt.interfaces)
+        
+            * item: :py:data:`qwt.QwtPlotItem` object implementing
+              the :py:data:`guiqwt.interfaces.IBasePlotItem` interface
             * z: item's z order (None -> z = max(self.get_items())+1)
         """
         if isinstance(item, QwtPlotCurve):
@@ -1641,6 +1649,7 @@ class CurvePlot(BasePlot):
     def get_axis_direction(self, axis_id):
         """
         Return axis direction of increasing values
+
             * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
         """
@@ -1650,6 +1659,7 @@ class CurvePlot(BasePlot):
     def set_axis_direction(self, axis_id, reverse=False):
         """
         Set axis direction of increasing values
+
             * axis_id: axis id (BasePlot.Y_LEFT, BasePlot.X_BOTTOM, ...)
               or string: 'bottom', 'left', 'top' or 'right'
             * reverse: False (default)
@@ -1672,6 +1682,7 @@ class CurvePlot(BasePlot):
                    xunit=None, yunit=None):
         """
         Set plot and axes titles at once
+
             * title: plot title
             * xlabel: (bottom axis title, top axis title) 
               or bottom axis title only
@@ -1712,7 +1723,9 @@ class CurvePlot(BasePlot):
     def set_pointer(self, pointer_type):
         """
         Set pointer.
+
         Valid values of `pointer_type`:
+
             * None: disable pointer
             * "canvas": enable canvas pointer
             * "curve": enable on-curve pointer

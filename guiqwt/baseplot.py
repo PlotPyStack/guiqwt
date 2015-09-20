@@ -14,6 +14,7 @@ guiqwt.baseplot
 The `baseplot` module provides the `guiqwt` plotting widget base class: 
 :py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
 `qwt`'s QwtPlot plotting widget which supports the following features:
+
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
     * item selection and multiple selection
     * active item
@@ -102,9 +103,6 @@ class BasePlot(QwtPlot):
     
     Activatable items must support IBasePlotItem interface and should
     be added to the plot using add_item methods.
-    
-    Signals:
-    SIG_ITEMS_CHANGED, SIG_ACTIVE_ITEM_CHANGED
     """
     Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = (QwtPlot.yLeft, QwtPlot.yRight,
                                         QwtPlot.xBottom, QwtPlot.xTop)
@@ -118,47 +116,47 @@ class BasePlot(QwtPlot):
     DEFAULT_ACTIVE_XAXIS = X_BOTTOM
     DEFAULT_ACTIVE_YAXIS = Y_LEFT
     
-    # Emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
+    #: Signal emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
     SIG_ITEM_MOVED = Signal("PyQt_PyObject", float, float, float, float)
     
-    # Emitted by plot when a shapes.Marker position changes
+    #: Signal emitted by plot when a shapes.Marker position changes
     SIG_MARKER_CHANGED = Signal("PyQt_PyObject")
     
-    # Emitted by plot when a shapes.Axes position (or the angle) changes
+    #: Signal emitted by plot when a shapes.Axes position (or the angle) changes
     SIG_AXES_CHANGED = Signal("PyQt_PyObject")
     
-    # Emitted by plot when an annotation.AnnotatedShape position changes
+    #: Signal emitted by plot when an annotation.AnnotatedShape position changes
     SIG_ANNOTATION_CHANGED = Signal("PyQt_PyObject")
     
-    # Emitted by plot when the a shapes.XRangeSelection range changes
+    #: Signal emitted by plot when the a shapes.XRangeSelection range changes
     SIG_RANGE_CHANGED = Signal("PyQt_PyObject", float, float)
     
-    # Emitted by plot when item list has changed (item removed, added, ...)
+    #: Signal emitted by plot when item list has changed (item removed, added, ...)
     SIG_ITEMS_CHANGED = Signal('PyQt_PyObject')
     
-    # Emitted by plot when selected item has changed
+    #: Signal emitted by plot when selected item has changed
     SIG_ACTIVE_ITEM_CHANGED = Signal('PyQt_PyObject')
     
-    # Emitted by plot when an item was deleted from the item list or using the 
-    # delete item tool
+    #: Signal emitted by plot when an item was deleted from the item list or using the 
+    #: delete item tool
     SIG_ITEM_REMOVED = Signal('PyQt_PyObject')
     
-    # Emitted by plot when an item is selected
+    #: Signal emitted by plot when an item is selected
     SIG_ITEM_SELECTION_CHANGED = Signal('PyQt_PyObject')
     
-    # Emitted by plot when plot's title or any axis label has changed
+    #: Signal emitted by plot when plot's title or any axis label has changed
     SIG_PLOT_LABELS_CHANGED = Signal('PyQt_PyObject')
     
-    # Emitted by plot when any plot axis direction has changed
+    #: Signal emitted by plot when any plot axis direction has changed
     SIG_AXIS_DIRECTION_CHANGED = Signal('PyQt_PyObject', 'PyQt_PyObject')
     
-    # Emitted by plot when LUT has been changed by the user
+    #: Signal emitted by plot when LUT has been changed by the user
     SIG_LUT_CHANGED = Signal("PyQt_PyObject")
     
-    # Emitted by plot when image mask has changed
+    #: Signal emitted by plot when image mask has changed
     SIG_MASK_CHANGED = Signal("PyQt_PyObject")
 
-    # Emitted by cross section plot when cross section curve data has changed
+    #: Signal emitted by cross section plot when cross section curve data has changed
     SIG_CS_CURVE_CHANGED = Signal("PyQt_PyObject")
 
     def __init__(self, parent=None, section="plot"):
@@ -430,7 +428,7 @@ class BasePlot(QwtPlot):
         clipboard.setPixmap(pixmap)
             
     def save_widget(self, fname):
-        """Grab widget's window and save it to filename (*.png, *.pdf)"""
+        """Grab widget's window and save it to filename (\*.png, \*.pdf)"""
         fname = to_text_string(fname)
         if fname.lower().endswith('.pdf'):
             printer = QPrinter()
@@ -468,7 +466,7 @@ class BasePlot(QwtPlot):
         """
         Add a *plot item* instance to this *plot widget*
         
-        item: QwtPlotItem (PyQt4.Qwt5) object implementing
+        item: :py:data:`qwt.QwtPlotItem` object implementing
               the IBasePlotItem interface (guiqwt.interfaces)
         """
         assert hasattr(item, "__implements__")
@@ -768,9 +766,15 @@ class BasePlot(QwtPlot):
     def get_nearest_object(self, pos, close_dist=0):
         """
         Return nearest item from position 'pos'
-        If close_dist > 0: return the first found item (higher z) which
-                           distance to 'pos' is less than close_dist
-        else: return the closest item
+
+        If close_dist > 0:
+            
+            Return the first found item (higher z) which distance to 'pos' is 
+            less than close_dist
+
+        else:
+            
+            Return the closest item
         """
         selobj, distance, inside, handle = None, maxsize, None, None
         for obj in self.get_items(z_sorted=True):

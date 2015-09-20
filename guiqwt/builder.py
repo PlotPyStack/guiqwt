@@ -113,6 +113,7 @@ class PlotItemBuilder(object):
                   major_style=None, minor_style=None):
         """
         Make `guiqwt.styles.GridParam` instance
+        
            * background = canvas background color
            * major_enabled = tuple (major_xenabled, major_yenabled)
            * minor_enabled = tuple (minor_xenabled, minor_yenabled)
@@ -145,6 +146,7 @@ class PlotItemBuilder(object):
              major_style=None, minor_style=None):
         """
         Make a grid `plot item` (`guiqwt.curve.GridItem` object)
+        
            * background = canvas background color
            * major_enabled = tuple (major_xenabled, major_yenabled)
            * minor_enabled = tuple (minor_xenabled, minor_yenabled)
@@ -292,7 +294,9 @@ class PlotItemBuilder(object):
         (may returns a list of curves if data contains more than one signal)
         (:py:class:`guiqwt.curve.CurveItem` object)
         
-        Example: mcurve(x, y, 'r+')
+        Example::
+            
+            mcurve(x, y, 'r+')
         """
         x, y, style = self.__get_arg_triple_plot(args)
         if isinstance(y, ndarray):
@@ -324,7 +328,9 @@ class PlotItemBuilder(object):
         based on a `guiqwt.styles.CurveParam` instance
         (:py:class:`guiqwt.curve.CurveItem` object)
         
-        Usage: pcurve(x, y, param)
+        Usage::
+            
+            pcurve(x, y, param)
         """
         curve = CurveItem(param)
         curve.set_data(x, y)
@@ -341,36 +347,35 @@ class PlotItemBuilder(object):
         """
         Make a curve `plot item` from x, y, data
         (:py:class:`guiqwt.curve.CurveItem` object)
+
             * x: 1D NumPy array
             * y: 1D NumPy array
             * color: curve color name
-            * linestyle: curve line style (MATLAB-like string or attribute name 
-              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
-              (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine", 
-              "DashDotDotLine" or "NoPen")
+            * linestyle: curve line style (MATLAB-like string or "SolidLine",
+              "DashLine", "DotLine", "DashDotLine", "DashDotDotLine", "NoPen")
             * linewidth: line width (pixels)
-            * marker: marker shape (MATLAB-like string or attribute name from 
-              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
+            * marker: marker shape (MATLAB-like string or "Cross",
               "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle", 
-              "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
+              "DTriangle", "RTriangle", "LTriangle", "Star2", "NoSymbol")
             * markersize: marker size (pixels)
             * markerfacecolor: marker face color name
             * markeredgecolor: marker edge color name
             * shade: 0 <= float <= 1 (curve shade)
             * fitted: boolean (fit curve to data)
-            * curvestyle: attribute name from the 
-              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
-              (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
+            * curvestyle: "Lines", "Sticks", "Steps", "Dots", "NoCurve"
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
               The interpretation of the baseline depends on the curve type 
               (horizontal line for "Yfx", vertical line for "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
-        Examples:
-        curve(x, y, marker='Ellipse', markerfacecolor='#ffffff')
-        which is equivalent to (MATLAB-style support):
-        curve(x, y, marker='o', markerfacecolor='w')
+        Example::
+            
+            curve(x, y, marker='Ellipse', markerfacecolor='#ffffff')
+
+        which is equivalent to (MATLAB-style support)::
+
+            curve(x, y, marker='o', markerfacecolor='w')
         """
         basename = _("Curve")
         param = CurveParam(title=basename, icon='curve.png')
@@ -388,7 +393,9 @@ class PlotItemBuilder(object):
         Make an errorbar curve `plot item` based on MATLAB-like syntax
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
         
-        Example: mcurve(x, y, 'r+')
+        Example::
+            
+            mcurve(x, y, 'r+')
         """
         x, y, dx, dy, style = self.__get_arg_triple_errorbar(args)
         basename = _("Curve")
@@ -411,6 +418,7 @@ class PlotItemBuilder(object):
         Make an errorbar curve `plot item` 
         based on a `guiqwt.styles.ErrorBarParam` instance
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
+ 
             * x: 1D NumPy array
             * y: 1D NumPy array
             * dx: None, or scalar, or 1D NumPy array
@@ -419,7 +427,9 @@ class PlotItemBuilder(object):
             * errorbarparam: `guiqwt.styles.ErrorBarParam` object
             * xaxis, yaxis: X/Y axes bound to curve
         
-        Usage: perror(x, y, dx, dy, curveparam, errorbarparam)
+        Usage::
+            
+            perror(x, y, dx, dy, curveparam, errorbarparam)
         """
         curve = ErrorBarCurveItem(curveparam, errorbarparam)
         curve.set_data(x, y, dx, dy)
@@ -437,6 +447,7 @@ class PlotItemBuilder(object):
         """
         Make an errorbar curve `plot item` 
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
+
             * x: 1D NumPy array
             * y: 1D NumPy array
             * dx: None, or scalar, or 1D NumPy array
@@ -465,9 +476,12 @@ class PlotItemBuilder(object):
               (horizontal line for "Yfx", vertical line for "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
-        Examples::
+        Example::
+            
             error(x, y, None, dy, marker='Ellipse', markerfacecolor='#ffffff')
-            which is equivalent to (MATLAB-style support):
+        
+        which is equivalent to (MATLAB-style support)::
+
             error(x, y, None, dy, marker='o', markerfacecolor='w')
         """
         basename = _("Curve")
@@ -498,6 +512,7 @@ class PlotItemBuilder(object):
         """
         Make 1D Histogram `plot item` 
         (:py:class:`guiqwt.histogram.HistogramItem` object)
+
             * data (1D NumPy array)
             * bins: number of bins (int)
             * logscale: Y-axis scale (bool)
@@ -527,7 +542,9 @@ class PlotItemBuilder(object):
         based on a `guiqwt.styles.CurveParam` and 
         `guiqwt.styles.HistogramParam` instances
         
-        Usage: phistogram(data, curveparam, histparam)
+        Usage::
+            
+            phistogram(data, curveparam, histparam)
         """
         hist = HistogramItem(curveparam, histparam)
         hist.update_params()
@@ -710,7 +727,8 @@ class PlotItemBuilder(object):
         based on MATLAB-like syntax
         (:py:class:`guiqwt.image.QuadGridItem` object)
         
-        Examples:
+        Examples::
+
             pcolor(C)
             pcolor(X, Y, C)
         """
@@ -733,6 +751,7 @@ class PlotItemBuilder(object):
         Make a transformable image `plot item` (image with an arbitrary 
         affine transform)
         (:py:class:`guiqwt.image.TrImageItem` object)
+
             * data: 2D NumPy array (image pixel data)
             * filename: image filename (if data is not specified)
             * title: image title (optional)
@@ -763,6 +782,7 @@ class PlotItemBuilder(object):
         """
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
+
             * x: 1D NumPy array
             * y: 1D NumPy array
             * data: 2D NumPy array (image pixel data)
@@ -785,6 +805,7 @@ class PlotItemBuilder(object):
         """
         Make a rectangular area image filter `plot item`
         (:py:class:`guiqwt.image.ImageFilterItem` object)
+
             * xmin, xmax, ymin, ymax: filter area bounds
             * imageitem: An imageitem instance
             * filter: function (x, y, data) --> data
@@ -804,6 +825,7 @@ class PlotItemBuilder(object):
         """
         Make a 2D Histogram `plot item` 
         (:py:class:`guiqwt.image.Histogram2DItem` object)
+
             * X: data (1D array)
             * Y: data (1D array)
             * NX: Number of bins along x-axis (int)
@@ -836,6 +858,7 @@ class PlotItemBuilder(object):
         """
         Make a label `plot item` 
         (:py:class:`guiqwt.label.LabelItem` object)
+
             * text: label text (string)
             * g: position in plot coordinates (tuple) 
               or relative position (string)
@@ -844,6 +867,7 @@ class PlotItemBuilder(object):
             * title: label name (optional)
         
         Examples::
+            
             make.label("Relative position", (x[0], y[0]), (10, 10), "BR")
             make.label("Absolute position", "R", (0,0), "R")
         """
@@ -873,6 +897,7 @@ class PlotItemBuilder(object):
         Make a legend `plot item` 
         (:py:class:`guiqwt.label.LegendBoxItem` or 
         :py:class:`guiqwt.label.SelectedLegendBoxItem` object)
+
             * anchor: legend position in relative position (string)
             * c (optional): position in canvas coordinates (tuple)
             * restrict_items (optional):
@@ -953,6 +978,7 @@ class PlotItemBuilder(object):
         """
         Make a marker `plot item`
         (:py:class:`guiqwt.shapes.Marker` object)
+
             * position: tuple (x, y)
             * label_cb: function with two arguments (x, y) returning a string
             * constraint_cb: function with two arguments (x, y) returning a 
@@ -967,10 +993,9 @@ class PlotItemBuilder(object):
               (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine", 
               "DashDotDotLine" or "NoPen")
             * linewidth: line width (pixels)
-            * marker: marker shape (MATLAB-like string or attribute name from 
-              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
-              "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle", 
-              "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
+            * marker: marker shape (MATLAB-like string or "Cross", "Ellipse",
+              "Star1", "XCross", "Rect", "Diamond", "UTriangle", "DTriangle",
+              "RTriangle", "LTriangle", "Star2", "NoSymbol")
             * markersize: marker size (pixels)
             * markerfacecolor: marker face color name
             * markeredgecolor: marker edge color name
@@ -1015,6 +1040,7 @@ class PlotItemBuilder(object):
         """
         Make a rectangle shape `plot item` 
         (:py:class:`guiqwt.shapes.RectangleShape` object)
+
             * x0, y0, x1, y1: rectangle coordinates
             * title: label name (optional)
         """
@@ -1024,6 +1050,7 @@ class PlotItemBuilder(object):
         """
         Make an ellipse shape `plot item` 
         (:py:class:`guiqwt.shapes.EllipseShape` object)
+
             * x0, y0, x1, y1: ellipse x-axis coordinates
             * title: label name (optional)
         """
@@ -1037,6 +1064,7 @@ class PlotItemBuilder(object):
         """
         Make a circle shape `plot item` 
         (:py:class:`guiqwt.shapes.EllipseShape` object)
+
             * x0, y0, x1, y1: circle diameter coordinates
             * title: label name (optional)
         """
@@ -1046,6 +1074,7 @@ class PlotItemBuilder(object):
         """
         Make a segment shape `plot item` 
         (:py:class:`guiqwt.shapes.SegmentShape` object)
+
             * x0, y0, x1, y1: segment coordinates
             * title: label name (optional)
         """
@@ -1069,6 +1098,7 @@ class PlotItemBuilder(object):
         """
         Make an annotated rectangle `plot item` 
         (:py:class:`guiqwt.annotations.AnnotatedRectangle` object)
+
             * x0, y0, x1, y1: rectangle coordinates
             * title, subtitle: strings
         """
@@ -1080,6 +1110,7 @@ class PlotItemBuilder(object):
         """
         Make an annotated ellipse `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedEllipse` object)
+
             * x0, y0, x1, y1: ellipse rectangle coordinates
             * ratio: ratio between y-axis and x-axis lengths
             * title, subtitle: strings
@@ -1094,6 +1125,7 @@ class PlotItemBuilder(object):
         """
         Make an annotated circle `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedCircle` object)
+
             * x0, y0, x1, y1: circle diameter coordinates
             * title, subtitle: strings
         """
@@ -1103,6 +1135,7 @@ class PlotItemBuilder(object):
         """
         Make an annotated segment `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedSegment` object)
+
             * x0, y0, x1, y1: segment coordinates
             * title, subtitle: strings
         """
@@ -1134,20 +1167,18 @@ class PlotItemBuilder(object):
                          function=None, title=None):
         """
         Make an info label `plot item` showing an XRangeSelection object infos
+        (:py:class:`guiqwt.label.DataInfoLabel` object)
+        (see example: :py:mod:`guiqwt.tests.computations`)
         
         Default function is `lambda x, dx: (x, dx)`.
 
-        Example:
-        -------
+        Example::
         
-        x = linspace(-10, 10, 10)
-        y = sin(sin(sin(x)))
-        range = make.range(-2, 2)
-        disp = make.range_info_label(range, 'BL', "x = %.1f ± %.1f cm",
-                                     lambda x, dx: (x, dx))
-        
-        (:py:class:`guiqwt.label.DataInfoLabel` object)
-        (see example: :py:mod:`guiqwt.tests.computations`)
+            x = linspace(-10, 10, 10)
+            y = sin(sin(sin(x)))
+            range = make.range(-2, 2)
+            disp = make.range_info_label(range, 'BL', "x = %.1f ± %.1f cm",
+                                         lambda x, dx: (x, dx))        
         """
         info = RangeInfo(label, range, function)
         return make.info_label(anchor, info, title=title)

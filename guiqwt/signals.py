@@ -9,9 +9,17 @@
 guiqwt.signals
 --------------
 
-The `signals` module contains constants defining the custom Qt SIGNAL objects 
-used by `guiqwt`: the signals definition are gathered here to avoid mispelling
-signals at connect and emit sites.
+In `guiqwt` version 2, the `signals` module used to contain constants defining 
+the custom Qt SIGNAL objects used by `guiqwt`: the signals definition were 
+gathered here to avoid misspelling signals at connect and emit sites (with 
+old-style signals, any misspelled signal string would have lead to a silent 
+failure of signal emission or connection).
+
+Since version 3, to ensure PyQt5 compatibility, `guiqwt` is using only 
+new-style signals and slots.
+
+However, all signals are summarized below, in order to facilitate migration 
+from `guiqwt` v2 to `guiqwt` v3.
 
 Signals available:
     :py:data:`guiqwt.baseplot.BasePlot.SIG_ITEM_MOVED`

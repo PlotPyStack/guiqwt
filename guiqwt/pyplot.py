@@ -454,15 +454,16 @@ def subplot(n, m, k):
     """
     Create a subplot command
     
-    Example:
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    figure(1)
-    subplot(2, 1, 1)
-    plot(x, np.sin(x), "r+")
-    subplot(2, 1, 2)
-    plot(x, np.cos(x), "g-")
-    show()
+    Example::
+
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        figure(1)
+        subplot(2, 1, 1)
+        plot(x, np.sin(x), "r+")
+        subplot(2, 1, 2)
+        plot(x, np.cos(x), "g-")
+        show()
     """
     global _current_axes
     lig = (k-1)/m
@@ -476,13 +477,13 @@ def plot(*args, **kwargs):
     """
     Plot curves
     
-    Example:
+    Example::
     
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    plot(x, np.sin(x), "r+")
-    plot(x, np.cos(x), "g-")
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        plot(x, np.sin(x), "r+")
+        plot(x, np.cos(x), "g-")
+        show()
     """
     axe = gca()
     curves = make.mcurve(*args, **kwargs)
@@ -497,13 +498,13 @@ def plotyy(x1, y1, x2, y2):
     """
     Plot curves with two different y axes
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    plotyy(x, np.sin(x), x, np.cos(x))
-    ylabel("sinus", "cosinus")
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        plotyy(x, np.sin(x), x, np.cos(x))
+        ylabel("sinus", "cosinus")
+        show()
     """
     axe = gca()
     curve1 = make.mcurve(x1, y1, yaxis='left')
@@ -518,12 +519,12 @@ def hist(data, bins=None, logscale=None, title=None, color=None):
     """
     Plot 1-D histogram
     
-    Example:
+    Example::
         
-    from numpy.random import normal
-    data = normal(0, 1, (2000, ))
-    hist(data)
-    show()
+        from numpy.random import normal
+        data = normal(0, 1, (2000, ))
+        hist(data)
+        show()
     """
     axe = gca()
     curve = make.histogram(data, bins=bins, logscale=logscale,
@@ -536,12 +537,12 @@ def semilogx(*args, **kwargs):
     """
     Plot curves with logarithmic x-axis scale
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    semilogx(x, np.sin(12*x), "g-")
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        semilogx(x, np.sin(12*x), "g-")
+        show()
     """
     axe = gca()
     axe.xscale = 'log'
@@ -554,12 +555,12 @@ def semilogy(*args, **kwargs):
     """
     Plot curves with logarithmic y-axis scale
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    semilogy(x, np.sin(12*x), "g-")
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        semilogy(x, np.sin(12*x), "g-")
+        show()
     """
     axe = gca()
     axe.yscale = 'log'
@@ -572,12 +573,12 @@ def loglog(*args, **kwargs):
     """
     Plot curves with logarithmic x-axis and y-axis scales
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    loglog(x, np.sin(12*x), "g-")
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        loglog(x, np.sin(12*x), "g-")
+        show()
     """
     axe = gca()
     axe.xscale = 'log'
@@ -591,12 +592,12 @@ def errorbar(*args, **kwargs):
     """
     Plot curves with error bars
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
+        show()
     """
     axe = gca()
     curve = make.merror(*args, **kwargs)
@@ -614,15 +615,14 @@ def imshow(data, interpolation=None, mask=None):
     Display the image in *data* to current axes
     interpolation: 'nearest', 'linear' (default), 'antialiasing'
     
-    Example:
+    Example::
         
-    import numpy as np
-    x = np.linspace(-5, 5, 1000)
-    img = np.fromfunction(lambda x, y:
-                          np.sin((x/200.)*(y/200.)**2), (1000, 1000))
-    gray()
-    imshow(img)
-    show()
+        import numpy as np
+        x = np.linspace(-5, 5, 1000)
+        img = np.fromfunction(lambda x, y: np.sin((x/200.)*(y/200.)**2), (1000, 1000))
+        gray()
+        imshow(img)
+        show()
     """
     axe = gca()
     import numpy as np
@@ -648,17 +648,17 @@ def pcolor(*args):
     """
     Create a pseudocolor plot of a 2-D array
     
-    Example:
+    Example::
     
-    import numpy as np
-    r = np.linspace(1., 16, 100)
-    th = np.linspace(0., np.pi, 100)
-    R, TH = np.meshgrid(r, th)
-    X = R*np.cos(TH)
-    Y = R*np.sin(TH)
-    Z = 4*TH+R
-    pcolor(X, Y, Z)
-    show()
+        import numpy as np
+        r = np.linspace(1., 16, 100)
+        th = np.linspace(0., np.pi, 100)
+        R, TH = np.meshgrid(r, th)
+        X = R*np.cos(TH)
+        Y = R*np.sin(TH)
+        Z = 4*TH+R
+        pcolor(X, Y, Z)
+        show()
     """
     axe = gca()
     img = make.pcolor(*args)

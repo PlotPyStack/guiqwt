@@ -359,12 +359,18 @@ class GuiTool(QObject):
 
 
 class InteractiveTool(GuiTool):
+    """Interactive tool base class"""
+    
     TITLE = None
     ICON = None
     TIP = None
     CURSOR = Qt.CrossCursor
     SWITCH_TO_DEFAULT_TOOL = False # switch to default tool when finished
+
+    #: Signal emitted by InteractiveTool when validating tool action
     SIG_VALIDATE_TOOL = Signal()
+
+    #: Signal emitted by InteractiveTool when tool job is finished
     SIG_TOOL_JOB_FINISHED = Signal()
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID,
@@ -1694,7 +1700,10 @@ class PrintTool(CommandTool):
 
 
 class OpenFileTool(CommandTool):
+    
+    #: Signal emitted by OpenFileTool when a file was opened (arg: filename)
     SIG_OPEN_FILE = Signal(str)
+
     def __init__(self, manager, title=_("Open..."), formats='*.*',
                  toolbar_id=DefaultToolbarID):
         super(OpenFileTool, self).__init__(manager, title,
@@ -2081,6 +2090,8 @@ class ColormapTool(CommandTool):
 
 
 class ImageMaskTool(CommandTool):
+    
+    #: Signal emitted by ImageMaskTool when mask was applied
     SIG_APPLIED_MASK_TOOL = Signal()
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID):

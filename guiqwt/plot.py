@@ -255,8 +255,8 @@ class PlotManager(object):
         Register a tool to the manager
             * ToolKlass: tool's class (`guiqwt` builtin tools are defined in 
               module :py:mod:`guiqwt.tools`)
-            * *args: arguments sent to the tool's class
-            * **kwargs: keyword arguments sent to the tool's class
+            * args: arguments sent to the tool's class
+            * kwargs: keyword arguments sent to the tool's class
         
         Plot manager's registration sequence is the following:
             1. add plots
@@ -512,11 +512,15 @@ class PlotManager(object):
         """
         Register only curve-related tools
         
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        .. seealso::
+            
+            :py:meth:`guiqwt.plot.PlotManager.add_tool`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
         self.add_tool(SignalStatsTool)
         self.add_tool(AntiAliasingTool)
@@ -526,11 +530,15 @@ class PlotManager(object):
         """
         Register only image-related tools
         
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+        .. seealso::
+            
+            :py:meth:`guiqwt.plot.PlotManager.add_tool`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
         """
         self.add_tool(ColormapTool)
         self.add_tool(ReverseYAxisTool)
@@ -549,11 +557,15 @@ class PlotManager(object):
         """
         Register other common tools
         
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+        .. seealso::
+
+            :py:meth:`guiqwt.plot.PlotManager.add_tool`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
         """
         self.add_tool(SaveAsTool)
         self.add_tool(CopyToClipboardTool)
@@ -564,13 +576,19 @@ class PlotManager(object):
         """
         Register standard, curve-related and other tools
         
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_all_image_tools`
+        .. seealso::
+
+            :py:meth:`guiqwt.plot.PlotManager.add_tool`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+            
+            :py:meth:`guiqwt.plot.PlotManager.register_all_image_tools`
         """
         self.register_standard_tools()
         self.add_separator_tool()
@@ -584,13 +602,19 @@ class PlotManager(object):
         """
         Register standard, image-related and other tools
         
-        .. seealso:: methods 
-        :py:meth:`guiqwt.plot.PlotManager.add_tool`
-        :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
-        :py:meth:`guiqwt.plot.PlotManager.register_all_curve_tools`
+        .. seealso::
+
+            :py:meth:`guiqwt.plot.PlotManager.add_tool`
+
+            :py:meth:`guiqwt.plot.PlotManager.register_standard_tools`
+
+            :py:meth:`guiqwt.plot.PlotManager.register_other_tools`
+
+            :py:meth:`guiqwt.plot.PlotManager.register_curve_tools`
+
+            :py:meth:`guiqwt.plot.PlotManager.register_image_tools`
+
+            :py:meth:`guiqwt.plot.PlotManager.register_all_curve_tools`
         """
         self.register_standard_tools()
         self.add_separator_tool()
@@ -713,6 +737,7 @@ class CurveWidget(BaseCurveWidget, PlotManager):
     """
     Construct a CurveWidget object: plotting widget with integrated 
     plot manager
+    
         * parent: parent widget
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
@@ -815,6 +840,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
     """
     Construct a CurveDialog object: plotting dialog box with integrated 
     plot manager
+    
         * wintitle: window title
         * icon: window icon
         * edit: editable state
@@ -865,7 +891,9 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         
 class CurveWindow(QMainWindow, CurveWidgetMixin):
     """
-    Construct a CurveWindow object: plotting window with integrated plot manager
+    Construct a CurveWindow object: plotting window with integrated plot 
+    manager
+    
         * wintitle: window title
         * icon: window icon
         * toolbar: show/hide toolbar
@@ -1011,6 +1039,7 @@ class ImageWidget(BaseImageWidget, PlotManager):
     """
     Construct a ImageWidget object: plotting widget with integrated 
     plot manager
+    
         * parent: parent widget
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles 
@@ -1101,6 +1130,7 @@ class ImageDialog(CurveDialog, ImageWidgetMixin):
     """
     Construct a ImageDialog object: plotting dialog box with integrated 
     plot manager
+    
         * wintitle: window title
         * icon: window icon
         * edit: editable state
@@ -1115,6 +1145,7 @@ class ImageDialog(CurveDialog, ImageWidgetMixin):
 class ImageWindow(CurveWindow, ImageWidgetMixin):
     """
     Construct a ImageWindow object: plotting window with integrated plot manager
+    
         * wintitle: window title
         * icon: window icon
         * toolbar: show/hide toolbar

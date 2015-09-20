@@ -9,9 +9,10 @@
 guiqwt.panels
 -------------
 
-The `panels` module provides :py:class:`guiqwt.curve.PanelWidget` (the `panel` 
-widget class from which all panels must derived) and identifiers for each kind 
-of panel:
+The `panels` module provides :py:class:`guiqwt.panels.PanelWidget` (the 
+`panel` widget class from which all panels must derived from) and identifiers 
+for each kind of panel:
+
     * :py:data:`guiqwt.panels.ID_ITEMLIST`: ID of the `item list` panel
     * :py:data:`guiqwt.panels.ID_CONTRAST`: ID of the `contrast 
       adjustment` panel
@@ -44,19 +45,19 @@ from guidata.qtwidgets import DockableWidget
 # Panel IDs
 #===============================================================================
 
-# Item list panel
+#: Item list panel
 ID_ITEMLIST = "itemlist"
 
-# Contrast adjustment panel
+#: Contrast adjustment panel
 ID_CONTRAST = "contrast"
 
-# X-cross section panel
+#: X-cross section panel
 ID_XCS = "x_cross_section"
 
-# Y-cross section panel
+#: Y-cross section panel
 ID_YCS = "y_cross_section"
 
-# Oblique averaged cross section panel
+#: Oblique averaged cross section panel
 ID_OCS = "oblique_cross_section"
 
 
@@ -64,9 +65,13 @@ ID_OCS = "oblique_cross_section"
 # Base Panel Widget class
 #===============================================================================
 class PanelWidget(DockableWidget):
+    """Panel Widget base class"""
+
     PANEL_ID = None # string
     PANEL_TITLE = None # string
     PANEL_ICON = None # string
+
+    #: Signal emitted by PanelWidget when its visibility has changed (arg: bool)
     SIG_VISIBILITY_CHANGED = Signal(bool)
     
     def __init__(self, parent=None):

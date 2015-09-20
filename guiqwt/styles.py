@@ -1360,9 +1360,11 @@ class MarkerParam(DataSet):
     def set_markerstyle(self, style):
         """
         Set marker line style
+
         style:
+            
             * convenient values: '+', '-', '|' or None
-            * QwtPlotMarker.NoLine, QwtPlotMarker.Vertical, ...
+            * `QwtPlotMarker.NoLine`, `QwtPlotMarker.Vertical`, ...
         """
         self.markerstyle = MARKERSTYLES.get(style, style)
 

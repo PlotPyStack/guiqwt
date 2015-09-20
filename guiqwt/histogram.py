@@ -122,16 +122,26 @@ class HistogramItem(CurveItem):
         self.setCurveAttribute(QwtPlotCurve.Inverted)
             
     def set_hist_source(self, src):
-        """Set histogram source
-        (source: object with method 'get_histogram',
-         e.g. objects derived from guiqwt.image.ImageItem)"""
+        """
+        Set histogram source
+        
+        *source*:
+            
+            Object with method `get_histogram`, e.g. objects derived from 
+            :py:data:`guiqwt.image.ImageItem`
+        """
         self.source = weakref.ref(src)
         self.update_histogram()
 
     def get_hist_source(self):
-        """Return histogram source
-        (source: object with method 'get_histogram',
-         e.g. objects derived from guiqwt.image.ImageItem)"""
+        """
+        Return histogram source
+        
+        *source*:
+            
+            Object with method `get_histogram`, e.g. objects derived from 
+            :py:data:`guiqwt.image.ImageItem`
+        """
         if self.source is not None:
             return self.source()
         
@@ -198,7 +208,10 @@ assert_interfaces_valid(HistogramItem)
 
 class LevelsHistogram(CurvePlot):
     """Image levels histogram widget"""
+    
+    #: Signal emitted by LevelsHistogram when LUT range was changed
     SIG_VOI_CHANGED = Signal()
+
     def __init__(self, parent=None):
         super(LevelsHistogram, self).__init__(parent=parent, title="",
                                               section="histogram")

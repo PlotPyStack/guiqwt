@@ -3,7 +3,7 @@
 guiqwt
 ======
 
-Based on `qwt` (plotting widgets for PyQt4 graphical user interfaces) and 
+Based on `qwt` (plotting widgets for Qt graphical user interfaces) and 
 on the scientific modules NumPy and SciPy, `guiqwt` is a Python library 
 providing efficient 2D data-plotting features (curve/image visualization 
 and related tools) for interactive computing and signal/image processing 
@@ -13,15 +13,15 @@ application development.
 
 
 External resources:
-    * Bug reports and feature requests: `GoogleCode`_
+    * Bug reports and feature requests: `GitHub`_
     * Help, support and discussions around the project: `GoogleGroup`_
 
-.. _GoogleCode: http://guiqwt.googlecode.com
+.. _GitHub: https://github.com/PierreRaybaut/guidata
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt
 """
 
 
-__version__ = '2.4.0b4'
+__version__ = '3.0.0b5'
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
 # following path to module's data (images) and translations:

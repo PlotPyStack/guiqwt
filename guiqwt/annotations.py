@@ -502,10 +502,13 @@ class AnnotatedObliqueRectangle(AnnotatedRectangle):
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
         """
         Set the rectangle corners coordinates:
+            
             (x0, y0): top-left corner
             (x1, y1): top-right corner
             (x2, y2): bottom-right corner
             (x3, y3): bottom-left corner
+
+        ::
             
             x: additionnal points
             

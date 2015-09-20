@@ -43,6 +43,7 @@ Examples
 ~~~~~~~~
 
 Create a basic image plotting widget:
+    
     * before creating any widget, a `QApplication` must be instantiated (that
       is a `Qt` internal requirement):
 
@@ -68,10 +69,11 @@ Generate random data for testing purpose:
 >>> data = np.random.rand(100, 100)
 
 Create a simple image item:
+    
     * from the associated plot item class (e.g. `XYImageItem` to create
       an image with non-linear X/Y axes): the item properties are then
       assigned by creating the appropriate style parameters object
-      (e.g. :py:class:`guiqwt.styles.ImageParam)
+      (e.g. :py:class:`guiqwt.styles.ImageParam`)
 
 >>> from guiqwt.curve import ImageItem
 >>> from guiqwt.styles import ImageParam
@@ -370,8 +372,10 @@ class BaseImageItem(QwtPlotItem):
         (i.e. indexes may be outside image index bounds: negative or
         superior than the image dimension)
 
-        Note: this is *not* the same as retrieving the canvas pixel
-        coordinates (which depends on the zoom level)
+        .. note::
+
+            This is *not* the same as retrieving the canvas pixel coordinates 
+            (which depends on the zoom level)
         """
         x, y = self.get_pixel_coordinates(x, y)
         i = int(pixelround(x))
@@ -387,11 +391,12 @@ class BaseImageItem(QwtPlotItem):
     def get_data(self, x0, y0, x1=None, y1=None):
         """
         Return image data
-        Arguments:
-          x0, y0 [, x1, y1]
+        Arguments: x0, y0 [, x1, y1]
         Return image level at coordinates (x0,y0)
+
         If x1,y1 are specified:
-          return image levels (np.ndarray) in rectangular area (x0,y0,x1,y1)
+            
+          Return image levels (np.ndarray) in rectangular area (x0,y0,x1,y1)
         """
         i0, j0 = self.get_closest_indexes(x0, y0)
         if x1 is None or y1 is None:
@@ -512,8 +517,11 @@ class BaseImageItem(QwtPlotItem):
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         """
         Draw image with painter on canvasRect
-        <!> src_rect and dst_rect are coord tuples 
-        (xleft, ytop, xright, ybottom)
+        
+        .. warning::
+
+            `src_rect` and `dst_rect` are coordinates tuples 
+            (xleft, ytop, xright, ybottom)
         """
         dest = _scale_rect(self.data, src_rect, self._offscreen, dst_rect,
                            self.lut, self.interpolate)
@@ -762,6 +770,7 @@ assert_interfaces_valid(BaseImageItem)
 class RawImageItem(BaseImageItem):
     """
     Construct a simple image item
+    
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.RawImageParam` instance)
@@ -837,6 +846,7 @@ class RawImageItem(BaseImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
+        
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -888,6 +898,7 @@ assert_interfaces_valid(RawImageItem)
 class ImageItem(RawImageItem):
     """
     Construct a simple image item
+    
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.ImageParam` instance)
@@ -1055,6 +1066,7 @@ assert_interfaces_valid(ImageItem)
 class QuadGridItem(RawImageItem):
     """
     Construct a QuadGrid image
+    
         * X, Y, Z: A structured grid of quadrilaterals
           each quad is defined by (X[i], Y[i]), (X[i], Y[i+1]),
           (X[i+1], Y[i+1]), (X[i+1], Y[i])
@@ -1095,6 +1107,7 @@ class QuadGridItem(RawImageItem):
     def set_data(self, data, X=None, Y=None, lut_range=None):
         """
         Set Image item data
+        
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -1137,6 +1150,7 @@ assert_interfaces_valid(QuadGridItem)
 class TrImageItem(RawImageItem):
     """
     Construct a transformable image item
+    
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.TrImageParam` instance)
@@ -1373,9 +1387,12 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
                         apply_interpolation=False,
                         original_resolution=False):
     """
-    Assemble together image items in qrect (QRectF object)
+    Assemble together image items in qrect (`QRectF` object)
     and return resulting pixel data
-    <!> Does not support XYImageItem objects
+    
+    .. warning::
+
+        Does not support `XYImageItem` objects
     """
     # align width to 'align' bytes
     if align is not None:
@@ -1421,8 +1438,8 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
 
 def get_plot_qrect(plot, p0, p1):
     """
-    Return QRectF rectangle object in plot coordinates
-    from top-left and bottom-right QPoint objects in canvas coordinates
+    Return `QRectF` rectangle object in plot coordinates
+    from top-left and bottom-right `QPoint` objects in canvas coordinates
     """
     ax, ay = plot.X_BOTTOM, plot.Y_LEFT
     p0x, p0y = plot.invTransform(ax, p0.x()), plot.invTransform(ay, p0.y())
@@ -1431,7 +1448,7 @@ def get_plot_qrect(plot, p0, p1):
 
 def get_items_in_rectangle(plot, p0, p1, item_type=None):
     """Return items which bounding rectangle intersects (p0, p1)
-    item_type: default is IExportROIImageItemType"""
+    item_type: default is `IExportROIImageItemType`"""
     if item_type is None:
         item_type = IExportROIImageItemType
     items = plot.get_items(item_type=IExportROIImageItemType)
@@ -1439,7 +1456,7 @@ def get_items_in_rectangle(plot, p0, p1, item_type=None):
     return [it for it in items if src_qrect.intersects(it.boundingRect())]
 
 def compute_trimageitems_original_size(items, src_w, src_h):
-    """Compute TrImageItem original size from max dx and dy"""
+    """Compute `TrImageItem` original size from max dx and dy"""
     trparams = [item.get_transform() for item in items
                 if isinstance(item, TrImageItem)]
     if trparams:
@@ -1453,8 +1470,8 @@ def get_image_from_qrect(plot, p0, p1, src_size=None,
                          adjust_range=None, item_type=None,
                          apply_lut=False, apply_interpolation=False,
                          original_resolution=False):
-    """Return image array from QRect area (p0 and p1 are respectively the 
-    top-left and bottom-right QPoint objects)
+    """Return image array from `QRect` area (p0 and p1 are respectively the 
+    top-left and bottom-right `QPoint` objects)
     
     adjust_range: None (return raw data, dtype=np.float32), 'original' 
     (return data with original data type), 'normalize' (normalize range with
@@ -1507,12 +1524,14 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None, add_images=False,
                         original_resolution=False):
     """
     Return pixel data of a rectangular plot area (image items only)
-    p0, p1: resp. top-left and bottom-right points (QPoint objects)
+    p0, p1: resp. top-left and bottom-right points (`QPoint` objects)
     apply_lut: apply contrast settings
     add_images: add superimposed images (instead of replace by the foreground)
 
-    Support only the image items implementing the IExportROIImageItemType
-    interface, i.e. this does *not* support XYImageItem objects
+    .. warning::
+
+        Support only the image items implementing the `IExportROIImageItemType`
+        interface, i.e. this does *not* support `XYImageItem` objects
     """
     if destw is None:
         destw = p1.x()-p0.x()+1
@@ -1540,6 +1559,7 @@ def to_bins(x):
 class XYImageItem(RawImageItem):
     """
     Construct an image item with non-linear X/Y axes
+    
         * x: 1D NumPy array, must be increasing
         * y: 1D NumPy array, must be increasing
         * data: 2D NumPy array
@@ -1684,8 +1704,9 @@ assert_interfaces_valid(XYImageItem)
 class RGBImageItem(ImageItem):
     """
     Construct a RGB/RGBA image item
+    
         * data: NumPy array of uint8 (shape: NxMx[34] -- 3: RGB, 4: RGBA)
-        (last dimension: 0:Red, 1:Green, 2:Blue[, 3:Alpha])
+          (last dimension: 0: Red, 1: Green, 2: Blue {, 3:Alpha})
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.RGBImageParam` instance)
     """
@@ -1794,6 +1815,7 @@ class MaskedArea(object):
 class MaskedImageItem(ImageItem):
     """
     Construct a masked image item
+    
         * data: 2D NumPy array
         * mask (optional): 2D NumPy array
         * param (optional): image parameters
@@ -1886,9 +1908,12 @@ class MaskedImageItem(ImageItem):
     def set_mask_filename(self, fname):
         """
         Set mask filename
-        There are two ways for pickling mask data of MaskedImageItem objects:
+        
+        There are two ways for pickling mask data of `MaskedImageItem` objects:
+
             1. using the mask filename (as for data itself)
-            2. using the mask areas (MaskedAreas instance, see set_mask_areas)
+            2. using the mask areas (`MaskedAreas` instance, see set_mask_areas)
+
         When saving objects, the first method is tried and then, if no
         filename has been defined for mask data, the second method is used.
         """
@@ -1918,7 +1943,7 @@ class MaskedImageItem(ImageItem):
         self._masked_areas.append(area)
 
     def _mask_changed(self):
-        """Emit the SIG_MASK_CHANGED signal (emitter: plot)"""
+        """Emit the :py:data:`guiqwt.baseplot.BasePlot.SIG_MASK_CHANGED` signal"""
         plot = self.plot()
         if plot is not None:
             plot.SIG_MASK_CHANGED.emit(self)
@@ -1968,7 +1993,7 @@ class MaskedImageItem(ImageItem):
                            trace=True, do_signal=True):
         """
         Mask circular area, inside the rectangle (x0, y0, x1, y1), i.e.
-        circle with a radius of .5*(x1-x0)
+        circle with a radius of ``.5\*(x1-x0)``
         If inside is True (default), mask the inside of the area
         Otherwise, mask the outside
         """
@@ -2030,6 +2055,7 @@ class MaskedImageItem(ImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
+        
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -2051,6 +2077,7 @@ class MaskedImageItem(ImageItem):
 class ImageFilterItem(BaseImageItem):
     """
     Construct a rectangular area image filter item
+    
         * image: :py:class:`guiqwt.image.RawImageItem` instance
         * filter: function (x, y, data) --> data
         * param: image filter parameters
@@ -2076,6 +2103,7 @@ class ImageFilterItem(BaseImageItem):
     def set_image(self, image):
         """
         Set the image item on which the filter will be applied
+        
             * image: :py:class:`guiqwt.image.RawImageItem` instance
         """
         self.image = image
@@ -2083,6 +2111,7 @@ class ImageFilterItem(BaseImageItem):
     def set_filter(self, filter):
         """
         Set the filter function
+        
             * filter: function (x, y, data) --> data
         """
         self.filter = filter
@@ -2166,6 +2195,7 @@ class ImageFilterItem(BaseImageItem):
 class XYImageFilterItem(ImageFilterItem):
     """
     Construct a rectangular area image filter item
+    
         * image: :py:class:`guiqwt.image.XYImageItem` instance
         * filter: function (x, y, data) --> data
         * param: image filter parameters
@@ -2177,6 +2207,7 @@ class XYImageFilterItem(ImageFilterItem):
     def set_image(self, image):
         """
         Set the image item on which the filter will be applied
+        
             * image: :py:class:`guiqwt.image.XYImageItem` instance
         """
         ImageFilterItem.set_image(self, image)
@@ -2215,6 +2246,7 @@ assert_interfaces_valid(ImageFilterItem)
 class Histogram2DItem(BaseImageItem):
     """
     Construct a 2D histogram item
+    
         * X: data (1-D array)
         * Y: data (1-D array)
         * param (optional): style parameters
@@ -2353,6 +2385,7 @@ class ImagePlot(CurvePlot):
     """
     Construct a 2D curve and image plotting widget
     (this class inherits :py:class:`guiqwt.curve.CurvePlot`)
+    
         * parent: parent widget
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles
@@ -2505,10 +2538,10 @@ class ImagePlot(CurvePlot):
         """
         Add a *plot item* instance to this *plot widget*
 
-        item: QwtPlotItem (PyQt4.Qwt5) object implementing
-              the IBasePlotItem interface (guiqwt.interfaces)
-        z: item's z order (None -> z = max(self.get_items())+1)
-        autoscale: True -> rescale plot to fit image bounds
+            * item: :py:data:`qwt.QwtPlotItem` object implementing the 
+              :py:data:`guiqwt.interfaces.IBasePlotItem` interface
+            * z: item's z order (None -> z = max(self.get_items())+1)
+              autoscale: True -> rescale plot to fit image bounds
         """
         CurvePlot.add_item(self, item, z)
         if isinstance(item, BaseImageItem):

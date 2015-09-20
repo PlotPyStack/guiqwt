@@ -307,7 +307,10 @@ class ClickHandler(QObject):
     """Classe de base pour les gestionnaires d'événements du type
     click - release
     """
+    
+    #: Signal emitted by ClickHandler on mouse click
     SIG_CLICK_EVENT = Signal("PyQt_PyObject", "QEvent")
+    
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(ClickHandler, self).__init__()
         self.state0 = filter.add_event(start_state,
@@ -342,10 +345,19 @@ class MenuHandler(ClickHandler):
 
 
 class QtDragHandler(DragHandler):
+
+    #: Signal emitted by QtDragHandler when starting tracking
     SIG_START_TRACKING = Signal("PyQt_PyObject", "QEvent")
+    
+    #: Signal emitted by QtDragHandler when stopping tracking and not moving
     SIG_STOP_NOT_MOVING = Signal("PyQt_PyObject", "QEvent")
+    
+    #: Signal emitted by QtDragHandler when stopping tracking and moving
     SIG_STOP_MOVING = Signal("PyQt_PyObject", "QEvent")
+    
+    #: Signal emitted by QtDragHandler when moving
     SIG_MOVE = Signal("PyQt_PyObject", "QEvent")
+
     def start_tracking(self, filter, event):
         DragHandler.start_tracking(self, filter, event)
         self.SIG_START_TRACKING.emit(filter, event)
@@ -584,6 +596,8 @@ class ObjectHandler(object):
 
 
 class RectangularSelectionHandler(DragHandler):
+
+    #: Signal emitted by RectangularSelectionHandler when ending selection
     SIG_END_RECT = Signal("PyQt_PyObject", "QPoint", "QPoint")
     
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
