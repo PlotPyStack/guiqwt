@@ -41,8 +41,8 @@ Help and support
 ----------------
 
 External resources:
-    * Bug reports and feature requests: `GoogleCode`_
+    * Bug reports and feature requests: `GitHub`_
     * Help, support and discussions around the project: `GoogleGroup`_
 
-.. _GoogleCode: http://guiqwt.googlecode.com
+.. _GitHub: https://github.com/PierreRaybaut/guiqwt
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt

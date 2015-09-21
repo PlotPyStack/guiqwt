@@ -16,7 +16,7 @@ External resources:
     * Bug reports and feature requests: `GitHub`_
     * Help, support and discussions around the project: `GoogleGroup`_
 
-.. _GitHub: https://github.com/PierreRaybaut/guidata
+.. _GitHub: https://github.com/PierreRaybaut/guiqwt
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt
 """
 
