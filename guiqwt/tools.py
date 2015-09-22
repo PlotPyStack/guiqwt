@@ -88,11 +88,11 @@ Example
 The following example add all the existing tools to an `ImageWidget` object 
 for testing purpose:
 
-.. literalinclude:: ../guiqwt/tests/image_plot_tools.py
+.. literalinclude:: /../guiqwt/tests/image_plot_tools.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
-.. image:: images/screenshots/image_plot_tools.png
+.. image:: /images/screenshots/image_plot_tools.png
 
 
 Reference

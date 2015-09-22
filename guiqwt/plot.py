@@ -53,15 +53,15 @@ Class diagrams
 
 Curve-related widgets with integrated plot manager:
 
-.. image:: images/curve_widgets.png
+.. image:: /images/curve_widgets.png
 
 Image-related widgets with integrated plot manager:
 
-.. image:: images/image_widgets.png
+.. image:: /images/image_widgets.png
 
 Building your own plot manager:
 
-.. image:: images/my_plot_manager.png
+.. image:: /images/my_plot_manager.png
 
 
 Examples
@@ -69,7 +69,7 @@ Examples
 
 Simple example *without* the `plot manager`:
 
-.. literalinclude:: ../guiqwt/tests/filtertest1.py
+.. literalinclude:: /../guiqwt/tests/filtertest1.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
@@ -79,7 +79,7 @@ even if this simple example does not justify the use of the `plot manager`
 complex applications, using the `plot manager` allows to design highly versatile
 graphical user interfaces.
 
-.. literalinclude:: ../guiqwt/tests/filtertest2.py
+.. literalinclude:: /../guiqwt/tests/filtertest2.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 

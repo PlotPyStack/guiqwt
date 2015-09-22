@@ -28,7 +28,7 @@ Example
 
 Simple histogram plotting example:
 
-.. literalinclude:: ../guiqwt/tests/histogram.py
+.. literalinclude:: /../guiqwt/tests/histogram.py
 
 Reference
 ~~~~~~~~~

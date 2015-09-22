@@ -19,11 +19,11 @@ The `fit` module provides an interactive curve fitting widget/dialog allowing:
 Example
 ~~~~~~~
 
-.. literalinclude:: ../guiqwt/tests/fit.py
+.. literalinclude:: /../guiqwt/tests/fit.py
    :start-after: SHOW
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
-.. image:: images/screenshots/fit.png
+.. image:: /images/screenshots/fit.png
 
 Reference
 ~~~~~~~~~

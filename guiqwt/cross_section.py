@@ -24,7 +24,7 @@ Example
 
 Simple cross-section demo:
 
-.. literalinclude:: ../guiqwt/tests/cross_section.py
+.. literalinclude:: /../guiqwt/tests/cross_section.py
 
 Reference
 ~~~~~~~~~

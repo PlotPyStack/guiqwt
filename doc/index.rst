@@ -12,7 +12,7 @@ Contents:
     examples
     sift
     disthelpers
-    reference
+    reference/index
     
 
 Indices and tables:
