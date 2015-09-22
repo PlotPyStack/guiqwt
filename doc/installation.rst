@@ -28,14 +28,12 @@ All platforms:
 
 On GNU/Linux and MacOS platforms:
     ``python setup.py build install``
-
-    If `gfortran` is not your default Fortran compiler:
-	``python setup.py build --fcompiler=gfortran install``
-    or if it fails, you may try the following:
-	``python setup.py build_ext --fcompiler=gnu95 build install``
     
-On Windows platforms (requires MinGW with gfortran):
+On Windows platforms with MinGW:
     ``python setup.py build -c mingw32 install``
+
+On Windows platforms with Microsoft Visual C++ compiler:
+    ``python setup.py build -c msvc install``
 
 Help and support
 ----------------
