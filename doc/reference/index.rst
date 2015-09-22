@@ -1,7 +1,7 @@
-guiqwt reference
-================
+Reference
+=========
 
-API reference:
+guiqwt API:
 
 .. toctree::
     :maxdepth: 2
