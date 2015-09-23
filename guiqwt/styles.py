@@ -859,7 +859,6 @@ class CurveParam(DataSet):
     line = LineStyleItem(_("Line"))
     symbol = SymbolItem(_("Symbol"))
     shade = FloatItem(_("Shadow"), default=0, min=0, max=1)
-    fitted = BoolItem(_("Fit curve to data"), _("Fitting"), default=False)
     curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
                                  default="Lines")
     baseline = FloatItem(_("Baseline"), default=0.)
@@ -884,8 +883,6 @@ class CurveParam(DataSet):
         curve.setBrush(brush)
         # Symbol
         self.symbol.update_symbol( curve )
-        # CurveAttribute
-        curve.setCurveAttribute(QwtPlotCurve.Fitted, self.fitted)
         # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
         curve.setBaseline(self.baseline)

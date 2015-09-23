@@ -588,7 +588,6 @@ DEFAULTS = {
               "curve/symbol/facecolor": "black",
               "curve/symbol/alpha": 1.,
               "curve/shade": .85,
-              "curve/fitted": False,
               "curve/curvestyle": "Steps",
               "curve/label": "",
 
@@ -689,7 +688,6 @@ DEFAULTS = {
               "curve/symbol/facecolor": "black",
               "curve/symbol/alpha": 1.,
               "curve/shade": 0.,
-              "curve/fitted": False,
               "curve/label": "",
 
               "range/line/style": 'SolidLine',

@@ -194,9 +194,9 @@ class PlotItemBuilder(object):
                                          markeredgecolor) # MATLAB-style
             param.symbol.edgecolor = markeredgecolor
 
-    def __set_param(self, param, title, color, linestyle, linewidth,
-                    marker, markersize, markerfacecolor, markeredgecolor,
-                    shade, fitted, curvestyle, baseline):
+    def __set_param(self, param, title, color, linestyle, linewidth, marker,
+                    markersize, markerfacecolor, markeredgecolor, shade,
+                    curvestyle, baseline):
         """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
         self.__set_baseparam(param, color, linestyle, linewidth, marker,
                              markersize, markerfacecolor, markeredgecolor)
@@ -204,8 +204,6 @@ class PlotItemBuilder(object):
             param.label = title
         if shade is not None:
             param.shade = shade
-        if fitted is not None:
-            param.fitted = fitted
         if curvestyle is not None:
             param.curvestyle = curvestyle
         if baseline is not None:
@@ -338,11 +336,9 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
 
-    def curve(self, x, y, title="",
-              color=None, linestyle=None, linewidth=None,
+    def curve(self, x, y, title="", color=None, linestyle=None, linewidth=None,
               marker=None, markersize=None, markerfacecolor=None,
-              markeredgecolor=None, shade=None, fitted=None,
-              curvestyle=None, baseline=None,
+              markeredgecolor=None, shade=None, curvestyle=None, baseline=None,
               xaxis="bottom", yaxis="left"):
         """
         Make a curve `plot item` from x, y, data
@@ -361,7 +357,6 @@ class PlotItemBuilder(object):
             * markerfacecolor: marker face color name
             * markeredgecolor: marker edge color name
             * shade: 0 <= float <= 1 (curve shade)
-            * fitted: boolean (fit curve to data)
             * curvestyle: "Lines", "Sticks", "Steps", "Dots", "NoCurve"
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
@@ -384,8 +379,8 @@ class PlotItemBuilder(object):
             CURVE_COUNT += 1
             title = make_title(basename, CURVE_COUNT)
         self.__set_param(param, title, color, linestyle, linewidth, marker,
-                         markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle, baseline)
+                         markersize, markerfacecolor, markeredgecolor, shade,
+                         curvestyle, baseline)
         return self.pcurve(x, y, param, xaxis, yaxis)
 
     def merror(self, *args, **kwargs):
@@ -440,10 +435,9 @@ class PlotItemBuilder(object):
     def error(self, x, y, dx, dy, title="",
               color=None, linestyle=None, linewidth=None,
               errorbarwidth=None, errorbarcap=None, errorbarmode=None,
-              errorbaralpha=None, marker=None,
-              markersize=None, markerfacecolor=None, markeredgecolor=None,
-              shade=None, fitted=None, curvestyle=None,
-              baseline=None, xaxis="bottom", yaxis="left"):
+              errorbaralpha=None, marker=None, markersize=None,
+              markerfacecolor=None, markeredgecolor=None, shade=None,
+              curvestyle=None, baseline=None, xaxis="bottom", yaxis="left"):
         """
         Make an errorbar curve `plot item` 
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
@@ -466,7 +460,6 @@ class PlotItemBuilder(object):
             * markerfacecolor: marker face color name
             * markeredgecolor: marker edge color name
             * shade: 0 <= float <= 1 (curve shade)
-            * fitted: boolean (fit curve to data)
             * curvestyle: attribute name from the 
               :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
@@ -494,7 +487,7 @@ class PlotItemBuilder(object):
             curveparam.label = make_title(basename, CURVE_COUNT)
         self.__set_param(curveparam, title, color, linestyle, linewidth, marker,
                          markersize, markerfacecolor, markeredgecolor,
-                         shade, fitted, curvestyle, baseline)
+                         shade, curvestyle, baseline)
         errorbarparam.color = curveparam.line.color
         if errorbarwidth is not None:
             errorbarparam.width = errorbarwidth

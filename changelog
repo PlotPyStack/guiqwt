@@ -3,8 +3,9 @@
 === Possible API compatibility issues (since v2.3.2) ===
 
   * Added support for PyQt5 (removed old-style signals)
-  * Replaced PyQwt dependency by the new `qwt` package (pure Python reimplementation of the Qwt6 C++ library)
+  * Replaced `PyQwt` dependency by the new `python-qwt` package (pure Python reimplementation of the Qwt6 C++ library)
   * Removed "curvetype" feature (Yfx, Xfy) which is no longer supported in Qwt6
+  * Removed curve "fitted" option which is not supported in `qwt`.
 
 === Bug fixes (since v2.3.2) ===
 
