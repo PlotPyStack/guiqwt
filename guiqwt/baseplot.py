@@ -13,7 +13,7 @@ guiqwt.baseplot
 
 The `baseplot` module provides the `guiqwt` plotting widget base class: 
 :py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
-`qwt`'s QwtPlot plotting widget which supports the following features:
+`python-qwt`'s QwtPlot plotting widget which supports the following features:
 
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
     * item selection and multiple selection
