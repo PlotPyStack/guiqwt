@@ -331,7 +331,6 @@ class CrossSectionPlot(CurvePlot):
     CS_AXIS = None
     Z_AXIS = None
     Z_MAX_MAJOR = 5
-    CURVETYPE = None
     SHADE = .2
     def __init__(self, parent=None):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
@@ -530,7 +529,6 @@ class CrossSectionPlot(CurvePlot):
 class HorizontalCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.X_BOTTOM
     Z_AXIS = CurvePlot.Y_LEFT
-    CURVETYPE = "Yfx"
     def plot_labels_changed(self, plot):
         """Plot labels have changed"""
         self.set_axis_title("left", plot.get_axis_title("right"))       
@@ -548,7 +546,6 @@ class VerticalCrossSectionPlot(CrossSectionPlot):
     CS_AXIS = CurvePlot.Y_LEFT
     Z_AXIS = CurvePlot.X_BOTTOM
     Z_MAX_MAJOR = 3
-    CURVETYPE = "Xfy"
     def plot_labels_changed(self, plot):
         """Plot labels have changed"""
         self.set_axis_title("bottom", plot.get_axis_title("right"))       

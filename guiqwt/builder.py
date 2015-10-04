@@ -360,8 +360,6 @@ class PlotItemBuilder(object):
             * curvestyle: "Lines", "Sticks", "Steps", "Dots", "NoCurve"
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
-              The interpretation of the baseline depends on the curve type 
-              (horizontal line for "Yfx", vertical line for "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
         Example::
@@ -465,8 +463,6 @@ class PlotItemBuilder(object):
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
             * baseline (float: default=0.0): the baseline is needed for filling 
               the curve with a brush or the Sticks drawing style. 
-              The interpretation of the baseline depends on the curve type 
-              (horizontal line for "Yfx", vertical line for "Xfy")
             * xaxis, yaxis: X/Y axes bound to curve
         
         Example::
