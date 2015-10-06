@@ -37,7 +37,7 @@ from guiqwt import __version__ as version
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `python-qwt`)'
+DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `PythonQwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Topic :: Scientific/Engineering']
@@ -126,7 +126,7 @@ setup(name=LIBNAME, version=version,
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
                                                '.ui'))},
       requires=["PyQt4 (>4.3)", "NumPy (>=1.3)", "SciPy (>=0.7)",
-                "guidata (>=1.7.0)", "python-qwt (>=0.2.1)", "PIL (>=1.1.6)"],
+                "guidata (>=1.7.0)", "PythonQwt (>=0.3.0)", "PIL (>=1.1.6)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'.histogram2d',
                              [join('src', 'histogram2d.c')],

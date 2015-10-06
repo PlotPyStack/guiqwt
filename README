@@ -8,14 +8,14 @@ Licensed under the terms of the CECILL License (see Licence_CeCILL_V2-en.txt)
 
     Overview
 
-	Based on `python-qwt` (a pure Python/PyQt reimplementation of the curve 
+	Based on `PythonQwt` (a pure Python/PyQt reimplementation of the curve 
       plotting Qwt C++ library, included in guiqwt base source code)
 	and on the scientific modules NumPy and SciPy, guiqwt is a Python 
 	library providing efficient 2D data-plotting features (curve/image 
 	visualization and related tools) for interactive computing and 
 	signal/image processing application development.
 	
-	Extension to `python-qwt`:
+	Extension to `PythonQwt`:
 
 	  * set of tools for curve and image plotting
 	  * GUI-based application development helpers

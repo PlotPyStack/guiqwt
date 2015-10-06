@@ -10,7 +10,7 @@ guiqwt.transitional
 -------------------
 
 The purpose of this transitional package is to regroup all the references to 
-the ``python-qwt`` library (`qwt` package).
+the ``PythonQwt`` library (`qwt` package).
 
 No other ``guiqwt`` module should import ``qwt`` or use any of its 
 interfaces directly.
