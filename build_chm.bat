@@ -1,6 +1,13 @@
 sphinx-build -b htmlhelp doc doctmp
-"C:\Program Files\HTML Help Workshop\hhc.exe" doctmp\guiqwtdoc.hhp
-"C:\Program Files (x86)\HTML Help Workshop\hhc.exe" doctmp\guiqwtdoc.hhp
-copy doctmp\guiqwtdoc.chm .
+"C:\Program Files\HTML Help Workshop\hhc.exe" doctmp\guiqwt.hhp
+"C:\Program Files (x86)\HTML Help Workshop\hhc.exe" doctmp\guiqwt.hhp
+copy doctmp\guiqwt.chm .
+7z a guiqwt.chm.zip guiqwt.chm
+del doctmp\guiqwt.chm
+del doc.zip
+sphinx-build -b html doc doctmp
+cd doctmp
+7z a -r ..\doc.zip *.*
+cd ..
 rmdir /S /Q doctmp
-pause
+del guiqwt.chm.zip

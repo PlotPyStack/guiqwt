@@ -116,10 +116,10 @@ html_theme = 'sphinxdoc'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = '%s %s Manual' % (project, version)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+html_short_title = '%s Manual' % project
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -171,7 +171,7 @@ html_use_modindex = True
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'guiqwtdoc'
+htmlhelp_basename = 'guiqwt'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -185,7 +185,7 @@ htmlhelp_basename = 'guiqwtdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'guiqwt.tex', 'guiqwt Documentation', 'Pierre Raybaut', 'manual'),
+  ('index', 'guiqwt.tex', 'guiqwt Manual', 'Pierre Raybaut', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
