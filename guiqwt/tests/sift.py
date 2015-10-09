@@ -10,7 +10,7 @@ SIFT, the Signal and Image Filtering Tool
 Simple signal and image processing application based on guiqwt and guidata
 """
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 SHOW = True # Show test in GUI-based test launcher
 
@@ -1244,12 +1244,9 @@ class MainWindow(QMainWindow):
             self.add_dockwidget(self.console, _("Console"))
             try:
                 self.console.interpreter.widget_proxy.sig_new_prompt.connect(
-                                                lambda txt: self.refresh_lists())
+                                            lambda txt: self.refresh_lists())
             except AttributeError:
-                from spyderlib.widgets.internalshell import SIGNAL
-                self.connect(self.console.interpreter.widget_proxy,
-                         SIGNAL("new_prompt(QString)"),
-                         lambda txt: self.refresh_lists())
+                print('sift: spyderlib is outdated', file=sys.stderr)
 
 
         # Update selection dependent actions
