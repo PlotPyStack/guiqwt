@@ -218,8 +218,10 @@ def _imwrite_pil(filename, arr):
     """Write `arr` NumPy array to `filename` using PIL"""
     import PIL.Image
     import PIL.TiffImagePlugin # py2exe
-    for mode, (dtype_str, _extra) in list(DTYPES.items()):
-        if dtype_str == arr.dtype.str:
+    for mode, (dtype_str, extra) in list(DTYPES.items()):
+        if dtype_str == arr.dtype.str and\
+           (len(arr.shape[2:]) == 0 or\
+            (len(arr.shape[2:]) > 0 and arr.shape[-1] == extra)):
             break
     else:
         raise RuntimeError("Cannot determine PIL data type")
