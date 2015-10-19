@@ -912,7 +912,7 @@ class ErrorBarParam(DataSet):
     ontop = BoolItem(_("set to foreground"), _("Visibility"), default=False)
 
     def update_param(self, curve):
-        color = curve.errorPen.pen().color()
+        color = curve.errorPen.color()
         self.color = str(color.name())
         self.alpha = color.alphaF()
         self.width = curve.errorPen.widthF()
