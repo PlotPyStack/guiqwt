@@ -8,6 +8,7 @@ test1.png.u16.tif
 test1.png.u8.png
 test2.png.u8.png
 test2.png.u16.tif
+contrast.png
 
 # Created by https://www.gitignore.io/api/python
 

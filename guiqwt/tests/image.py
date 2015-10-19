@@ -55,7 +55,6 @@ def compute_image(N=2000, grid=True):
     img[-K:, -K:] = m3   # (N,N)
     img[-K:, :K] = m4    # (N,0)
     #img = array( 30000*(img+1.1), uint16 )
-    print(img.dtype)
     return img
 
 
@@ -111,8 +110,11 @@ def test():
     # -- Create QApplication
     import guidata
     _app = guidata.qapplication()
-    # --    
-    imshow(compute_image())
+    # --
+    for func in (compute_image_3, compute_image_2, compute_image_3):
+        img = func()
+        print(img.dtype)
+        imshow(img)
 
 if __name__ == "__main__":
     test()

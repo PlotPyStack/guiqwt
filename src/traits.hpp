@@ -122,6 +122,12 @@ static void dispatch_array(int npy_type, A& algo) {
     case NPY_FLOAT64:
 	algo.template run<npy_float64>();
 	break;
+    case NPY_UINT64:
+	algo.template run<npy_uint64>();
+	break;
+    case NPY_INT64:
+	algo.template run<npy_int64>();
+	break;
     case NPY_UINT32:
 	algo.template run<npy_uint32>();
 	break;
