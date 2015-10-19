@@ -189,6 +189,9 @@ class BasePlot(QwtPlot):
             widget = self.axisWidget(axis_id)
             if widget.geometry().contains(event.pos()):
                 self.edit_axis_parameters(axis_id)
+                break
+        else:
+            QwtPlot.mouseDoubleClickEvent(self, event)
 
     #---- QwtPlot API ---------------------------------------------------------
     def showEvent(self, event):
