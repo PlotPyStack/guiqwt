@@ -304,6 +304,9 @@ class GridItem(QwtPlotGrid):
 
     def update_params(self):
         self.gridparam.update_grid(self)
+        
+    def update_item_parameters(self):
+        self.gridparam.update_param(self)
 
     def get_item_parameters(self, itemparams):
         itemparams.add("GridParam", self, self.gridparam)
@@ -570,6 +573,9 @@ class CurveItem(QwtPlotCurve):
         if self.selected:
             self.select()
 
+    def update_item_parameters(self):
+        self.curveparam.update_param(self)
+
     def get_item_parameters(self, itemparams):
         itemparams.add("CurveParam", self, self.curveparam)
     
@@ -768,6 +774,9 @@ class PolygonMapItem(QwtPlotItem):
         self.curveparam.update_curve(self)
         if self.selected:
             self.select()
+
+    def update_item_parameters(self):
+        self.curveparam.update_param(self)
 
     def get_item_parameters(self, itemparams):
         itemparams.add("CurveParam", self, self.curveparam)
@@ -1047,6 +1056,10 @@ class ErrorBarCurveItem(CurveItem):
     def update_params(self):
         self.errorbarparam.update_curve(self)
         CurveItem.update_params(self)
+
+    def update_item_parameters(self):
+        CurveItem.update_item_parameters(self)
+        self.errorbarparam.update_param(self)
 
     def get_item_parameters(self, itemparams):
         CurveItem.get_item_parameters(self, itemparams)

@@ -187,6 +187,12 @@ class AbstractShape(QwtPlotItem):
                       will be considered as hit instead of self
         """
         pass
+
+    def update_item_parameters(self):
+        """
+        Update item parameters (dataset) from object properties
+        """
+        pass
     
     def get_item_parameters(self, itemparams):
         """
@@ -386,13 +392,16 @@ class Marker(QwtPlotMarker):
             return sqrt((x-xc)**2), 0, False, None
         elif ms == "Cross":
             return sqrt(min((x-xc)**2, (y-yc)**2) ), 0, False, None
+
+    def update_item_parameters(self):
+        self.markerparam.update_param(self)
         
     def get_item_parameters(self, itemparams):
         """
         Appends datasets to the list of DataSets describing the parameters
         used to customize apearance of this item
         """
-        self.markerparam.update_param(self)
+        self.update_item_parameters()
         itemparams.add("MarkerParam", self, self.markerparam)
     
     def set_item_parameters(self, itemparams):
@@ -720,8 +729,11 @@ class PolygonShape(AbstractShape):
         dy = new_pos[1]-old_pos[1]
         self.points += np.array([[dx, dy]])
 
-    def get_item_parameters(self, itemparams):
+    def update_item_parameters(self):
         self.shapeparam.update_param(self)
+
+    def get_item_parameters(self, itemparams):
+        self.update_item_parameters()
         itemparams.add("ShapeParam", self, self.shapeparam)
     
     def set_item_parameters(self, itemparams):
@@ -1299,9 +1311,12 @@ class Axes(PolygonShape):
         poly.append(QPointF(a2x, a2y))
         painter.drawPolygon(poly)
         
+    def update_item_parameters(self):
+        self.axesparam.update_param(self)
+
     def get_item_parameters(self, itemparams):
         PolygonShape.get_item_parameters(self, itemparams)
-        self.axesparam.update_param(self)
+        self.update_item_parameters()
         itemparams.add("AxesShapeParam", self, self.axesparam)
     
     def set_item_parameters(self, itemparams):
@@ -1417,9 +1432,12 @@ class XRangeSelection(AbstractShape):
         self._max += dx
         self.plot().SIG_RANGE_CHANGED.emit(self, self._min, self._max)
         self.plot().replot()
+
+    def update_item_parameters(self):
+        self.shapeparam.update_param(self)
         
     def get_item_parameters(self, itemparams):
-        self.shapeparam.update_param(self)
+        self.update_item_parameters()
         itemparams.add("ShapeParam", self, self.shapeparam)
     
     def set_item_parameters(self, itemparams):

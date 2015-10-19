@@ -181,6 +181,8 @@ class BasePlot(QwtPlot):
         canvas.setFocusPolicy(Qt.StrongFocus)
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
         self.SIG_ITEM_MOVED.connect(self._move_selected_items_together)
+        self.legendDataChanged.connect(lambda item, _legdata:
+                                       item.update_item_parameters())
 
     #---- QWidget API ---------------------------------------------------------
     def mouseDoubleClickEvent(self, event):

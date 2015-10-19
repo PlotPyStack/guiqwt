@@ -111,7 +111,7 @@ def test():
     import guidata
     _app = guidata.qapplication()
     # --
-    for func in (compute_image_3, compute_image_2, compute_image_3):
+    for func in (compute_image, compute_image_2, compute_image_3):
         img = func()
         print(img.dtype)
         imshow(img)

@@ -864,6 +864,7 @@ class CurveParam(DataSet):
     baseline = FloatItem(_("Baseline"), default=0.)
 
     def update_param(self, curve):
+        self.label = to_text_string(curve.title().text())
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]

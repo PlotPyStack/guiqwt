@@ -645,6 +645,9 @@ class BaseImageItem(QwtPlotItem):
         ay = self.yAxis()
         return self.border_rect.poly_hit_test(plot, ax, ay, pos)
 
+    def update_item_parameters(self):
+        pass
+
     def get_item_parameters(self, itemparams):
         itemparams.add("ShapeParam", self, self.border_rect.shapeparam)
 
@@ -872,9 +875,12 @@ class RawImageItem(BaseImageItem):
                 ITrackableItemType, ICSImageItemType, ISerializableType,
                 IExportROIImageItemType, IStatsImageItemType)
 
+    def update_item_parameters(self):
+        self.imageparam.update_param(self)
+
     def get_item_parameters(self, itemparams):
         BaseImageItem.get_item_parameters(self, itemparams)
-        self.imageparam.update_param(self)
+        self.update_item_parameters()
         itemparams.add("ImageParam", self, self.imageparam)
 
     def set_item_parameters(self, itemparams):
@@ -2122,9 +2128,13 @@ class ImageFilterItem(BaseImageItem):
         return QRectF(x0, y0, x1-x0, y1-y0)
 
     #---- IBasePlotItem API ----------------------------------------------------
+    def update_item_parameters(self):
+        BaseImageItem.update_item_parameters(self)
+        self.imagefilterparam.update_param(self)
+
     def get_item_parameters(self, itemparams):
         BaseImageItem.get_item_parameters(self, itemparams)
-        self.imagefilterparam.update_param(self)
+        self.update_item_parameters()
         itemparams.add("ImageFilterParam", self, self.imagefilterparam)
 
     def set_item_parameters(self, itemparams):
@@ -2338,6 +2348,10 @@ class Histogram2DItem(BaseImageItem):
     def types(self):
         return (IColormapImageItemType, IImageItemType, ITrackableItemType,
                 IVoiImageItemType, IColormapImageItemType, ICSImageItemType)
+
+    def update_item_parameters(self):
+        BaseImageItem.update_item_parameters(self)
+        self.histparam.update_param(self)
 
     def get_item_parameters(self, itemparams):
         BaseImageItem.get_item_parameters(self, itemparams)

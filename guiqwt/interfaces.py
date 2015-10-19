@@ -209,6 +209,12 @@ class IBasePlotItem(object):
                       will be considered as hit instead of self
         """
         pass
+
+    def update_item_parameters(self):
+        """
+        Update item parameters (dataset) from object properties
+        """
+        pass
     
     def get_item_parameters(self, itemparams):
         """

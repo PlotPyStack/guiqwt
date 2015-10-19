@@ -39,8 +39,10 @@ def test():
     y = sin(sin(sin(x)))    
     x2 = linspace(-10, 10, 20)
     y2 = sin(sin(sin(x2)))
+    curve2 = make.curve(x2, y2, color="g", curvestyle="Sticks")
+    curve2.setTitle("toto")
     plot(make.curve(x, y, color="b"),
-         make.curve(x2, y2, color="g", curvestyle="Sticks"),
+         curve2,
          make.curve(x, sin(2*y), color="r"),
          make.merror(x, y/2, dy),
          make.label("Relative position <b>outside</b>",

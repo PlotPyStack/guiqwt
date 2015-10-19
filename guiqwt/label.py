@@ -225,8 +225,11 @@ class AbstractLabelItem(QwtPlotItem):
     def click_inside(self, locx, locy):
         return 2.0, 1, True, None
 
-    def get_item_parameters(self, itemparams):
+    def update_item_parameters(self):
         self.labelparam.update_param(self)
+
+    def get_item_parameters(self, itemparams):
+        self.update_item_parameters()
         itemparams.add("LabelParam", self, self.labelparam)
     
     def set_item_parameters(self, itemparams):
@@ -451,8 +454,11 @@ class LegendBoxItem(AbstractLabelItem):
                 return 1000.0, None, False, items[line]
         return 2.0, 1, True, None
 
-    def get_item_parameters(self, itemparams):
+    def update_item_parameters(self):
         self.labelparam.update_param(self)
+
+    def get_item_parameters(self, itemparams):
+        self.update_item_parameters()
         itemparams.add("LegendParam", self, self.labelparam)
     
     def set_item_parameters(self, itemparams):
