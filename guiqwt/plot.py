@@ -477,10 +477,15 @@ class PlotManager(object):
             tool.update_status(plot)
 
     def create_action(self, title, triggered=None, toggled=None,
-                      shortcut=None, icon=None, tip=None):
+                      shortcut=None, icon=None, tip=None, checkable=None,
+                      context=Qt.WindowShortcut, enabled=None):
+        """
+        Create a new QAction
+        """
         return create_action(self.main, title, triggered=triggered,
                              toggled=toggled, shortcut=shortcut,
-                             icon=icon, tip=tip)
+                             icon=icon, tip=tip, checkable=checkable,
+                             context=context, enabled=enabled)
 
     # The following methods provide some sets of tools that
     # are often registered together
