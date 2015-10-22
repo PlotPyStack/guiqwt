@@ -5,6 +5,7 @@ copy doctmp\guiqwt.chm .
 7z a guiqwt.chm.zip guiqwt.chm
 del doctmp\guiqwt.chm
 del doc.zip
+del doctmp\guiqwt.hh*
 sphinx-build -b html doc doctmp
 cd doctmp
 7z a -r ..\doc.zip *.*
