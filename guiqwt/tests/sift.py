@@ -1131,6 +1131,14 @@ try:
             self.set_codecompletion_auto(True)
             self.set_calltips(True)
             self.setup_completion(size=(300, 180), font=font)
+            try:
+                self.traceback_available.connect(self.show_console)
+            except AttributeError:
+                pass
+            
+        def show_console(self):
+            self.dockwidget.raise_()
+            self.dockwidget.show()
 except ImportError:
     DockableConsole = None
 
@@ -1215,18 +1223,6 @@ class MainWindow(QMainWindow):
         self.proc_menu = self.menuBar().addMenu(_("Processing"))
         self.proc_menu.aboutToShow.connect(self.update_proc_menu)
         
-        # View menu
-        self.view_menu = view_menu = self.createPopupMenu()
-        view_menu.setTitle(_("&View"))
-        self.menuBar().addMenu(view_menu)
-        
-        # Help menu
-        help_menu = self.menuBar().addMenu("?")
-        about_action = create_action(self, _("About..."),
-                                     icon=get_std_icon('MessageBoxInformation'),
-                                     triggered=self.about)
-        add_actions(help_menu, (about_action,))
-        
         # Eventually add an internal console (requires 'spyderlib')
         self.sift_proxy = SiftProxy(self)
         if DockableConsole is None:
@@ -1247,6 +1243,18 @@ class MainWindow(QMainWindow):
                                             lambda txt: self.refresh_lists())
             except AttributeError:
                 print('sift: spyderlib is outdated', file=sys.stderr)
+        
+        # View menu
+        self.view_menu = view_menu = self.createPopupMenu()
+        view_menu.setTitle(_("&View"))
+        self.menuBar().addMenu(view_menu)
+        
+        # Help menu
+        help_menu = self.menuBar().addMenu("?")
+        about_action = create_action(self, _("About..."),
+                                     icon=get_std_icon('MessageBoxInformation'),
+                                     triggered=self.about)
+        add_actions(help_menu, (about_action,))
 
 
         # Update selection dependent actions
