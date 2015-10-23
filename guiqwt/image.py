@@ -2567,6 +2567,14 @@ class ImagePlot(CurvePlot):
                 self.do_autoscale()
             if parent is not None:
                 parent.setUpdatesEnabled(True)
+    
+    def set_active_item(self, item):
+        """Override base set_active_item to change the grid's
+        axes according to the selected item"""
+        old_active = self.active_item
+        CurvePlot.set_active_item(self, item)
+        if item is not None and old_active is not item:
+            self.update_colormap_axis(item)
 
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
