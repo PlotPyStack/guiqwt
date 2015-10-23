@@ -569,6 +569,8 @@ class GridParam(DataSet):
     def update_grid(self, grid):
         plot = grid.plot()
         if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
             plot.setCanvasBackground( QColor(self.background) )
         grid.enableX(self.maj_xenabled)
         grid.enableY(self.maj_yenabled)
@@ -577,6 +579,8 @@ class GridParam(DataSet):
         grid.enableYMin(self.min_yenabled)
         grid.setMinorPen( self.min_line.build_pen() )
         grid.setTitle(self.get_title())
+        if plot is not None:
+            plot.blockSignals(False)
 
 
 # ===================================================
@@ -871,6 +875,10 @@ class CurveParam(DataSet):
         self.baseline = curve.baseline()
     
     def update_curve(self, curve):
+        plot = curve.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         if not self._multiselection:
             # Non common parameters
             curve.setTitle(self.label)
@@ -887,6 +895,8 @@ class CurveParam(DataSet):
         # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
         curve.setBaseline(self.baseline)
+        if plot is not None:
+            plot.blockSignals(False)
 
 class CurveParam_MS(CurveParam):
     _multiselection = True
@@ -979,6 +989,10 @@ class BaseImageParam(DataSet):
             self.interpolation = size
 
     def update_image(self, image):
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.setTitle(self.label)
         image.set_color_map(self.colormap)
         size = self.interpolation
@@ -990,6 +1004,8 @@ class BaseImageParam(DataSet):
         else:
             mode = INTERP_AA
         image.set_interpolation(mode, size)
+        if plot is not None:
+            plot.blockSignals(False)
 
 class QuadGridParam(DataSet):
     _multiselection = False
@@ -1029,11 +1045,17 @@ class QuadGridParam(DataSet):
         self.grid = image.grid
 
     def update_image(self, image):
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.setTitle(self.label)
         image.set_color_map(self.colormap)
         image.interpolate = (self.interpolation, self.uflat, self.vflat)
         image.grid = self.grid
         # TODO : gridcolor
+        if plot is not None:
+            plot.blockSignals(False)
 
 class RawImageParam(BaseImageParam):
     _hide_background = False
@@ -1047,7 +1069,13 @@ class RawImageParam(BaseImageParam):
 
     def update_image(self, image):
         super(RawImageParam, self).update_image(image)
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.set_background_color(self.background)
+        if plot is not None:
+            plot.blockSignals(False)
 
 class RawImageParam_MS(RawImageParam):
     _multiselection = True
@@ -1095,12 +1123,18 @@ class ImageParam(RawImageParam):
 
     def update_image(self, image):
         super(ImageParam, self).update_image(image)
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.xmin = self.xmin
         image.xmax = self.xmax
         image.ymin = self.ymin
         image.ymax = self.ymax
         image.update_bounds()
         image.update_border()
+        if plot is not None:
+            plot.blockSignals(False)
 
 class ImageParam_MS(ImageParam):
     _multiselection = True
@@ -1114,7 +1148,13 @@ class RGBImageParam(ImageParam):
 
     def update_image(self, image):
         super(RGBImageParam, self).update_image(image)
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.recompute_alpha_channel()
+        if plot is not None:
+            plot.blockSignals(False)
 
 class RGBImageParam_MS(RGBImageParam):
     _multiselection = True
@@ -1134,7 +1174,13 @@ class MaskedImageParam(ImageParam):
     
     def update_image(self, image):
         super(MaskedImageParam, self).update_image(image)
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.update_mask()
+        if plot is not None:
+            plot.blockSignals(False)
                          
 class MaskedImageParam_MS(MaskedImageParam):
     _multiselection = True
@@ -1207,7 +1253,13 @@ class TrImageParam(RawImageParam):
 
     def update_image(self, image):
         RawImageParam.update_image(self, image)
+        plot = image.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         image.set_transform(*self.get_transform())
+        if plot is not None:
+            plot.blockSignals(False)
 
     def get_transform(self):
         return (self.pos_x0, self.pos_y0, self.pos_angle*np.pi/180,
@@ -1406,6 +1458,10 @@ class ShapeParam(DataSet):
         self.private = obj.is_private()
         
     def update_shape(self, obj):
+        plot = obj.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         obj.setTitle(self.label)
         obj.pen = self.line.build_pen()
         obj.symbol = self.symbol.build_symbol()
@@ -1415,6 +1471,8 @@ class ShapeParam(DataSet):
         obj.sel_brush = self.sel_fill.build_brush()
         obj.set_readonly(self.readonly)
         obj.set_private(self.private)
+        if plot is not None:
+            plot.blockSignals(False)
 
 class AxesShapeParam(DataSet):
     arrow_angle = FloatItem(_("Arrow angle (°)"), min=0, max=90, nonzero=True)
@@ -1477,12 +1535,18 @@ class AnnotationParam(DataSet):
         self.private = obj.is_private()
         
     def update_annotation(self, obj):
+        plot = obj.plot()
+        if plot is not None:
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
+                                     # triggered by the setter methods below
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
         obj.area_computations_visible = self.show_computations
         obj.update_label()
         obj.set_readonly(self.readonly)
         obj.set_private(self.private)
+        if plot is not None:
+            plot.blockSignals(False)
 
 
 # ===================================================
