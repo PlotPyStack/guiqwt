@@ -424,6 +424,10 @@ class CrossSectionPlot(CurvePlot):
                                    #  cross section curve is now empty)
                 self.del_item(curve)
         
+        # Update plot only to show/hide cross section curves according to 
+        # the associated image item visibility state (hence `refresh=False`)
+        self.update_plot(refresh=False)
+        
         if not new_sources:
             self.replot()
             return
@@ -486,8 +490,9 @@ class CrossSectionPlot(CurvePlot):
             return
         if self.label.isVisible():
             self.label.hide()
-        for index, (_item, curve) in enumerate(iter(list(self.known_items.items()))):
-            if not self.perimage_mode and index > 0:
+        items = list(self.known_items.items())
+        for index, (item, curve) in enumerate(iter(items)):
+            if (not self.perimage_mode and index > 0) or not item.isVisible():
                 curve.hide()
             else:
                 curve.show()

@@ -1254,8 +1254,7 @@ class ItemListWidget(QListWidget):
         item = self.items[self.row(listwidgetitem)]
         visible = listwidgetitem.checkState() == Qt.Checked
         if visible != item.isVisible():
-            item.setVisible(visible)
-            self.plot.replot()
+            self.plot.set_item_visible(item, visible)
     
     def move_item(self, direction):
         """Move item to the background/foreground
