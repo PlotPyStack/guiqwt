@@ -2576,6 +2576,11 @@ class ImagePlot(CurvePlot):
         if item is not None and old_active is not item:
             self.update_colormap_axis(item)
 
+    def disable_unused_axes(self):
+        """Disable unused axes"""
+        CurvePlot.disable_unused_axes(self)
+        self.enableAxis(self.colormap_axis)
+
     def do_autoscale(self, replot=True):
         """Do autoscale on all axes"""
         CurvePlot.do_autoscale(self, replot=False)
