@@ -167,18 +167,25 @@ class ItemParameters(object):
         return deepcopy(self.paramdict.get(key))
     
     def update(self, plot):
+        #XXX: removed the following workaround as the associated bug can't be 
+        # reproduced anymore with guiqwt 3. However, keeping the workaround 
+        # here (commented) as it could become useful eventually.
+        #-----
         #FIXME: without the following workaround, ImagePlot object aspect ratio
         # is changed when pressing button "Apply"
         # (see also guiqwt.image.ImagePlot.edit_axis_parameters)
-        from guiqwt.image import ImagePlot
-        if isinstance(plot, ImagePlot):
-            ratio = plot.get_current_aspect_ratio()
+#        from guiqwt.image import ImagePlot
+#        if isinstance(plot, ImagePlot):
+#            ratio = plot.get_current_aspect_ratio()
+        #-----
         for item in self.items:
             item.set_item_parameters(self)
         plot.replot()
-        if isinstance(plot, ImagePlot):
-            plot.set_aspect_ratio(ratio=ratio)
-            plot.replot()
+        #-----
+#        if isinstance(plot, ImagePlot):
+#            plot.set_aspect_ratio(ratio=ratio)
+#            plot.replot()
+        #-----
         plot.SIG_ITEMS_CHANGED.emit(plot)
     
     def edit(self, plot, title, icon):

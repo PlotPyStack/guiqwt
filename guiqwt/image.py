@@ -2600,10 +2600,18 @@ class ImagePlot(CurvePlot):
 
     def edit_axis_parameters(self, axis_id):
         """Edit axis parameters"""
-        #FIXME: without the following workaround, aspect ratio is changed 
-        # when applying axis parameters
-        # (see also guiqwt.styles.ItemParameters.update)
-        ratio = self.get_current_aspect_ratio()
-        CurvePlot.edit_axis_parameters(self, axis_id)
-        self.set_aspect_ratio(ratio=ratio)
-        self.replot()
+        #XXX: removed the following workaround as the associated bug can't be 
+        # reproduced anymore with guiqwt 3. However, keeping the workaround 
+        # here (commented) as it could become useful eventually.
+        #-----
+#        #FIXME: without the following workaround, aspect ratio is changed 
+#        # when applying axis parameters
+#        # (see also guiqwt.styles.ItemParameters.update)
+#        ratio = self.get_current_aspect_ratio()
+        #-----
+        if axis_id != self.colormap_axis:
+            CurvePlot.edit_axis_parameters(self, axis_id)
+        #-----
+#        self.set_aspect_ratio(ratio=ratio)
+#        self.replot()
+        #-----
