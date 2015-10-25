@@ -500,9 +500,9 @@ class BaseImageItem(QwtPlotItem):
         """Get maximum range for this dataset"""
         kind = self.data.dtype.kind
         if kind in np.typecodes['AllFloat']:
-            info = np.finfo(kind)
+            info = np.finfo(self.data.dtype)
         else:
-            info = np.iinfo(kind)
+            info = np.iinfo(self.data.dtype)
         return info.min, info.max
 
     def update_border(self):
