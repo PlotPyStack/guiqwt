@@ -16,8 +16,9 @@ from guiqwt.builder import make
 
 def create_window():
     win = ImageDialog(edit=False, toolbar=True, wintitle="Cross sections test",
-                      options=dict(show_xsection=True, show_ysection=True))
-    win.resize(600, 600)
+                      options=dict(show_xsection=True, show_ysection=True,
+                                   show_itemlist=True))
+    win.resize(800, 600)
     return win
 
 def test():

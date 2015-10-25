@@ -340,6 +340,7 @@ class CrossSectionPlot(CurvePlot):
         self.autorefresh_mode = True
         self.apply_lut = False
         self.single_source = False
+        self.lockscales = True
         
         self.last_obj = None
         self.known_items = {}
@@ -377,6 +378,7 @@ class CrossSectionPlot(CurvePlot):
         plot.SIG_ANNOTATION_CHANGED.connect(self.shape_changed)
         plot.SIG_PLOT_LABELS_CHANGED.connect(self.plot_labels_changed)
         plot.SIG_AXIS_DIRECTION_CHANGED.connect(self.axis_dir_changed)
+        plot.SIG_PLOT_AXIS_CHANGED.connect(self.plot_axis_changed)
         self.plot_labels_changed(plot)
         for axis_id in plot.AXIS_IDS:
             self.axis_dir_changed(plot, axis_id)
@@ -428,6 +430,8 @@ class CrossSectionPlot(CurvePlot):
         # the associated image item visibility state (hence `refresh=False`)
         self.update_plot(refresh=False)
         
+        self.plot_axis_changed(plot)
+
         if not new_sources:
             self.replot()
             return
@@ -449,6 +453,12 @@ class CrossSectionPlot(CurvePlot):
     def axis_dir_changed(self, plot, axis_id):
         """An axis direction has changed"""
         raise NotImplementedError
+
+    def plot_axis_changed(self, plot):
+        """Plot was just zoomed/panned"""
+        if self.lockscales:
+            vmin, vmax = plot.get_axis_limits(self.CS_AXIS)
+            self.set_axis_limits(self.CS_AXIS, vmin, vmax)
         
     def marker_changed(self, marker):
         self.update_plot(marker)
@@ -525,6 +535,12 @@ class CrossSectionPlot(CurvePlot):
     def toggle_apply_lut(self, state):
         self.apply_lut = state
         self.update_plot()
+    
+    def toggle_lockscales(self, state):
+        self.lockscales = state
+        obj = self.get_last_obj()
+        if obj is not None and obj.plot() is not None:
+            self.plot_axis_changed(obj.plot())
         
     def lut_changed(self, plot):
         if self.apply_lut:
@@ -599,6 +615,7 @@ class CrossSectionWidget(PanelWidget):
         self.autoscale_ac = None
         self.refresh_ac = None
         self.autorefresh_ac = None
+        self.lockscales_ac = None
         
         self.manager = None # manager for the associated image plot
         
@@ -613,12 +630,14 @@ class CrossSectionWidget(PanelWidget):
         
         self.setup_widget()
         
-    def set_options(self, autoscale=None, autorefresh=None):
+    def set_options(self, autoscale=None, autorefresh=None, lockscales=None):
         assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
         if autoscale is not None:
             self.autoscale_ac.setChecked(autoscale)
         if autorefresh is not None:
             self.autorefresh_ac.setChecked(autorefresh)
+        if lockscales is not None:
+            self.lockscales_ac.setChecked(lockscales)
 
     def setup_plot(self):
         # Configure the local manager
@@ -667,10 +686,16 @@ class CrossSectionWidget(PanelWidget):
                                    icon=get_icon('autorefresh.png'),
                                    toggled=self.cs_plot.toggle_autorefresh)
         self.autorefresh_ac.setChecked(self.cs_plot.autorefresh_mode)
+        self.lockscales_ac = create_action(self, _("Lock scales"),
+                                   icon=get_icon('axes.png'),
+                                   toggled=self.cs_plot.toggle_lockscales,
+                                   tip=_("Lock scales to main plot axes"))
+        self.lockscales_ac.setChecked(self.cs_plot.lockscales)
         
     def add_actions_to_toolbar(self):
         add_actions(self.toolbar, (self.export_ac, self.autoscale_ac,
-                                   None, self.refresh_ac, self.autorefresh_ac))
+                                   None, self.refresh_ac, self.autorefresh_ac,
+                                   self.lockscales_ac))
         
     def register_shape(self, shape, final, refresh=True):
         plot = self.get_plot()
@@ -708,12 +733,14 @@ class XCrossSection(CrossSectionWidget):
         self.applylut_ac = None
         
     def set_options(self, autoscale=None, autorefresh=None,
-                    peritem=None, applylut=None):
+                    peritem=None, applylut=None, lockscales=None):
         assert self.manager is not None, "Panel '%s' must be registered to plot manager before changing options" % self.PANEL_ID
         if autoscale is not None:
             self.autoscale_ac.setChecked(autoscale)
         if autorefresh is not None:
             self.autorefresh_ac.setChecked(autorefresh)
+        if lockscales is not None:
+            self.lockscales_ac.setChecked(lockscales)
         if peritem is not None:
             self.peritem_ac.setChecked(peritem)
         if applylut is not None:
@@ -725,17 +752,20 @@ class XCrossSection(CrossSectionWidget):
             add_actions(self.toolbar,
                         (self.peritem_ac, self.applylut_ac, None,
                          self.export_ac, self.autoscale_ac,
-                         self.refresh_ac, self.autorefresh_ac))
+                         self.refresh_ac, self.autorefresh_ac,
+                         self.lockscales_ac))
         else:
             add_actions(self.toolbar,
                         (other.peritem_ac, other.applylut_ac, None,
                          self.export_ac, other.autoscale_ac,
-                         other.refresh_ac, other.autorefresh_ac))
+                         other.refresh_ac, other.autorefresh_ac,
+                         other.lockscales_ac))
             other.peritem_ac.toggled.connect(self.cs_plot.toggle_perimage_mode)
             other.applylut_ac.toggled.connect(self.cs_plot.toggle_apply_lut)
             other.autoscale_ac.toggled.connect(self.cs_plot.toggle_autoscale)
             other.refresh_ac.triggered.connect(lambda: self.cs_plot.update_plot())
             other.autorefresh_ac.toggled.connect(self.cs_plot.toggle_autorefresh)
+            other.lockscales_ac.toggled.connect(self.cs_plot.toggle_lockscales)
         
     def closeEvent(self, event):
         self.hide()
