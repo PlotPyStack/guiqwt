@@ -27,6 +27,7 @@
 #define __TRAITS_HPP__
 
 #include <math.h>
+#include <intrin.h>
 
 /* this class (real_trait) is used
    to make the code somewhat independent of
