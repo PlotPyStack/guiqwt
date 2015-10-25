@@ -772,8 +772,8 @@ class PlotItemBuilder(object):
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
 
-            * x: 1D NumPy array
-            * y: 1D NumPy array
+            * x: 1D NumPy array (or tuple, list: will be converted to array)
+            * y: 1D NumPy array (or tuple, list: will be converted to array
             * data: 2D NumPy array (image pixel data)
             * title: image title (optional)
             * interpolation: 'nearest', 'linear' (default), 'antialiasing' (5x5)
@@ -783,6 +783,10 @@ class PlotItemBuilder(object):
                                background=background_color, colormap=colormap,
                                xformat=xformat, yformat=yformat,
                                zformat=zformat)
+        if isinstance(x, (list, tuple)):
+            x = array(x)
+        if isinstance(y, (list, tuple)):
+            y = array(y)
         image = XYImageItem(x, y, data, param)
         if eliminate_outliers is not None:
             image.set_lut_range(lut_range_threshold(image, 256,
