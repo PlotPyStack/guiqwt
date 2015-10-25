@@ -1253,6 +1253,7 @@ class DummySeparatorTool(GuiTool):
 
 class CommandTool(GuiTool):
     """Base class for command tools: action, context menu entry"""
+    CHECKABLE = False
     def __init__(self, manager, title, icon=None, tip=None,
                  toolbar_id=DefaultToolbarID):
         self.title = title
@@ -1266,7 +1267,8 @@ class CommandTool(GuiTool):
     def create_action(self, manager):
         """Create and return tool's action"""
         return manager.create_action(self.title, icon=self.icon,
-                                     tip=self.tip, triggered=self.activate)
+                                     tip=self.tip, triggered=self.activate,
+                                     checkable=self.CHECKABLE)
 
     def setup_context_menu(self, menu, plot):
         menu.addAction(self.action)
@@ -1283,12 +1285,10 @@ class CommandTool(GuiTool):
         else:
             self.action.setEnabled(False)
 
-
 class ToggleTool(CommandTool):
+    CHECKABLE = True
     def __init__(self, manager, title, icon=None, tip=None, toolbar_id=None):
         super(ToggleTool, self).__init__(manager, title, icon, tip, toolbar_id)
-        # Creation de l'action
-        self.action.setCheckable(True)
 
 
 class BasePlotMenuTool(CommandTool):
