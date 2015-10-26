@@ -160,7 +160,7 @@ def get_plot_x_section(obj, apply_lut=False):
     if plot.get_axis_direction("left"):
         yc1 = yc0+1
     else:
-        yc1 = yc0-1
+        yc1 = yc0-3
     try:
         #TODO: eventually add an option to apply interpolation algorithm
         data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
