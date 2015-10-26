@@ -1430,7 +1430,7 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
     src_rect[2] -= .5*pixel_width
     src_rect[3] -= .5*pixel_height
 
-    for it in items:
+    for it in sorted(items, key=lambda obj: -obj.z()):
         if it.isVisible() and src_qrect.intersects(it.boundingRect()):
             if add_images:
                 dst_image = np.zeros_like(output)
