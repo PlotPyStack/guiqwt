@@ -164,7 +164,7 @@ def get_plot_x_section(obj, apply_lut=False):
     try:
         #TODO: eventually add an option to apply interpolation algorithm
         data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
-                                    apply_lut=apply_lut,
+                                    apply_lut=apply_lut, add_images=True,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
@@ -189,7 +189,7 @@ def get_plot_y_section(obj, apply_lut=False):
     xc1 = xc0+1
     try:
         data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
-                                    apply_lut=apply_lut,
+                                    apply_lut=apply_lut, add_images=True,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])

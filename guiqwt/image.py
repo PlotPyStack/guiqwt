@@ -1475,7 +1475,7 @@ def compute_trimageitems_original_size(items, src_w, src_h):
 def get_image_from_qrect(plot, p0, p1, src_size=None,
                          adjust_range=None, item_type=None,
                          apply_lut=False, apply_interpolation=False,
-                         original_resolution=False):
+                         original_resolution=False, add_images=False):
     """Return image array from `QRect` area (p0 and p1 are respectively the 
     top-left and bottom-right `QPoint` objects)
     
@@ -1494,7 +1494,7 @@ def get_image_from_qrect(plot, p0, p1, src_size=None,
         src_w, src_h = src_size
     destw, desth = compute_trimageitems_original_size(items, src_w, src_h)
     data = get_image_from_plot(plot, p0, p1, destw=destw, desth=desth,
-                               apply_lut=apply_lut,
+                               apply_lut=apply_lut, add_images=add_images,
                                apply_interpolation=apply_interpolation,
                                original_resolution=original_resolution)
     if adjust_range is None:
