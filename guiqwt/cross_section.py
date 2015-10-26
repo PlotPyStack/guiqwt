@@ -513,11 +513,6 @@ class CrossSectionPlot(CurvePlot):
                     curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
-        if self.apply_lut:
-            self.set_axis_title(self.Z_AXIS, LUT_AXIS_TITLE)
-            self.set_axis_color(self.Z_AXIS, "red")
-        else:
-            self.plot_labels_changed(obj.plot())
         
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
@@ -535,6 +530,13 @@ class CrossSectionPlot(CurvePlot):
     def toggle_apply_lut(self, state):
         self.apply_lut = state
         self.update_plot()
+        if self.apply_lut:
+            self.set_axis_title(self.Z_AXIS, LUT_AXIS_TITLE)
+            self.set_axis_color(self.Z_AXIS, "red")
+        else:
+            obj = self.get_last_obj()
+            if obj is not None and obj.plot() is not None:
+                self.plot_labels_changed(obj.plot())
     
     def toggle_lockscales(self, state):
         self.lockscales = state
