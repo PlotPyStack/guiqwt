@@ -2590,6 +2590,7 @@ class ImagePlot(CurvePlot):
             self.apply_aspect_ratio(full_scale=True)
         if replot:
             self.replot()
+        self.SIG_PLOT_AXIS_CHANGED.emit(self)
 
     def get_axesparam_class(self, item):
         """Return AxesParam dataset class associated to item's type"""

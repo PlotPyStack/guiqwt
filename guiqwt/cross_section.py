@@ -74,7 +74,7 @@ class CrossSectionItem(ErrorBarCurveItem):
     def __init__(self, curveparam=None, errorbarparam=None):
         ErrorBarCurveItem.__init__(self, curveparam, errorbarparam)
         self.perimage_mode = True
-        self.autoscale_mode = True
+        self.autoscale_mode = False
         self.apply_lut = False
         self.source = None
         
@@ -336,7 +336,7 @@ class CrossSectionPlot(CurvePlot):
         super(CrossSectionPlot, self).__init__(parent=parent, title="",
                                                section="cross_section")
         self.perimage_mode = True
-        self.autoscale_mode = True
+        self.autoscale_mode = False
         self.autorefresh_mode = True
         self.apply_lut = False
         self.single_source = False
@@ -457,6 +457,7 @@ class CrossSectionPlot(CurvePlot):
     def plot_axis_changed(self, plot):
         """Plot was just zoomed/panned"""
         if self.lockscales:
+            self.do_autoscale(replot=False, axis_id=self.Z_AXIS)
             vmin, vmax = plot.get_axis_limits(self.CS_AXIS)
             self.set_axis_limits(self.CS_AXIS, vmin, vmax)
         
@@ -513,6 +514,8 @@ class CrossSectionPlot(CurvePlot):
                     curve.update_item(obj)
         if self.autoscale_mode:
             self.do_autoscale(replot=True)
+        elif self.lockscales:
+            self.do_autoscale(replot=True, axis_id=self.Z_AXIS)
         
     def toggle_perimage_mode(self, state):
         self.perimage_mode = state
@@ -677,9 +680,15 @@ class CrossSectionWidget(PanelWidget):
         
     def setup_actions(self):
         self.export_ac = self.export_tool.action
+        self.lockscales_ac = create_action(self, _("Lock scales"),
+                                   icon=get_icon('axes.png'),
+                                   toggled=self.cs_plot.toggle_lockscales,
+                                   tip=_("Lock scales to main plot axes"))
+        self.lockscales_ac.setChecked(self.cs_plot.lockscales)
         self.autoscale_ac = create_action(self, _("Auto-scale"),
                                    icon=get_icon('csautoscale.png'),
                                    toggled=self.cs_plot.toggle_autoscale)
+        self.autoscale_ac.toggled.connect(self.lockscales_ac.setDisabled)
         self.autoscale_ac.setChecked(self.cs_plot.autoscale_mode)
         self.refresh_ac = create_action(self, _("Refresh"),
                                    icon=get_icon('refresh.png'),
@@ -688,16 +697,11 @@ class CrossSectionWidget(PanelWidget):
                                    icon=get_icon('autorefresh.png'),
                                    toggled=self.cs_plot.toggle_autorefresh)
         self.autorefresh_ac.setChecked(self.cs_plot.autorefresh_mode)
-        self.lockscales_ac = create_action(self, _("Lock scales"),
-                                   icon=get_icon('axes.png'),
-                                   toggled=self.cs_plot.toggle_lockscales,
-                                   tip=_("Lock scales to main plot axes"))
-        self.lockscales_ac.setChecked(self.cs_plot.lockscales)
         
     def add_actions_to_toolbar(self):
-        add_actions(self.toolbar, (self.export_ac, self.autoscale_ac,
-                                   None, self.refresh_ac, self.autorefresh_ac,
-                                   self.lockscales_ac))
+        add_actions(self.toolbar, (self.export_ac, None, self.autoscale_ac,
+                                   self.lockscales_ac, None,
+                                   self.refresh_ac, self.autorefresh_ac,))
         
     def register_shape(self, shape, final, refresh=True):
         plot = self.get_plot()
@@ -752,16 +756,16 @@ class XCrossSection(CrossSectionWidget):
         other = self.manager.get_panel(self.OTHER_PANEL_ID)
         if other is None:
             add_actions(self.toolbar,
-                        (self.peritem_ac, self.applylut_ac, None,
-                         self.export_ac, self.autoscale_ac,
-                         self.refresh_ac, self.autorefresh_ac,
-                         self.lockscales_ac))
+                        (self.peritem_ac, self.applylut_ac, 
+                         None, self.export_ac, 
+                         None, self.autoscale_ac, self.lockscales_ac,
+                         None, self.refresh_ac, self.autorefresh_ac))
         else:
             add_actions(self.toolbar,
-                        (other.peritem_ac, other.applylut_ac, None,
-                         self.export_ac, other.autoscale_ac,
-                         other.refresh_ac, other.autorefresh_ac,
-                         other.lockscales_ac))
+                        (other.peritem_ac, other.applylut_ac, 
+                         None, self.export_ac, 
+                         None, other.autoscale_ac, other.lockscales_ac,
+                         None, other.refresh_ac, other.autorefresh_ac))
             other.peritem_ac.toggled.connect(self.cs_plot.toggle_perimage_mode)
             other.applylut_ac.toggled.connect(self.cs_plot.toggle_apply_lut)
             other.autoscale_ac.toggled.connect(self.cs_plot.toggle_autoscale)

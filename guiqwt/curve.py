@@ -1555,6 +1555,7 @@ class CurvePlot(BasePlot):
                 o1, o2 = o2, o1
             self.setAxisScale(k, o1, o2)
         self.replot()
+        self.SIG_PLOT_AXIS_CHANGED.emit(self)
 
     def get_default_item(self):
         """Return default item, depending on plot's default item type
@@ -1608,10 +1609,13 @@ class CurvePlot(BasePlot):
             self.grid.gridparam = dataset
         BasePlot.set_item_parameters(self, itemparams)
     
-    def do_autoscale(self, replot=True):
+    def do_autoscale(self, replot=True, axis_id=None):
         """Do autoscale on all axes"""
+        auto = self.autoReplot()
+        self.setAutoReplot(False)
         # XXX implement the case when axes are synchronised
-        for axis_id in self.AXIS_IDS:
+        axis_ids = self.AXIS_IDS if axis_id is None else [axis_id]
+        for axis_id in axis_ids:
             vmin, vmax = None, None
             if not self.axisEnabled(axis_id):
                 continue
@@ -1645,8 +1649,10 @@ class CurvePlot(BasePlot):
                 vmin = 10**(np.log10(vmin)-.002*dv)
                 vmax = 10**(np.log10(vmax)+.002*dv)
             self.set_axis_limits(axis_id, vmin, vmax)
+        self.setAutoReplot(auto)
         if replot:
             self.replot()
+        self.SIG_PLOT_AXIS_CHANGED.emit(self)
 
     def set_axis_limits(self, axis_id, vmin, vmax, stepsize=0):
         """Set axis limits (minimum and maximum values)"""
