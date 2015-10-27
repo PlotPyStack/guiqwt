@@ -890,9 +890,9 @@ class BasePlot(QwtPlot):
             param.update_axis(self, axis_id)
             self.replot()
         
-    def do_autoscale(self, replot=True):
+    def do_autoscale(self, replot=True, axis_id=None):
         """Do autoscale on all axes"""
-        for axis_id in self.AXIS_IDS:
+        for axis_id in self.AXIS_IDS if axis_id is None else [axis_id]:
             self.setAxisAutoScale(axis_id)
         if replot:
             self.replot()

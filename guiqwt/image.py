@@ -2581,9 +2581,9 @@ class ImagePlot(CurvePlot):
         CurvePlot.disable_unused_axes(self)
         self.enableAxis(self.colormap_axis)
 
-    def do_autoscale(self, replot=True):
+    def do_autoscale(self, replot=True, axis_id=None):
         """Do autoscale on all axes"""
-        CurvePlot.do_autoscale(self, replot=False)
+        CurvePlot.do_autoscale(self, replot=False, axis_id=axis_id)
         self.updateAxes()
         if self.lock_aspect_ratio:
             self.replot()

@@ -1614,8 +1614,7 @@ class CurvePlot(BasePlot):
         auto = self.autoReplot()
         self.setAutoReplot(False)
         # XXX implement the case when axes are synchronised
-        axis_ids = self.AXIS_IDS if axis_id is None else [axis_id]
-        for axis_id in axis_ids:
+        for axis_id in self.AXIS_IDS if axis_id is None else [axis_id]:
             vmin, vmax = None, None
             if not self.axisEnabled(axis_id):
                 continue
