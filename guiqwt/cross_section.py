@@ -69,10 +69,11 @@ from guiqwt.baseplot import canvas_to_axes, axes_to_canvas
 class CrossSectionItem(ErrorBarCurveItem):
     """A Qwt item representing cross section data"""
     __implements__ = (IBasePlotItem,)
-    _inverted = None
+    ORIENTATION = None
     
     def __init__(self, curveparam=None, errorbarparam=None):
         ErrorBarCurveItem.__init__(self, curveparam, errorbarparam)
+        self.setOrientation(self.ORIENTATION)
         self.perimage_mode = True
         self.autoscale_mode = False
         self.apply_lut = False
@@ -102,7 +103,7 @@ class CrossSectionItem(ErrorBarCurveItem):
         sectx, secty = self.get_cross_section(obj)
         if secty.size == 0 or np.all(np.isnan(secty)):
             sectx, secty = np.array([]), np.array([])
-        if self._inverted:
+        if self.orientation() == Qt.Vertical:
             self.process_curve_data(secty, sectx)
         else:
             self.process_curve_data(sectx, secty)
@@ -125,9 +126,17 @@ class CrossSectionItem(ErrorBarCurveItem):
         self.plot().SIG_CS_CURVE_CHANGED.emit(self)
         if not self.autoscale_mode:
             self.update_scale()
-
+            
     def update_scale(self):
-        raise NotImplementedError
+        plot = self.plot()
+        if self.orientation() == Qt.Vertical:
+            axis_id = plot.Y_LEFT
+        else:
+            axis_id = plot.X_BOTTOM
+        source = self.get_source_image()
+        sdiv = source.plot().axisScaleDiv(axis_id)
+        plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
+        plot.replot()
 
 
 def get_rectangular_area(obj):
@@ -261,7 +270,8 @@ def get_plot_average_y_section(obj, apply_lut=False):
 
 class XCrossSectionItem(CrossSectionItem):
     """A Qwt item representing x-axis cross section data"""
-    _inverted = False
+    ORIENTATION = Qt.Horizontal
+
     def get_cross_section(self, obj):
         """Get x-cross section data from source image"""
         source = self.get_source_image()
@@ -280,18 +290,11 @@ class XCrossSectionItem(CrossSectionItem):
                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
-            
-    def update_scale(self):
-        plot = self.plot()
-        axis_id = plot.X_BOTTOM
-        source = self.get_source_image()
-        sdiv = source.plot().axisScaleDiv(axis_id)
-        plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
-        plot.replot()
 
 class YCrossSectionItem(CrossSectionItem):
     """A Qwt item representing y-axis cross section data"""
-    _inverted = True
+    ORIENTATION = Qt.Vertical
+
     def get_cross_section(self, obj):
         """Get y-cross section data from source image"""
         source = self.get_source_image()
@@ -310,14 +313,6 @@ class YCrossSectionItem(CrossSectionItem):
                                                    apply_lut=self.apply_lut)
             else:
                 return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
-            
-    def update_scale(self):
-        plot = self.plot()
-        axis_id = plot.Y_LEFT
-        source = self.get_source_image()
-        sdiv = source.plot().axisScaleDiv(axis_id)
-        plot.setAxisScale(axis_id, sdiv.lowerBound(), sdiv.upperBound())
-        plot.replot()
 
 
 LUT_AXIS_TITLE = _("LUT scale")+(" (0-%d)" % LUT_MAX)
