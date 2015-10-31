@@ -1,3 +1,4 @@
+recursive-include scripts * *.bat
 recursive-include guiqwt *.png *.svg *.pot *.po *.mo *.dcm *.ui
 recursive-include py2exe_example *.py *.pyw *.png *.svg *.ico *.bat
 recursive-include qtdesigner *.py

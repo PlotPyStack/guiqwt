@@ -24,7 +24,7 @@ import setuptools  # analysis:ignore
 import numpy
 import sys
 import os
-from os.path import join, dirname, abspath, isdir
+import os.path as osp
 from numpy.distutils.core import setup, Extension
 from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
@@ -48,11 +48,14 @@ elif 'alpha' in version or 'a' in version:
 else:
     CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
 
-if os.name == 'nt':
-    SCRIPTS = ['guiqwt-tests', 'guiqwt-tests.bat', 'sift', 'sift.bat']
-else:
-    SCRIPTS = ['guiqwt-tests', 'sift']
-SCRIPTS = [join('scripts', fname) for fname in SCRIPTS]
+
+def _create_script_list(basename):
+    scripts = ['%s-py%d' % (basename, sys.version_info.major)]
+    if os.name == 'nt':
+        scripts.append('%s.bat' % scripts[0])
+    return [osp.join('scripts', name) for name in scripts]
+
+SCRIPTS = _create_script_list('guiqwt-tests') + _create_script_list('sift')
 
 
 try:
@@ -66,8 +69,8 @@ class build(dftbuild):
     def has_doc(self):
         if sphinx is None:
             return False
-        setup_dir = dirname(abspath(__file__))
-        return isdir(join(setup_dir, 'doc'))
+        setup_dir = osp.dirname(osp.abspath(__file__))
+        return osp.isdir(osp.join(setup_dir, 'doc'))
     sub_commands = dftbuild.sub_commands + [('build_doc', has_doc)]
 
 cmdclass = {'build' : build}
@@ -80,7 +83,7 @@ if sphinx:
             # code so that the documentation is built on this and not a
             # previously installed version
             build = self.get_finalized_command('build')
-            sys.path.insert(0, abspath(build.build_lib))
+            sys.path.insert(0, osp.abspath(build.build_lib))
             try:
                 sphinx.setup_command.BuildDoc.run(self)
             except UnicodeDecodeError:
@@ -129,19 +132,20 @@ setup(name=LIBNAME, version=version,
                 "guidata (>=1.7.0)", "PythonQwt (>=0.4.0)", "PIL (>=1.1.6)"],
       scripts=SCRIPTS,
       ext_modules=[Extension(LIBNAME+'.histogram2d',
-                             [join('src', 'histogram2d.c')],
+                             [osp.join('src', 'histogram2d.c')],
                              include_dirs=[numpy.get_include()]),
                    Extension(LIBNAME+'.mandelbrot',
-                             [join('src', 'mandelbrot.c')],
+                             [osp.join('src', 'mandelbrot.c')],
                              include_dirs=[numpy.get_include()]),
-                   Extension(LIBNAME+'._scaler', [join("src", "scaler.cpp"),
-                                                  join("src", "pcolor.cpp")],
+                   Extension(LIBNAME+'._scaler',
+                             [osp.join("src", "scaler.cpp"),
+                              osp.join("src", "pcolor.cpp")],
                              extra_compile_args=CFLAGS,
-                             depends=[join("src", "traits.hpp"),
-                                      join("src", "points.hpp"),
-                                      join("src", "arrays.hpp"),
-                                      join("src", "scaler.hpp"),
-                                      join("src", "debug.hpp"),
+                             depends=[osp.join("src", "traits.hpp"),
+                                      osp.join("src", "points.hpp"),
+                                      osp.join("src", "arrays.hpp"),
+                                      osp.join("src", "scaler.hpp"),
+                                      osp.join("src", "debug.hpp"),
                                       ],
                              ),
                    ],
