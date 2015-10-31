@@ -1,9 +1,7 @@
 guiqwt
 ======
 
-Copyright © 2009-2015 CEA, Pierre Raybaut
-
-Licensed under the terms of the CECILL V2 License
+Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the CECILL License (see ``Licence_CeCILL_V2-en.txt``).
 
 
 Overview
@@ -13,36 +11,33 @@ Based on ``PythonQwt`` (a pure Python/PyQt reimplementation of the curve   plott
 
 Extension to ``PythonQwt``:
 
-  * set of tools for curve and image plotting
-  * GUI-based application development helpers
+* set of tools for curve and image plotting
+* GUI-based application development helpers
 
 Dependencies
 ------------
 
     Requirements
 
-        Python 2.6+ or Python 3
-        PyQt4 4.3+ or PyQt5 5.5+
-        qwt 0.1+ (pure Python reimplementation of Qwt6 C++ library)
-        guidata 1.7+
-        NumPy 1.3+ -- NumPy 1.6 or later is required for Windows binaries
-        SciPy 0.7+
-        PIL 1.1.6+
+    - Python 2.6+ or Python 3
+    - PyQt4 4.3+ or PyQt5 5.5+
+    - qwt 0.1+ (pure Python reimplementation of Qwt6 C++ library)
+    - guidata 1.7+
+    - NumPy 1.3+ -- NumPy 1.6 or later is required for Windows binaries
+    - SciPy 0.7+
+    - PIL 1.1.6+
         
     Optional modules
         
-        spyderlib 2.1+
-        pydicom 0.9.4+
+    - spyderlib 2.1+
+    - pydicom 0.9.4+
 
 Building/Installation
 ---------------------
 
     All platforms:
         
-        The setup.py script supports the following extra options for optimizing the image scaler engine with SSE2/SSE3 processors:
-
-            ``--sse2``
-            ``--sse3``
+        The setup.py script supports the following extra options for optimizing the image scaler engine with SSE2/SSE3 processors: ``--sse2`` or ``--sse3``.
 
     On GNU/Linux and MacOS platforms:
         
