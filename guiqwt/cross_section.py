@@ -942,3 +942,7 @@ class ObliqueCrossSection(CrossSectionWidget):
     CrossSectionPlotKlass = ObliqueCrossSectionPlot
     PANEL_ICON = "csection_oblique.png"
 
+    def setup_actions(self):
+        super(ObliqueCrossSection, self).setup_actions()
+        self.lockscales_ac.setChecked(False)
+        self.autoscale_ac.setChecked(True)
