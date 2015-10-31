@@ -78,7 +78,7 @@ import numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
 from guidata.qt.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
-from guidata.qt.QtCore import Qt, QRectF, QPointF, QPoint, QLineF
+from guidata.qt.QtCore import Qt, QRectF, QPointF, QLineF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.py3compat import maxsize
@@ -1382,8 +1382,8 @@ class XRangeSelection(AbstractShape):
                          rct2.center().x(), rct2.bottom())
         painter.setPen(pen)
         x0, x1, y = self.get_handles_pos()        
-        sym.drawSymbol(painter, QPoint(x0, y))
-        sym.drawSymbol(painter, QPoint(x1, y))
+        sym.drawSymbol(painter, QPointF(x0, y))
+        sym.drawSymbol(painter, QPointF(x1, y))
         
     def hit_test(self, pos):
         x, _y = pos.x(), pos.y()
