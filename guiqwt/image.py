@@ -149,7 +149,7 @@ from math import fabs
 import numpy as np
 
 from guidata.qt.QtGui import QColor, QImage
-from guidata.qt.QtCore import QRectF, QPointF, QRect, QPoint
+from guidata.qt.QtCore import QRectF, QPointF, QRect
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.py3compat import getcwd, is_text_string
@@ -1445,7 +1445,7 @@ def assemble_imageitems(items, src_qrect, destw, desth, align=None,
 def get_plot_qrect(plot, p0, p1):
     """
     Return `QRectF` rectangle object in plot coordinates
-    from top-left and bottom-right `QPoint` objects in canvas coordinates
+    from top-left and bottom-right `QPointF` objects in canvas coordinates
     """
     ax, ay = plot.X_BOTTOM, plot.Y_LEFT
     p0x, p0y = plot.invTransform(ax, p0.x()), plot.invTransform(ay, p0.y())
@@ -1477,7 +1477,7 @@ def get_image_from_qrect(plot, p0, p1, src_size=None,
                          apply_lut=False, apply_interpolation=False,
                          original_resolution=False, add_images=False):
     """Return image array from `QRect` area (p0 and p1 are respectively the 
-    top-left and bottom-right `QPoint` objects)
+    top-left and bottom-right `QPointF` objects)
     
     adjust_range: None (return raw data, dtype=np.float32), 'original' 
     (return data with original data type), 'normalize' (normalize range with
@@ -1518,8 +1518,8 @@ def get_image_in_shape(obj, norm_range=False, item_type=None,
     xc0, yc0 = axes_to_canvas(obj, x0, y0)
     xc1, yc1 = axes_to_canvas(obj, x1, y1)
     adjust_range = 'normalize' if norm_range else 'original'
-    return get_image_from_qrect(obj.plot(), QPoint(xc0, yc0), QPoint(xc1, yc1),
-                                src_size=(x1-x0, y1-y0),
+    return get_image_from_qrect(obj.plot(), QPointF(xc0, yc0),
+                                QPointF(xc1, yc1), src_size=(x1-x0, y1-y0),
                                 adjust_range=adjust_range, item_type=item_type,
                                 apply_lut=apply_lut,
                                 apply_interpolation=apply_interpolation,
@@ -1530,7 +1530,7 @@ def get_image_from_plot(plot, p0, p1, destw=None, desth=None, add_images=False,
                         original_resolution=False):
     """
     Return pixel data of a rectangular plot area (image items only)
-    p0, p1: resp. top-left and bottom-right points (`QPoint` objects)
+    p0, p1: resp. top-left and bottom-right points (`QPointF` objects)
     apply_lut: apply contrast settings
     add_images: add superimposed images (instead of replace by the foreground)
 

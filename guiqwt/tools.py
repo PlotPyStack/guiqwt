@@ -254,7 +254,7 @@ import numpy as np
 import weakref
 import os.path as osp
 
-from guidata.qt.QtCore import Qt, QObject, QPoint, Signal
+from guidata.qt.QtCore import Qt, QObject, QPointF, Signal
 from guidata.qt.QtGui import (QMenu, QActionGroup, QPrinter, QMessageBox,
                               QPrintDialog, QAction, QToolButton, QKeySequence)
 from guidata.qt.compat import getsavefilename, getopenfilename
@@ -799,7 +799,7 @@ class RectangularActionTool(InteractiveTool):
         if self.fix_orientation:
             left, right = min(p0.x(), p1.x()), max(p0.x(), p1.x())
             top, bottom = min(p0.y(), p1.y()), max(p0.y(), p1.y())
-            self.action_func(plot, QPoint(left, top), QPoint(right, bottom))
+            self.action_func(plot, QPointF(left, top), QPointF(right, bottom))
         else:
             self.action_func(plot, p0, p1)
         self.SIG_TOOL_JOB_FINISHED.emit()
@@ -1533,7 +1533,7 @@ class CopyToClipboardTool(CommandTool):
 def save_snapshot(plot, p0, p1, new_size=None):
     """
     Save rectangular plot area
-    p0, p1: resp. top left and bottom right points (QPoint objects)
+    p0, p1: resp. top left and bottom right points (`QPointF` objects)
     new_size: destination image size (tuple: (width, height))
     """
     from guiqwt.image import (get_image_from_plot, get_plot_qrect,

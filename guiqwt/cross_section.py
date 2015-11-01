@@ -43,7 +43,7 @@ import weakref
 
 from guidata.qt.QtGui import (QVBoxLayout, QSizePolicy, QHBoxLayout, QToolBar,
                               QSpacerItem)
-from guidata.qt.QtCore import QSize, QPoint, Qt
+from guidata.qt.QtCore import QSize, QPointF, Qt
 
 import numpy as np
 
@@ -172,14 +172,14 @@ def get_plot_x_section(obj, apply_lut=False):
         yc1 = yc0-3
     try:
         #TODO: eventually add an option to apply interpolation algorithm
-        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+        data = get_image_from_qrect(plot, QPointF(xc0, yc0), QPointF(xc1, yc1),
                                     apply_lut=apply_lut, add_images=True,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=0)
-    x0, _y0 = canvas_to_axes(obj, QPoint(xc0, yc0))
-    x1, _y1 = canvas_to_axes(obj, QPoint(xc1, yc1))
+    x0, _y0 = canvas_to_axes(obj, QPointF(xc0, yc0))
+    x1, _y1 = canvas_to_axes(obj, QPointF(xc1, yc1))
     x = np.linspace(x0, x1, len(y))
     return x, y
 
@@ -197,14 +197,14 @@ def get_plot_y_section(obj, apply_lut=False):
     xc0, _yc0 = axes_to_canvas(obj, x0, 0)
     xc1 = xc0+1
     try:
-        data = get_image_from_qrect(plot, QPoint(xc0, yc0), QPoint(xc1, yc1),
+        data = get_image_from_qrect(plot, QPointF(xc0, yc0), QPointF(xc1, yc1),
                                     apply_lut=apply_lut, add_images=True,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
         return np.array([]), np.array([])
     y = data.mean(axis=1)
-    _x0, y0 = canvas_to_axes(obj, QPoint(xc0, yc0))
-    _x1, y1 = canvas_to_axes(obj, QPoint(xc1, yc1))
+    _x0, y0 = canvas_to_axes(obj, QPointF(xc0, yc0))
+    _x1, y1 = canvas_to_axes(obj, QPointF(xc1, yc1))
     x = np.linspace(y0, y1, len(y))
     return x, y
 
@@ -227,7 +227,7 @@ def get_plot_average_x_section(obj, apply_lut=False):
         yc1, yc0 = yc0, yc1
     try:
         data = get_image_from_qrect(obj.plot(),
-                                    QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    QPointF(xc0, yc0), QPointF(xc1, yc1),
                                     apply_lut=apply_lut,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):
@@ -256,7 +256,7 @@ def get_plot_average_y_section(obj, apply_lut=False):
         xc1, xc0 = xc0, xc1
     try:
         data = get_image_from_qrect(obj.plot(),
-                                    QPoint(xc0, yc0), QPoint(xc1, yc1),
+                                    QPointF(xc0, yc0), QPointF(xc1, yc1),
                                     apply_lut=apply_lut,
                                     apply_interpolation=False)
     except (ValueError, ZeroDivisionError, TypeError):

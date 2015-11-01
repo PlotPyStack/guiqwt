@@ -19,7 +19,7 @@ The `event` module handles event management (states, event filter, ...).
 from __future__ import print_function
 
 import weakref
-from guidata.qt.QtCore import QEvent, Qt, QObject, QPoint, Signal
+from guidata.qt.QtCore import QEvent, Qt, QObject, QPointF, Signal
 from guidata.qt.QtGui import QKeySequence
 
 CursorShape = type(Qt.ArrowCursor)
@@ -280,11 +280,11 @@ class DragHandler(QObject):
         rct = filter.plot.contentsRect()
         dx = (pos.x(), self.last.x(), self.start.x(), rct.width())
         dy = (pos.y(), self.last.y(), self.start.y(), rct.height())
-        self.last = QPoint(pos)
+        self.last = QPointF(pos)
         return dx, dy
 
     def start_tracking(self, _filter, event):
-        self.start = self.last = QPoint(event.pos())
+        self.start = self.last = QPointF(event.pos())
 
     def start_moving(self, filter, event):
         return self.move(filter, event)
@@ -398,8 +398,8 @@ class UndoMoveObject(object):
     
     def compute_positions(self):
         from guiqwt.baseplot import axes_to_canvas
-        pos1 = QPoint(*axes_to_canvas(self.obj, *self.coords1))
-        pos2 = QPoint(*axes_to_canvas(self.obj, *self.coords2))
+        pos1 = QPointF(*axes_to_canvas(self.obj, *self.coords1))
+        pos2 = QPointF(*axes_to_canvas(self.obj, *self.coords2))
         return pos1, pos2
     
     def undo(self):
@@ -496,7 +496,7 @@ class ObjectHandler(object):
         self.active = None
         self.handle = None
         self.first_pos = pos = event.pos()
-        self.last_pos = QPoint(pos)
+        self.last_pos = QPointF(pos)
         selected = plot.get_active_item()
         distance = CONF.get("plot", "selection/distance", 6)
 
@@ -584,7 +584,7 @@ class ObjectHandler(object):
             self.active.move_local_point_to(self.handle, event.pos(), ctrl)
             self.undo_action = UndoMovePoint(self.active, self.first_pos,
                                              event.pos(), self.handle, ctrl)
-        self.last_pos = QPoint(event.pos())
+        self.last_pos = QPointF(event.pos())
         filter.plot.replot()
         
     def stop_tracking(self, filter, event):
@@ -598,7 +598,7 @@ class ObjectHandler(object):
 class RectangularSelectionHandler(DragHandler):
 
     #: Signal emitted by RectangularSelectionHandler when ending selection
-    SIG_END_RECT = Signal("PyQt_PyObject", "QPoint", "QPoint")
+    SIG_END_RECT = Signal("PyQt_PyObject", "QPointF", "QPointF")
     
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(RectangularSelectionHandler, self).__init__(filter, btn, mods,
@@ -614,13 +614,13 @@ class RectangularSelectionHandler(DragHandler):
         self.avoid_null_shape = avoid_null_shape
 
     def start_tracking(self, filter, event):
-        self.start = self.last = QPoint(event.pos())
+        self.start = self.last = QPointF(event.pos())
 
     def start_moving(self, filter, event):
         self.shape.attach(filter.plot)
         self.shape.setZ(filter.plot.get_max_z()+1)
         if self.avoid_null_shape:
-            self.start -= QPoint(1, 1)
+            self.start -= QPointF(1, 1)
         self.shape.move_local_point_to(self.shape_h0, self.start)
         self.shape.move_local_point_to(self.shape_h1, event.pos())
         self.start_moving_action(filter, event)
