@@ -1,13 +1,20 @@
 guiqwt
 ======
 
-Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the CECILL License (see ``Licence_CeCILL_V2-en.txt``).
+Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the 
+CECILL License (see ``Licence_CeCILL_V2-en.txt``).
 
 
 Overview
 --------
 
-Based on ``PythonQwt`` (a pure Python/PyQt reimplementation of the curve   plotting Qwt C++ library, included in guiqwt base source code) and on the scientific modules NumPy and SciPy, guiqwt is a Python library providing efficient 2D data-plotting features (curve/image visualization and related tools) for interactive computing and signal/image processing application development.
+Based on ``PythonQwt`` (a pure Python/PyQt reimplementation of the curve 
+plotting Qwt C++ library, included in guiqwt base source code) and on the 
+scientific modules NumPy and SciPy, ``guiqwt`` is a Python library providing 
+efficient 2D data-plotting features (curve/image visualization and related 
+tools) for interactive computing and signal/image processing application 
+development. It is based on Qt graphical user interfaces library, and 
+currently supports both ``PyQt4`` and ``PyQt5``.
 
 Extension to ``PythonQwt``:
 
@@ -37,7 +44,9 @@ Building/Installation
 
     All platforms:
         
-        The setup.py script supports the following extra options for optimizing the image scaler engine with SSE2/SSE3 processors: ``--sse2`` or ``--sse3``.
+        The setup.py script supports the following extra options for 
+        optimizing the image scaler engine with SSE2/SSE3 processors: 
+        ``--sse2`` or ``--sse3``.
 
     On GNU/Linux and MacOS platforms:
         
