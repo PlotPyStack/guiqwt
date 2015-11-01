@@ -2456,6 +2456,12 @@ class ImagePlot(CurvePlot):
         CurvePlot.do_zoom_view(self, dx, dy,
                                lock_aspect_ratio=self.lock_aspect_ratio)
 
+    def do_zoom_rect_view(self, start, end):
+        """Reimplement CurvePlot method"""
+        CurvePlot.do_zoom_rect_view(self, start, end)
+        if self.lock_aspect_ratio:
+            self.apply_aspect_ratio()
+
     #---- Levels histogram-related API ----------------------------------------
     def update_lut_range(self, _min, _max):
         """update the LUT scale"""
