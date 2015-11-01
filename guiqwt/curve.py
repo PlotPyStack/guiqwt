@@ -444,7 +444,12 @@ class CurveItem(QwtPlotCurve):
     def select(self):
         """Select item"""
         self.selected = True
+        plot = self.plot()
+        if plot is not None:
+            plot.blockSignals(True)
         self.setSymbol(SELECTED_SYMBOL)
+        if plot is not None:
+            plot.blockSignals(False)
         self.invalidate_plot()
     
     def unselect(self):
