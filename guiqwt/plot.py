@@ -601,6 +601,7 @@ class PlotManager(object):
         self.add_separator_tool()
         self.register_other_tools()
         self.add_separator_tool()
+        self.update_tools_status()
         self.get_default_tool().activate()
         
     def register_all_image_tools(self):
@@ -627,6 +628,7 @@ class PlotManager(object):
         self.add_separator_tool()
         self.register_other_tools()
         self.add_separator_tool()
+        self.update_tools_status()
         self.get_default_tool().activate()
         
     def synchronize_axis(self, axis, plots):
