@@ -101,7 +101,7 @@ setup(name=LIBNAME, version=version,
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
                                                '.ui'))},
       install_requires=["NumPy>=1.3", "SciPy>=0.7", "guidata>=1.7.0",
-                        "PythonQwt>=0.5.0", "PIL>=1.1.6"],
+                        "PythonQwt>=0.5.0", "Pillow"],
       extras_require = {
                         'Doc':  ["Sphinx>=1.1"],
                         },
