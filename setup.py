@@ -37,7 +37,8 @@ from guiqwt import __version__ as version
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting (extension to `PythonQwt`)'
+DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting '\
+              '(extension to `PythonQwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Topic :: Scientific/Engineering']
@@ -63,35 +64,6 @@ try:
 except ImportError:
     sphinx = None  # analysis:ignore
     
-from numpy.distutils.command.build import build as dftbuild
-
-class build(dftbuild):
-    def has_doc(self):
-        if sphinx is None:
-            return False
-        setup_dir = osp.dirname(osp.abspath(__file__))
-        return osp.isdir(osp.join(setup_dir, 'doc'))
-    sub_commands = dftbuild.sub_commands + [('build_doc', has_doc)]
-
-cmdclass = {'build' : build}
-
-if sphinx:
-    from sphinx.setup_command import BuildDoc
-    class build_doc(BuildDoc):
-        def run(self):
-            # make sure the python path is pointing to the newly built
-            # code so that the documentation is built on this and not a
-            # previously installed version
-            build = self.get_finalized_command('build')
-            sys.path.insert(0, osp.abspath(build.build_lib))
-            try:
-                sphinx.setup_command.BuildDoc.run(self)
-            except UnicodeDecodeError:
-                print("ERROR: unable to build documentation because Sphinx do not handle source path with non-ASCII characters. Please try to move the source package to another location (path with *only* ASCII characters).", file=sys.stderr)            
-            sys.path.pop(0)
-
-    cmdclass['build_doc'] = build_doc
-
 
 def is_msvc():
     """Detect if Microsoft Visual C++ compiler was chosen to build package"""
@@ -166,4 +138,4 @@ setup(name=LIBNAME, version=version,
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         ],
-      cmdclass=cmdclass)
+      )
