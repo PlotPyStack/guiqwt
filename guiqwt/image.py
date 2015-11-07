@@ -484,8 +484,8 @@ class BaseImageItem(QwtPlotItem):
         if self.max == self.min:
             self.lut = (LUT_MAX, self.min, bg, cmap)
         else:
-            self.lut = (LUT_MAX/(self.max-self.min),
-                        -LUT_MAX*self.min/(self.max-self.min),
+            fmin, fmax = float(self.min), float(self.max)  # avoid overflows
+            self.lut = (LUT_MAX/(fmax-fmin), -LUT_MAX*fmin/(fmax-fmin),
                         bg, cmap)
 
     def get_lut_range(self):
