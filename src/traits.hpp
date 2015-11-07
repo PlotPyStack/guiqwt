@@ -27,7 +27,6 @@
 #define __TRAITS_HPP__
 
 #include <math.h>
-#include <intrin.h>
 
 /* this class (real_trait) is used
    to make the code somewhat independent of
@@ -40,6 +39,7 @@
 
 /* MSVC does not have lrint/lrintf */
 #ifdef _MSC_VER
+    #include <intrin.h>
     __inline long int lrint (double f)
     {
     #ifdef _M_X64
