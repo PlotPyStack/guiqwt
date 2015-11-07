@@ -105,7 +105,11 @@ setup(name=LIBNAME, version=version,
       extras_require = {
                         'Doc':  ["Sphinx>=1.1"],
                         },
-      scripts=SCRIPTS,
+      entry_points={'gui_scripts':
+                    ['guiqwt-tests-py%d = guiqwt.tests:run'\
+                     % sys.version_info.major,
+                     'sift-py%d = guiqwt.tests.sift:run'\
+                     % sys.version_info.major,]},
       ext_modules=[Extension(LIBNAME+'.histogram2d',
                              [osp.join('src', 'histogram2d.c')],
                              include_dirs=[numpy.get_include()]),
