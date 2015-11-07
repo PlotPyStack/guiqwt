@@ -198,10 +198,10 @@ def _imread_pil(filename, to_grayscale=False):
     if to_grayscale and img.mode in ("RGB", "RGBA", "RGBX"):
         # Converting to grayscale
         img = img.convert("L")
+    elif "A" in img.mode or (img.mode == "P" and "transparency" in img.info):
+        img = img.convert("RGBA")
     elif img.mode == "P":
         img = img.convert("RGB")
-    elif "A" in img.mode:
-        img = img.convert("RGBA")
     try:
         dtype, extra = DTYPES[img.mode]
     except KeyError:
