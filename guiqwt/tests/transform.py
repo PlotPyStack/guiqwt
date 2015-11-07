@@ -14,6 +14,7 @@ SHOW = True # Show test in GUI-based test launcher
 from guidata.qt.QtCore import QRectF
 from guidata.qt.QtGui import QImage
 
+import os
 import numpy as np
 
 from guiqwt.image import assemble_imageitems
@@ -127,20 +128,28 @@ def get_bbox(items):
     return r
 
 def save_image(name, data):
+    for fname in (name+".u16.tif", name+".u8.png"):
+        if os.path.exists(fname):
+            os.remove(fname)
+    print("Saving image: %d x %d (%d KB):" % (data.shape[0], data.shape[1],
+                                              data.nbytes/1024.))
+    print(" --> uint16")
     io.imwrite(name+".u16.tif", data, dtype=np.uint16, max_range=True)
+    print(" --> uint8")
     io.imwrite(name+".u8.png", data, dtype=np.uint8, max_range=True)
 
 def build_image(items):
     r = get_bbox(items)
     x, y, w, h = r.getRect()
+    print("-"*80)
     print("Assemble test1:", w, "x", h)
     dest = assemble_imageitems(items, r, w, h)
-    print("saving...")
-    save_image("test1.png", dest)
-    
+    save_image("test1", dest)
+    print("-"*80)
     print("Assemble test2:", w/4, "x", h/4)
     dest = assemble_imageitems(items, r, w/4, h/4)
-    save_image("test2.png", dest)
+    save_image("test2", dest)
+    print("-"*80)
 
 def test():
     """Test"""
