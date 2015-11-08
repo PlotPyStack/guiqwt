@@ -219,10 +219,17 @@ def _imwrite_pil(filename, arr):
     import PIL.Image
     import PIL.TiffImagePlugin # py2exe
     for mode, (dtype_str, extra) in list(DTYPES.items()):
-        if dtype_str == arr.dtype.str and\
-           (len(arr.shape[2:]) == 0 or\
-            (len(arr.shape[2:]) > 0 and arr.shape[-1] == extra)):
-            break
+        if dtype_str == arr.dtype.str:
+            if extra is None:  # mode for grayscale images
+                if len(arr.shape[2:]) > 0:
+                    continue  # not suitable for RGB(A) images
+                else:
+                    break  # this is it!
+            else:  # mode for RGB(A) images
+                if len(arr.shape[2:]) == 0:
+                    continue  # not suitable for grayscale images
+                elif arr.shape[-1] == extra:
+                    break  # this is it!
     else:
         raise RuntimeError("Cannot determine PIL data type")
     img = PIL.Image.fromarray(arr, mode)
