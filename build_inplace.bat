@@ -1,3 +1,3 @@
 rmdir /S /Q build
-python setup.py build_ext --inplace --sse2
-pause
+del guiqwt\*.pyd
+python setup.py --no-user-cfg build_ext -c msvc --inplace --sse2
