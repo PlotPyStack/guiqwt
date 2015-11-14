@@ -1,4 +1,4 @@
-== Version 3.0.0beta5 ==
+== Version 3.0.0 ==
 
 === Possible API compatibility issues (since v2.3.2) ===
 
@@ -10,7 +10,29 @@
 === Bug fixes (since v2.3.2) ===
 
   * scaler.cpp: fixed destination rectangle ValueError test (was continuing execution instead of returning immediately)
-
+  * Fixed Issue #4: mingw-w64's _isnan function crash
+  * Fixed Issue #38: error when quitting "transform.py" on Python 3
+  * Fixed Issue #19: added all qthelpers.create_action kwargs to plot.PlotManager method
+  * Fixed Issue #21: Baseplot captured mouseDoubleClickEvent for whole plot area instead of just the axis area
+  * Fixed Issue #22: added support for int64/uint64 images
+  * Fixed Issue #24: Item list widget was loosing names of curves
+  * Fixed Issue #33: update color map axis when active image item has changed
+  * Fixed Issue #32: show cross sections only for *visible* image items
+  * Fixed Issue #34: editing any axis (mouse double-click) made the color axis vanish
+  * Fixed Issue #34: editing color axis parameters should not allowed (not supported) --> the user may change those parameters through the image item properties dialog box
+  * Fixed Issue #31: added option to sync cross section scales to main plot
+  * Fixed Issue #30: make.xyimage now accepts lists or tuples for `x` and `y` arguments
+  * Fixed Issue #26: ImageItem.get_lut_range_max() throwed ValueError
+  * Fixed Issue #27: X-cross section was not working when image Y-axis was not reversed
+  * assemble_imageitems: assemble images taking into account the Z-order
+  * Cross sections: adding image intersections instead of picking one layer only
+  * Fixed Issue #42: update tools status after registering all curve/image tools
+  * Fixed Issue #16: ImagePlot/rectangular zoom was ignoring aspect ratio
+  * Fixed Issue #43: install_requires Pillow instead of PIL
+  * Fixed Issue #46 (`guiqwt.io.imread`): fixed support for PNG images with transparency palette (Pillow)
+  * Images with integers: avoid overflows when computing LUT
+  * Fixed Issue #50: 16-bit images were saved (io.imwrite) using the wrong PIL mode
+  
 ----
 
 == Version 2.3.2 ==
