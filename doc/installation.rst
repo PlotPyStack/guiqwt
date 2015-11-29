@@ -5,17 +5,17 @@ Dependencies
 ------------
 
 Requirements:
-    * Python 2.x (x>=6)
+    * Python 2.x (x>=6) or 3.x (x>=2)
     * PyQt4 4.x (x>=3 ; recommended x>=4) or PyQt5 5.x (x>=5)
-    * PythonQwt 0.x (x>=4)
-    * guidata 1.7 or later
-    * NumPy 1.x (x>=3) -- NumPy 1.6 or later is required for Windows binaries
-    * SciPy 0.x (x>=7)
-    * PIL 1.1.x (x>=6)
+    * PythonQwt >=0.5
+    * guidata >=1.7
+    * NumPy
+    * SciPy
+    * Pillow
     
 Optional Python modules:
     * spyderlib 2.1 for Sift embedded Python console
-    * pydicom 0.9.x (x>=4) for DICOM files I/O features
+    * pydicom >=0.9.3 for DICOM files I/O features
 
 Installation
 ------------

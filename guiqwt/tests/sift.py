@@ -1056,9 +1056,14 @@ class ImageFT(ObjectFT):
             image.title = filename
             image.data = data
             if osp.splitext(filename)[1].lower() == ".dcm":
-                import dicom
-                image.template = dicom.read_file(filename,
-                                                 stop_before_pixels=True)
+                try:
+                    # pydicom 1.0
+                    from pydicom import dicomio
+                except ImportError:
+                    # pydicom 0.9
+                    import dicom as dicomio
+                image.template = dicomio.read_file(filename,
+                                                   stop_before_pixels=True)
             self.add_object(image)
             
     def save_image(self):

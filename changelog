@@ -1,3 +1,11 @@
+== Version 3.0.1 ==
+
+=== Bug fixes (since v3.0.0) ===
+
+  * I/O: fixed support for DICOM (supporting pydicom 0.9.5+ and 1.0)
+  
+----
+
 == Version 3.0.0 ==
 
 === Possible API compatibility issues (since v2.3.2) ===

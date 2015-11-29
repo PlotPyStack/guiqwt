@@ -104,6 +104,7 @@ setup(name=LIBNAME, version=version,
                         "PythonQwt>=0.5.0", "Pillow"],
       extras_require = {
                         'Doc':  ["Sphinx>=1.1"],
+                        'DICOM':  ["pydicom>=0.9.3"],
                         },
       entry_points={'gui_scripts':
                     ['guiqwt-tests-py%d = guiqwt.tests:run'\

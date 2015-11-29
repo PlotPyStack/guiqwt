@@ -13,15 +13,17 @@ application development.
 
 
 External resources:
+    * Python Package Index: `PyPI`_
     * Bug reports and feature requests: `GitHub`_
     * Help, support and discussions around the project: `GoogleGroup`_
 
+.. _PyPI: https://pypi.python.org/pypi/guiqwt
 .. _GitHub: https://github.com/PierreRaybaut/guiqwt
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt
 """
 
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
 # following path to module's data (images) and translations:

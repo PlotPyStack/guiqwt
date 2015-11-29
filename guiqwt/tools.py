@@ -1621,8 +1621,13 @@ def save_snapshot(plot, p0, p1, new_size=None):
     elif ext.lower() == ".png":
         options.update(dict(dtype=np.uint8, max_range=True))
     elif ext.lower() == ".dcm":
-        import dicom
-        model_dcm = dicom.read_file(model_fname)
+        try:
+            # pydicom 1.0
+            from pydicom import dicomio
+        except ImportError:
+            # pydicom 0.9
+            import dicom as dicomio
+        model_dcm = dicomio.read_file(model_fname)
         try:
             ps_attr = 'ImagerPixelSpacing'
             ps_x, ps_y = getattr(model_dcm, ps_attr)
