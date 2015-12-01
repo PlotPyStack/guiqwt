@@ -22,12 +22,12 @@ Contents:
     
     overview
     installation
-    development
     migrating_from_v2_to_v3
     examples
     sift
     disthelpers
     reference/index
+    development
     
 
 Indices and tables:

@@ -68,9 +68,8 @@ the following recommendations should be followed:
   is quite different than the old PyQt4 implementation. Producing code 
   compatible with both PyQt4 and PyQt5 can be tricky: testing is essential.
 
-
 Python 3 compatibility
-======================
+----------------------
 
 Regarding Python 3 compatibility, we chose to handle it by maintaining a single
 source branch being compatible with both Python 2.6-2.7 and Python 3.
@@ -78,7 +77,7 @@ source branch being compatible with both Python 2.6-2.7 and Python 3.
 Here is what we have done.
 
 Fixing trivial things with 2to3
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first step is to run the `2to3` script (see Python documentation) to 
 convert print statements to print function calls -- note that your source 
@@ -98,7 +97,7 @@ Python 2 and Python 3. However, this a step forward to Python 3 compatibility
 without breaking Python 2.6+ compatibility.
 
 Fixing unicode issues
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 In Python 3, `unicode` and `str` strings have been replaced by `str` and 
 `bytes` strings:
