@@ -25,6 +25,9 @@ import numpy
 import sys
 import os
 import os.path as osp
+import subprocess
+import shutil
+import atexit
 from numpy.distutils.core import setup, Extension
 from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
@@ -48,6 +51,41 @@ elif 'alpha' in version or 'a' in version:
     CLASSIFIERS += ['Development Status :: 3 - Alpha']
 else:
     CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
+
+
+def build_chm_doc(libname):
+    """Return CHM documentation file (on Windows only), which is copied under 
+    {PythonInstallDir}\Doc, hence allowing Spyder to add an entry for opening 
+    package documentation in "Help" menu. This has no effect on a source 
+    distribution."""
+    args = ''.join(sys.argv)
+    if os.name == 'nt' and ('bdist' in args or 'build' in args):
+        try:
+            import sphinx  # analysis:ignore
+        except ImportError:
+            print('Warning: `sphinx` is required to build documentation',
+                  file=sys.stderr)
+            return
+        hhc_base = r'C:\Program Files%s\HTML Help Workshop\hhc.exe'
+        for hhc_exe in (hhc_base % '', hhc_base % ' (x86)'):
+            if osp.isfile(hhc_exe):
+                break
+        else:
+            print('Warning: `HTML Help Workshop` is required to build CHM '\
+                  'documentation file', file=sys.stderr)
+            return
+        doctmp_dir = 'doctmp'
+        subprocess.call('sphinx-build -b htmlhelp doc %s' % doctmp_dir,
+                        shell=True)
+        atexit.register(shutil.rmtree, osp.abspath(doctmp_dir))
+        fname = osp.abspath(osp.join(doctmp_dir, '%s.chm' % libname))
+        subprocess.call('"%s" %s' % (hhc_exe, fname), shell=True)
+        if osp.isfile(fname):
+            return fname
+        else:
+            print('Warning: CHM building process failed', file=sys.stderr)
+
+CHM_DOC = build_chm_doc(LIBNAME)
 
 
 def _create_script_list(basename):
@@ -100,6 +138,7 @@ setup(name=LIBNAME, version=version,
       package_data={LIBNAME:
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
                                                '.ui'))},
+      data_files=[(r'Doc', [CHM_DOC])] if CHM_DOC else [],
       install_requires=["NumPy>=1.3", "SciPy>=0.7", "guidata>=1.7.0",
                         "PythonQwt>=0.5.0", "Pillow"],
       extras_require = {
