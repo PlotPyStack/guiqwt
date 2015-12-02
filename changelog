@@ -4,6 +4,10 @@
 
   * I/O: fixed support for DICOM (supporting pydicom 0.9.5+ and 1.0)
   
+=== Other changes (since v3.0.0) ===
+
+  * Added CHM documentation to wheel package
+
 ----
 
 == Version 3.0.0 ==
