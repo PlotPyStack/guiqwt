@@ -26,8 +26,6 @@ import sys
 import os
 import os.path as osp
 import subprocess
-import shutil
-import atexit
 from numpy.distutils.core import setup, Extension
 from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
@@ -59,7 +57,11 @@ def build_chm_doc(libname):
     package documentation in "Help" menu. This has no effect on a source 
     distribution."""
     args = ''.join(sys.argv)
-    if os.name == 'nt' and ('bdist' in args or 'build' in args):
+    if '--no-doc' in sys.argv:
+        sys.argv.remove('--no-doc')
+        return
+    if os.name == 'nt' and ('bdist' in args or 'build' in args)\
+       and '--inplace' not in args:
         try:
             import sphinx  # analysis:ignore
         except ImportError:
@@ -74,11 +76,15 @@ def build_chm_doc(libname):
             print('Warning: `HTML Help Workshop` is required to build CHM '\
                   'documentation file', file=sys.stderr)
             return
-        doctmp_dir = 'doctmp'
+        doctmp_dir = osp.join('build', 'doctmp')
+        if not osp.isdir(doctmp_dir):
+            os.makedirs(doctmp_dir)
+        fname = osp.abspath(osp.join(doctmp_dir, '%s.chm' % libname))
+        if osp.isfile(fname):
+            # doc has already been built
+            return fname
         subprocess.call('sphinx-build -b htmlhelp doc %s' % doctmp_dir,
                         shell=True)
-        atexit.register(shutil.rmtree, osp.abspath(doctmp_dir))
-        fname = osp.abspath(osp.join(doctmp_dir, '%s.chm' % libname))
         subprocess.call('"%s" %s' % (hhc_exe, fname), shell=True)
         if osp.isfile(fname):
             return fname
