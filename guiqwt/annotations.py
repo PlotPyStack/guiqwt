@@ -296,7 +296,7 @@ class AnnotatedShape(AbstractShape):
         """
         self.shape.move_with_selection(delta_x, delta_y)
         self.label.move_with_selection(delta_x, delta_y)
-        self.plot.SIG_ANNOTATION_CHANGED.emit(self)
+        self.plot().SIG_ANNOTATION_CHANGED.emit(self)
 
     def select(self):
         """Select item"""
