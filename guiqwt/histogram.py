@@ -321,7 +321,9 @@ class LevelsHistogram(CurvePlot):
     def item_removed(self, item):
         for plot, items in list(self._tracked_items.items()):
             if item in items:
-                items.pop(item)
+                curve = items.pop(item)
+                self.del_items([curve])
+                self.replot()
                 break
 
     def active_item_changed(self, plot):
