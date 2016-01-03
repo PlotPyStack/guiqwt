@@ -497,7 +497,7 @@ class BasePlot(QwtPlot):
         if len(dzlist) == 0:
             z = max(zlist)+1
         else:
-            z = zlist[dzlist]+1
+            z = zlist[dzlist[0]]+1
         self.add_item(item, z=z)
 
     def __clean_item_references(self, item):
