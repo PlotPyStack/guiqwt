@@ -826,7 +826,7 @@ class CurveWidgetMixin(PlotManager):
         """
         self.register_all_curve_tools()
 
-    def create_plot(self, options):
+    def create_plot(self, options, row=0, column=0, rowspan=1, columnspan=1):
         """
         Create the plotting widget (which is an instance of class 
         :py:class:`guiqwt.plot.BaseCurveWidget`), add it to the dialog box 
@@ -837,7 +837,8 @@ class CurveWidgetMixin(PlotManager):
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
         self.plot_widget = BaseCurveWidget(self, **options)
-        self.plot_layout.addWidget(self.plot_widget, 0, 0)
+        self.plot_layout.addWidget(self.plot_widget,
+                                   row, column, rowspan, columnspan)
         
         # Configuring plot manager
         self.add_plot(self.plot_widget.plot)
