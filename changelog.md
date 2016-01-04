@@ -1,27 +1,41 @@
 # guiqwt Releases #
 
 
+### Version 3.0.2 ###
+
+Bug fixes:
+
+* Fixed `AnnotatedShape.move_with_selection` (traceback: `AttributeError: 'function' object has no attribute 'SIG_ANNOTATION_CHANGED'`)
+* Image contrast panel: histogram was not removed properly when deleting the associated image item
+* Fixed BasePlot.add_item_with_z_offset method when existing items are not shown in a continuously increasing z order
+* Interactive tools: fixed SIG_VALIDATE_TOOL invalid parameters
+
+Other changes:
+
+* Documentation is now built into the "build/doctmp" directory, hence allowing to reuse the previous built doc from a package build to another
+* `plot.CurveWidgetMixin.create_plot` has now the same signature as its `ImageWidgetMixin` counterpart
+
 ### Version 3.0.1 ###
 
-#### Bug fixes (since v3.0.0) ####
+Bug fixes:
 
 * I/O: fixed support for DICOM (supporting pydicom 0.9.5+ and 1.0)
   
-#### Other changes (since v3.0.0) ####
+Other changes:
 
 * Added CHM documentation to wheel package
 
 
 ### Version 3.0.0 ###
 
-#### Possible API compatibility issues (since v2.3.2) ####
+Possible API compatibility issues:
 
 * Added support for PyQt5 (removed old-style signals)
 * Replaced `PyQwt` dependency by the new `python-qwt` package (pure Python reimplementation of the Qwt6 C++ library)
 * Removed "curvetype" feature (Yfx, Xfy) which is no longer supported in Qwt6
 * Removed curve "fitted" option which is not supported in `qwt`.
 
-#### Bug fixes (since v2.3.2) ####
+Bug fixes:
 
 * scaler.cpp: fixed destination rectangle ValueError test (was continuing execution instead of returning immediately)
 * Fixed Issue #4: mingw-w64's _isnan function crash
@@ -50,15 +64,15 @@
 
 ### Version 2.3.2 ###
 
-#### Possible API compatibility issues (since v2.3.1) ####
+Possible API compatibility issues:
 
 * qthelpers.exec_image_save_dialog: reversed the first two parameters (consistency with most Qt functions and with exec_image_open_dialog) ; parent widget is now the first argument, data to be saved being the second one.
 
-#### Bug fixes (since v2.3.1) ####
+Bug fixes:
 
 * Building process was failing (since v2.3.1) on Windows with C compiler other than Microsoft Visual C++
 
-#### Other changes (since v2.3.1) ####
+Other changes:
 
 * io.exec_image_save_dialog: added `template` argument to support DICOM files
 * Sift:
@@ -71,7 +85,7 @@
 
 ### Version 2.3.1 ###
 
-#### Bug fixes (since v2.3.0) ####
+Bug fixes:
 
 * Fixed build failures occuring on non-Windows platforms (Issue 54)
 * Fixed requirements in README and setup.py: guiqwt v2.3 requires guidata v1.6
@@ -79,7 +93,7 @@
 
 ### Version 2.3.0 ###
 
-#### New features (since v2.2.1) ####
+New features:
 
 * Added support for Python 3: a single code source base compatible with both Python 2 and Python 3
 * `scaler` C++ extension: added alternative implementations of C99 features so that this extension is now compatible with Microsoft Visual C++ compiler (was only compatible with gcc)
@@ -88,7 +102,7 @@
   * 2-D histogram items are drawn 3 times faster than before
   * The Mandelbrot example runs faster too
 
-#### Bug fixes (since v2.2.1) ####
+Bug fixes:
 
 * `guiqwt.image_nanmin/_nanmax`: bug fixed when data is a numpy.ma.MaskedArray object
 * `guiqwt.styles`: using copy.deepcopy instead of copy.copy in `ItemParameters.get` to avoid side effects when using more than one instance of a DataSet object
@@ -98,7 +112,7 @@
 
 ### Version 2.2.1 ###
 
-#### New features (since v2.2.0) ####
+New features:
 
 * Added support for plot items serialization/deserialization to/from HDF5:
   * See `save_item`, `load_item`, `save_items` and `load_items` functions in `guiqwt.io`
@@ -112,7 +126,7 @@
 * (Issue 29) Added test 'customize_shape_tool.py' to demonstrate how easy it is to customize a shape created with a tool like RectangleTool, EllipseTool, etc.
 * (Issue 37) Plot axis widget: added support for mouse double-click to set the axis range
 
-#### Possible API compatibility issues (since v2.2.0) ####
+Possible API compatibility issues:
 
 * guiqwt now requires Python 2.6 (Python 2.5 support has been dropped)
 * `guiqwt.io` module: file type filters are now sorted depending on data types
@@ -123,7 +137,7 @@
 * MaskedImageItem: masked_areas attribute is now a list of MaskedArea objects (so that MaskedImageItem objects serialization is easier to implement)
 * Removed deprecated tools DuplicateCurveTool and DeleteCurveTool
 
-#### Bug fixes (since v2.2.0) ####
+Bug fixes:
 
 * MaskedImageItem/bugfix: fixed rounding error when applying mask to item
 * io.imread: drastically reduced loading time with PIL.Image
@@ -140,7 +154,7 @@
 
 ### Version 2.2.0 ###
 
-#### New features (since v2.1.6) ####
+New features:
 
 * Added scaler module: resize function (using scaler C++ engine to resize images) which is incredibly faster than scipy.misc.imresize
 * `guiqwt.io` module was rewritten: new extensible I/O functions `imwrite`/`imread` (see section 'Possible API compatibility issues')
@@ -161,7 +175,7 @@
 * ResizeDialog: added option "keep original size" to bypass this dialog
 * RectangularActionTool: added option 'fix_orientation' (default: False, but set to True for the SnapshotTool)
 
-#### Possible API compatibility issues (since v2.1.6) ####
+Possible API compatibility issues:
 
 * `guiqwt.io` module was rewritten -- potential API breaks:
   * `imagefile_to_array` --> `imread`
@@ -174,7 +188,7 @@
 * Created `guiqwt.widgets` package to regroup ResizeDialog and RotateCropDialog/Widget
 * Moved module `guiqwt.fit` to `guiqwt.widgets` package
 
-#### Bug fixes (since v2.1.6) ####
+Bug fixes:
 
 * `guiqwt.geometry` : fixed zero division error in `compute_angle` function
 * Fixed minimum value for histogram display
@@ -192,7 +206,7 @@
 
 ### Version 2.1.6 ###
 
-#### Other changes (since v2.1.5) ####
+Other changes:
 
 * guiqwt.pyplot.savefig:
   * added support for all image types supported by Qt (JPEG, TIFF, PNG, ...)
@@ -206,7 +220,7 @@
 * guiqwt.tools:
   * EditItemDataTool: new tool for editing displayed curve/image data using a GUI-based array editor (this feature requires the `spyderlib` library)
 
-#### Bug fixes (since v2.1.5) ####
+Bug fixes:
 
 * ErrorBarCurveItem (error bar curves):
   * now handling NaNs uncertainties properly
@@ -220,7 +234,7 @@
 
 ### Version 2.1.5 ###
 
-#### Other changes (since v2.1.4) ####
+Other changes:
 
 * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
 * baseplot: added method 'copy_to_clipboard' + tools: added CopyToClipboardTool (copy canevas window to clipboard)
@@ -232,7 +246,7 @@ Since this version, `guiqwt` is compatible with PyQt4 API #1 *and* API #2.
 Please read carefully the coding guidelines which have been recently added to 
 the documentation.
 
-#### Bug fixes (since v2.1.3) ####
+Bug fixes:
 
 * Sift/bugfix: difference/division operations were performed backwards (s001-s000 instead of s000-s001)
 * Sift: working directory is now changed after opening/saving signal/image
@@ -254,7 +268,7 @@ the documentation.
   * now handles non-finite values (NaNs and infs)
   * logarithmic scales: now excludes zero/negative values to avoid confusing the autoscale algorithm
 
-#### Possible API compatibility issues (since v2.1.3) ####
+Possible API compatibility issues:
 
 * Moved functions from guiqwt.io to new module guiqwt.qthelpers: exec_image_save_dialog, exec_image_open_dialog, exec_images_open_dialog
 * Markers:
@@ -282,7 +296,7 @@ the documentation.
     * ImagePlotWidget (renamed to ImageWidget)
     * ImagePlotDialog (renamed to ImageDialog)
 
-#### Other changes (since v2.1.3) ####
+Other changes:
 
 * Added module qthelpers: image open/save dialog helpers (moved from guiqwt.io to avoid using GUIs in this module)
 * Annotation/default style: changed string formatting from '%d' to '%.1f'
@@ -303,7 +317,7 @@ the documentation.
 
 ### Version 2.1.3 ###
 
-#### Bug fixes (since v2.1.2) ####
+Bug fixes:
 
 * tools.RectangularActionTool: removed unnecessary calls to setup_shape_appearance
 * tools.ImageStatsTool/CrossSectionTool.setup_shape / bugfix: parent method was not called
@@ -312,11 +326,11 @@ the documentation.
 * (Fixes Issue 14) tools.CommandTool: docstring was translated from french
 * (Fixes Issue 13) Fixed precision/string formatting issue: switched from '%f' to '%g' (on-curve labels, ...)
 
-#### Possible API compatibility issues (since v2.1.2) ####
+Possible API compatibility issues:
 
 * baseplot.BasePlot.get_selected_items: added argument 'z_sorted' in first position (like in get_items)
 
-#### Other changes (since v2.1.2) ####
+Other changes:
 
 * added *this* changelog
 * baseplot/plot axes styles: added support for physical unit
@@ -333,19 +347,19 @@ the documentation.
 
 ### Version 2.1.2 ###
 
-#### Bug fixes (since v2.1.1) ####
+Bug fixes:
 
 * 1D Computations: now support error bar curves as well as simple curves
 * test_line test: this test should have been excluded from test list + it should be possible to import it without executing it... fixed
 
-#### Other changes (since v2.1.1) ####
+Other changes:
 
 * guiqwt.fit: code cleaning / reimplementing FitParam.create_widgets is now supported
 
 
 ### Version 2.1.1 ###
 
-#### Bug fixes (since v2.1.0) ####
+Bug fixes:
 
 * Distributed source package: unwanted Sift build/dist files were eventually included in the package
 * setup.py: fixed sphinx ImportError issue when building autodoc from source package (not finding the just built extension module)
@@ -359,7 +373,7 @@ the documentation.
 * Curve plots: fixed autoscale behavior for logarithmic scales
 * fit/bugfix: when the fit params number was not a multiple of the layout column count, the last parameters were not shown
 
-#### Other changes (since v2.1.0) ####
+Other changes:
 
 * shapes: added ObliqueRectangleShape
 * tools: added ObliqueRectangleTool and AnnotatedObliqueRectangleTool
@@ -381,7 +395,7 @@ the documentation.
 
 ### Version 2.1.0 ###
 
-#### Bug fixes (since v2.0.8) ####
+Bug fixes:
 
 * cross_section: CrossSectionWidget.update_plot argument 'obj' was not optional as in CrossSectionPlot.update_plot
 * Contrast adjustment panel: when setting range (i.e. possible change of image data), levels histogram was not updated
@@ -407,12 +421,12 @@ the documentation.
 * Bugfix: recent versions of PyQt don't like the QApplication reference to be stored in modules (why is that?)
 * Annotation/get_infos: fixed unicode error occuring with py2exe distribution only
 
-#### Possible API compatibility issues (since v2.0.8) ####
+Possible API compatibility issues:
 
 * Panel interface: added mandatory method 'configure_panel' which is called just before adding the very first tool to the manager
 * baseplot: renamed guiqwt.baseplot.EnhancedQwtPlot to BasePlot
 
-#### Other changes (since v2.0.8) ####
+Other changes:
 
 * Cross sections/apply lut option turned on: now clipping data between 0 and LUT_MAX (0-1023), as it is done for displayed data
 * Added RGBImageItem
