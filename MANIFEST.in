@@ -9,4 +9,4 @@ recursive-include doc *.py *.rst *.png *.ico
 include MANIFEST.in
 include Licence_CeCILL_V2-en.txt
 include README.md
-include changelog.md
+include CHANGELOG.md
