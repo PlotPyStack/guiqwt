@@ -7,8 +7,8 @@ Bug fixes:
 
 * Fixed `AnnotatedShape.move_with_selection` (traceback: `AttributeError: 'function' object has no attribute 'SIG_ANNOTATION_CHANGED'`)
 * Image contrast panel: histogram was not removed properly when deleting the associated image item
-* Fixed BasePlot.add_item_with_z_offset method when existing items are not shown in a continuously increasing z order
-* Interactive tools: fixed SIG_VALIDATE_TOOL invalid parameters
+* Fixed `BasePlot.add_item_with_z_offset method` when existing items are not shown in a continuously increasing z order
+* Interactive tools: fixed `SIG_VALIDATE_TOOL` invalid parameters
 
 Other changes:
 
