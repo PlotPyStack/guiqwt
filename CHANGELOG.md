@@ -12,6 +12,7 @@ Bug fixes:
 
 Other changes:
 
+* Added a new demo [dotarraydemo.py](guiqwt/tests/dotarraydemo.py) showing how to create a custom item drawing an array of dots
 * Documentation is now built into the "build/doctmp" directory, hence allowing to reuse the previous built doc from a package build to another
 * `plot.CurveWidgetMixin.create_plot` has now the same signature as its `ImageWidgetMixin` counterpart
 
