@@ -16,7 +16,7 @@
    height="153.56583"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.48.2 r9819"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="guiqwt.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="D:\129.png"
@@ -30,7 +30,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -43,11 +43,11 @@
      bordercolor="#666666"
      pagecolor="#ffffff"
      id="base"
-     inkscape:zoom="1.8528087"
-     inkscape:cx="-66.895088"
-     inkscape:cy="62.748306"
-     inkscape:window-x="318"
-     inkscape:window-y="212"
+     inkscape:zoom="11.313708"
+     inkscape:cx="88.818856"
+     inkscape:cy="75.569965"
+     inkscape:window-x="216"
+     inkscape:window-y="16"
      inkscape:current-layer="svg2"
      showgrid="false"
      fit-margin-top="0"
@@ -415,9 +415,9 @@
      inkscape:connector-curvature="0"
      sodipodi:nodetypes="ssssssssssssssssssss" />
   <path
-     style="fill:none;stroke:#dc0000;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-     d="M 23.208008,83.40208 C 30.344676,57.564205 43.829107,54.320965 58.829603,62.892677 89.053986,80.703474 96.070359,76.385705 96.070359,76.385705 122.5167,73.687099 118.73865,29.429967 118.73865,29.429967"
+     style="fill:none;stroke:#dc0000;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:none"
+     d="m 23.208008,83.40208 c 7.136668,-25.837875 20.621099,-29.081115 35.621595,-20.509403 28.164748,16.597084 36.293835,14.994214 37.137886,15.051072 0.844051,0.05686 1.340307,0.05691 1.340307,0.05691 16.919364,-0.199772 21.430854,-48.570688 21.430854,-48.570688"
      id="path4099"
      inkscape:connector-curvature="0"
-     sodipodi:nodetypes="cccc" />
+     sodipodi:nodetypes="cczcc" />
 </svg>
