@@ -106,6 +106,15 @@ Histograms
 Other examples
 --------------
 
+Dot Array Demo
+~~~~~~~~~~~~~~
+
+.. literalinclude:: ../guiqwt/tests/dotarraydemo.py
+   :start-after: SHOW
+   :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
+
+.. image:: images/screenshots/dotarraydemo.png
+
 Image plot tools
 ~~~~~~~~~~~~~~~~
 

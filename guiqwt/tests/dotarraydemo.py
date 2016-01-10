@@ -63,9 +63,10 @@ class DotArrayItem(gqi.RawImageItem):
     def boundingRect(self):
         param = self.imageparam
         if param is not None:
-            return QtCore.QRectF(QtCore.QPointF(0, 0),
-                                 QtCore.QPointF(param.dim_h+param.size,
-                                                param.dim_v+param.size))
+            return QtCore.QRectF(QtCore.QPointF(-.5*param.size,
+                                                -.5*param.size),
+                                 QtCore.QPointF(param.dim_h+.5*param.size,
+                                                param.dim_v+.5*param.size))
 
     def types(self):
         return (gqi.IImageItemType,)
