@@ -1315,13 +1315,11 @@ class MainWindow(QMainWindow):
                     
     #------?
     def about(self):
-        QMessageBox.about( self, _("About ")+APP_NAME,
-              """<b>%s</b> v%s<br>%s<p>%s Pierre Raybaut
-              <br>Copyright &copy; 2010 CEA
-              <p>Python %s, Qt %s, PyQt %s %s %s""" % \
-              (APP_NAME, VERSION, APP_DESC, _("Developped by"),
-               platform.python_version(),
-               QT_VERSION_STR, PYQT_VERSION_STR, _("on"), platform.system()) )
+        from guiqwt import about
+        QMessageBox.about( self, _("About")+" "+APP_NAME, "<b>%s</b> v%s : %s"\
+                          "<p>%s Pierre Raybaut<br><br>%s" % (APP_NAME,
+                          VERSION, APP_DESC, _("Developped by"),
+                          about(html=True, copyright_only=True)))
                
     def closeEvent(self, event):
         if self.console is not None:
