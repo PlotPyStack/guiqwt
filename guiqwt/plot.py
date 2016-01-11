@@ -124,7 +124,7 @@ from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
                           DisplayCoordsTool, AxisScaleTool, SaveAsTool,
                           AspectRatioTool, ContrastPanelTool, XCSPanelTool,
                           YCSPanelTool, SnapshotTool, DummySeparatorTool,
-                          CrossSectionTool, AverageCrossSectionTool,
+                          CrossSectionTool, AverageCrossSectionTool, AboutTool,
                           ImageStatsTool, ExportItemDataTool, EditItemDataTool,
                           ItemCenterTool, SignalStatsTool, CopyToClipboardTool)
 from guiqwt.interfaces import IPlotManager
@@ -576,6 +576,7 @@ class PlotManager(object):
         self.add_tool(CopyToClipboardTool)
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
+        self.add_tool(AboutTool)
         
     def register_all_curve_tools(self):
         """
