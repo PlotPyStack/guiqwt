@@ -23,7 +23,39 @@ External resources:
 """
 
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
+__description__ = 'guiqwt is a set of tools for curve and image plotting '\
+                  '(extension to `PythonQwt`)'
+
+def about(html=True, copyright_only=False):
+    """Return text about this package"""
+    import sys, os, os.path as osp, platform, guidata, guiqwt, qwt
+    from guiqwt.config import _
+    from guidata.qt.QtCore import QT_VERSION_STR, PYQT_VERSION_STR
+    name = __file__.split(osp.sep)[-2]
+    tf1 = (name, __version__, __description__)
+    tf2 = (platform.python_version(),
+           '64 bits' if sys.maxsize > 2**32 else '32 bits',
+           QT_VERSION_STR, PYQT_VERSION_STR,
+           qwt.__version__, guidata.__version__, guiqwt.__version__,
+           _("on"), platform.system())
+    if html:
+        short_desc = "This widget is powered by <b>%s</b> v%s"\
+                     "<p>%s<p>Created by Pierre Raybaut" % tf1
+        desc = "Copyright &copy; 2010-2016 CEA"\
+               "<p>Python %s %s, Qt %s, PyQt %s, "\
+               "PythonQwt %s, guidata %s, guiqwt %s %s %s" % tf2
+        if not copyright_only:
+            desc = short_desc + "<br>" + desc
+    else:
+        short_desc = """%s v%s : %s
+Created by Pierre Raybaut""" % tf1
+        desc = """Copyright (c) 2010-2016 CEA
+Python %s %s, Qt %s, PyQt %s, PythonQwt %s, guidata %s, guiqwt %s %s %s""" % tf2
+        if not copyright_only:
+            desc = short_desc + os.linesep + desc
+    return desc
+
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
 # following path to module's data (images) and translations:
