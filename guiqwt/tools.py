@@ -1829,8 +1829,8 @@ class AxisScaleTool(CommandTool):
 class HelpTool(CommandTool):
     def __init__(self, manager, toolbar_id=DefaultToolbarID):
         super(HelpTool, self).__init__(manager, _("Help"),
-                                      get_std_icon("DialogHelpButton", 16),
-                                      toolbar_id=toolbar_id)
+                                       get_std_icon("DialogHelpButton", 16),
+                                       toolbar_id=toolbar_id)
                                       
     def activate_command(self, plot, checked):
         """Activate tool"""
@@ -1843,6 +1843,18 @@ class HelpTool(CommandTool):
   - left-click + mouse move: move item (when available)
   - middle-click + mouse move: pan
   - right-click + mouse move: zoom"""))
+
+
+class AboutTool(CommandTool):
+    def __init__(self, manager, toolbar_id=DefaultToolbarID):
+        super(AboutTool, self).__init__(manager, _("About")+" guiqwt",
+                                        get_icon("guiqwt.svg"),
+                                        toolbar_id=None)
+                                      
+    def activate_command(self, plot, checked):
+        """Activate tool"""
+        from guiqwt import about
+        QMessageBox.about(plot, _("About")+" guiqwt", about(html=True))
 
 
 class ItemManipulationBaseTool(CommandTool):
