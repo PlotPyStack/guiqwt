@@ -2,7 +2,7 @@
 
 <img src="http://pythonhosted.org/guiqwt/_images/panorama.png">
 
-See [documentation](http://pythonhosted.org/guidata/) for more details on 
+See [documentation](http://pythonhosted.org/guiqwt/) for more details on 
 the library and [changelog](CHANGELOG.md) for recent history of changes.
 
 Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the 
