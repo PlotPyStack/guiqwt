@@ -34,18 +34,17 @@ from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
 
 LIBNAME = 'guiqwt'
-from guiqwt import __version__ as version
+from guiqwt import __version__
+from guiqwt import __description__
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-DESCRIPTION = 'guiqwt is a set of tools for curve and image plotting '\
-              '(extension to `PythonQwt`)'
 LONG_DESCRIPTION = ''
 KEYWORDS = ''
 CLASSIFIERS = ['Topic :: Scientific/Engineering']
-if 'beta' in version or 'b' in version:
+if 'beta' in __version__ or 'b' in __version__:
     CLASSIFIERS += ['Development Status :: 4 - Beta']
-elif 'alpha' in version or 'a' in version:
+elif 'alpha' in __version__ or 'a' in __version__:
     CLASSIFIERS += ['Development Status :: 3 - Alpha']
 else:
     CLASSIFIERS += ['Development Status :: 5 - Production/Stable']
@@ -138,8 +137,8 @@ for arg, compile_arg in (("--sse2", "-msse2"),
 # (this could be changed now as there is no longer Fortran extensions here...)
 cythonize_all('src')
 
-setup(name=LIBNAME, version=version,
-      description=DESCRIPTION, long_description=LONG_DESCRIPTION,
+setup(name=LIBNAME, version=__version__,
+      description=__description__, long_description=LONG_DESCRIPTION,
       packages=get_subpackages(LIBNAME),
       package_data={LIBNAME:
                     get_package_data(LIBNAME, ('.png', '.svg', '.mo', '.dcm',
