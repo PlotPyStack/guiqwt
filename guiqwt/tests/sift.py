@@ -1316,7 +1316,7 @@ class MainWindow(QMainWindow):
     #------?
     def about(self):
         from guiqwt import about
-        QMessageBox.about( self, _("About")+" "+APP_NAME, "<b>%s</b> v%s : %s"\
+        QMessageBox.about( self, _("About ")+APP_NAME, "<b>%s</b> v%s : %s"\
                           "<p>%s Pierre Raybaut<br><br>%s" % (APP_NAME,
                           VERSION, APP_DESC, _("Developped by"),
                           about(html=True, copyright_only=True)))
