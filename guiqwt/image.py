@@ -2508,16 +2508,22 @@ class ImagePlot(CurvePlot):
         if y0 > y1:
             y0, y1 = y1, y0
         if full_scale:
+            if w == 0:
+                return  # avoid division by zero
             dy2 = (h*dx1)/(w*self.__aspect_ratio)
             fix_yaxis = dy2 > dy1
         else:
             fix_yaxis = True
         if fix_yaxis:
+            if w == 0:
+                return  # avoid division by zero
             dy2 = (h*dx1)/(w*self.__aspect_ratio)
             delta_y = .5*(dy2-dy1)
             y0 -= delta_y
             y1 += delta_y
         else:
+            if h == 0:
+                return  # avoid division by zero
             dx2 = (w*dy1*self.__aspect_ratio)/h
             delta_x = .5*(dx2-dx1)
             x0 -= delta_x
