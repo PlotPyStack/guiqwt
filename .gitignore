@@ -1,5 +1,6 @@
 .spyderproject
 guiqwt.chm
+guiqwt.chm.zip
 Thumbs.db
 src/histogram2d.c
 src/mandelbrot.c
@@ -9,6 +10,7 @@ test1.u8.png
 test2.u8.png
 test2.u16.tif
 contrast.png
+doctmp/
 
 # Created by https://www.gitignore.io/api/python
 

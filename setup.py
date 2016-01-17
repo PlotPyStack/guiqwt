@@ -39,7 +39,50 @@ from guiqwt import __description__
 # Remove module from list to allow building doc from build dir
 del sys.modules['guiqwt']
 
-LONG_DESCRIPTION = ''
+LONG_DESCRIPTION = """\
+guiqwt: Python tools for curve and image plotting
+=================================================
+
+.. image:: http://pythonhosted.org/guiqwt/_images/panorama.png
+
+See `documentation`_ for more details on the library and `changelog`_ for 
+recent history of changes.
+
+Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the 
+`CECILL License`_.
+
+.. _documentation: http://pythonhosted.org/guiqwt/
+.. _changelog: https://github.com/PierreRaybaut/guiqwt/blob/master/CHANGELOG.md
+.. _CECILL License: https://github.com/PierreRaybaut/guiqwt/blob/master/Licence_CeCILL_V2-en.txt
+
+
+Overview
+--------
+
+Based on `PythonQwt`_ (a pure Python/PyQt reimplementation of the curve 
+plotting Qwt C++ library, included in guiqwt base source code) and on the 
+scientific modules NumPy and SciPy, ``guiqwt`` is a Python library providing 
+efficient 2D data-plotting features (curve/image visualization and related 
+tools) for interactive computing and signal/image processing application 
+development. It is based on Qt graphical user interfaces library, and 
+currently supports both ``PyQt4`` and ``PyQt5``.
+
+Extension to `PythonQwt`_:
+
+* set of tools for curve and image plotting
+* GUI-based application development helpers
+
+.. _PythonQwt: https://pypi.python.org/pypi/PythonQwt
+
+
+Building, installation, ...
+---------------------------
+
+See the `README`_ and `documentation`_.
+
+.. _README: https://github.com/PierreRaybaut/guiqwt/blob/master/README.md
+"""
+
 KEYWORDS = ''
 CLASSIFIERS = ['Topic :: Scientific/Engineering']
 if 'beta' in __version__ or 'b' in __version__:
