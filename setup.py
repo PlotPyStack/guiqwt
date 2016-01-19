@@ -78,7 +78,18 @@ Extension to `PythonQwt`_:
 Building, installation, ...
 ---------------------------
 
-See the `README`_ and `documentation`_.
+The following packages are **required**: `PyQt4`_ (or `PyQt5`_), 
+`PythonQwt`_, `guidata`_, `NumPy`_, `SciPy`_ and `Pillow`_.
+
+.. _PyQt4: https://pypi.python.org/pypi/PyQt4
+.. _PyQt5: https://pypi.python.org/pypi/PyQt5
+.. _PythonQwt: https://pypi.python.org/pypi/PythonQwt
+.. _guidata: https://pypi.python.org/pypi/guidata
+.. _NumPy: https://pypi.python.org/pypi/NumPy
+.. _SciPy: https://pypi.python.org/pypi/SciPy
+.. _Pillow: https://pypi.python.org/pypi/Pillow
+
+See the `README`_ and `documentation`_ for more details.
 
 .. _README: https://github.com/PierreRaybaut/guiqwt/blob/master/README.md
 """
