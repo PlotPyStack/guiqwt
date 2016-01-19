@@ -25,7 +25,7 @@ External resources:
 
 __version__ = '3.0.2'
 __description__ = 'guiqwt is a set of tools for curve and image plotting '\
-                  '(extension to `PythonQwt`)'
+                  '(extension to PythonQwt)'
 
 def about(html=True, copyright_only=False):
     """Return text about this package"""
