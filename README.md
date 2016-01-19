@@ -30,17 +30,17 @@ Extension to ``PythonQwt``:
 ### Requirements
 
 - Python 2.6+ or Python 3
-- PyQt4 4.3+ or PyQt5 5.5+
-- PythonQwt 0.5+ (pure Python reimplementation of Qwt6 C++ library)
-- guidata 1.7+
-- NumPy 1.3+ -- NumPy 1.6 or later is required for Windows binaries
-- SciPy 0.7+
-- PIL 1.1.6+
+- [PyQt4](https://pypi.python.org/pypi/PyQt4) 4.3+ or [PyQt5](https://pypi.python.org/pypi/PyQt5) 5.5+
+- [PythonQwt](https://pypi.python.org/pypi/PythonQwt) 0.5+ (pure Python reimplementation of Qwt6 C++ library)
+- [guidata](https://pypi.python.org/pypi/guidata) 1.7+
+- [NumPy](https://pypi.python.org/pypi/NumPy) 1.6+
+- [SciPy](https://pypi.python.org/pypi/SciPy) 0.7+
+- [Pillow](https://pypi.python.org/pypi/Pillow)
 
 ### Optional modules
         
-- spyderlib 2.1+ for GUI-embedded console support
-- pydicom 0.9.3+ for DICOM I/O support
+- [spyderlib](https://pypi.python.org/pypi/spyder) 2.1+ for GUI-embedded console support
+- [pydicom](https://pypi.python.org/pypi/pydicom) 0.9.3+ for DICOM I/O support
 
 
 ## Building/Installation
