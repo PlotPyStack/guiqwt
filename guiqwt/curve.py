@@ -962,8 +962,8 @@ class ErrorBarCurveItem(CurveItem):
         yc = plot.transform(ay, y)
         _distance, i, _inside, _other = self.hit_test(QPointF(xc, yc))
         x0, y0 = self.plot().canvas2plotitem(self, xc, yc)
-        x = self_x[i]
-        y = self_y[i]
+        x = self._x[i]
+        y = self._y[i]
         xmin, xmax, ymin, ymax = self.get_minmax_arrays()
         if abs(y0-y) > abs(y0-ymin[i]):
             y = ymin[i]
