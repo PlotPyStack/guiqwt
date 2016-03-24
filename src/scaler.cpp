@@ -294,7 +294,7 @@ void _scale_rgb(DEST& dest,
 		scale.set_bg( it() );
 	    } else {
 		val = interpolate(src, tr, p);
-		if (isnan(val)) {
+		if (isnan((float) val)) {
 		    scale.set_bg( it() );
 		} else {
 		    it() = scale.eval(val);
