@@ -500,7 +500,10 @@ class PlotManager(object):
         self.add_tool(BasePlotMenuTool, "item")
         self.add_tool(ExportItemDataTool)
         try:
-            import spyderlib.widgets.objecteditor  # analysis:ignore
+            try:
+                import spyderlib.widgets.objecteditor  # analysis:ignore
+            except ImportError:
+                import spyder.widgets.variableexplorer.objecteditor  # analysis:ignore
             self.add_tool(EditItemDataTool)
         except ImportError:
             pass

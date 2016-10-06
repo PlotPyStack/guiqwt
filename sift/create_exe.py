@@ -29,7 +29,11 @@ def create_executable():
         import spyderlib
         spyderlib.add_to_distribution(dist)
     except ImportError:
-        pass
+        try:
+            import spyder
+            spyder.add_to_distribution(dist)
+        except ImportError:
+            pass
     dist.excludes += ['IPython']
 
     # Building executable
