@@ -1,6 +1,13 @@
 # guiqwt Releases #
 
 
+### Version 3.0.3 ###
+
+Bug fixes:
+
+* Fixed Spyder v3.0 compatibility issues.
+
+
 ### Version 3.0.2 ###
 
 Bug fixes:
