@@ -21,13 +21,37 @@ Licensed under the terms of the CECILL License
 from __future__ import print_function
 
 import setuptools  # analysis:ignore
-import numpy
 import sys
 import os
 import os.path as osp
 import subprocess
-from numpy.distutils.core import setup, Extension
-from guidata.utils import get_subpackages, get_package_data, cythonize_all
+
+def parse_args():
+    if len(sys.argv) < 2:
+        return True
+    # This list of commands was taken from scipy's setup.py
+    for command in ('--help-commands', '--name', '--version', '-V',
+                    '--fullname', '--author', '--author-email',
+                    '--maintainer', '--maintainer-email', '--contact',
+                    '--contact-email', '--url', '--license', '--description',
+                    '--long-description', '--platforms', '--classifiers',
+                    '--keywords', '--provides', '--requires', '--obsoletes',
+                    'egg_info', 'install_egg_info', 'rotate', '--help'):
+        if command in sys.argv[1:]:
+            return False
+    return True
+
+running_build = parse_args()
+if running_build:
+    import numpy
+    from numpy.distutils.core import setup, Extension
+    from guidata.utils import get_subpackages, get_package_data, cythonize_all
+else:
+    from setuptools import setup
+    def get_subpackages(*args, **kwargs):
+        return None
+    def get_package_data(*args, **kwargs):
+        return {}
 
 #TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
 #      note: this directory doesn't exist for a default PyQt4 install
@@ -186,10 +210,31 @@ for arg, compile_arg in (("--sse2", "-msse2"),
         sys.argv.pop(sys.argv.index(arg))
         CFLAGS.insert(0, compile_arg)
 
-# Compiling Cython modules to C source code: this is the only way I found to 
-# be able to build both Fortran and Cython extensions together
-# (this could be changed now as there is no longer Fortran extensions here...)
-cythonize_all('src')
+if running_build:
+    # Compiling Cython modules to C source code: this is the only way I found to
+    # be able to build both Fortran and Cython extensions together
+    # (this could be changed now as there is no longer Fortran extensions here...)
+    cythonize_all('src')
+    extensions = [Extension(LIBNAME+'.histogram2d',
+                            [osp.join('src', 'histogram2d.c')],
+                            include_dirs=[numpy.get_include()]),
+                  Extension(LIBNAME+'.mandelbrot',
+                            [osp.join('src', 'mandelbrot.c')],
+                            include_dirs=[numpy.get_include()]),
+                  Extension(LIBNAME+'._scaler',
+                            [osp.join("src", "scaler.cpp"),
+                             osp.join("src", "pcolor.cpp")],
+                            extra_compile_args=CFLAGS,
+                            depends=[osp.join("src", "traits.hpp"),
+                                     osp.join("src", "points.hpp"),
+                                     osp.join("src", "arrays.hpp"),
+                                     osp.join("src", "scaler.hpp"),
+                                     osp.join("src", "debug.hpp"),
+                                    ],
+                           ),
+                 ]
+else:
+    extensions = None
 
 setup(name=LIBNAME, version=__version__,
       description=__description__, long_description=LONG_DESCRIPTION,
@@ -199,7 +244,7 @@ setup(name=LIBNAME, version=__version__,
                                                '.ui'))},
       data_files=[(r'Doc', [CHM_DOC])] if CHM_DOC else [],
       install_requires=["NumPy>=1.3", "SciPy>=0.7", "guidata>=1.7.0",
-                        "PythonQwt>=0.5.0", "Pillow"],
+                        "PythonQwt>=0.5.0", "Pillow", "Cython"],
       extras_require = {
                         'Doc':  ["Sphinx>=1.1"],
                         'DICOM':  ["pydicom>=0.9.3"],
@@ -209,24 +254,7 @@ setup(name=LIBNAME, version=__version__,
                      % sys.version_info.major,
                      'sift-py%d = guiqwt.tests.sift:run'\
                      % sys.version_info.major,]},
-      ext_modules=[Extension(LIBNAME+'.histogram2d',
-                             [osp.join('src', 'histogram2d.c')],
-                             include_dirs=[numpy.get_include()]),
-                   Extension(LIBNAME+'.mandelbrot',
-                             [osp.join('src', 'mandelbrot.c')],
-                             include_dirs=[numpy.get_include()]),
-                   Extension(LIBNAME+'._scaler',
-                             [osp.join("src", "scaler.cpp"),
-                              osp.join("src", "pcolor.cpp")],
-                             extra_compile_args=CFLAGS,
-                             depends=[osp.join("src", "traits.hpp"),
-                                      osp.join("src", "points.hpp"),
-                                      osp.join("src", "arrays.hpp"),
-                                      osp.join("src", "scaler.hpp"),
-                                      osp.join("src", "debug.hpp"),
-                                      ],
-                             ),
-                   ],
+      ext_modules=extensions,
       author = "Pierre Raybaut",
       author_email = 'pierre.raybaut@gmail.com',
       url = 'https://github.com/PierreRaybaut/%s' % LIBNAME,
