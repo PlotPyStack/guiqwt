@@ -12,6 +12,8 @@ test2.u8.png
 test2.u16.tif
 contrast.png
 doctmp/
+test.png
+loadsavecanvas.h5
 
 # Created by https://www.gitignore.io/api/python
 
