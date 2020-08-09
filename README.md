@@ -2,7 +2,7 @@
 
 <img src="http://pythonhosted.org/guiqwt/_images/panorama.png">
 
-See [documentation](http://pythonhosted.org/guiqwt/) for more details on 
+See [documentation](https://guiqwt.readthedocs.io/en/latest/) for more details on 
 the library and [changelog](CHANGELOG.md) for recent history of changes.
 
 Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the 
@@ -39,7 +39,7 @@ Extension to ``PythonQwt``:
 
 ### Optional modules
         
-- [spyderlib](https://pypi.python.org/pypi/spyder) 2.1+ for GUI-embedded console support
+- [spyder](https://pypi.python.org/pypi/spyder) 2.1+ for GUI-embedded console support
 - [pydicom](https://pypi.python.org/pypi/pydicom) 0.9.3+ for DICOM I/O support
 
 
