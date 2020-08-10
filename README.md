@@ -1,5 +1,11 @@
 # guiqwt: Python tools for curve and image plotting
 
+[![license](https://img.shields.io/pypi/l/guiqwt.svg)](./LICENSE)
+[![pypi version](https://img.shields.io/pypi/v/guiqwt.svg)](https://pypi.org/project/guiqwt/)
+[![PyPI status](https://img.shields.io/pypi/status/guiqwt.svg)](https://github.com/PierreRaybaut/guiqwt)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/guiqwt.svg)](https://pypi.python.org/pypi/guiqwt/)
+[![download count](https://img.shields.io/conda/dn/conda-forge/guiqwt.svg)](https://www.anaconda.com/download/)
+
 <img src="http://pythonhosted.org/guiqwt/_images/panorama.png">
 
 See [documentation](https://guiqwt.readthedocs.io/en/latest/) for more details on 
