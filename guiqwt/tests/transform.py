@@ -59,7 +59,7 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
         # Python 3
         return
     npy = np.frombuffer(data, np.uint8)
-    npy.shape = img.height(), img.bytesPerLine()/4, 4
+    npy.shape = img.height(), int(img.bytesPerLine()/4), 4
     return npy[:,:, 0]
 
 def txtwrite(data, x, y, sz, txt, range=None):
@@ -116,7 +116,8 @@ def compute_image(NX, NY):
     bx2 = BX/2
     by2 = BY/2
     z=np.zeros( (NX, NY), np.complex64)
-    z[cx-bx2:cx-bx2+BX, cy-by2:cy-by2+BY] = timg
+    z[int(cx-bx2):int(cx-bx2+BX),
+      int(cy-by2):int(cy-by2+BY)] = timg
     z = np.fft.ifftshift(z)
     rev = np.fft.ifft2(z)
     return np.abs(rev)

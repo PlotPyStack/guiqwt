@@ -28,7 +28,7 @@ class BaseBM(object):
     
     def __init__(self, name, nsamples, **options):
         self.name = name
-        self.nsamples = nsamples
+        self.nsamples = int(nsamples)
         self.options = options
         self._item = None
 
@@ -144,7 +144,7 @@ def run():
           ErrorBarBM('Error bar curve (vertical bars only)', 1e4),
           ErrorBarBM('Error bar curve (horizontal and vertical bars)', 1e4,
                      dx=True),
-          HistogramBM('Simple histogram', 1e6, bins=1e5),
+          HistogramBM('Simple histogram', 1e6, bins=int(1e5)),
           PColorBM('Polar pcolor', 1e3),
           ImageBM('Simple image', 7e3, interpolation='antialiasing'),
                      ):

@@ -67,9 +67,9 @@ def compute_image_2():
     x = np.array(np.linspace(-5*S, 5*S, N), float)
     img = np.zeros( (N, N), T )
     x.shape = (1, N)
-    img += x**2
+    img += np.array(x**2, T)
     x.shape = (N, 1)
-    img += x**2
+    img += np.array(x**2, T)
     img = TMAX*np.cos(img/S)+TMIN
     x.shape = (N,)
 #    dx = dy = x[1]-x[0]    
@@ -102,7 +102,7 @@ def compute_image_3():
     for i in range(NK):
         S = i+1
         y = S*(x//S)
-        img[DK*i:DK*(i+1),:] = y
+        img[int(DK*i):int(DK*(i+1)),:] = y
     return img
 
 def test():

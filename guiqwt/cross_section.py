@@ -847,12 +847,12 @@ def compute_oblique_section(item, obj):
     ix1, iy1 = getcpi(x1, y1)
     ix3, iy3 = getcpi(x3, y3)
     
-    destw = vector_norm(ix0, iy0, ix1, iy1)
-    desth = vector_norm(ix0, iy0, ix3, iy3)
+    destw = int(vector_norm(ix0, iy0, ix1, iy1))
+    desth = int(vector_norm(ix0, iy0, ix3, iy3))
     ysign = -1 if obj.plot().get_axis_direction('left') else 1
     angle = vector_angle(ix1-ix0, (iy1-iy0)*ysign)
     
-    dst_rect = (0, 0, int(destw), int(desth))
+    dst_rect = (0, 0, destw, desth)
     dst_image = np.empty((desth, destw), dtype=np.float64)
     
     if isinstance(item.data, np.ma.MaskedArray):

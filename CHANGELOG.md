@@ -1,6 +1,13 @@
 # guiqwt Releases #
 
 
+### Version 3.0.4 ###
+
+Bug fixes:
+
+* Fixed Python 3.8 / NumPy 1.18 related issues (type errors).
+
+
 ### Version 3.0.3 ###
 
 Bug fixes:

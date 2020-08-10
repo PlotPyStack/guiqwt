@@ -33,8 +33,8 @@ def polar_demo(N=300):
     X = R*np.cos(TH)
     Y = R*np.sin(TH)
     Z = 4*TH+R + np.random.randint(-8, 8, size=(N, N))
-    ix = np.random.randint(N, size=(N/20,))
-    iy = np.random.randint(N, size=(N/20,))
+    ix = np.random.randint(N, size=(int(N/20),))
+    iy = np.random.randint(N, size=(int(N/20),))
     Z[ix, iy] = np.nan
     return X, Y, Z
 
