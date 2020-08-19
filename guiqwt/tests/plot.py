@@ -21,7 +21,7 @@ def plot(*items):
     plot = win.get_plot()
     for item in items:
         plot.add_item(item)
-    plot.set_axis_font("left", QFont("Courier"))
+    # plot.set_axis_font("left", QFont("Courier"))
     win.get_itemlist_panel().show()
     plot.set_items_readonly(False)
     win.show()

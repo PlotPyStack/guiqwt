@@ -14,6 +14,7 @@ contrast.png
 doctmp/
 test.png
 loadsavecanvas.h5
+*.pickle
 
 # Created by https://www.gitignore.io/api/python
 
