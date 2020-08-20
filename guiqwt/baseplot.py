@@ -50,31 +50,39 @@ from __future__ import print_function
 import sys
 import numpy as np
 
-from guidata.qt.QtGui import (QSizePolicy, QColor, QPixmap, QPrinter,
-                              QApplication)
-from guidata.qt.QtCore import QSize, Qt, Signal
-from guidata.qt import PYQT5
+from qtpy.QtWidgets import QSizePolicy, QApplication
+from qtpy.QtPrintSupport import QPrinter
+from qtpy.QtGui import QColor, QPixmap
+from qtpy.QtCore import QSize, Qt, Signal
+from qtpy import PYQT5
+from qtpy.py3compat import to_text_string, is_text_string, maxsize
 
 from guidata.configtools import get_font
-from guidata.py3compat import to_text_string, is_text_string, maxsize
 
 # Local imports
-from guiqwt.transitional import (QwtPlot, QwtLinearScaleEngine,
-                                 QwtLogScaleEngine, QwtText, QwtPlotCanvas)
+from guiqwt.transitional import (
+    QwtPlot,
+    QwtLinearScaleEngine,
+    QwtLogScaleEngine,
+    QwtText,
+    QwtPlotCanvas,
+)
 from guiqwt import io
 from guiqwt.config import CONF, _
 from guiqwt.events import StatefulEventFilter
 from guiqwt.interfaces import IBasePlotItem, IItemType, ISerializableType
 from guiqwt.styles import ItemParameters, AxeStyleParam, AxesParam, AxisParam
 
-#==============================================================================
+# ==============================================================================
 # Utilities for plot items
-#==============================================================================
+# ==============================================================================
+
 
 def canvas_to_axes(item, pos):
     """Convert (x,y) from canvas coordinates system to axes coordinates"""
     plot, ax, ay = item.plot(), item.xAxis(), item.yAxis()
     return plot.invTransform(ax, pos.x()), plot.invTransform(ay, pos.y())
+
 
 def axes_to_canvas(item, x, y):
     """Convert (x,y) from axes coordinates to canvas coordinates system"""
@@ -82,17 +90,16 @@ def axes_to_canvas(item, x, y):
     return plot.transform(ax, x), plot.transform(ay, y)
 
 
-
-#==============================================================================
+# ==============================================================================
 # Base plot widget
-#==============================================================================
+# ==============================================================================
 
 PARAMETERS_TITLE_ICON = {
-                         'grid': (_("Grid..."), "grid.png" ),
-                         'axes': (_("Axes style..."), "axes.png" ),
-                         'item': (_("Parameters..."), "settings.png" ),
-                         }
-    
+    "grid": (_("Grid..."), "grid.png"),
+    "axes": (_("Axes style..."), "axes.png"),
+    "item": (_("Parameters..."), "settings.png"),
+}
+
 
 class BasePlot(QwtPlot):
     """
@@ -104,55 +111,59 @@ class BasePlot(QwtPlot):
     Activatable items must support IBasePlotItem interface and should
     be added to the plot using add_item methods.
     """
-    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = (QwtPlot.yLeft, QwtPlot.yRight,
-                                        QwtPlot.xBottom, QwtPlot.xTop)
-#    # To be replaced by (in the near future):
-#    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = range(4)
+
+    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = (
+        QwtPlot.yLeft,
+        QwtPlot.yRight,
+        QwtPlot.xBottom,
+        QwtPlot.xTop,
+    )
+    #    # To be replaced by (in the near future):
+    #    Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP = range(4)
     AXIS_IDS = (Y_LEFT, Y_RIGHT, X_BOTTOM, X_TOP)
-    AXIS_NAMES = {'left': Y_LEFT, 'right': Y_RIGHT,
-                  'bottom': X_BOTTOM, 'top': X_TOP}
-    AXIS_TYPES = {"lin" : QwtLinearScaleEngine, "log" : QwtLogScaleEngine}
+    AXIS_NAMES = {"left": Y_LEFT, "right": Y_RIGHT, "bottom": X_BOTTOM, "top": X_TOP}
+    AXIS_TYPES = {"lin": QwtLinearScaleEngine, "log": QwtLogScaleEngine}
     AXIS_CONF_OPTIONS = ("axis", "axis", "axis", "axis")
     DEFAULT_ACTIVE_XAXIS = X_BOTTOM
     DEFAULT_ACTIVE_YAXIS = Y_LEFT
-    
+
     #: Signal emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
     SIG_ITEM_MOVED = Signal("PyQt_PyObject", float, float, float, float)
-    
+
     #: Signal emitted by plot when a shapes.Marker position changes
     SIG_MARKER_CHANGED = Signal("PyQt_PyObject")
-    
+
     #: Signal emitted by plot when a shapes.Axes position (or the angle) changes
     SIG_AXES_CHANGED = Signal("PyQt_PyObject")
-    
+
     #: Signal emitted by plot when an annotation.AnnotatedShape position changes
     SIG_ANNOTATION_CHANGED = Signal("PyQt_PyObject")
-    
+
     #: Signal emitted by plot when the a shapes.XRangeSelection range changes
     SIG_RANGE_CHANGED = Signal("PyQt_PyObject", float, float)
-    
+
     #: Signal emitted by plot when item list has changed (item removed, added, ...)
-    SIG_ITEMS_CHANGED = Signal('PyQt_PyObject')
-    
+    SIG_ITEMS_CHANGED = Signal("PyQt_PyObject")
+
     #: Signal emitted by plot when selected item has changed
-    SIG_ACTIVE_ITEM_CHANGED = Signal('PyQt_PyObject')
-    
-    #: Signal emitted by plot when an item was deleted from the item list or using the 
+    SIG_ACTIVE_ITEM_CHANGED = Signal("PyQt_PyObject")
+
+    #: Signal emitted by plot when an item was deleted from the item list or using the
     #: delete item tool
-    SIG_ITEM_REMOVED = Signal('PyQt_PyObject')
-    
+    SIG_ITEM_REMOVED = Signal("PyQt_PyObject")
+
     #: Signal emitted by plot when an item is selected
-    SIG_ITEM_SELECTION_CHANGED = Signal('PyQt_PyObject')
-    
+    SIG_ITEM_SELECTION_CHANGED = Signal("PyQt_PyObject")
+
     #: Signal emitted by plot when plot's title or any axis label has changed
-    SIG_PLOT_LABELS_CHANGED = Signal('PyQt_PyObject')
-    
+    SIG_PLOT_LABELS_CHANGED = Signal("PyQt_PyObject")
+
     #: Signal emitted by plot when any plot axis direction has changed
-    SIG_AXIS_DIRECTION_CHANGED = Signal('PyQt_PyObject', 'PyQt_PyObject')
-    
+    SIG_AXIS_DIRECTION_CHANGED = Signal("PyQt_PyObject", "PyQt_PyObject")
+
     #: Signal emitted by plot when LUT has been changed by the user
     SIG_LUT_CHANGED = Signal("PyQt_PyObject")
-    
+
     #: Signal emitted by plot when image mask has changed
     SIG_MASK_CHANGED = Signal("PyQt_PyObject")
 
@@ -164,15 +175,17 @@ class BasePlot(QwtPlot):
         self._start_autoscaled = True
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.manager = None
-        self.plot_id = None # id assigned by it's manager
+        self.plot_id = None  # id assigned by it's manager
         self.filter = StatefulEventFilter(self)
         self.items = []
         self.active_item = None
-        self.last_selected = {} # a mapping from item type to last selected item
-        self.axes_styles = [AxeStyleParam(_("Left")),
-                            AxeStyleParam(_("Right")),
-                            AxeStyleParam(_("Bottom")),
-                            AxeStyleParam(_("Top"))]
+        self.last_selected = {}  # a mapping from item type to last selected item
+        self.axes_styles = [
+            AxeStyleParam(_("Left")),
+            AxeStyleParam(_("Right")),
+            AxeStyleParam(_("Bottom")),
+            AxeStyleParam(_("Top")),
+        ]
         self._active_xaxis = self.DEFAULT_ACTIVE_XAXIS
         self._active_yaxis = self.DEFAULT_ACTIVE_YAXIS
         self.read_axes_styles(section, self.AXIS_CONF_OPTIONS)
@@ -181,10 +194,11 @@ class BasePlot(QwtPlot):
         canvas.setFocusPolicy(Qt.StrongFocus)
         canvas.setFocusIndicator(QwtPlotCanvas.ItemFocusIndicator)
         self.SIG_ITEM_MOVED.connect(self._move_selected_items_together)
-        self.legendDataChanged.connect(lambda item, _legdata:
-                                       item.update_item_parameters())
+        self.legendDataChanged.connect(
+            lambda item, _legdata: item.update_item_parameters()
+        )
 
-    #---- QWidget API ---------------------------------------------------------
+    # ---- QWidget API ---------------------------------------------------------
     def mouseDoubleClickEvent(self, event):
         """Reimplement QWidget method"""
         for axis_id in self.AXIS_IDS:
@@ -195,19 +209,19 @@ class BasePlot(QwtPlot):
         else:
             QwtPlot.mouseDoubleClickEvent(self, event)
 
-    #---- QwtPlot API ---------------------------------------------------------
+    # ---- QwtPlot API ---------------------------------------------------------
     def showEvent(self, event):
         """Reimplement Qwt method"""
         QwtPlot.showEvent(self, event)
         if self._start_autoscaled:
             self.do_autoscale()
 
-    #---- Public API ----------------------------------------------------------
+    # ---- Public API ----------------------------------------------------------
     def _move_selected_items_together(self, item, x0, y0, x1, y1):
         """Selected items move together"""
         for selitem in self.get_selected_items():
             if selitem is not item and selitem.can_move():
-                selitem.move_with_selection(x1-x0, y1-y0)
+                selitem.move_with_selection(x1 - x0, y1 - y0)
 
     def set_manager(self, manager, plot_id):
         """Set the associated :py:class:`guiqwt.plot.PlotManager` instance"""
@@ -217,7 +231,7 @@ class BasePlot(QwtPlot):
     def sizeHint(self):
         """Preferred size"""
         return QSize(400, 300)
-        
+
     def get_title(self):
         """Get plot title"""
         return to_text_string(self.title().text())
@@ -247,23 +261,23 @@ class BasePlot(QwtPlot):
                 continue
             prm.read_config(CONF, section, option)
         self.update_all_axes_styles()
-        
+
     def get_axis_title(self, axis_id):
         """Get axis title"""
         axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].title
-        
+
     def set_axis_title(self, axis_id, text):
         """Set axis title"""
         axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title = text
         self.update_axis_style(axis_id)
-        
+
     def get_axis_unit(self, axis_id):
         """Get axis unit"""
         axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].unit
-        
+
     def set_axis_unit(self, axis_id, text):
         """Set axis unit"""
         axis_id = self.get_axis_id(axis_id)
@@ -274,19 +288,19 @@ class BasePlot(QwtPlot):
         """Get axis font"""
         axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].title_font.build_font()
-    
+
     def set_axis_font(self, axis_id, font):
         """Set axis font"""
         axis_id = self.get_axis_id(axis_id)
         self.axes_styles[axis_id].title_font.update_param(font)
         self.axes_styles[axis_id].ticks_font.update_param(font)
         self.update_axis_style(axis_id)
-        
+
     def get_axis_color(self, axis_id):
         """Get axis color (color name, i.e. string)"""
         axis_id = self.get_axis_id(axis_id)
         return self.axes_styles[axis_id].color
-    
+
     def set_axis_color(self, axis_id, color):
         """
         Set axis color
@@ -302,11 +316,11 @@ class BasePlot(QwtPlot):
         """Update axis style"""
         axis_id = self.get_axis_id(axis_id)
         style = self.axes_styles[axis_id]
-        
+
         title_font = style.title_font.build_font()
         ticks_font = style.ticks_font.build_font()
         self.setAxisFont(axis_id, ticks_font)
-        
+
         if style.title and style.unit:
             title = "%s (%s)" % (style.title, style.unit)
         elif style.title:
@@ -400,7 +414,7 @@ class BasePlot(QwtPlot):
         """Return widget's item list
         (items are based on IBasePlotItem's interface)"""
         if z_sorted:
-            items = sorted(self.items, reverse=True, key=lambda x:x.z())
+            items = sorted(self.items, reverse=True, key=lambda x: x.z())
         else:
             items = self.items
         if item_type is None:
@@ -408,21 +422,25 @@ class BasePlot(QwtPlot):
         else:
             assert issubclass(item_type, IItemType)
             return [item for item in items if item_type in item.types()]
-            
+
     def get_public_items(self, z_sorted=False, item_type=None):
         """Return widget's public item list
         (items are based on IBasePlotItem's interface)"""
-        return [item for item in self.get_items(z_sorted=z_sorted,
-                                                item_type=item_type)
-                if not item.is_private()]
-            
+        return [
+            item
+            for item in self.get_items(z_sorted=z_sorted, item_type=item_type)
+            if not item.is_private()
+        ]
+
     def get_private_items(self, z_sorted=False, item_type=None):
         """Return widget's private item list
         (items are based on IBasePlotItem's interface)"""
-        return [item for item in self.get_items(z_sorted=z_sorted,
-                                                item_type=item_type)
-                if item.is_private()]
-                
+        return [
+            item
+            for item in self.get_items(z_sorted=z_sorted, item_type=item_type)
+            if item.is_private()
+        ]
+
     def copy_to_clipboard(self):
         """Copy widget's window to clipboard"""
         clipboard = QApplication.clipboard()
@@ -431,32 +449,34 @@ class BasePlot(QwtPlot):
         else:
             pixmap = QPixmap.grabWidget(self)
         clipboard.setPixmap(pixmap)
-            
+
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (\*.png, \*.pdf)"""
         fname = to_text_string(fname)
-        if fname.lower().endswith('.pdf'):
+        if fname.lower().endswith(".pdf"):
             printer = QPrinter()
             printer.setOutputFormat(QPrinter.PdfFormat)
             printer.setOrientation(QPrinter.Landscape)
             printer.setOutputFileName(fname)
-            printer.setCreator('guidata')
+            printer.setCreator("guidata")
             self.print_(printer)
-        elif fname.lower().endswith('.png'):
+        elif fname.lower().endswith(".png"):
             if PYQT5:
                 pixmap = self.grab()
             else:
                 pixmap = QPixmap.grabWidget(self)
-            pixmap.save(fname, 'PNG')
+            pixmap.save(fname, "PNG")
         else:
             raise RuntimeError(_("Unknown file extension"))
-        
+
     def get_selected_items(self, z_sorted=False, item_type=None):
         """Return selected items"""
-        return [item for item in
-                self.get_items(item_type=item_type, z_sorted=z_sorted)
-                if item.selected]
-            
+        return [
+            item
+            for item in self.get_items(item_type=item_type, z_sorted=z_sorted)
+            if item.selected
+        ]
+
     def get_max_z(self):
         """
         Return maximum z-order for all items registered in plot
@@ -466,7 +486,7 @@ class BasePlot(QwtPlot):
             return max([_it.z() for _it in self.items])
         else:
             return 0
-        
+
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
@@ -480,24 +500,27 @@ class BasePlot(QwtPlot):
         if z is not None:
             item.setZ(z)
         else:
-            item.setZ(self.get_max_z()+1)
+            item.setZ(self.get_max_z() + 1)
         if item in self.items:
-            print("Warning: item %r is already attached to plot" % item, file=sys.stderr)
+            print(
+                "Warning: item %r is already attached to plot" % item, file=sys.stderr
+            )
         else:
             self.items.append(item)
         self.SIG_ITEMS_CHANGED.emit(self)
-        
+
     def add_item_with_z_offset(self, item, zoffset):
         """
         Add a plot *item* instance within a specified z range, over *zmin*
         """
-        zlist = sorted([_it.z() for _it in self.items
-                        if _it.z() >= zoffset]+[zoffset-1])
+        zlist = sorted(
+            [_it.z() for _it in self.items if _it.z() >= zoffset] + [zoffset - 1]
+        )
         dzlist = np.argwhere(np.diff(zlist) > 1)
         if len(dzlist) == 0:
-            z = max(zlist)+1
+            z = max(zlist) + 1
         else:
-            z = zlist[dzlist[0]]+1
+            z = zlist[dzlist[0]] + 1
         self.add_item(item, z=z)
 
     def __clean_item_references(self, item):
@@ -513,7 +536,7 @@ class BasePlot(QwtPlot):
 
     def del_items(self, items):
         """Remove item from widget"""
-        items = items[:] # copy the list to avoid side effects when we empty it
+        items = items[:]  # copy the list to avoid side effects when we empty it
         active_item = self.get_active_item()
         while items:
             item = items.pop()
@@ -540,7 +563,7 @@ class BasePlot(QwtPlot):
         """Show/hide *item* and emit a SIG_ITEMS_CHANGED signal"""
         item.setVisible(state)
         if item is self.active_item and not state:
-            self.set_active_item(None) # Notify the item list (see baseplot)
+            self.set_active_item(None)  # Notify the item list (see baseplot)
         if notify:
             self.SIG_ITEMS_CHANGED.emit(self)
         if replot:
@@ -554,11 +577,11 @@ class BasePlot(QwtPlot):
             self.set_item_visible(item, state, notify=False, replot=False)
         self.SIG_ITEMS_CHANGED.emit(self)
         self.replot()
-        
+
     def show_items(self, items=None, item_type=None):
         """Show items (if *items* is None, show all items)"""
         self.__set_items_visible(True, items, item_type=item_type)
-        
+
     def hide_items(self, items=None, item_type=None):
         """Hide items (if *items* is None, hide all items)"""
         self.__set_items_visible(False, items, item_type=item_type)
@@ -577,6 +600,7 @@ class BasePlot(QwtPlot):
             items = self.items[:]
         items = [item for item in items if ISerializableType in item.types()]
         import pickle
+
         pickle.dump(items, iofile)
 
     def restore_items(self, iofile):
@@ -587,6 +611,7 @@ class BasePlot(QwtPlot):
         See also :py:meth:`guiqwt.baseplot.BasePlot.save_items`
         """
         import pickle
+
         items = pickle.load(iofile)
         for item in items:
             self.add_item(item)
@@ -605,7 +630,7 @@ class BasePlot(QwtPlot):
             items = self.items[:]
         items = [item for item in items if ISerializableType in item.types()]
         io.save_items(writer, items)
-        
+
     def deserialize(self, reader):
         """
         Restore items from HDF5 file:
@@ -626,13 +651,13 @@ class BasePlot(QwtPlot):
     def del_all_items(self):
         """Remove (detach) all attached items"""
         self.del_items(self.items)
-        
+
     def __swap_items_z(self, item1, item2):
         old_item1_z, old_item2_z = item1.z(), item2.z()
-        item1.setZ(max([_it.z() for _it in self.items])+1)
+        item1.setZ(max([_it.z() for _it in self.items]) + 1)
         item2.setZ(old_item1_z)
         item1.setZ(old_item2_z)
-        
+
     def move_up(self, item_list):
         """Move item(s) up, i.e. to the foreground
         (swap item with the next item in z-order)
@@ -641,18 +666,17 @@ class BasePlot(QwtPlot):
         
         Return True if items have been moved effectively"""
         objects = self.get_items(z_sorted=True)
-        items = sorted(list(item_list), reverse=True,
-                       key=lambda x:objects.index(x))
+        items = sorted(list(item_list), reverse=True, key=lambda x: objects.index(x))
         changed = False
         if objects.index(items[-1]) > 0:
             for item in items:
                 index = objects.index(item)
-                self.__swap_items_z(item, objects[index-1])
+                self.__swap_items_z(item, objects[index - 1])
                 changed = True
         if changed:
             self.SIG_ITEMS_CHANGED.emit(self)
         return changed
-    
+
     def move_down(self, item_list):
         """Move item(s) down, i.e. to the background
         (swap item with the previous item in z-order)
@@ -661,13 +685,12 @@ class BasePlot(QwtPlot):
         
         Return True if items have been moved effectively"""
         objects = self.get_items(z_sorted=True)
-        items = sorted(list(item_list), reverse=False,
-                       key=lambda x:objects.index(x))
+        items = sorted(list(item_list), reverse=False, key=lambda x: objects.index(x))
         changed = False
-        if objects.index(items[-1]) < len(objects)-1:
+        if objects.index(items[-1]) < len(objects) - 1:
             for item in items:
                 index = objects.index(item)
-                self.__swap_items_z(item, objects[index+1])
+                self.__swap_items_z(item, objects[index + 1])
                 changed = True
         if changed:
             self.SIG_ITEMS_CHANGED.emit(self)
@@ -737,7 +760,7 @@ class BasePlot(QwtPlot):
             # previously active item
             self.SIG_ACTIVE_ITEM_CHANGED.emit(self)
         self.SIG_ITEM_SELECTION_CHANGED.emit(self)
-        
+
     def set_active_item(self, item):
         """Set active item, and unselect the old active item"""
         self.active_item = item
@@ -791,7 +814,7 @@ class BasePlot(QwtPlot):
                 if d < close_dist:
                     break
             if other is not None:
-                # e.g. LegendBoxItem: selecting a curve ('other') instead of 
+                # e.g. LegendBoxItem: selecting a curve ('other') instead of
                 #                     legend box ('obj')
                 return other, 0, None, True
         return selobj, distance, handle, inside
@@ -810,7 +833,7 @@ class BasePlot(QwtPlot):
                 selobj, distance, handle, inside = obj, d, _handle, _inside
                 break
         return selobj, distance, handle, inside
-        
+
     def get_context_menu(self):
         """Return widget context menu"""
         return self.manager.get_context_menu(self)
@@ -828,11 +851,11 @@ class BasePlot(QwtPlot):
         # this way, the common datasets will be based on its parameters
         active_item = self.get_active_item()
         active_item.get_item_parameters(itemparams)
-    
+
     def get_axesparam_class(self, item):
         """Return AxesParam dataset class associated to item's type"""
         return AxesParam
-    
+
     def get_plot_parameters(self, key, itemparams):
         """
         Return a list of DataSets for a given parameter key
@@ -850,14 +873,17 @@ class BasePlot(QwtPlot):
                 return
             self.get_selected_item_parameters(itemparams)
             Param = self.get_axesparam_class(active_item)
-            axesparam = Param(title=_("Axes"), icon='lin_lin.png',
-                              comment=_("Axes associated to selected item"))
+            axesparam = Param(
+                title=_("Axes"),
+                icon="lin_lin.png",
+                comment=_("Axes associated to selected item"),
+            )
             axesparam.update_param(active_item)
             itemparams.add("AxesParam", self, axesparam)
-            
+
     def set_item_parameters(self, itemparams):
         """Set item (plot, here) parameters"""
-        # Axe styles        
+        # Axe styles
         datasets = [itemparams.get("AxeStyleParam%d" % i) for i in range(4)]
         if datasets[0] is not None:
             self.axes_styles = datasets
@@ -889,7 +915,7 @@ class BasePlot(QwtPlot):
         if param.edit(parent=self):
             param.update_axis(self, axis_id)
             self.replot()
-        
+
     def do_autoscale(self, replot=True, axis_id=None):
         """Do autoscale on all axes"""
         for axis_id in self.AXIS_IDS if axis_id is None else [axis_id]:
@@ -911,6 +937,7 @@ class BasePlot(QwtPlot):
         """
         self.canvas().replot()
         self.update()
+
 
 ## Keep this around to debug too many replots
 ##    def replot(self):

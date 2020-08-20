@@ -15,10 +15,11 @@ of Qt Objects).
 
 from __future__ import print_function
 
-from guidata.qt.QtGui import QImage, QInputEvent
-from guidata.qt.QtCore import Qt, QEvent
+from qtpy.QtGui import QImage, QInputEvent
+from qtpy.QtCore import Qt, QEvent
 
-from guidata.py3compat import io
+from qtpy.py3compat import io
+
 
 def buttons_to_str(buttons):
     """Conversion des flags Qt en chaine"""
@@ -44,13 +45,13 @@ def evt_type_to_str(type):
         return "Context"
     else:
         return "%d" % type
-    
-    
+
+
 def print_event(evt):
     """Représentation textuelle d'un événement (debug)"""
     string = ""
     if isinstance(evt, QInputEvent):
-        string += evt_type_to_str( evt.type() )
+        string += evt_type_to_str(evt.type())
         string += "%08x:" % evt.modifiers()
         if hasattr(evt, "buttons"):
             buttons = evt.buttons()
@@ -65,15 +66,16 @@ def print_event(evt):
         print(evt)
 
 
-def qimage_format( fmt ):
+def qimage_format(fmt):
     for attr in dir(QImage):
         if attr.startswith("Format"):
             val = getattr(QImage, attr)
             if val == fmt:
-                return attr[len("Format_"):]
+                return attr[len("Format_") :]
     return str(fmt)
-    
-def qimage_to_str( img, indent="" ):
+
+
+def qimage_to_str(img, indent=""):
     fd = io.StringIO()
     print(indent, img, file=fd)
     indent += "  "

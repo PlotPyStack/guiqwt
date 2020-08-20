@@ -33,14 +33,14 @@ def about(html=True, copyright_only=False):
     """Return text about this package"""
     import sys, os, os.path as osp, platform, guidata, guiqwt, qwt
     from guiqwt.config import _
-    from guidata.qt.QtCore import QT_VERSION_STR
+    from qtpy import QtCore as QC
 
     name = __file__.split(osp.sep)[-2]
     tf1 = (name, __version__, __description__)
     tf2 = (
         platform.python_version(),
         "64 bits" if sys.maxsize > 2 ** 32 else "32 bits",
-        QT_VERSION_STR,
+        QC.__version__,
         qwt.__version__,
         guidata.__version__,
         guiqwt.__version__,

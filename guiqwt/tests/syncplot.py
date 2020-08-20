@@ -8,15 +8,14 @@
 """CurvePlotDialog test"""
 
 
-#===============================================================================
-#TODO: Make this test work!!
-#===============================================================================
+# ===============================================================================
+# TODO: Make this test work!!
+# ===============================================================================
 
 
+SHOW = False  # Show test in GUI-based test launcher
 
-SHOW = False # Show test in GUI-based test launcher
-
-from guidata.qt.QtGui import QFont
+from qtpy.QtGui import QFont
 
 from guiqwt.baseplot import BasePlot
 from guiqwt.plot import CurveDialog, CurveWidget, PlotManager
@@ -40,16 +39,19 @@ class MyPlotDialog(CurveDialog):
         self.plotwidget.finalize()
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["1", "3"])
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["2", "4"])
-        manager.synchronize_axis(BasePlot.Y_LEFT,   ["1", "2"])
-        manager.synchronize_axis(BasePlot.Y_LEFT,   ["3", "4"])
-        
+        manager.synchronize_axis(BasePlot.Y_LEFT, ["1", "2"])
+        manager.synchronize_axis(BasePlot.Y_LEFT, ["3", "4"])
+
         self.layout.addWidget(self.plotwidget, 0, 0)
 
+
 def plot(items1, items2, items3, items4):
-    win = MyPlotDialog(edit=False, toolbar=True,
-                       wintitle="CurvePlotDialog test",
-                       options=dict(title="Title", xlabel="xlabel",
-                                    ylabel="ylabel"))
+    win = MyPlotDialog(
+        edit=False,
+        toolbar=True,
+        wintitle="CurvePlotDialog test",
+        options=dict(title="Title", xlabel="xlabel", ylabel="ylabel"),
+    )
     items = [items1, items2, items3, items4]
     for i, plot in enumerate(win.plotwidget.plots):
         for item in items[i]:
@@ -60,30 +62,40 @@ def plot(items1, items2, items3, items4):
     win.show()
     win.exec_()
 
+
 def test():
     """Test"""
     # -- Create QApplication
     import guidata
+
     _app = guidata.qapplication()
     # --
     from numpy import linspace, sin
+
     x = linspace(-10, 10, 200)
-    dy = x/100.
-    y = sin(sin(sin(x)))    
+    dy = x / 100.0
+    y = sin(sin(sin(x)))
     x2 = linspace(-10, 10, 20)
     y2 = sin(sin(sin(x2)))
-    plot([make.curve(x, y, color="b"),
-          make.label("Relative position <b>outside</b>",
-                     (x[0], y[0]), (-10, -10), "BR"),],
-         [make.curve(x2, y2, color="g"),
-          ],
-         [make.curve(x, sin(2*y), color="r"),
-          make.label("Relative position <i>inside</i>",
-                     (x[0], y[0]), (10, 10), "TL"),],
-         [make.merror(x, y/2, dy),
-          make.label("Absolute position", "R", (0, 0), "R"),
-          make.legend("TR"),]
-         )
+    plot(
+        [
+            make.curve(x, y, color="b"),
+            make.label(
+                "Relative position <b>outside</b>", (x[0], y[0]), (-10, -10), "BR"
+            ),
+        ],
+        [make.curve(x2, y2, color="g"),],
+        [
+            make.curve(x, sin(2 * y), color="r"),
+            make.label("Relative position <i>inside</i>", (x[0], y[0]), (10, 10), "TL"),
+        ],
+        [
+            make.merror(x, y / 2, dy),
+            make.label("Absolute position", "R", (0, 0), "R"),
+            make.legend("TR"),
+        ],
+    )
+
 
 if __name__ == "__main__":
     test()

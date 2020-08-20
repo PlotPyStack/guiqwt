@@ -102,142 +102,167 @@ Reference
 
 import numpy as np
 
-from guidata.qt.QtGui import (QPen, QBrush, QColor, QFont, QFontDialog,
-                              QTransform)
-from guidata.qt.QtCore import Qt, QSizeF, QPointF
+from qtpy.QtWidgets import QFontDialog
+from qtpy.QtGui import QPen, QBrush, QColor, QFont, QTransform
+from qtpy.QtCore import Qt, QSizeF, QPointF
 
-from guidata.dataset.datatypes import (DataSet, ObjectItem, BeginGroup,
-                                       EndGroup, Obj, DataSetGroup,
-                                       BeginTabGroup, EndTabGroup,
-                                       GetAttrProp, NotProp)
-from guidata.dataset.dataitems import (ChoiceItem, BoolItem, FloatItem, IntItem,
-                                       ImageChoiceItem, ColorItem, StringItem,
-                                       ButtonItem, FloatArrayItem, TextItem)
+from guidata.dataset.datatypes import (
+    DataSet,
+    ObjectItem,
+    BeginGroup,
+    EndGroup,
+    Obj,
+    DataSetGroup,
+    BeginTabGroup,
+    EndTabGroup,
+    GetAttrProp,
+    NotProp,
+)
+from guidata.dataset.dataitems import (
+    ChoiceItem,
+    BoolItem,
+    FloatItem,
+    IntItem,
+    ImageChoiceItem,
+    ColorItem,
+    StringItem,
+    ButtonItem,
+    FloatArrayItem,
+    TextItem,
+)
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string
+from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
 from guiqwt.config import _
 from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 
+
 class ItemParameters(object):
     """Class handling QwtPlotItem-like parameters"""
+
     MULTISEL_DATASETS = []
     # Customizing tab display order:
-    ENDING_PARAMETERS = ("CurveParam", "ErrorBarParam",
-                         "ShapeParam", "LabelParam", "LegendParam",
-                         "GridParam", "AxesParam")
-    
+    ENDING_PARAMETERS = (
+        "CurveParam",
+        "ErrorBarParam",
+        "ShapeParam",
+        "LabelParam",
+        "LegendParam",
+        "GridParam",
+        "AxesParam",
+    )
+
     def __init__(self, multiselection=False):
         self.multiselection = multiselection
         self.paramdict = {}
         self.items = set()
-        
+
     @classmethod
     def register_multiselection(cls, klass, klass_ms):
         """Register a DataSet couple: (DataSet, DataSet_for_MultiSelection)"""
         # Inserting element backwards because classes have to be registered
         # from children to parent (see 'add' method to fully understand why)
         cls.MULTISEL_DATASETS.insert(0, (klass, klass_ms))
-        
+
     def __add(self, key, item, param):
         self.paramdict[key] = param
         self.items.add(item)
-        
+
     def add(self, key, item, param):
         if self.multiselection:
             for klass, klass_ms in self.MULTISEL_DATASETS:
                 if isinstance(param, klass):
                     title = param.get_title()
-                    if key in self.paramdict and not title.endswith('s'):
-                        title += 's'
-                    param_ms = klass_ms(title=title,
-                                        comment=param.get_comment(),
-                                        icon=param.get_icon())
+                    if key in self.paramdict and not title.endswith("s"):
+                        title += "s"
+                    param_ms = klass_ms(
+                        title=title, comment=param.get_comment(), icon=param.get_icon()
+                    )
                     update_dataset(param_ms, param)
                     self.__add(key, item, param_ms)
                     return
         self.__add(key, item, param)
-        
+
     def get(self, key):
         from copy import deepcopy
+
         return deepcopy(self.paramdict.get(key))
-    
+
     def update(self, plot):
-        #XXX: removed the following workaround as the associated bug can't be 
-        # reproduced anymore with guiqwt 3. However, keeping the workaround 
+        # XXX: removed the following workaround as the associated bug can't be
+        # reproduced anymore with guiqwt 3. However, keeping the workaround
         # here (commented) as it could become useful eventually.
-        #-----
-        #FIXME: without the following workaround, ImagePlot object aspect ratio
+        # -----
+        # FIXME: without the following workaround, ImagePlot object aspect ratio
         # is changed when pressing button "Apply"
         # (see also guiqwt.image.ImagePlot.edit_axis_parameters)
-#        from guiqwt.image import ImagePlot
-#        if isinstance(plot, ImagePlot):
-#            ratio = plot.get_current_aspect_ratio()
-        #-----
+        #        from guiqwt.image import ImagePlot
+        #        if isinstance(plot, ImagePlot):
+        #            ratio = plot.get_current_aspect_ratio()
+        # -----
         for item in self.items:
             item.set_item_parameters(self)
         plot.replot()
-        #-----
-#        if isinstance(plot, ImagePlot):
-#            plot.set_aspect_ratio(ratio=ratio)
-#            plot.replot()
-        #-----
+        # -----
+        #        if isinstance(plot, ImagePlot):
+        #            plot.set_aspect_ratio(ratio=ratio)
+        #            plot.replot()
+        # -----
         plot.SIG_ITEMS_CHANGED.emit(plot)
-    
+
     def edit(self, plot, title, icon):
         paramdict = self.paramdict.copy()
         ending_parameters = []
         for key in self.ENDING_PARAMETERS:
             if key in paramdict:
                 ending_parameters.append(paramdict.pop(key))
-        parameters = list(paramdict.values())+ending_parameters
-        dset = DataSetGroup(parameters, title=title.rstrip('.'), icon=icon)
+        parameters = list(paramdict.values()) + ending_parameters
+        dset = DataSetGroup(parameters, title=title.rstrip("."), icon=icon)
         if dset.edit(parent=plot, apply=lambda dset: self.update(plot)):
             self.update(plot)
 
 
 LINESTYLES = {
-              "-": "SolidLine",
-              "--": "DashLine",
-              ":": "DotLine",
-              "-.": "DashDotLine",
-              }
+    "-": "SolidLine",
+    "--": "DashLine",
+    ":": "DotLine",
+    "-.": "DashDotLine",
+}
 COLORS = {
-          "r": "red",
-          "g": "green",
-          "b": "blue",
-          "c": "cyan",
-          "m": "magenta",
-          "y": "yellow",
-          "k": "black",
-          "w": "white",
-          "G": "gray",
-          }
+    "r": "red",
+    "g": "green",
+    "b": "blue",
+    "c": "cyan",
+    "m": "magenta",
+    "y": "yellow",
+    "k": "black",
+    "w": "white",
+    "G": "gray",
+}
 MARKERS = {
-          "+": QwtSymbol.Cross,
-          "o": QwtSymbol.Ellipse,
-          "*": QwtSymbol.Star1,
-          ".": QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black),
-                          QPen(Qt.black), QSizeF(3, 3)),
-          "x": QwtSymbol.XCross,
-          "s": QwtSymbol.Rect,
-          "d": QwtSymbol.Diamond,
-          "^": QwtSymbol.UTriangle,
-          "v": QwtSymbol.DTriangle,
-          ">": QwtSymbol.RTriangle,
-          "<": QwtSymbol.LTriangle,
-          "h": QwtSymbol.Star2,
-          }
+    "+": QwtSymbol.Cross,
+    "o": QwtSymbol.Ellipse,
+    "*": QwtSymbol.Star1,
+    ".": QwtSymbol(QwtSymbol.Ellipse, QBrush(Qt.black), QPen(Qt.black), QSizeF(3, 3)),
+    "x": QwtSymbol.XCross,
+    "s": QwtSymbol.Rect,
+    "d": QwtSymbol.Diamond,
+    "^": QwtSymbol.UTriangle,
+    "v": QwtSymbol.DTriangle,
+    ">": QwtSymbol.RTriangle,
+    "<": QwtSymbol.LTriangle,
+    "h": QwtSymbol.Star2,
+}
 MARKERSTYLES = {
-                None: "NoLine",
-                "-": "HLine",
-                "|": "VLine",
-                "+": "Cross",
-                }
+    None: "NoLine",
+    "-": "HLine",
+    "|": "VLine",
+    "+": "Cross",
+}
 
 
 def style_generator(color_keys="bgrcmykG"):
@@ -245,7 +270,8 @@ def style_generator(color_keys="bgrcmykG"):
     while True:
         for linestyle in sorted(LINESTYLES.keys()):
             for color in color_keys:
-                yield color+linestyle
+                yield color + linestyle
+
 
 def update_style_attr(style, param):
     """Parse a MATLAB-like style string and
@@ -279,32 +305,36 @@ def build_reverse_map(lst, obj):
         dict[val] = idx
     return dict
 
-LINESTYLE_CHOICES = [("SolidLine", _("Solid line"), "solid.png"),
-                     ("DashLine", _("Dashed line"), "dash.png"),
-                     ("DotLine", _("Dotted line"), "dot.png"),
-                     ("DashDotLine", _("Dash-dot line"), "dashdot.png"),
-                     ("DashDotDotLine", _("Dash-dot-dot line"), "dashdotdot.png"),
-                     ("NoPen", _("No line"), "none.png"),
-                     ]
-MARKER_CHOICES = [("Cross", _("Cross"), "cross.png"),
-                  ("Ellipse", _("Ellipse"), "ellipse.png"),
-                  ("Star1", _("Star"), "star.png"),
-                  ("XCross", _("X-Cross"), "xcross.png"),
-                  ("Rect", _("Square"), "square.png"),
-                  ("Diamond", _("Diamond"), "diamond.png"),
-                  ("UTriangle", _("Triangle"), "triangle_u.png"),
-                  ("DTriangle", _("Triangle"), "triangle_d.png"),
-                  ("RTriangle", _("Triangle"), "triangle_r.png"),
-                  ("LTriangle", _("Triangle"), "triangle_l.png"),
-                  ("Star2", _("Hexagon"), "hexagon.png"),
-                  ("NoSymbol", _("No symbol"), "none.png"),
-                  ]
-CURVESTYLE_CHOICES = [("Lines", _("Lines"), "lines.png"),
-                      ("Sticks", _("Sticks"), "sticks.png"),
-                      ("Steps", _("Steps"), "steps.png"),
-                      ("Dots", _("Dots"), "dots.png"),
-                      ("NoCurve", _("No curve"), "none.png")
-                      ]
+
+LINESTYLE_CHOICES = [
+    ("SolidLine", _("Solid line"), "solid.png"),
+    ("DashLine", _("Dashed line"), "dash.png"),
+    ("DotLine", _("Dotted line"), "dot.png"),
+    ("DashDotLine", _("Dash-dot line"), "dashdot.png"),
+    ("DashDotDotLine", _("Dash-dot-dot line"), "dashdotdot.png"),
+    ("NoPen", _("No line"), "none.png"),
+]
+MARKER_CHOICES = [
+    ("Cross", _("Cross"), "cross.png"),
+    ("Ellipse", _("Ellipse"), "ellipse.png"),
+    ("Star1", _("Star"), "star.png"),
+    ("XCross", _("X-Cross"), "xcross.png"),
+    ("Rect", _("Square"), "square.png"),
+    ("Diamond", _("Diamond"), "diamond.png"),
+    ("UTriangle", _("Triangle"), "triangle_u.png"),
+    ("DTriangle", _("Triangle"), "triangle_d.png"),
+    ("RTriangle", _("Triangle"), "triangle_r.png"),
+    ("LTriangle", _("Triangle"), "triangle_l.png"),
+    ("Star2", _("Hexagon"), "hexagon.png"),
+    ("NoSymbol", _("No symbol"), "none.png"),
+]
+CURVESTYLE_CHOICES = [
+    ("Lines", _("Lines"), "lines.png"),
+    ("Sticks", _("Sticks"), "sticks.png"),
+    ("Steps", _("Steps"), "steps.png"),
+    ("Dots", _("Dots"), "dots.png"),
+    ("NoCurve", _("No curve"), "none.png"),
+]
 
 BRUSHSTYLE_CHOICES = [
     ("NoBrush", _("No brush pattern"), "nobrush.png"),
@@ -318,22 +348,22 @@ BRUSHSTYLE_CHOICES = [
     ("Dense7Pattern", _("Extremely sparse brush pattern"), "dense7pattern.png"),
     ("HorPattern", _("Horizontal lines"), "horpattern.png"),
     ("VerPattern", _("Vertical lines"), "verpattern.png"),
-    ("CrossPattern", _("Crossing horizontal and vertical lines"),
-     "crosspattern.png"),
+    ("CrossPattern", _("Crossing horizontal and vertical lines"), "crosspattern.png"),
     ("BDiagPattern", _("Backward diagonal lines"), "bdiagpattern.png"),
     ("FDiagPattern", _("Forward diagonal lines"), "fdiagpattern.png"),
     ("DiagCrossPattern", _("Crossing diagonal lines"), "diagcrosspattern.png"),
-#    ("LinearGradientPattern", _("Linear gradient (set using a dedicated QBrush constructor)"), "none.png"),
-#    ("ConicalGradientPattern", _("Conical gradient (set using a dedicated QBrush constructor)"), "none.png"),
-#    ("RadialGradientPattern", _("Radial gradient (set using a dedicated QBrush constructor)"), "none.png"),
-#    ("TexturePattern", _("Custom pattern (see QBrush::setTexture())"), "none.png"),
+    #    ("LinearGradientPattern", _("Linear gradient (set using a dedicated QBrush constructor)"), "none.png"),
+    #    ("ConicalGradientPattern", _("Conical gradient (set using a dedicated QBrush constructor)"), "none.png"),
+    #    ("RadialGradientPattern", _("Radial gradient (set using a dedicated QBrush constructor)"), "none.png"),
+    #    ("TexturePattern", _("Custom pattern (see QBrush::setTexture())"), "none.png"),
 ]
 
-MARKERSTYLE_CHOICES = [("NoLine", _("None"), "none.png"),
-                       ("HLine",  _("Horizontal"), "horiz_marker.png"),
-                       ("VLine",  _("Vertical"), "vert_marker.png"),
-                       ("Cross",  _("Cross"), "cross_marker.png"),
-                       ]
+MARKERSTYLE_CHOICES = [
+    ("NoLine", _("None"), "none.png"),
+    ("HLine", _("Horizontal"), "horiz_marker.png"),
+    ("VLine", _("Vertical"), "vert_marker.png"),
+    ("Cross", _("Cross"), "cross_marker.png"),
+]
 
 MARKER_NAME = build_reverse_map(MARKER_CHOICES, QwtSymbol)
 CURVESTYLE_NAME = build_reverse_map(CURVESTYLE_CHOICES, QwtPlotCurve)
@@ -349,12 +379,12 @@ def _font_selection(param, item, value, parent):
     font = param.build_font()
     result, valid = QFontDialog.getFont(font, parent)
     if valid:
-        param.update_param( result )
-    
+        param.update_param(result)
+
+
 class FontParam(DataSet):
     family = StringItem(_("Family"), default="default")
-    _choose = ButtonItem(_("Choose font"), _font_selection,
-                         default=None).set_pos(col=1)
+    _choose = ButtonItem(_("Choose font"), _font_selection, default=None).set_pos(col=1)
     size = IntItem(_("Size in point"), default=12)
     bold = BoolItem(_("Bold"), default=False).set_pos(col=1)
     italic = BoolItem(_("Italic"), default=False).set_pos(col=2)
@@ -367,17 +397,21 @@ class FontParam(DataSet):
 
     def build_font(self):
         font = QFont(self.family)
-        font.setPointSize( self.size )
-        font.setBold( self.bold )
-        font.setItalic( self.italic )
+        font.setPointSize(self.size)
+        font.setBold(self.bold)
+        font.setItalic(self.italic)
         return font
+
 
 class FontItemWidget(DataSetWidget):
     klass = FontParam
 
+
 class FontItem(ObjectItem):
     """Item holding a LineStyleParam"""
+
     klass = FontParam
+
 
 DataSetEditLayout.register(FontItem, FontItemWidget)
 
@@ -386,17 +420,16 @@ DataSetEditLayout.register(FontItem, FontItemWidget)
 # Common Qwt symbol parameters
 # ===================================================
 class SymbolParam(DataSet):
-    marker = ImageChoiceItem(_("Style"), MARKER_CHOICES,
-                             default="NoSymbol")
+    marker = ImageChoiceItem(_("Style"), MARKER_CHOICES, default="NoSymbol")
     size = IntItem(_("Size"), default=9)
     edgecolor = ColorItem(_("Border"), default="gray")
     facecolor = ColorItem(_("Background color"), default="yellow")
-    alpha = FloatItem(_("Background alpha"), default=1., min=0, max=1)
+    alpha = FloatItem(_("Background alpha"), default=1.0, min=0, max=1)
 
     def update_param(self, symb):
         if not isinstance(symb, QwtSymbol):
             # check if this is still needed
-            #raise RuntimeError
+            # raise RuntimeError
             assert isinstance(symb, QwtSymbol.Style)
             self.marker = MARKER_NAME[symb]
             return
@@ -409,20 +442,27 @@ class SymbolParam(DataSet):
         marker_type = getattr(QwtSymbol, self.marker)
         color = QColor(self.facecolor)
         color.setAlphaF(self.alpha)
-        marker = QwtSymbol(marker_type, QBrush(color),
-                           QPen(QColor(self.edgecolor)),
-                           QSizeF(self.size, self.size))
+        marker = QwtSymbol(
+            marker_type,
+            QBrush(color),
+            QPen(QColor(self.edgecolor)),
+            QSizeF(self.size, self.size),
+        )
         return marker
-    
+
     def update_symbol(self, obj):
-        obj.setSymbol(self.build_symbol())        
+        obj.setSymbol(self.build_symbol())
+
 
 class SymbolItemWidget(DataSetWidget):
     klass = SymbolParam
 
+
 class SymbolItem(ObjectItem):
     """Item holding a SymbolParam"""
+
     klass = SymbolParam
+
 
 DataSetEditLayout.register(SymbolItem, SymbolItemWidget)
 
@@ -433,7 +473,7 @@ DataSetEditLayout.register(SymbolItem, SymbolItemWidget)
 class LineStyleParam(DataSet):
     style = ImageChoiceItem(_("Style"), LINESTYLE_CHOICES, default="SolidLine")
     color = ColorItem(_("Color"), default="black")
-    width = FloatItem(_("Width"), default=1., min=0)
+    width = FloatItem(_("Width"), default=1.0, min=0)
 
     def update_param(self, pen):
         self.width = pen.widthF()
@@ -445,20 +485,24 @@ class LineStyleParam(DataSet):
         style = getattr(Qt, self.style)
         pen = QPen(linecolor, self.width, style)
         return pen
-        
+
     def set_style_from_matlab(self, linestyle):
         """Eventually convert MATLAB-like linestyle into Qt linestyle"""
-        linestyle = LINESTYLES.get(linestyle, linestyle) # MATLAB-style
-        if linestyle == '': # MATLAB-style
-            linestyle = 'NoPen'
+        linestyle = LINESTYLES.get(linestyle, linestyle)  # MATLAB-style
+        if linestyle == "":  # MATLAB-style
+            linestyle = "NoPen"
         self.style = linestyle
+
 
 class LineStyleItemWidget(DataSetWidget):
     klass = LineStyleParam
 
+
 class LineStyleItem(ObjectItem):
     """Item holding a LineStyleParam"""
+
     klass = LineStyleParam
+
 
 DataSetEditLayout.register(LineStyleItem, LineStyleItemWidget)
 
@@ -466,22 +510,22 @@ DataSetEditLayout.register(LineStyleItem, LineStyleItemWidget)
 # Common brush style parameters
 # ===================================================
 class BrushStyleParam(DataSet):
-    style = ImageChoiceItem(_("Style"), BRUSHSTYLE_CHOICES,
-                            default="SolidPattern")
+    style = ImageChoiceItem(_("Style"), BRUSHSTYLE_CHOICES, default="SolidPattern")
     color = ColorItem(_("Color"), default="black")
     alpha = FloatItem(_("Alpha"), default=1.0)
-    angle = FloatItem(_("Angle"), default=0., min=0)
-    sx = FloatItem(_("sx"), default=1., min=0)
-    sy = FloatItem(_("sy"), default=1., min=0)
+    angle = FloatItem(_("Angle"), default=0.0, min=0)
+    sx = FloatItem(_("sx"), default=1.0, min=0)
+    sy = FloatItem(_("sy"), default=1.0, min=0)
 
     def update_param(self, brush):
         from math import pi, sqrt, atan2
+
         tr = brush.transform()
-        pt = tr.map( QPointF(1.0, 0.0) )
-        self.sx = sqrt(pt.x()**2+pt.y()**2)
-        self.angle = 180*atan2(pt.y(), pt.x())/pi
-        pt = tr.map( QPointF(0.0, 1.0) )
-        self.sy = sqrt(pt.x()**2+pt.y()**2)
+        pt = tr.map(QPointF(1.0, 0.0))
+        self.sx = sqrt(pt.x() ** 2 + pt.y() ** 2)
+        self.angle = 180 * atan2(pt.y(), pt.x()) / pi
+        pt = tr.map(QPointF(0.0, 1.0))
+        self.sy = sqrt(pt.x() ** 2 + pt.y() ** 2)
 
         col = brush.color()
         self.color = str(col.name())
@@ -498,12 +542,16 @@ class BrushStyleParam(DataSet):
         brush.setTransform(tr)
         return brush
 
+
 class BrushStyleItemWidget(DataSetWidget):
     klass = BrushStyleParam
 
+
 class BrushStyleItem(ObjectItem):
     """Item holding a LineStyleParam"""
+
     klass = BrushStyleParam
+
 
 DataSetEditLayout.register(BrushStyleItem, BrushStyleItemWidget)
 
@@ -515,32 +563,35 @@ class TextStyleParam(DataSet):
     font = FontItem(_("Font"))
     textcolor = ColorItem(_("Text color"), default="blue")
     background_color = ColorItem(_("Background color"), default="white")
-    background_alpha = FloatItem(_("Background alpha"),
-                            default=0.5, min=0, max=1)
+    background_alpha = FloatItem(_("Background alpha"), default=0.5, min=0, max=1)
 
     def update_param(self, obj):
         """obj: QwtText instance"""
-        self.font.update_param( obj.font() )
+        self.font.update_param(obj.font())
         self.textcolor = obj.color().name()
         color = obj.backgroundBrush().color()
         self.background_color = color.name()
         self.background_alpha = color.alphaF()
-    
+
     def update_text(self, obj):
         """obj: QwtText instance"""
-        obj.setColor( QColor(self.textcolor) )
+        obj.setColor(QColor(self.textcolor))
         color = QColor(self.background_color)
         color.setAlphaF(self.background_alpha)
-        obj.setBackgroundBrush( QBrush(color) )
+        obj.setBackgroundBrush(QBrush(color))
         font = self.font.build_font()
         obj.setFont(font)
+
 
 class TextStyleItemWidget(DataSetWidget):
     klass = TextStyleParam
 
+
 class TextStyleItem(ObjectItem):
     """Item holding a TextStyleParam"""
+
     klass = TextStyleParam
+
 
 DataSetEditLayout.register(TextStyleItem, TextStyleItemWidget)
 
@@ -550,13 +601,13 @@ DataSetEditLayout.register(TextStyleItem, TextStyleItemWidget)
 # ===================================================
 class GridParam(DataSet):
     background = ColorItem(_("Background color"), default="white")
-    maj = BeginGroup(_("Major grid") )
+    maj = BeginGroup(_("Major grid"))
     maj_xenabled = BoolItem(_("X Axis"), default=True)
     maj_yenabled = BoolItem(_("Y Axis"), default=True).set_pos(col=1)
     maj_line = LineStyleItem(_("Line"))
     _maj = EndGroup("end group")
-    
-    min = BeginGroup(_("Minor grid"))    
+
+    min = BeginGroup(_("Minor grid"))
     min_xenabled = BoolItem(_("X Axis"), default=False)
     min_yenabled = BoolItem(_("Y Axis"), default=False).set_pos(col=1)
     min_line = LineStyleItem(_("Line"))
@@ -568,23 +619,23 @@ class GridParam(DataSet):
             self.background = str(plot.canvasBackground().color().name())
         self.maj_xenabled = grid.xEnabled()
         self.maj_yenabled = grid.yEnabled()
-        self.maj_line.update_param( grid.majorPen() )
+        self.maj_line.update_param(grid.majorPen())
         self.min_xenabled = grid.xMinEnabled()
         self.min_yenabled = grid.yMinEnabled()
-        self.min_line.update_param( grid.minorPen() )
+        self.min_line.update_param(grid.minorPen())
 
     def update_grid(self, grid):
         plot = grid.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
-            plot.setCanvasBackground( QColor(self.background) )
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
+            plot.setCanvasBackground(QColor(self.background))
         grid.enableX(self.maj_xenabled)
         grid.enableY(self.maj_yenabled)
-        grid.setPen( self.maj_line.build_pen() )
+        grid.setPen(self.maj_line.build_pen())
         grid.enableXMin(self.min_xenabled)
         grid.enableYMin(self.min_yenabled)
-        grid.setMinorPen( self.min_line.build_pen() )
+        grid.setMinorPen(self.min_line.build_pen())
         grid.setTitle(self.get_title())
         if plot is not None:
             plot.blockSignals(False)
@@ -600,14 +651,14 @@ class AxeStyleParam(DataSet):
     title_font = FontItem(_("Title font"))
     ticks_font = FontItem(_("Values font"))
 
-    
+
 # ===================================================
 # Axes parameters
 # ===================================================
 class AxisParam(DataSet):
-    scale = ChoiceItem(_("Scale"),
-                        [("lin", _("linear")), ("log", _("logarithmic"))],
-                        default="lin")
+    scale = ChoiceItem(
+        _("Scale"), [("lin", _("linear")), ("log", _("logarithmic"))], default="lin"
+    )
     vmin = FloatItem("Min", help=_("Lower axis limit"))
     vmax = FloatItem("Max", help=_("Upper axis limit"))
 
@@ -623,24 +674,30 @@ class AxisParam(DataSet):
         plot.setAxisScale(axis_id, self.vmin, self.vmax)
         plot.disable_unused_axes()
 
+
 class AxisItemWidget(DataSetWidget):
     klass = AxisParam
+
 
 class AxisItem(ObjectItem):
     klass = AxisParam
 
+
 DataSetEditLayout.register(AxisItem, AxisItemWidget)
 
+
 class AxesParam(DataSet):
-    xaxis_id = ChoiceItem(_("X-axis position"),
-                          [(QwtPlot.xBottom, _("bottom")),
-                           (QwtPlot.xTop, _("top"))],
-                          default=QwtPlot.xBottom)
+    xaxis_id = ChoiceItem(
+        _("X-axis position"),
+        [(QwtPlot.xBottom, _("bottom")), (QwtPlot.xTop, _("top"))],
+        default=QwtPlot.xBottom,
+    )
     xaxis = AxisItem(_("X Axis"))
-    yaxis_id = ChoiceItem(_("Y-axis position"),
-                          [(QwtPlot.yLeft,  _("left")),
-                           (QwtPlot.yRight, _("right"))],
-                          default=QwtPlot.yLeft)
+    yaxis_id = ChoiceItem(
+        _("Y-axis position"),
+        [(QwtPlot.yLeft, _("left")), (QwtPlot.yRight, _("right"))],
+        default=QwtPlot.yLeft,
+    )
     yaxis = AxisItem(_("Y Axis"))
 
     def update_param(self, item):
@@ -658,16 +715,17 @@ class AxesParam(DataSet):
         item.setYAxis(self.yaxis_id)
         self.yaxis.update_axis(plot, self.yaxis_id)
 
+
 class ImageAxesParam(DataSet):
-    xparams = BeginGroup(_("X Axis") )
+    xparams = BeginGroup(_("X Axis"))
     xmin = FloatItem("x|min", help=_("Lower x-axis limit"))
     xmax = FloatItem("x|max", help=_("Upper x-axis limit"))
     _xparams = EndGroup("end X")
-    yparams = BeginGroup(_("Y Axis") )
+    yparams = BeginGroup(_("Y Axis"))
     ymin = FloatItem("y|min", help=_("Lower y-axis limit"))
     ymax = FloatItem("y|max", help=_("Upper y-axis limit"))
     _yparams = EndGroup("end Y")
-    zparams = BeginGroup(_("Z Axis") )
+    zparams = BeginGroup(_("Z Axis"))
     zmin = FloatItem("z|min", help=_("Lower z-axis limit"))
     zmax = FloatItem("z|max", help=_("Upper z-axis limit"))
     _zparams = EndGroup("end Z")
@@ -696,99 +754,129 @@ class LabelParam(DataSet):
     _multiselection = False
     _legend = False
     _no_contents = True
-    label = StringItem(_("Title"), default="") \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-            
+    label = StringItem(_("Title"), default="").set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+
     _styles = BeginTabGroup("Styles")
-    #-------------------------------------------------------------- Contents tab
-    ___cont = BeginGroup(_("Contents")).set_prop("display", icon="label.png",
-                                             hide=GetAttrProp("_no_contents"))
-    contents = TextItem("").set_prop("display",
-                                     hide=GetAttrProp("_no_contents"))
-    ___econt = EndGroup(_("Contents")).set_prop("display",
-                                             hide=GetAttrProp("_no_contents"))
-    #---------------------------------------------------------------- Symbol tab
-    symbol = SymbolItem(_("Symbol")).set_prop("display", icon="diamond.png",
-                                              hide=GetAttrProp("_legend"))
-    #---------------------------------------------------------------- Border tab
-    border = LineStyleItem(_("Border"), default=Obj(color="#cbcbcb"),
-                           help=_("set width to 0 to disable")
-                           ).set_prop("display", icon="dashdot.png")
-    #------------------------------------------------------------------ Text tab
+    # -------------------------------------------------------------- Contents tab
+    ___cont = BeginGroup(_("Contents")).set_prop(
+        "display", icon="label.png", hide=GetAttrProp("_no_contents")
+    )
+    contents = TextItem("").set_prop("display", hide=GetAttrProp("_no_contents"))
+    ___econt = EndGroup(_("Contents")).set_prop(
+        "display", hide=GetAttrProp("_no_contents")
+    )
+    # ---------------------------------------------------------------- Symbol tab
+    symbol = SymbolItem(_("Symbol")).set_prop(
+        "display", icon="diamond.png", hide=GetAttrProp("_legend")
+    )
+    # ---------------------------------------------------------------- Border tab
+    border = LineStyleItem(
+        _("Border"), default=Obj(color="#cbcbcb"), help=_("set width to 0 to disable")
+    ).set_prop("display", icon="dashdot.png")
+    # ------------------------------------------------------------------ Text tab
     ___text = BeginGroup(_("Text")).set_prop("display", icon="font.png")
     font = FontItem(_("Text font"))
     color = ColorItem(_("Text color"), default="#000000")
     bgcolor = ColorItem(_("Background color"), default="#ffffff")
-    bgalpha = FloatItem(_("Background transparency"),
-                        min=0.0, max=1.0, default=0.8)
+    bgalpha = FloatItem(_("Background transparency"), min=0.0, max=1.0, default=0.8)
     ___etext = EndGroup(_("Text"))
-    #-------------------------------------------------------------- Position tab
+    # -------------------------------------------------------------- Position tab
     ___position = BeginGroup(_("Position")).set_prop("display", icon="move.png")
-    _begin_anchor = BeginGroup(_("Position relative to anchor")) \
-                    .set_prop("display", hide=GetAttrProp("_multiselection"))
-    anchor = ChoiceItem(_("Corner"),
-                        [("TL", _("Top left") ),
-                         ("TR", _("Top right") ),
-                         ("BL", _("Bottom left") ),
-                         ("BR", _("Bottom right") ),
-                         ("L", _("Left") ),
-                         ("R", _("Right") ),
-                         ("T", _("Top") ),
-                         ("B", _("Bottom") ),
-                         ("C", _("Center") ),], default="TL",
-                         help=_("Label position relative to anchor point")) \
-                         .set_prop("display",
-                                   hide=GetAttrProp("_multiselection"))
-    xc = IntItem(_("ΔX"), default=5,
-                 help=_("Horizontal offset (pixels) relative to anchor point"))\
-                 .set_prop("display", hide=GetAttrProp("_multiselection"))
-    yc = IntItem(_("ΔY"), default=5,
-                 help=_("Vertical offset (pixels) relative to anchor point")
-                 ).set_pos(col=1).set_prop("display",
-                                           hide=GetAttrProp("_multiselection"))
-    _end_anchor = EndGroup(_("Anchor")) \
-                  .set_prop("display", hide=GetAttrProp("_multiselection"))
-    _begin_anchorpos = BeginGroup(_("Anchor position")) \
-                       .set_prop("display", hide=GetAttrProp("_multiselection"))
+    _begin_anchor = BeginGroup(_("Position relative to anchor")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    anchor = ChoiceItem(
+        _("Corner"),
+        [
+            ("TL", _("Top left")),
+            ("TR", _("Top right")),
+            ("BL", _("Bottom left")),
+            ("BR", _("Bottom right")),
+            ("L", _("Left")),
+            ("R", _("Right")),
+            ("T", _("Top")),
+            ("B", _("Bottom")),
+            ("C", _("Center")),
+        ],
+        default="TL",
+        help=_("Label position relative to anchor point"),
+    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    xc = IntItem(
+        _("ΔX"),
+        default=5,
+        help=_("Horizontal offset (pixels) relative to anchor point"),
+    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    yc = (
+        IntItem(
+            _("ΔY"),
+            default=5,
+            help=_("Vertical offset (pixels) relative to anchor point"),
+        )
+        .set_pos(col=1)
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    _end_anchor = EndGroup(_("Anchor")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    _begin_anchorpos = BeginGroup(_("Anchor position")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     _abspos_prop = GetAttrProp("abspos")
-    abspos = BoolItem(text=_("Attach to canvas"), label=_("Anchor"),
-                      default=True
-                      ).set_prop("display", store=_abspos_prop) \
-                       .set_prop("display", hide=GetAttrProp("_multiselection"))
-    xg = FloatItem(_("X"), default=0.0,
-                   help=_("X-axis position in canvas coordinates")
-                   ).set_prop("display", active=NotProp(_abspos_prop)) \
-                    .set_prop("display", hide=GetAttrProp("_multiselection"))
-    yg = FloatItem(_("Y"), default=0.0,
-                   help=_("Y-axis position in canvas coordinates")
-                   ).set_pos(col=1) \
-                    .set_prop("display", active=NotProp(_abspos_prop)) \
-                    .set_prop("display", hide=GetAttrProp("_multiselection"))
-    move_anchor = ChoiceItem(_("Interact"),
-                         ((True, _("moving object changes anchor position")),
-                          (False, _("moving object changes label position"))),
-                         default=True
-                         ).set_prop("display", active=NotProp(_abspos_prop)) \
-                          .set_prop("display",
-                                    hide=GetAttrProp("_multiselection"))
-    absg = ChoiceItem(_("Position"),
-                        [("TL", _("Top left") ),
-                         ("TR", _("Top right") ),
-                         ("BL", _("Bottom left") ),
-                         ("BR", _("Bottom right") ),
-                         ("L", _("Left") ),
-                         ("R", _("Right") ),
-                         ("T", _("Top") ),
-                         ("B", _("Bottom") ),
-                         ("C", _("Center") ),], default="TL",
-                         help=_("Absolute position on canvas")
-                         ).set_prop("display", active=_abspos_prop) \
-                          .set_prop("display",
-                                    hide=GetAttrProp("_multiselection"))
-    _end_anchorpos = EndGroup(_("Anchor position")) \
-                     .set_prop("display", hide=GetAttrProp("_multiselection"))
+    abspos = (
+        BoolItem(text=_("Attach to canvas"), label=_("Anchor"), default=True)
+        .set_prop("display", store=_abspos_prop)
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    xg = (
+        FloatItem(_("X"), default=0.0, help=_("X-axis position in canvas coordinates"))
+        .set_prop("display", active=NotProp(_abspos_prop))
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    yg = (
+        FloatItem(_("Y"), default=0.0, help=_("Y-axis position in canvas coordinates"))
+        .set_pos(col=1)
+        .set_prop("display", active=NotProp(_abspos_prop))
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    move_anchor = (
+        ChoiceItem(
+            _("Interact"),
+            (
+                (True, _("moving object changes anchor position")),
+                (False, _("moving object changes label position")),
+            ),
+            default=True,
+        )
+        .set_prop("display", active=NotProp(_abspos_prop))
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    absg = (
+        ChoiceItem(
+            _("Position"),
+            [
+                ("TL", _("Top left")),
+                ("TR", _("Top right")),
+                ("BL", _("Bottom left")),
+                ("BR", _("Bottom right")),
+                ("L", _("Left")),
+                ("R", _("Right")),
+                ("T", _("Top")),
+                ("B", _("Bottom")),
+                ("C", _("Center")),
+            ],
+            default="TL",
+            help=_("Absolute position on canvas"),
+        )
+        .set_prop("display", active=_abspos_prop)
+        .set_prop("display", hide=GetAttrProp("_multiselection"))
+    )
+    _end_anchorpos = EndGroup(_("Anchor position")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     ___eposition = EndGroup(_("Position"))
-    #----------------------------------------------------------------------- End
+    # ----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
 
     def update_param(self, obj):
@@ -818,31 +906,38 @@ class LabelParam(DataSet):
         color.setAlphaF(self.bgalpha)
         obj.bg_brush = QBrush(color)
 
+
 class LabelParam_MS(LabelParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(LabelParam, LabelParam_MS)
+
 
 class LegendParam(LabelParam):
     _legend = True
     label = StringItem(_("Title"), default="").set_prop("display", hide=True)
-    
+
     def update_label(self, obj):
         super(LegendParam, self).update_label(obj)
         if not self._multiselection:
             obj.setTitle(self.get_title())
 
+
 class LegendParam_MS(LegendParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(LegendParam, LegendParam_MS)
+
 
 class LabelParamWithContents(LabelParam):
     _no_contents = False
-    def __init__(self, title=None, comment=None, icon=''):
+
+    def __init__(self, title=None, comment=None, icon=""):
         self.plain_text = None
         super(LabelParamWithContents, self).__init__(title, comment, icon)
-        
+
     def update_param(self, obj):
         super(LabelParamWithContents, self).update_param(obj)
         self.contents = self.plain_text = obj.get_plain_text()
@@ -850,14 +945,17 @@ class LabelParamWithContents(LabelParam):
     def update_label(self, obj):
         super(LabelParamWithContents, self).update_label(obj)
         if self.plain_text is not None and self.contents != self.plain_text:
-            text = self.contents.replace('\n', '<br>')
+            text = self.contents.replace("\n", "<br>")
             obj.set_text(text)
+
 
 class LabelParamWithContents_MS(LabelParamWithContents):
     _multiselection = True
-    
-ItemParameters.register_multiselection(LabelParamWithContents,
-                                       LabelParamWithContents_MS)
+
+
+ItemParameters.register_multiselection(
+    LabelParamWithContents, LabelParamWithContents_MS
+)
 
 
 # ===================================================
@@ -865,14 +963,14 @@ ItemParameters.register_multiselection(LabelParamWithContents,
 # ===================================================
 class CurveParam(DataSet):
     _multiselection = False
-    label = StringItem(_("Title"), default="").set_prop("display",
-                                          hide=GetAttrProp("_multiselection"))
+    label = StringItem(_("Title"), default="").set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     line = LineStyleItem(_("Line"))
     symbol = SymbolItem(_("Symbol"))
     shade = FloatItem(_("Shadow"), default=0, min=0, max=1)
-    curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES,
-                                 default="Lines")
-    baseline = FloatItem(_("Baseline"), default=0.)
+    curvestyle = ImageChoiceItem(_("Curve style"), CURVESTYLE_CHOICES, default="Lines")
+    baseline = FloatItem(_("Baseline"), default=0.0)
 
     def update_param(self, curve):
         self.label = to_text_string(curve.title().text())
@@ -880,12 +978,12 @@ class CurveParam(DataSet):
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]
         self.baseline = curve.baseline()
-    
+
     def update_curve(self, curve):
         plot = curve.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         if not self._multiselection:
             # Non common parameters
             curve.setTitle(self.label)
@@ -898,16 +996,18 @@ class CurveParam(DataSet):
             brush.setStyle(Qt.NoBrush)
         curve.setBrush(brush)
         # Symbol
-        self.symbol.update_symbol( curve )
+        self.symbol.update_symbol(curve)
         # Curve style, type and baseline
         curve.setStyle(getattr(QwtPlotCurve, self.curvestyle))
         curve.setBaseline(self.baseline)
         if plot is not None:
             plot.blockSignals(False)
 
+
 class CurveParam_MS(CurveParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(CurveParam, CurveParam_MS)
 
 
@@ -915,15 +1015,20 @@ ItemParameters.register_multiselection(CurveParam, CurveParam_MS)
 # ErrorBar Curve parameters
 # ===================================================
 class ErrorBarParam(DataSet):
-    mode = ChoiceItem(_("Display"), default=0,
-                      choices=[_("error bars with caps (x, y)"),
-                               _("error area (y)")],
-                      help=_("Note: only y-axis error bars are shown in "
-                             "error area mode\n(width and cap parameters "
-                             "will also be ignored)"))
+    mode = ChoiceItem(
+        _("Display"),
+        default=0,
+        choices=[_("error bars with caps (x, y)"), _("error area (y)")],
+        help=_(
+            "Note: only y-axis error bars are shown in "
+            "error area mode\n(width and cap parameters "
+            "will also be ignored)"
+        ),
+    )
     color = ColorItem(_("Color"), default="darkred")
-    alpha = FloatItem(_("Alpha"), default=.9, min=0, max=1,
-                      help=_("Error bar transparency"))
+    alpha = FloatItem(
+        _("Alpha"), default=0.9, min=0, max=1, help=_("Error bar transparency")
+    )
     width = FloatItem(_("Width"), default=1.0, min=1)
     cap = IntItem(_("Cap"), default=4, min=0)
     ontop = BoolItem(_("set to foreground"), _("Visibility"), default=False)
@@ -954,39 +1059,49 @@ def _create_choices():
         choices.append((cmap_name, cmap_name, build_icon_from_cmap_name))
     return choices
 
+
 class BaseImageParam(DataSet):
     _multiselection = False
-    label = StringItem(_("Image title"), default=_("Image")) \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
-                          default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
-                      help=_("Global alpha value"))
+    label = StringItem(_("Image title"), default=_("Image")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    alpha_mask = BoolItem(
+        _("Use image level as alpha"), _("Alpha channel"), default=False
+    )
+    alpha = FloatItem(
+        _("Global alpha"), default=1.0, min=0, max=1, help=_("Global alpha value")
+    )
     _hide_colormap = False
-    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
-                               ).set_prop("display",
-                                      hide=GetAttrProp("_hide_colormap"))
-    
-    interpolation = ChoiceItem(_("Interpolation"),
-                               [(0, _("None (nearest pixel)")),
-                                (1, _("Linear interpolation")),
-                                (2, _("2x2 antialiasing filter")),
-                                (3, _("3x3 antialiasing filter")),
-                                (5, _("5x5 antialiasing filter"))],
-                               default=0, help=_("Image interpolation type"))
+    colormap = ImageChoiceItem(
+        _("Colormap"), _create_choices(), default="jet"
+    ).set_prop("display", hide=GetAttrProp("_hide_colormap"))
+
+    interpolation = ChoiceItem(
+        _("Interpolation"),
+        [
+            (0, _("None (nearest pixel)")),
+            (1, _("Linear interpolation")),
+            (2, _("2x2 antialiasing filter")),
+            (3, _("3x3 antialiasing filter")),
+            (5, _("5x5 antialiasing filter")),
+        ],
+        default=0,
+        help=_("Image interpolation type"),
+    )
 
     _formats = BeginGroup(_("Statistics string formatting"))
-    xformat = StringItem(_("X-Axis"), default=r'%.1f')
-    yformat = StringItem(_("Y-Axis"), default=r'%.1f')
-    zformat = StringItem(_("Z-Axis"), default=r'%.1f')
+    xformat = StringItem(_("X-Axis"), default=r"%.1f")
+    yformat = StringItem(_("Y-Axis"), default=r"%.1f")
+    zformat = StringItem(_("Z-Axis"), default=r"%.1f")
     _end_formats = EndGroup(_("Statistics string formatting"))
-                               
+
     def update_param(self, image):
         self.label = to_text_string(image.title().text())
         self.colormap = image.get_color_map_name()
         interpolation = image.get_interpolation()
         mode = interpolation[0]
         from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR
+
         if mode == INTERP_NEAREST:
             self.interpolation = 0
         elif mode == INTERP_LINEAR:
@@ -998,12 +1113,13 @@ class BaseImageParam(DataSet):
     def update_image(self, image):
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.setTitle(self.label)
         image.set_color_map(self.colormap)
         size = self.interpolation
         from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
+
         if size == 0:
             mode = INTERP_NEAREST
         elif size == 1:
@@ -1014,34 +1130,50 @@ class BaseImageParam(DataSet):
         if plot is not None:
             plot.blockSignals(False)
 
+
 class QuadGridParam(DataSet):
     _multiselection = False
-    label = StringItem(_("Image title"), default=_("Image")) \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-    alpha_mask = BoolItem(_("Use image level as alpha"), _("Alpha channel"),
-                          default=False)
-    alpha = FloatItem(_("Global alpha"), default=1.0, min=0, max=1,
-                      help=_("Global alpha value"))
+    label = StringItem(_("Image title"), default=_("Image")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    alpha_mask = BoolItem(
+        _("Use image level as alpha"), _("Alpha channel"), default=False
+    )
+    alpha = FloatItem(
+        _("Global alpha"), default=1.0, min=0, max=1, help=_("Global alpha value")
+    )
     _hide_colormap = False
-    colormap = ImageChoiceItem(_("Colormap"), _create_choices(), default="jet"
-                               ).set_prop("display",
-                                      hide=GetAttrProp("_hide_colormap"))
-    
-    interpolation = ChoiceItem(_("Interpolation"),
-                               [ (0, _("Quadrangle interpolation")),
-                                 (1, _("Flat")),
-                                 ],
-                               default=0,
-                               help=_("Image interpolation type, "
-                                      "Flat mode use fixed u,v "
-                                      "interpolation parameters"))
-    uflat = FloatItem(_("Fixed U interpolation parameter"),
-                      default=0.5, min=0., max=1., help=_("For flat mode only"))
-    vflat = FloatItem(_("Fixed V interpolation parameter"),
-                      default=0.5, min=0., max=1., help=_("For flat mode only"))
+    colormap = ImageChoiceItem(
+        _("Colormap"), _create_choices(), default="jet"
+    ).set_prop("display", hide=GetAttrProp("_hide_colormap"))
+
+    interpolation = ChoiceItem(
+        _("Interpolation"),
+        [(0, _("Quadrangle interpolation")), (1, _("Flat")),],
+        default=0,
+        help=_(
+            "Image interpolation type, "
+            "Flat mode use fixed u,v "
+            "interpolation parameters"
+        ),
+    )
+    uflat = FloatItem(
+        _("Fixed U interpolation parameter"),
+        default=0.5,
+        min=0.0,
+        max=1.0,
+        help=_("For flat mode only"),
+    )
+    vflat = FloatItem(
+        _("Fixed V interpolation parameter"),
+        default=0.5,
+        min=0.0,
+        max=1.0,
+        help=_("For flat mode only"),
+    )
     grid = BoolItem(_("Show grid"), default=False)
     gridcolor = ColorItem(_("Grid lines color"), default="black")
-                               
+
     def update_param(self, image):
         self.label = to_text_string(image.title().text())
         self.colormap = image.get_color_map_name()
@@ -1054,8 +1186,8 @@ class QuadGridParam(DataSet):
     def update_image(self, image):
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.setTitle(self.label)
         image.set_color_map(self.colormap)
         image.interpolate = (self.interpolation, self.uflat, self.vflat)
@@ -1064,12 +1196,13 @@ class QuadGridParam(DataSet):
         if plot is not None:
             plot.blockSignals(False)
 
+
 class RawImageParam(BaseImageParam):
     _hide_background = False
-    background = ColorItem(_("Background color"), default="#000000"
-                           ).set_prop("display",
-                                      hide=GetAttrProp("_hide_background"))
-    
+    background = ColorItem(_("Background color"), default="#000000").set_prop(
+        "display", hide=GetAttrProp("_hide_background")
+    )
+
     def update_param(self, image):
         super(RawImageParam, self).update_param(image)
         self.background = str(QColor(image.bg_qcolor).name())
@@ -1078,24 +1211,28 @@ class RawImageParam(BaseImageParam):
         super(RawImageParam, self).update_image(image)
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.set_background_color(self.background)
         if plot is not None:
             plot.blockSignals(False)
 
+
 class RawImageParam_MS(RawImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(RawImageParam, RawImageParam_MS)
 
 
 class XYImageParam(RawImageParam):
     pass
 
+
 class XYImageParam_MS(XYImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(XYImageParam, XYImageParam_MS)
 
 
@@ -1108,15 +1245,15 @@ class ImageParam(RawImageParam):
     ymin = FloatItem(_("y|min"), default=None)
     ymax = FloatItem(_("y|max"), default=None)
     _end_ydata = EndGroup(_("Image placement along Y-axis"))
-    
+
     def update_param(self, image):
         super(ImageParam, self).update_param(image)
         self.xmin = image.xmin
         if self.xmin is None:
-            self.xmin = 0.
+            self.xmin = 0.0
         self.ymin = image.ymin
         if self.ymin is None:
-            self.ymin = 0.
+            self.ymin = 0.0
         if image.is_empty():
             shape = (0, 0)
         else:
@@ -1132,8 +1269,8 @@ class ImageParam(RawImageParam):
         super(ImageParam, self).update_image(image)
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.xmin = self.xmin
         image.xmax = self.xmax
         image.ymin = self.ymin
@@ -1143,9 +1280,11 @@ class ImageParam(RawImageParam):
         if plot is not None:
             plot.blockSignals(False)
 
+
 class ImageParam_MS(ImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(ImageParam, ImageParam_MS)
 
 
@@ -1157,15 +1296,17 @@ class RGBImageParam(ImageParam):
         super(RGBImageParam, self).update_image(image)
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.recompute_alpha_channel()
         if plot is not None:
             plot.blockSignals(False)
 
+
 class RGBImageParam_MS(RGBImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(RGBImageParam, RGBImageParam_MS)
 
 
@@ -1173,25 +1314,25 @@ class MaskedImageParam(ImageParam):
     g_mask = BeginGroup(_("Mask"))
     filling_value = FloatItem(_("Filling value"))
     show_mask = BoolItem(_("Show image mask"), default=False)
-    alpha_masked = FloatItem(_("Masked area alpha"),
-                             default=.7, min=0, max=1)
-    alpha_unmasked = FloatItem(_("Unmasked area alpha"),
-                               default=0., min=0, max=1)
+    alpha_masked = FloatItem(_("Masked area alpha"), default=0.7, min=0, max=1)
+    alpha_unmasked = FloatItem(_("Unmasked area alpha"), default=0.0, min=0, max=1)
     _g_mask = EndGroup(_("Mask"))
-    
+
     def update_image(self, image):
         super(MaskedImageParam, self).update_image(image)
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.update_mask()
         if plot is not None:
             plot.blockSignals(False)
-                         
+
+
 class MaskedImageParam_MS(MaskedImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(MaskedImageParam, MaskedImageParam_MS)
 
 
@@ -1203,14 +1344,15 @@ class ImageFilterParam(BaseImageParam):
     ymin = FloatItem(_("y|min"))
     ymax = FloatItem(_("y|max"))
     _g1 = EndGroup("sub-group")
-    use_source_cmap = BoolItem(_("Use image colormap and level"),
-                               _("Color map"), default=True)
-    
+    use_source_cmap = BoolItem(
+        _("Use image colormap and level"), _("Color map"), default=True
+    )
+
     def update_param(self, obj):
         self.xmin, self.ymin, self.xmax, self.ymax = obj.border_rect.get_rect()
         self.use_source_cmap = obj.use_source_cmap
         super(ImageFilterParam, self).update_param(obj)
-    
+
     def update_imagefilter(self, imagefilter):
         m, M = imagefilter.get_lut_range()
         set_range = False
@@ -1220,34 +1362,37 @@ class ImageFilterParam(BaseImageParam):
         if set_range:
             imagefilter.set_lut_range([m, M])
         self.update_image(imagefilter)
-        imagefilter.border_rect.set_rect(self.xmin, self.ymin,
-                                         self.xmax, self.ymax)
+        imagefilter.border_rect.set_rect(self.xmin, self.ymin, self.xmax, self.ymax)
 
 
 class TrImageParam(RawImageParam):
-    _crop = BeginGroup(_("Crop")
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    _crop = BeginGroup(_("Crop")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     crop_left = IntItem(_("Left"), default=0)
     crop_right = IntItem(_("Right"), default=0)
     crop_top = IntItem(_("Top"), default=0)
     crop_bottom = IntItem(_("Bottom"), default=0)
-    _end_crop = EndGroup(_("Cropping")
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
-    _ps = BeginGroup(_("Pixel size")
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    _end_crop = EndGroup(_("Cropping")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    _ps = BeginGroup(_("Pixel size")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     dx = FloatItem(_("Width (dx)"), default=1.0)
     dy = FloatItem(_("Height (dy)"), default=1.0)
-    _end_ps = EndGroup(_("Pixel size")
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
+    _end_ps = EndGroup(_("Pixel size")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
     _pos = BeginGroup(_("Translate, rotate and flip"))
-    pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
-    hflip = BoolItem(_("Flip horizontally"), default=False
-                     ).set_prop("display", col=1)
-    pos_y0 = FloatItem(_("y<sub>CENTER</sub>"), default=0.0
-                    ).set_prop("display", hide=GetAttrProp("_multiselection"))
-    vflip = BoolItem(_("Flip vertically"), default=False
-                     ).set_prop("display", col=1)
+    pos_x0 = FloatItem(_("x<sub>CENTER</sub>"), default=0.0).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    hflip = BoolItem(_("Flip horizontally"), default=False).set_prop("display", col=1)
+    pos_y0 = FloatItem(_("y<sub>CENTER</sub>"), default=0.0).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    vflip = BoolItem(_("Flip vertically"), default=False).set_prop("display", col=1)
     pos_angle = FloatItem(_("θ (°)"), default=0.0).set_prop("display", col=0)
     _end_pos = EndGroup(_("Translate, rotate and flip"))
 
@@ -1262,21 +1407,27 @@ class TrImageParam(RawImageParam):
         RawImageParam.update_image(self, image)
         plot = image.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         image.set_transform(*self.get_transform())
         if plot is not None:
             plot.blockSignals(False)
 
     def get_transform(self):
-        return (self.pos_x0, self.pos_y0, self.pos_angle*np.pi/180,
-                self.dx, self.dy, self.hflip, self.vflip)
+        return (
+            self.pos_x0,
+            self.pos_y0,
+            self.pos_angle * np.pi / 180,
+            self.dx,
+            self.dy,
+            self.hflip,
+            self.vflip,
+        )
 
-    def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0,
-                      hflip=False, vflip=False):
+    def set_transform(self, x0, y0, angle, dx=1.0, dy=1.0, hflip=False, vflip=False):
         self.pos_x0 = x0
         self.pos_y0 = y0
-        self.pos_angle = angle*180/np.pi
+        self.pos_angle = angle * 180 / np.pi
         self.dx = dx
         self.dy = dy
         self.hflip = hflip
@@ -1289,12 +1440,13 @@ class TrImageParam(RawImageParam):
         self.crop_bottom = bottom
 
     def get_crop(self):
-        return (self.crop_left, self.crop_top,
-                self.crop_right, self.crop_bottom)
-    
+        return (self.crop_left, self.crop_top, self.crop_right, self.crop_bottom)
+
+
 class TrImageParam_MS(TrImageParam):
     _multiselection = True
-    
+
+
 ItemParameters.register_multiselection(TrImageParam, TrImageParam_MS)
 
 
@@ -1319,32 +1471,46 @@ class HistogramParam(DataSet):
 # ===================================================
 class Histogram2DParam(BaseImageParam):
     """Histogram"""
+
     _multiselection = False
-    label = StringItem(_("Title"), default=_("Histogram")) \
-            .set_prop("display", hide=GetAttrProp("_multiselection"))
-    nx_bins = IntItem(_("X-axis bins"), default=100, min=1,
-                      help=_("Number of bins along x-axis"))
-    ny_bins = IntItem(_("Y-axis bins"), default=100, min=1,
-                      help=_("Number of bins along y-axis"))
+    label = StringItem(_("Title"), default=_("Histogram")).set_prop(
+        "display", hide=GetAttrProp("_multiselection")
+    )
+    nx_bins = IntItem(
+        _("X-axis bins"), default=100, min=1, help=_("Number of bins along x-axis")
+    )
+    ny_bins = IntItem(
+        _("Y-axis bins"), default=100, min=1, help=_("Number of bins along y-axis")
+    )
     logscale = BoolItem(_("logarithmic"), _("Z-axis scale"), default=False)
-    
-    computation = ChoiceItem(_("Computation"),
-                         [(-1, _("Bin count")),
-                          (0, _("Maximum value")),
-                          (1, _("Mininum value")),
-                          (2, _("Sum")),
-                          (3, _("Product")),
-                          (4, _("Average")),
-                          ],
-                   default=-1,
-                   help=_("Bin count : counts the number of points per bin,\n"
-                          "For max, min, sum, product, average, compute the "
-                          "function of a third parameter (one by default)"))
-    auto_lut = BoolItem(_("Automatic LUT range"), default=True,
-                        help=_("Automatically adapt color scale "
-                               "when panning, zooming"))
-    background = ColorItem(_("Background color"), default="transparent",
-                           help=_("Background color when no data is present"))
+
+    computation = ChoiceItem(
+        _("Computation"),
+        [
+            (-1, _("Bin count")),
+            (0, _("Maximum value")),
+            (1, _("Mininum value")),
+            (2, _("Sum")),
+            (3, _("Product")),
+            (4, _("Average")),
+        ],
+        default=-1,
+        help=_(
+            "Bin count : counts the number of points per bin,\n"
+            "For max, min, sum, product, average, compute the "
+            "function of a third parameter (one by default)"
+        ),
+    )
+    auto_lut = BoolItem(
+        _("Automatic LUT range"),
+        default=True,
+        help=_("Automatically adapt color scale " "when panning, zooming"),
+    )
+    background = ColorItem(
+        _("Background color"),
+        default="transparent",
+        help=_("Background color when no data is present"),
+    )
 
     def update_param(self, obj):
         super(Histogram2DParam, self).update_param(obj)
@@ -1357,38 +1523,41 @@ class Histogram2DParam(BaseImageParam):
         histogram.set_bins(self.nx_bins, self.ny_bins)
         self.update_image(histogram)
 
+
 class Histogram2DParam_MS(Histogram2DParam):
     _multiselection = True
 
+
 ItemParameters.register_multiselection(Histogram2DParam, Histogram2DParam_MS)
-    
+
 
 # ===================================================
 # Shape parameters
 # ===================================================
 class MarkerParam(DataSet):
     _styles = BeginTabGroup("Styles")
-    #------------------------------------------------------------------ Line tab
+    # ------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
     line = LineStyleItem(_("Line (not selected)"))
     sel_line = LineStyleItem(_("Line (selected)"))
     ___eline = EndGroup(_("Line"))
-    #---------------------------------------------------------------- Symbol tab
+    # ---------------------------------------------------------------- Symbol tab
     ___sym = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
     symbol = SymbolItem(_("Symbol (not selected)"))
     sel_symbol = SymbolItem(_("Symbol (selected)"))
     ___esym = EndGroup(_("Symbol"))
-    #------------------------------------------------------------------ Text tab
+    # ------------------------------------------------------------------ Text tab
     ___text = BeginGroup(_("Text")).set_prop("display", icon="font.png")
     text = TextStyleItem(_("Text (not selected)"))
     sel_text = TextStyleItem(_("Text (selected)"))
     ___etext = EndGroup(_("Text"))
-    #----------------------------------------------------------------------- End
+    # ----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
-    markerstyle = ImageChoiceItem(_("Line style"), MARKERSTYLE_CHOICES,
-                                  default="NoLine")
+    markerstyle = ImageChoiceItem(
+        _("Line style"), MARKERSTYLE_CHOICES, default="NoLine"
+    )
     spacing = IntItem(_("Spacing"), default=10, min=0)
-    
+
     def update_param(self, obj):
         self.symbol.update_param(obj.symbol())
         self.text.update_param(obj.label())
@@ -1413,7 +1582,7 @@ class MarkerParam(DataSet):
         obj.setLineStyle(getattr(QwtPlotMarker, self.markerstyle))
         obj.setSpacing(self.spacing)
         obj.update_label()
-        
+
     def set_markerstyle(self, style):
         """
         Set marker line style
@@ -1425,34 +1594,40 @@ class MarkerParam(DataSet):
         """
         self.markerstyle = MARKERSTYLES.get(style, style)
 
+
 class ShapeParam(DataSet):
     label = StringItem(_("Title"), default="")
     _styles = BeginTabGroup("Styles")
-    #------------------------------------------------------------------ Line tab
+    # ------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
     line = LineStyleItem(_("Line (not selected)"))
     sel_line = LineStyleItem(_("Line (selected)"))
     ___eline = EndGroup(_("Line"))
-    #---------------------------------------------------------------- Symbol tab
+    # ---------------------------------------------------------------- Symbol tab
     ___sym = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
     symbol = SymbolItem(_("Symbol (not selected)"))
     sel_symbol = SymbolItem(_("Symbol (selected)"))
     ___esym = EndGroup(_("Symbol"))
-    #------------------------------------------------------------------ Fill tab
-    ___fill = BeginGroup(_("Fill pattern")).set_prop("display",
-                                                     icon="dense6pattern.png")
+    # ------------------------------------------------------------------ Fill tab
+    ___fill = BeginGroup(_("Fill pattern")).set_prop(
+        "display", icon="dense6pattern.png"
+    )
     fill = BrushStyleItem(_("Fill pattern (not selected)"))
     sel_fill = BrushStyleItem(_("Fill pattern (selected)"))
     ___efill = EndGroup(_("Fill pattern"))
-    #----------------------------------------------------------------------- End
+    # ----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
-    readonly = BoolItem(_("Read-only shape"), default=False,
-                        help=_("Read-only shapes can't be removed from "
-                               "the item list panel"))
-    private = BoolItem(_("Private shape"), default=False,
-                        help=_("Private shapes are not shown in "
-                               "the item list panel")).set_pos(col=1)
-    
+    readonly = BoolItem(
+        _("Read-only shape"),
+        default=False,
+        help=_("Read-only shapes can't be removed from " "the item list panel"),
+    )
+    private = BoolItem(
+        _("Private shape"),
+        default=False,
+        help=_("Private shapes are not shown in " "the item list panel"),
+    ).set_pos(col=1)
+
     def update_param(self, obj):
         self.label = to_text_string(obj.title().text())
         self.line.update_param(obj.pen)
@@ -1463,12 +1638,12 @@ class ShapeParam(DataSet):
         self.sel_fill.update_param(obj.sel_brush)
         self.readonly = obj.is_readonly()
         self.private = obj.is_private()
-        
+
     def update_shape(self, obj):
         plot = obj.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         obj.setTitle(self.label)
         obj.pen = self.line.build_pen()
         obj.symbol = self.symbol.build_symbol()
@@ -1481,24 +1656,26 @@ class ShapeParam(DataSet):
         if plot is not None:
             plot.blockSignals(False)
 
+
 class AxesShapeParam(DataSet):
     arrow_angle = FloatItem(_("Arrow angle (°)"), min=0, max=90, nonzero=True)
     arrow_size = FloatItem(_("Arrow size (%)"), min=0, max=100, nonzero=True)
     _styles = BeginTabGroup("Styles")
-    #------------------------------------------------------------------ Line tab
+    # ------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
     xarrow_pen = LineStyleItem(_("Line (X-Axis)"))
     yarrow_pen = LineStyleItem(_("Line (Y-Axis)"))
     ___eline = EndGroup(_("Line"))
-    #------------------------------------------------------------------ Fill tab
-    ___fill = BeginGroup(_("Fill pattern")).set_prop("display",
-                                                     icon="dense6pattern.png")
+    # ------------------------------------------------------------------ Fill tab
+    ___fill = BeginGroup(_("Fill pattern")).set_prop(
+        "display", icon="dense6pattern.png"
+    )
     xarrow_brush = BrushStyleItem(_("Fill pattern (X-Axis)"))
     yarrow_brush = BrushStyleItem(_("Fill pattern (Y-Axis)"))
     ___efill = EndGroup(_("Fill pattern"))
-    #----------------------------------------------------------------------- End
+    # ----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
-    
+
     def update_param(self, obj):
         self.arrow_angle = obj.arrow_angle
         self.arrow_size = obj.arrow_size
@@ -1506,7 +1683,7 @@ class AxesShapeParam(DataSet):
         self.yarrow_pen.update_param(obj.y_pen)
         self.xarrow_brush.update_param(obj.x_brush)
         self.yarrow_brush.update_param(obj.y_brush)
-        
+
     def update_axes(self, obj):
         obj.arrow_angle = self.arrow_angle
         obj.arrow_size = self.arrow_size
@@ -1515,37 +1692,48 @@ class AxesShapeParam(DataSet):
         obj.y_pen = self.yarrow_pen.build_pen()
         obj.y_brush = self.yarrow_brush.build_brush()
 
+
 class AnnotationParam(DataSet):
     show_label = BoolItem(_("Show annotation"), default=True)
-    show_computations = BoolItem(_("Show informations on area "
-                                   "covered by this shape"), default=True)
+    show_computations = BoolItem(
+        _("Show informations on area " "covered by this shape"), default=True
+    )
     title = StringItem(_("Title"), default="")
     subtitle = StringItem(_("Subtitle"), default="")
     format = StringItem(_("String formatting"), default="%.1f")
-    uncertainty = FloatItem(_("Uncertainty"), default=0., min=0., max=1.,
-                            help=_("Measurement relative uncertainty")
-                            ).set_pos(col=1)
-    transform_matrix = FloatArrayItem(_("Transform matrix"),
-                                      default=np.eye(3, dtype=float))
-    readonly = BoolItem(_("Read-only shape"), default=False,
-                        help=_("Read-only shapes can't be removed from "
-                               "the item list panel"))
-    private = BoolItem(_("Private shape"), default=False,
-                        help=_("Private shapes are not shown in "
-                               "the item list panel")).set_pos(col=1)
-    
+    uncertainty = FloatItem(
+        _("Uncertainty"),
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        help=_("Measurement relative uncertainty"),
+    ).set_pos(col=1)
+    transform_matrix = FloatArrayItem(
+        _("Transform matrix"), default=np.eye(3, dtype=float)
+    )
+    readonly = BoolItem(
+        _("Read-only shape"),
+        default=False,
+        help=_("Read-only shapes can't be removed from " "the item list panel"),
+    )
+    private = BoolItem(
+        _("Private shape"),
+        default=False,
+        help=_("Private shapes are not shown in " "the item list panel"),
+    ).set_pos(col=1)
+
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
         self.title = to_text_string(obj.title().text())
         self.readonly = obj.is_readonly()
         self.private = obj.is_private()
-        
+
     def update_annotation(self, obj):
         plot = obj.plot()
         if plot is not None:
-            plot.blockSignals(True)  # Avoid unwanted calls of update_param 
-                                     # triggered by the setter methods below
+            plot.blockSignals(True)  # Avoid unwanted calls of update_param
+            # triggered by the setter methods below
         obj.setTitle(self.title)
         obj.set_label_visible(self.show_label)
         obj.area_computations_visible = self.show_computations
@@ -1561,25 +1749,24 @@ class AnnotationParam(DataSet):
 # ===================================================
 class RangeShapeParam(DataSet):
     _styles = BeginTabGroup("Styles")
-    #------------------------------------------------------------------ Line tab
+    # ------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
     line = LineStyleItem(_("Line (not selected)"))
     sel_line = LineStyleItem(_("Line (selected)"))
     ___eline = EndGroup(_("Line"))
-    #---------------------------------------------------------------- Symbol tab
+    # ---------------------------------------------------------------- Symbol tab
     ___symbol = BeginGroup(_("Symbol")).set_prop("display", icon="diamond.png")
     symbol = SymbolItem(_("Symbol (not selected)"))
     sel_symbol = SymbolItem(_("Symbol (selected)"))
     ___esymbol = EndGroup(_("Symbol"))
-    #------------------------------------------------------------------ Fill tab
-    ___fill = BeginGroup(_("Fill")).set_prop("display",
-                                             icon="dense6pattern.png")
+    # ------------------------------------------------------------------ Fill tab
+    ___fill = BeginGroup(_("Fill")).set_prop("display", icon="dense6pattern.png")
     fill = ColorItem(_("Fill color"))
-    shade = FloatItem(_("Shade"), default = .05, min=0, max=1)
+    shade = FloatItem(_("Shade"), default=0.05, min=0, max=1)
     ___efill = EndGroup(_("Fill"))
-    #----------------------------------------------------------------------- End
+    # ----------------------------------------------------------------------- End
     _endstyles = EndTabGroup("Styles")
-    
+
     def update_param(self, range):
         self.line.update_param(range.pen)
         self.sel_line.update_param(range.sel_pen)
@@ -1587,7 +1774,7 @@ class RangeShapeParam(DataSet):
         self.shade = range.brush.color().alphaF()
         self.symbol.update_param(range.symbol)
         self.sel_symbol.update_param(range.sel_symbol)
-        
+
     def update_range(self, range):
         range.pen = self.line.build_pen()
         range.sel_pen = self.sel_line.build_pen()

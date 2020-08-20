@@ -58,41 +58,75 @@ Reference
 
 import os.path as osp
 from numpy import arange, array, zeros, meshgrid, ndarray
-from guidata.py3compat import is_text_string
+from qtpy.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _, CONF, make_title
 from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem, lut_range_threshold
-from guiqwt.image import (ImageItem, QuadGridItem, TrImageItem, XYImageItem,
-                          Histogram2DItem, RGBImageItem, MaskedImageItem)
-from guiqwt.shapes import (XRangeSelection, RectangleShape, EllipseShape,
-                           SegmentShape, Marker)
-from guiqwt.annotations import (AnnotatedRectangle, AnnotatedEllipse,
-                                AnnotatedSegment)
-from guiqwt.styles import (update_style_attr, CurveParam, ErrorBarParam,
-                           style_generator, LabelParam, LegendParam, ImageParam,
-                           TrImageParam, HistogramParam, Histogram2DParam,
-                           RGBImageParam, MaskedImageParam, XYImageParam,
-                           ImageFilterParam, MARKERS, COLORS, GridParam,
-                           LineStyleParam, AnnotationParam, QuadGridParam,
-                           LabelParamWithContents, MarkerParam)
-from guiqwt.label import (LabelItem, LegendBoxItem, RangeComputation,
-                          RangeComputation2d, DataInfoLabel, RangeInfo,
-                          SelectedLegendBoxItem)
+from guiqwt.image import (
+    ImageItem,
+    QuadGridItem,
+    TrImageItem,
+    XYImageItem,
+    Histogram2DItem,
+    RGBImageItem,
+    MaskedImageItem,
+)
+from guiqwt.shapes import (
+    XRangeSelection,
+    RectangleShape,
+    EllipseShape,
+    SegmentShape,
+    Marker,
+)
+from guiqwt.annotations import AnnotatedRectangle, AnnotatedEllipse, AnnotatedSegment
+from guiqwt.styles import (
+    update_style_attr,
+    CurveParam,
+    ErrorBarParam,
+    style_generator,
+    LabelParam,
+    LegendParam,
+    ImageParam,
+    TrImageParam,
+    HistogramParam,
+    Histogram2DParam,
+    RGBImageParam,
+    MaskedImageParam,
+    XYImageParam,
+    ImageFilterParam,
+    MARKERS,
+    COLORS,
+    GridParam,
+    LineStyleParam,
+    AnnotationParam,
+    QuadGridParam,
+    LabelParamWithContents,
+    MarkerParam,
+)
+from guiqwt.label import (
+    LabelItem,
+    LegendBoxItem,
+    RangeComputation,
+    RangeComputation2d,
+    DataInfoLabel,
+    RangeInfo,
+    SelectedLegendBoxItem,
+)
 
 # default offset positions for anchors
 ANCHOR_OFFSETS = {
-                  "TL": ( 5,  5),
-                  "TR": (-5,  5),
-                  "BL": ( 5, -5),
-                  "BR": (-5, -5),
-                  "L": ( 5,  0),
-                  "R": (-5,  0),
-                  "T": ( 0,  5),
-                  "B": ( 0, -5),
-                  }
+    "TL": (5, 5),
+    "TR": (-5, 5),
+    "BL": (5, -5),
+    "BR": (-5, -5),
+    "L": (5, 0),
+    "R": (-5, 0),
+    "T": (0, 5),
+    "B": (0, -5),
+}
 
 CURVE_COUNT = 0
 HISTOGRAM_COUNT = 0
@@ -100,17 +134,24 @@ IMAGE_COUNT = 0
 LABEL_COUNT = 0
 HISTOGRAM2D_COUNT = 0
 
+
 class PlotItemBuilder(object):
     """
     This is just a bare class used to regroup
     a set of factory functions in a single object
     """
+
     def __init__(self):
         self.style = style_generator()
-        
-    def gridparam(self, background=None,
-                  major_enabled=None, minor_enabled=None,
-                  major_style=None, minor_style=None):
+
+    def gridparam(
+        self,
+        background=None,
+        major_enabled=None,
+        minor_enabled=None,
+        major_style=None,
+        minor_style=None,
+    ):
         """
         Make `guiqwt.styles.GridParam` instance
         
@@ -134,16 +175,22 @@ class PlotItemBuilder(object):
             style = LineStyleParam()
             linestyle, color, style.width = major_style
             style.set_style_from_matlab(linestyle)
-            style.color = COLORS.get(color, color) # MATLAB-style
+            style.color = COLORS.get(color, color)  # MATLAB-style
         if minor_style is not None:
             style = LineStyleParam()
             linestyle, color, style.width = minor_style
             style.set_style_from_matlab(linestyle)
-            style.color = COLORS.get(color, color) # MATLAB-style
+            style.color = COLORS.get(color, color)  # MATLAB-style
         return gridparam
-    
-    def grid(self, background=None, major_enabled=None, minor_enabled=None,
-             major_style=None, minor_style=None):
+
+    def grid(
+        self,
+        background=None,
+        major_enabled=None,
+        minor_enabled=None,
+        major_style=None,
+        minor_style=None,
+    ):
         """
         Make a grid `plot item` (`guiqwt.curve.GridItem` object)
         
@@ -155,10 +202,11 @@ class PlotItemBuilder(object):
            
         Style: tuple (style, color, width)
         """
-        gridparam = self.gridparam(background, major_enabled, minor_enabled,
-                                   major_style, minor_style)
+        gridparam = self.gridparam(
+            background, major_enabled, minor_enabled, major_style, minor_style
+        )
         return GridItem(gridparam)
-    
+
     def __set_curve_axes(self, curve, xaxis, yaxis):
         """Set curve axes"""
         for axis in (xaxis, yaxis):
@@ -167,12 +215,21 @@ class PlotItemBuilder(object):
         curve.setXAxis(BasePlot.AXIS_NAMES[xaxis])
         curve.setYAxis(BasePlot.AXIS_NAMES[yaxis])
 
-    def __set_baseparam(self, param, color, linestyle, linewidth,
-                        marker, markersize, markerfacecolor, markeredgecolor):
+    def __set_baseparam(
+        self,
+        param,
+        color,
+        linestyle,
+        linewidth,
+        marker,
+        markersize,
+        markerfacecolor,
+        markeredgecolor,
+    ):
         """Apply parameters to a `guiqwt.styles.CurveParam` or 
         `guiqwt.styles.MarkerParam` instance"""
         if color is not None:
-            color = COLORS.get(color, color) # MATLAB-style
+            color = COLORS.get(color, color)  # MATLAB-style
             param.line.color = color
         if linestyle is not None:
             param.line.set_style_from_matlab(linestyle)
@@ -180,26 +237,48 @@ class PlotItemBuilder(object):
             param.line.width = linewidth
         if marker is not None:
             if marker in MARKERS:
-                param.symbol.update_param(MARKERS[marker]) # MATLAB-style
+                param.symbol.update_param(MARKERS[marker])  # MATLAB-style
             else:
                 param.symbol.marker = marker
         if markersize is not None:
             param.symbol.size = markersize
         if markerfacecolor is not None:
-            markerfacecolor = COLORS.get(markerfacecolor,
-                                         markerfacecolor) # MATLAB-style
+            markerfacecolor = COLORS.get(
+                markerfacecolor, markerfacecolor
+            )  # MATLAB-style
             param.symbol.facecolor = markerfacecolor
         if markeredgecolor is not None:
-            markeredgecolor = COLORS.get(markeredgecolor,
-                                         markeredgecolor) # MATLAB-style
+            markeredgecolor = COLORS.get(
+                markeredgecolor, markeredgecolor
+            )  # MATLAB-style
             param.symbol.edgecolor = markeredgecolor
 
-    def __set_param(self, param, title, color, linestyle, linewidth, marker,
-                    markersize, markerfacecolor, markeredgecolor, shade,
-                    curvestyle, baseline):
+    def __set_param(
+        self,
+        param,
+        title,
+        color,
+        linestyle,
+        linewidth,
+        marker,
+        markersize,
+        markerfacecolor,
+        markeredgecolor,
+        shade,
+        curvestyle,
+        baseline,
+    ):
         """Apply parameters to a `guiqwt.styles.CurveParam` instance"""
-        self.__set_baseparam(param, color, linestyle, linewidth, marker,
-                             markersize, markerfacecolor, markeredgecolor)
+        self.__set_baseparam(
+            param,
+            color,
+            linestyle,
+            linewidth,
+            marker,
+            markersize,
+            markerfacecolor,
+            markeredgecolor,
+        )
         if title:
             param.label = title
         if shade is not None:
@@ -208,9 +287,10 @@ class PlotItemBuilder(object):
             param.curvestyle = curvestyle
         if baseline is not None:
             param.baseline = baseline
-            
+
     def __get_arg_triple_plot(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
+
         def get_x_y_from_data(data):
             if isinstance(data, (tuple, list)):
                 data = array(data)
@@ -219,9 +299,9 @@ class PlotItemBuilder(object):
                 y = data
             else:
                 x = arange(len(data[:, 0]))
-                y = [data[:, i] for i in range(len(data[0,:]))]
+                y = [data[:, i] for i in range(len(data[0, :]))]
             return x, y
-            
+
         if len(args) == 1:
             if is_text_string(args[0]):
                 x = array((), float)
@@ -243,7 +323,7 @@ class PlotItemBuilder(object):
                 x = a1
                 y = a2
                 style = next(self.style)
-        elif len(args)==3:
+        elif len(args) == 3:
             x, y, style = args
         else:
             raise TypeError("Wrong number of arguments")
@@ -252,15 +332,15 @@ class PlotItemBuilder(object):
         if isinstance(y, (list, tuple)) and not y_matrix:
             y = array(y)
         return x, y, style
-        
+
     def __get_arg_triple_errorbar(self, args):
         """Convert MATLAB-like arguments into x, y, style"""
-        if len(args)==2:
+        if len(args) == 2:
             y, dy = args
             x = arange(len(y))
             dx = zeros(len(y))
             style = next(self.style)
-        elif len(args)==3:
+        elif len(args) == 3:
             a1, a2, a3 = args
             if is_text_string(a3):
                 y, dy = a1, a2
@@ -271,7 +351,7 @@ class PlotItemBuilder(object):
                 x, y, dy = args
                 dx = zeros(len(y))
                 style = next(self.style)
-        elif len(args)==4:
+        elif len(args) == 4:
             a1, a2, a3, a4 = args
             if is_text_string(a4):
                 x, y, dy = a1, a2, a3
@@ -280,12 +360,12 @@ class PlotItemBuilder(object):
             else:
                 x, y, dx, dy = args
                 style = next(self.style)
-        elif len(args)==5:
+        elif len(args) == 5:
             x, y, dx, dy, style = args
         else:
             raise TypeError("Wrong number of arguments")
         return x, y, dx, dy, style
-    
+
     def mcurve(self, *args, **kwargs):
         """
         Make a curve `plot item` based on MATLAB-like syntax
@@ -302,11 +382,11 @@ class PlotItemBuilder(object):
         if not isinstance(style, list):
             style = [style]
         if len(y) > len(style):
-            style = [style[0]]*len(y)
+            style = [style[0]] * len(y)
         basename = _("Curve")
         curves = []
         for yi, stylei in zip(y, style):
-            param = CurveParam(title=basename, icon='curve.png')
+            param = CurveParam(title=basename, icon="curve.png")
             if "label" in kwargs:
                 param.label = kwargs.pop("label")
             else:
@@ -319,7 +399,7 @@ class PlotItemBuilder(object):
             return curves[0]
         else:
             return curves
-                
+
     def pcurve(self, x, y, param, xaxis="bottom", yaxis="left"):
         """
         Make a curve `plot item` 
@@ -336,10 +416,24 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
 
-    def curve(self, x, y, title="", color=None, linestyle=None, linewidth=None,
-              marker=None, markersize=None, markerfacecolor=None,
-              markeredgecolor=None, shade=None, curvestyle=None, baseline=None,
-              xaxis="bottom", yaxis="left"):
+    def curve(
+        self,
+        x,
+        y,
+        title="",
+        color=None,
+        linestyle=None,
+        linewidth=None,
+        marker=None,
+        markersize=None,
+        markerfacecolor=None,
+        markeredgecolor=None,
+        shade=None,
+        curvestyle=None,
+        baseline=None,
+        xaxis="bottom",
+        yaxis="left",
+    ):
         """
         Make a curve `plot item` from x, y, data
         (:py:class:`guiqwt.curve.CurveItem` object)
@@ -371,14 +465,25 @@ class PlotItemBuilder(object):
             curve(x, y, marker='o', markerfacecolor='w')
         """
         basename = _("Curve")
-        param = CurveParam(title=basename, icon='curve.png')
+        param = CurveParam(title=basename, icon="curve.png")
         if not title:
             global CURVE_COUNT
             CURVE_COUNT += 1
             title = make_title(basename, CURVE_COUNT)
-        self.__set_param(param, title, color, linestyle, linewidth, marker,
-                         markersize, markerfacecolor, markeredgecolor, shade,
-                         curvestyle, baseline)
+        self.__set_param(
+            param,
+            title,
+            color,
+            linestyle,
+            linewidth,
+            marker,
+            markersize,
+            markerfacecolor,
+            markeredgecolor,
+            shade,
+            curvestyle,
+            baseline,
+        )
         return self.pcurve(x, y, param, xaxis, yaxis)
 
     def merror(self, *args, **kwargs):
@@ -392,9 +497,8 @@ class PlotItemBuilder(object):
         """
         x, y, dx, dy, style = self.__get_arg_triple_errorbar(args)
         basename = _("Curve")
-        curveparam = CurveParam(title=basename, icon='curve.png')
-        errorbarparam = ErrorBarParam(title=_("Error bars"),
-                                      icon='errorbar.png')
+        curveparam = CurveParam(title=basename, icon="curve.png")
+        errorbarparam = ErrorBarParam(title=_("Error bars"), icon="errorbar.png")
         if "label" in kwargs:
             curveparam.label = kwargs["label"]
         else:
@@ -405,8 +509,9 @@ class PlotItemBuilder(object):
         errorbarparam.color = curveparam.line.color
         return self.perror(x, y, dx, dy, curveparam, errorbarparam)
 
-    def perror(self, x, y, dx, dy, curveparam, errorbarparam,
-               xaxis="bottom", yaxis="left"):
+    def perror(
+        self, x, y, dx, dy, curveparam, errorbarparam, xaxis="bottom", yaxis="left"
+    ):
         """
         Make an errorbar curve `plot item` 
         based on a `guiqwt.styles.ErrorBarParam` instance
@@ -429,13 +534,31 @@ class PlotItemBuilder(object):
         curve.update_params()
         self.__set_curve_axes(curve, xaxis, yaxis)
         return curve
-        
-    def error(self, x, y, dx, dy, title="",
-              color=None, linestyle=None, linewidth=None,
-              errorbarwidth=None, errorbarcap=None, errorbarmode=None,
-              errorbaralpha=None, marker=None, markersize=None,
-              markerfacecolor=None, markeredgecolor=None, shade=None,
-              curvestyle=None, baseline=None, xaxis="bottom", yaxis="left"):
+
+    def error(
+        self,
+        x,
+        y,
+        dx,
+        dy,
+        title="",
+        color=None,
+        linestyle=None,
+        linewidth=None,
+        errorbarwidth=None,
+        errorbarcap=None,
+        errorbarmode=None,
+        errorbaralpha=None,
+        marker=None,
+        markersize=None,
+        markerfacecolor=None,
+        markeredgecolor=None,
+        shade=None,
+        curvestyle=None,
+        baseline=None,
+        xaxis="bottom",
+        yaxis="left",
+    ):
         """
         Make an errorbar curve `plot item` 
         (:py:class:`guiqwt.curve.ErrorBarCurveItem` object)
@@ -474,16 +597,26 @@ class PlotItemBuilder(object):
             error(x, y, None, dy, marker='o', markerfacecolor='w')
         """
         basename = _("Curve")
-        curveparam = CurveParam(title=basename, icon='curve.png')
-        errorbarparam = ErrorBarParam(title=_("Error bars"),
-                                      icon='errorbar.png')
+        curveparam = CurveParam(title=basename, icon="curve.png")
+        errorbarparam = ErrorBarParam(title=_("Error bars"), icon="errorbar.png")
         if not title:
             global CURVE_COUNT
             CURVE_COUNT += 1
             curveparam.label = make_title(basename, CURVE_COUNT)
-        self.__set_param(curveparam, title, color, linestyle, linewidth, marker,
-                         markersize, markerfacecolor, markeredgecolor,
-                         shade, curvestyle, baseline)
+        self.__set_param(
+            curveparam,
+            title,
+            color,
+            linestyle,
+            linewidth,
+            marker,
+            markersize,
+            markerfacecolor,
+            markeredgecolor,
+            shade,
+            curvestyle,
+            baseline,
+        )
         errorbarparam.color = curveparam.line.color
         if errorbarwidth is not None:
             errorbarparam.width = errorbarwidth
@@ -493,11 +626,18 @@ class PlotItemBuilder(object):
             errorbarparam.mode = errorbarmode
         if errorbaralpha is not None:
             errorbarparam.alpha = errorbaralpha
-        return self.perror(x, y, dx, dy, curveparam, errorbarparam,
-                           xaxis, yaxis)
-    
-    def histogram(self, data, bins=None, logscale=None,
-                  title="", color=None, xaxis="bottom", yaxis="left"):
+        return self.perror(x, y, dx, dy, curveparam, errorbarparam, xaxis, yaxis)
+
+    def histogram(
+        self,
+        data,
+        bins=None,
+        logscale=None,
+        title="",
+        color=None,
+        xaxis="bottom",
+        yaxis="left",
+    ):
         """
         Make 1D Histogram `plot item` 
         (:py:class:`guiqwt.histogram.HistogramItem` object)
@@ -507,8 +647,8 @@ class PlotItemBuilder(object):
             * logscale: Y-axis scale (bool)
         """
         basename = _("Histogram")
-        histparam = HistogramParam(title=basename, icon='histogram.png')
-        curveparam = CurveParam(_("Curve"), icon='curve.png')
+        histparam = HistogramParam(title=basename, icon="histogram.png")
+        curveparam = CurveParam(_("Curve"), icon="curve.png")
         curveparam.read_config(CONF, "histogram", "curve")
         if not title:
             global HISTOGRAM_COUNT
@@ -522,9 +662,8 @@ class PlotItemBuilder(object):
         if logscale is not None:
             histparam.logscale = logscale
         return self.phistogram(data, curveparam, histparam, xaxis, yaxis)
-        
-    def phistogram(self, data, curveparam, histparam,
-                   xaxis="bottom", yaxis="left"):
+
+    def phistogram(self, data, curveparam, histparam, xaxis="bottom", yaxis="left"):
         """
         Make 1D histogram `plot item` 
         (:py:class:`guiqwt.histogram.HistogramItem` object) 
@@ -541,8 +680,9 @@ class PlotItemBuilder(object):
         self.__set_curve_axes(hist, xaxis, yaxis)
         return hist
 
-    def __set_image_param(self, param, title, alpha_mask, alpha, interpolation,
-                          **kwargs):
+    def __set_image_param(
+        self, param, title, alpha_mask, alpha, interpolation, **kwargs
+    ):
         if title:
             param.label = title
         else:
@@ -553,9 +693,9 @@ class PlotItemBuilder(object):
             assert isinstance(alpha_mask, bool)
             param.alpha_mask = alpha_mask
         if alpha is not None:
-            assert (0.0 <= alpha <= 1.0)
+            assert 0.0 <= alpha <= 1.0
             param.alpha = alpha
-        interp_methods = {'nearest': 0, 'linear': 1, 'antialiasing': 5}
+        interp_methods = {"nearest": 0, "linear": 1, "antialiasing": 5}
         param.interpolation = interp_methods[interpolation]
         for key, val in list(kwargs.items()):
             if val is not None:
@@ -565,6 +705,7 @@ class PlotItemBuilder(object):
         if data is None:
             assert filename is not None
             from guiqwt import io
+
             data = io.imread(filename, to_grayscale=to_grayscale)
         if title is None and filename is not None:
             title = osp.basename(filename)
@@ -576,23 +717,36 @@ class PlotItemBuilder(object):
         if not isinstance(pixel_size, (tuple, list)):
             pixel_size = [pixel_size, pixel_size]
         dx, dy = pixel_size
-        xmin, ymin = 0., 0.
-        xmax, ymax = data.shape[1]*dx, data.shape[0]*dy
+        xmin, ymin = 0.0, 0.0
+        xmax, ymax = data.shape[1] * dx, data.shape[0] * dy
         if center_on is not None:
             xc, yc = center_on
-            dx, dy = .5*(xmax-xmin)-xc, .5*(ymax-ymin)-yc
+            dx, dy = 0.5 * (xmax - xmin) - xc, 0.5 * (ymax - ymin) - yc
             xmin -= dx
             xmax -= dx
             ymin -= dy
             ymax -= dy
         return xmin, xmax, ymin, ymax
-        
-    def image(self, data=None, filename=None, title=None, alpha_mask=None,
-              alpha=None, background_color=None, colormap=None,
-              xdata=[None, None], ydata=[None, None],
-              pixel_size=None, center_on=None,
-              interpolation='linear', eliminate_outliers=None,
-              xformat='%.1f', yformat='%.1f', zformat='%.1f'):
+
+    def image(
+        self,
+        data=None,
+        filename=None,
+        title=None,
+        alpha_mask=None,
+        alpha=None,
+        background_color=None,
+        colormap=None,
+        xdata=[None, None],
+        ydata=[None, None],
+        pixel_size=None,
+        center_on=None,
+        interpolation="linear",
+        eliminate_outliers=None,
+        xformat="%.1f",
+        yformat="%.1f",
+        zformat="%.1f",
+    ):
         """
         Make an image `plot item` from data
         (:py:class:`guiqwt.image.ImageItem` object or 
@@ -600,113 +754,185 @@ class PlotItemBuilder(object):
         """
         assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
         assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
-        param = ImageParam(title=_("Image"), icon='image.png')
-        data, filename, title = self._get_image_data(data, filename, title,
-                                                     to_grayscale=True)
+        param = ImageParam(title=_("Image"), icon="image.png")
+        data, filename, title = self._get_image_data(
+            data, filename, title, to_grayscale=True
+        )
         if data.ndim == 3:
-            return self.rgbimage(data=data, filename=filename, title=title,
-                                 alpha_mask=alpha_mask, alpha=alpha)
+            return self.rgbimage(
+                data=data,
+                filename=filename,
+                title=title,
+                alpha_mask=alpha_mask,
+                alpha=alpha,
+            )
         assert data.ndim == 2, "Data must have 2 dimensions"
         if pixel_size is None:
-            assert center_on is None, "Ambiguous parameters: both `center_on`"\
-                                      " and `xdata`/`ydata` were specified"
+            assert center_on is None, (
+                "Ambiguous parameters: both `center_on`"
+                " and `xdata`/`ydata` were specified"
+            )
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
-                                                         center_on)
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               background=background_color,
-                               colormap=colormap,
-                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                               xformat=xformat, yformat=yformat,
-                               zformat=zformat)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size, center_on)
+        self.__set_image_param(
+            param,
+            title,
+            alpha_mask,
+            alpha,
+            interpolation,
+            background=background_color,
+            colormap=colormap,
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            xformat=xformat,
+            yformat=yformat,
+            zformat=zformat,
+        )
         image = ImageItem(data, param)
         image.set_filename(filename)
         if eliminate_outliers is not None:
-            image.set_lut_range(lut_range_threshold(image, 256,
-                                                    eliminate_outliers))
+            image.set_lut_range(lut_range_threshold(image, 256, eliminate_outliers))
         return image
 
-    def maskedimage(self, data=None, mask=None, filename=None, title=None,
-                    alpha_mask=False, alpha=1.0,
-                    xdata=[None, None], ydata=[None, None],
-                    pixel_size=None, center_on=None,
-                    background_color=None, colormap=None,
-                    show_mask=False, fill_value=None, interpolation='linear',
-                    eliminate_outliers=None,
-                    xformat='%.1f', yformat='%.1f', zformat='%.1f'):
+    def maskedimage(
+        self,
+        data=None,
+        mask=None,
+        filename=None,
+        title=None,
+        alpha_mask=False,
+        alpha=1.0,
+        xdata=[None, None],
+        ydata=[None, None],
+        pixel_size=None,
+        center_on=None,
+        background_color=None,
+        colormap=None,
+        show_mask=False,
+        fill_value=None,
+        interpolation="linear",
+        eliminate_outliers=None,
+        xformat="%.1f",
+        yformat="%.1f",
+        zformat="%.1f",
+    ):
         """
         Make a masked image `plot item` from data
         (:py:class:`guiqwt.image.MaskedImageItem` object)
         """
         assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
         assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
-        param = MaskedImageParam(title=_("Image"), icon='image.png')
-        data, filename, title = self._get_image_data(data, filename, title,
-                                                     to_grayscale=True)
+        param = MaskedImageParam(title=_("Image"), icon="image.png")
+        data, filename, title = self._get_image_data(
+            data, filename, title, to_grayscale=True
+        )
         assert data.ndim == 2, "Data must have 2 dimensions"
         if pixel_size is None:
-            assert center_on is None, "Ambiguous parameters: both `center_on`"\
-                                      " and `xdata`/`ydata` were specified"
+            assert center_on is None, (
+                "Ambiguous parameters: both `center_on`"
+                " and `xdata`/`ydata` were specified"
+            )
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
-                                                         center_on)
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               background=background_color,
-                               colormap=colormap,
-                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                               show_mask=show_mask, fill_value=fill_value,
-                               xformat=xformat, yformat=yformat,
-                               zformat=zformat)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size, center_on)
+        self.__set_image_param(
+            param,
+            title,
+            alpha_mask,
+            alpha,
+            interpolation,
+            background=background_color,
+            colormap=colormap,
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            show_mask=show_mask,
+            fill_value=fill_value,
+            xformat=xformat,
+            yformat=yformat,
+            zformat=zformat,
+        )
         image = MaskedImageItem(data, mask, param)
         image.set_filename(filename)
         if eliminate_outliers is not None:
-            image.set_lut_range(lut_range_threshold(image, 256,
-                                                    eliminate_outliers))
+            image.set_lut_range(lut_range_threshold(image, 256, eliminate_outliers))
         return image
 
-    def rgbimage(self, data=None, filename=None, title=None,
-                 alpha_mask=False, alpha=1.0,
-                 xdata=[None, None], ydata=[None, None],
-                 pixel_size=None, center_on=None,
-                 interpolation='linear'):
+    def rgbimage(
+        self,
+        data=None,
+        filename=None,
+        title=None,
+        alpha_mask=False,
+        alpha=1.0,
+        xdata=[None, None],
+        ydata=[None, None],
+        pixel_size=None,
+        center_on=None,
+        interpolation="linear",
+    ):
         """
         Make a RGB image `plot item` from data
         (:py:class:`guiqwt.image.RGBImageItem` object)
         """
         assert isinstance(xdata, (tuple, list)) and len(xdata) == 2
         assert isinstance(ydata, (tuple, list)) and len(ydata) == 2
-        param = RGBImageParam(title=_("Image"), icon='image.png')
-        data, filename, title = self._get_image_data(data, filename, title,
-                                                     to_grayscale=False)
+        param = RGBImageParam(title=_("Image"), icon="image.png")
+        data, filename, title = self._get_image_data(
+            data, filename, title, to_grayscale=False
+        )
         assert data.ndim == 3, "RGB data must have 3 dimensions"
         if pixel_size is None:
-            assert center_on is None, "Ambiguous parameters: both `center_on`"\
-                                      " and `xdata`/`ydata` were specified"
+            assert center_on is None, (
+                "Ambiguous parameters: both `center_on`"
+                " and `xdata`/`ydata` were specified"
+            )
             xmin, xmax = xdata
             ymin, ymax = ydata
         else:
-            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size,
-                                                         center_on)
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+            xmin, xmax, ymin, ymax = self.compute_bounds(data, pixel_size, center_on)
+        self.__set_image_param(
+            param,
+            title,
+            alpha_mask,
+            alpha,
+            interpolation,
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+        )
         image = RGBImageItem(data, param)
         image.set_filename(filename)
         return image
-        
-    def quadgrid(self, X, Y, Z, filename=None, title=None, alpha_mask=None,
-                 alpha=None, background_color=None, colormap=None,
-                 interpolation='linear'):
+
+    def quadgrid(
+        self,
+        X,
+        Y,
+        Z,
+        filename=None,
+        title=None,
+        alpha_mask=None,
+        alpha=None,
+        background_color=None,
+        colormap=None,
+        interpolation="linear",
+    ):
         """
         Make a pseudocolor `plot item` of a 2D array
         (:py:class:`guiqwt.image.QuadGridItem` object)
         """
-        param = QuadGridParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               colormap=colormap)
+        param = QuadGridParam(title=_("Image"), icon="image.png")
+        self.__set_image_param(
+            param, title, alpha_mask, alpha, interpolation, colormap=colormap
+        )
         image = QuadGridItem(X, Y, Z, param)
         return image
 
@@ -722,7 +948,7 @@ class PlotItemBuilder(object):
             pcolor(X, Y, C)
         """
         if len(args) == 1:
-            Z, = args
+            (Z,) = args
             M, N = Z.shape
             X, Y = meshgrid(arange(N, dtype=Z.dtype), arange(M, dtype=Z.dtype))
         elif len(args) == 3:
@@ -731,11 +957,26 @@ class PlotItemBuilder(object):
             raise RuntimeError("1 or 3 non-keyword arguments expected")
         return self.quadgrid(X, Y, Z, **kwargs)
 
-    def trimage(self, data=None, filename=None, title=None, alpha_mask=None,
-                alpha=None, background_color=None, colormap=None,
-                x0=0.0, y0=0.0, angle=0.0, dx=1.0, dy=1.0,
-                interpolation='linear', eliminate_outliers=None,
-                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
+    def trimage(
+        self,
+        data=None,
+        filename=None,
+        title=None,
+        alpha_mask=None,
+        alpha=None,
+        background_color=None,
+        colormap=None,
+        x0=0.0,
+        y0=0.0,
+        angle=0.0,
+        dx=1.0,
+        dy=1.0,
+        interpolation="linear",
+        eliminate_outliers=None,
+        xformat="%.1f",
+        yformat="%.1f",
+        zformat="%.1f",
+    ):
         """
         Make a transformable image `plot item` (image with an arbitrary 
         affine transform)
@@ -749,25 +990,49 @@ class PlotItemBuilder(object):
             * dx, dy: pixel size along X and Y axes
             * interpolation: 'nearest', 'linear' (default), 'antialiasing' (5x5)
         """
-        param = TrImageParam(title=_("Image"), icon='image.png')
-        data, filename, title = self._get_image_data(data, filename, title,
-                                                     to_grayscale=True)
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               background=background_color, colormap=colormap,
-                               x0=x0, y0=y0, angle=angle, dx=dx, dy=dy,
-                               xformat=xformat, yformat=yformat,
-                               zformat=zformat)
+        param = TrImageParam(title=_("Image"), icon="image.png")
+        data, filename, title = self._get_image_data(
+            data, filename, title, to_grayscale=True
+        )
+        self.__set_image_param(
+            param,
+            title,
+            alpha_mask,
+            alpha,
+            interpolation,
+            background=background_color,
+            colormap=colormap,
+            x0=x0,
+            y0=y0,
+            angle=angle,
+            dx=dx,
+            dy=dy,
+            xformat=xformat,
+            yformat=yformat,
+            zformat=zformat,
+        )
         image = TrImageItem(data, param)
         image.set_filename(filename)
         if eliminate_outliers is not None:
-            image.set_lut_range(lut_range_threshold(image, 256,
-                                                    eliminate_outliers))
+            image.set_lut_range(lut_range_threshold(image, 256, eliminate_outliers))
         return image
 
-    def xyimage(self, x, y, data, title=None, alpha_mask=None, alpha=None,
-                background_color=None, colormap=None,
-                interpolation='linear', eliminate_outliers=None,
-                xformat='%.1f', yformat='%.1f', zformat='%.1f'):
+    def xyimage(
+        self,
+        x,
+        y,
+        data,
+        title=None,
+        alpha_mask=None,
+        alpha=None,
+        background_color=None,
+        colormap=None,
+        interpolation="linear",
+        eliminate_outliers=None,
+        xformat="%.1f",
+        yformat="%.1f",
+        zformat="%.1f",
+    ):
         """
         Make an xyimage `plot item` (image with non-linear X/Y axes) from data
         (:py:class:`guiqwt.image.XYImageItem` object)
@@ -778,23 +1043,29 @@ class PlotItemBuilder(object):
             * title: image title (optional)
             * interpolation: 'nearest', 'linear' (default), 'antialiasing' (5x5)
         """
-        param = XYImageParam(title=_("Image"), icon='image.png')
-        self.__set_image_param(param, title, alpha_mask, alpha, interpolation,
-                               background=background_color, colormap=colormap,
-                               xformat=xformat, yformat=yformat,
-                               zformat=zformat)
+        param = XYImageParam(title=_("Image"), icon="image.png")
+        self.__set_image_param(
+            param,
+            title,
+            alpha_mask,
+            alpha,
+            interpolation,
+            background=background_color,
+            colormap=colormap,
+            xformat=xformat,
+            yformat=yformat,
+            zformat=zformat,
+        )
         if isinstance(x, (list, tuple)):
             x = array(x)
         if isinstance(y, (list, tuple)):
             y = array(y)
         image = XYImageItem(x, y, data, param)
         if eliminate_outliers is not None:
-            image.set_lut_range(lut_range_threshold(image, 256,
-                                                    eliminate_outliers))
+            image.set_lut_range(lut_range_threshold(image, 256, eliminate_outliers))
         return image
-    
-    def imagefilter(self, xmin, xmax, ymin, ymax,
-                    imageitem, filter, title=None):
+
+    def imagefilter(self, xmin, xmax, ymin, ymax, imageitem, filter, title=None):
         """
         Make a rectangular area image filter `plot item`
         (:py:class:`guiqwt.image.ImageFilterItem` object)
@@ -811,10 +1082,20 @@ class PlotItemBuilder(object):
         _m, _M = imageitem.get_lut_range()
         filt.set_lut_range([_m, _M])
         return filt
-    
-    def histogram2D(self, X, Y, NX=None, NY=None, logscale=None,
-                    title=None, transparent=None, Z=None,
-                    computation=-1,interpolation=0):
+
+    def histogram2D(
+        self,
+        X,
+        Y,
+        NX=None,
+        NY=None,
+        logscale=None,
+        title=None,
+        transparent=None,
+        Z=None,
+        computation=-1,
+        interpolation=0,
+    ):
         """
         Make a 2D Histogram `plot item` 
         (:py:class:`guiqwt.image.Histogram2DItem` object)
@@ -828,7 +1109,7 @@ class PlotItemBuilder(object):
             * transparent: enable transparency (bool)
         """
         basename = _("2D Histogram")
-        param = Histogram2DParam(title=basename, icon='histogram2d.png')
+        param = Histogram2DParam(title=basename, icon="histogram2d.png")
         if NX is not None:
             param.nx_bins = NX
         if NY is not None:
@@ -865,7 +1146,7 @@ class PlotItemBuilder(object):
             make.label("Absolute position", "R", (0,0), "R")
         """
         basename = _("Label")
-        param = LabelParamWithContents(basename, icon='label.png')
+        param = LabelParamWithContents(basename, icon="label.png")
         param.read_config(CONF, "plot", "label")
         if title:
             param.label = title
@@ -885,7 +1166,7 @@ class PlotItemBuilder(object):
         param.anchor = anchor
         return LabelItem(text, param)
 
-    def legend(self, anchor='TR', c=None, restrict_items=None):
+    def legend(self, anchor="TR", c=None, restrict_items=None):
         """
         Make a legend `plot item` 
         (:py:class:`guiqwt.label.LegendBoxItem` or 
@@ -898,7 +1179,7 @@ class PlotItemBuilder(object):
                 - []: no item shown
                 - [item1, item2]: item1, item2 are shown in legend box
         """
-        param = LegendParam(_("Legend"), icon='legend.png')
+        param = LegendParam(_("Legend"), icon="legend.png")
         param.read_config(CONF, "plot", "legend")
         param.abspos = True
         param.absg = anchor
@@ -913,9 +1194,8 @@ class PlotItemBuilder(object):
 
     def range(self, xmin, xmax):
         return XRangeSelection(xmin, xmax)
-        
-    def vcursor(self, x, label=None, constraint_cb=None,
-                movable=True, readonly=False):
+
+    def vcursor(self, x, label=None, constraint_cb=None, movable=True, readonly=False):
         """
         Make a vertical cursor `plot item`
         
@@ -923,15 +1203,19 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.shapes.Marker` object)
         """
         if label is None:
-            label_cb = lambda x, y: ''
+            label_cb = lambda x, y: ""
         else:
             label_cb = lambda x, y: label % x
-        return self.marker(position=(x, 0), markerstyle='|',
-                           label_cb=label_cb, constraint_cb=constraint_cb,
-                           movable=movable, readonly=readonly)
+        return self.marker(
+            position=(x, 0),
+            markerstyle="|",
+            label_cb=label_cb,
+            constraint_cb=constraint_cb,
+            movable=movable,
+            readonly=readonly,
+        )
 
-    def hcursor(self, y, label=None, constraint_cb=None,
-                movable=True, readonly=False):
+    def hcursor(self, y, label=None, constraint_cb=None, movable=True, readonly=False):
         """
         Make an horizontal cursor `plot item`
         
@@ -939,15 +1223,21 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.shapes.Marker` object)
         """
         if label is None:
-            label_cb = lambda x, y: ''
+            label_cb = lambda x, y: ""
         else:
             label_cb = lambda x, y: label % y
-        return self.marker(position=(0, y), markerstyle='-',
-                           label_cb=label_cb, constraint_cb=constraint_cb,
-                           movable=movable, readonly=readonly)
+        return self.marker(
+            position=(0, y),
+            markerstyle="-",
+            label_cb=label_cb,
+            constraint_cb=constraint_cb,
+            movable=movable,
+            readonly=readonly,
+        )
 
-    def xcursor(self, x, y, label=None, constraint_cb=None,
-                movable=True, readonly=False):
+    def xcursor(
+        self, x, y, label=None, constraint_cb=None, movable=True, readonly=False
+    ):
         """
         Make an cross cursor `plot item`
         
@@ -955,19 +1245,35 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.shapes.Marker` object)
         """
         if label is None:
-            label_cb = lambda x, y: ''
+            label_cb = lambda x, y: ""
         else:
             label_cb = lambda x, y: label % (x, y)
-        return self.marker(position=(x, y), markerstyle='+',
-                           label_cb=label_cb, constraint_cb=constraint_cb,
-                           movable=movable, readonly=readonly)
-        
-    def marker(self, position=None, label_cb=None, constraint_cb=None,
-               movable=True, readonly=False,
-               markerstyle=None, markerspacing=None,
-               color=None, linestyle=None, linewidth=None,
-               marker=None, markersize=None, markerfacecolor=None,
-               markeredgecolor=None):
+        return self.marker(
+            position=(x, y),
+            markerstyle="+",
+            label_cb=label_cb,
+            constraint_cb=constraint_cb,
+            movable=movable,
+            readonly=readonly,
+        )
+
+    def marker(
+        self,
+        position=None,
+        label_cb=None,
+        constraint_cb=None,
+        movable=True,
+        readonly=False,
+        markerstyle=None,
+        markerspacing=None,
+        color=None,
+        linestyle=None,
+        linewidth=None,
+        marker=None,
+        markersize=None,
+        markerfacecolor=None,
+        markeredgecolor=None,
+    ):
         """
         Make a marker `plot item`
         (:py:class:`guiqwt.shapes.Marker` object)
@@ -993,15 +1299,30 @@ class PlotItemBuilder(object):
             * markerfacecolor: marker face color name
             * markeredgecolor: marker edge color name
         """
-        param = MarkerParam(_("Marker"), icon='marker.png')
+        param = MarkerParam(_("Marker"), icon="marker.png")
         param.read_config(CONF, "plot", "marker/cursor")
-        if color or linestyle or linewidth or marker or markersize or \
-           markerfacecolor or markeredgecolor:
+        if (
+            color
+            or linestyle
+            or linewidth
+            or marker
+            or markersize
+            or markerfacecolor
+            or markeredgecolor
+        ):
             param.line = param.sel_line
             param.symbol = param.sel_symbol
             param.text = param.sel_text
-            self.__set_baseparam(param, color, linestyle, linewidth, marker,
-                                 markersize, markerfacecolor, markeredgecolor)
+            self.__set_baseparam(
+                param,
+                color,
+                linestyle,
+                linewidth,
+                marker,
+                markersize,
+                markerfacecolor,
+                markeredgecolor,
+            )
             param.sel_line = param.line
             param.sel_symbol = param.symbol
             param.sel_text = param.text
@@ -1011,8 +1332,9 @@ class PlotItemBuilder(object):
             param.spacing = markerspacing
         if not movable:
             param.symbol.marker = param.sel_symbol.marker = "NoSymbol"
-        marker = Marker(label_cb=label_cb, constraint_cb=constraint_cb,
-                        markerparam=param)
+        marker = Marker(
+            label_cb=label_cb, constraint_cb=constraint_cb, markerparam=param
+        )
         if position is not None:
             x, y = position
             marker.set_pos(x, y)
@@ -1021,7 +1343,7 @@ class PlotItemBuilder(object):
             marker.set_movable(False)
             marker.set_resizable(False)
         return marker
-        
+
     def __shape(self, shapeclass, x0, y0, x1, y1, title=None):
         shape = shapeclass(x0, y0, x1, y1)
         shape.set_style("plot", "shape/drag")
@@ -1052,7 +1374,7 @@ class PlotItemBuilder(object):
         if title is not None:
             shape.setTitle(title)
         return shape
-        
+
     def circle(self, x0, y0, x1, y1, title=None):
         """
         Make a circle shape `plot item` 
@@ -1072,7 +1394,7 @@ class PlotItemBuilder(object):
             * title: label name (optional)
         """
         return self.__shape(SegmentShape, x0, y0, x1, y1, title)
-        
+
     def __get_annotationparam(self, title, subtitle):
         param = AnnotationParam(_("Annotation"), icon="annotation.png")
         if title is not None:
@@ -1080,13 +1402,13 @@ class PlotItemBuilder(object):
         if subtitle is not None:
             param.subtitle = subtitle
         return param
-        
+
     def __annotated_shape(self, shapeclass, x0, y0, x1, y1, title, subtitle):
         param = self.__get_annotationparam(title, subtitle)
         shape = shapeclass(x0, y0, x1, y1, param)
         shape.set_style("plot", "shape/drag")
         return shape
-        
+
     def annotated_rectangle(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
         Make an annotated rectangle `plot item` 
@@ -1095,11 +1417,11 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: rectangle coordinates
             * title, subtitle: strings
         """
-        return self.__annotated_shape(AnnotatedRectangle,
-                                      x0, y0, x1, y1, title, subtitle)
-        
-    def annotated_ellipse(self, x0, y0, x1, y1, ratio,
-                          title=None, subtitle=None):
+        return self.__annotated_shape(
+            AnnotatedRectangle, x0, y0, x1, y1, title, subtitle
+        )
+
+    def annotated_ellipse(self, x0, y0, x1, y1, ratio, title=None, subtitle=None):
         """
         Make an annotated ellipse `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedEllipse` object)
@@ -1112,9 +1434,8 @@ class PlotItemBuilder(object):
         shape = AnnotatedEllipse(x0, y0, x1, y1, ratio, param)
         shape.set_style("plot", "shape/drag")
         return shape
-                                      
-    def annotated_circle(self, x0, y0, x1, y1, ratio,
-                         title=None, subtitle=None):
+
+    def annotated_circle(self, x0, y0, x1, y1, ratio, title=None, subtitle=None):
         """
         Make an annotated circle `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedCircle` object)
@@ -1122,8 +1443,8 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: circle diameter coordinates
             * title, subtitle: strings
         """
-        return self.annotated_ellipse(x0, y0, x1, y1, 1., title, subtitle)
-        
+        return self.annotated_ellipse(x0, y0, x1, y1, 1.0, title, subtitle)
+
     def annotated_segment(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
         Make an annotated segment `plot item`
@@ -1132,8 +1453,7 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: segment coordinates
             * title, subtitle: strings
         """
-        return self.__annotated_shape(AnnotatedSegment,
-                                      x0, y0, x1, y1, title, subtitle)
+        return self.__annotated_shape(AnnotatedSegment, x0, y0, x1, y1, title, subtitle)
 
     def info_label(self, anchor, comps, title=None):
         """
@@ -1141,7 +1461,7 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.label.DataInfoLabel` object)
         """
         basename = _("Computation")
-        param = LabelParam(basename, icon='label.png')
+        param = LabelParam(basename, icon="label.png")
         param.read_config(CONF, "plot", "info_label")
         if title is not None:
             param.label = title
@@ -1155,9 +1475,8 @@ class PlotItemBuilder(object):
         c = ANCHOR_OFFSETS[anchor]
         param.xc, param.yc = c
         return DataInfoLabel(param, comps)
-    
-    def range_info_label(self, range, anchor, label,
-                         function=None, title=None):
+
+    def range_info_label(self, range, anchor, label, function=None, title=None):
         """
         Make an info label `plot item` showing an XRangeSelection object infos
         (:py:class:`guiqwt.label.DataInfoLabel` object)
@@ -1184,8 +1503,7 @@ class PlotItemBuilder(object):
         """
         if title is None:
             title = curve.curveparam.label
-        return self.computations(range, anchor, [ (curve, label, function) ],
-                                 title=title)
+        return self.computations(range, anchor, [(curve, label, function)], title=title)
 
     def computations(self, range, anchor, specs, title=None):
         """
@@ -1212,8 +1530,9 @@ class PlotItemBuilder(object):
         (:py:class:`guiqwt.label.RangeComputation2d` object)
         (see example: :py:mod:`guiqwt.tests.computations`)
         """
-        return self.computations2d(rect, anchor, [ (image, label, function) ],
-                                   title=title)
+        return self.computations2d(
+            rect, anchor, [(image, label, function)], title=title
+        )
 
     def computations2d(self, rect, anchor, specs, title=None):
         """
@@ -1233,5 +1552,6 @@ class PlotItemBuilder(object):
         if title is None and same_image:
             title = image.imageparam.label
         return self.info_label(anchor, comps, title=title)
+
 
 make = PlotItemBuilder()

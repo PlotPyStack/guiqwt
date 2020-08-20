@@ -46,11 +46,11 @@ Reference
    :inherited-members:
 """
 
-from guidata.qt.QtGui import QPen, QColor, QTextDocument
-from guidata.qt.QtCore import QRectF, QPointF
+from qtpy.QtGui import QPen, QColor, QTextDocument
+from qtpy.QtCore import QRectF, QPointF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from guidata.py3compat import to_text_string
+from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem
@@ -61,16 +61,16 @@ from guiqwt.styles import LabelParam
 
 
 ANCHORS = {
-           "TL": lambda r: (r.left(), r.top()),
-           "TR": lambda r: (r.right(), r.top()),
-           "BL": lambda r: (r.left(), r.bottom()),
-           "BR": lambda r: (r.right(), r.bottom()),
-           "L": lambda r: (r.left(), (r.top()+r.bottom())/2.),
-           "R": lambda r: (r.right(), (r.top()+r.bottom())/2.),
-           "T": lambda r: ((r.left()+r.right())/2.0, r.top()),
-           "B": lambda r: ((r.left()+r.right())/2.0, r.bottom()),
-           "C": lambda r: ((r.left()+r.right())/2.0, (r.top()+r.bottom())/2.),
-           }
+    "TL": lambda r: (r.left(), r.top()),
+    "TR": lambda r: (r.right(), r.top()),
+    "BL": lambda r: (r.left(), r.bottom()),
+    "BR": lambda r: (r.right(), r.bottom()),
+    "L": lambda r: (r.left(), (r.top() + r.bottom()) / 2.0),
+    "R": lambda r: (r.right(), (r.top() + r.bottom()) / 2.0),
+    "T": lambda r: ((r.left() + r.right()) / 2.0, r.top()),
+    "B": lambda r: ((r.left() + r.right()) / 2.0, r.bottom()),
+    "C": lambda r: ((r.left() + r.right()) / 2.0, (r.top() + r.bottom()) / 2.0),
+}
 
 
 class AbstractLabelItem(QwtPlotItem):
@@ -80,9 +80,10 @@ class AbstractLabelItem(QwtPlotItem):
     G can also be an anchor string as in ANCHORS in which case
     the label will keep a fixed position wrt the canvas rect
     """
+
     _readonly = False
     _private = False
-    
+
     def __init__(self, labelparam=None):
         super(AbstractLabelItem, self).__init__()
         self.selected = False
@@ -92,7 +93,7 @@ class AbstractLabelItem(QwtPlotItem):
         self.border_pen = None
         self.bg_brush = None
         if labelparam is None:
-            self.labelparam = LabelParam(_("Label"), icon='label.png')
+            self.labelparam = LabelParam(_("Label"), icon="label.png")
         else:
             self.labelparam = labelparam
             self.labelparam.update_label(self)
@@ -103,24 +104,24 @@ class AbstractLabelItem(QwtPlotItem):
 
     def __reduce__(self):
         return (self.__class__, (self.labelparam,))
-    
+
     def serialize(self, writer):
         """Serialize object to HDF5 writer"""
         self.labelparam.update_param(self)
-        writer.write(self.labelparam, group_name='labelparam')
-    
+        writer.write(self.labelparam, group_name="labelparam")
+
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
-        self.labelparam = LabelParam(_("Label"), icon='label.png')
-        reader.read('labelparam', instance=self.labelparam)
+        self.labelparam = LabelParam(_("Label"), icon="label.png")
+        reader.read("labelparam", instance=self.labelparam)
         self.labelparam.update_label(self)
-        
+
     def get_text_rect(self):
-        return QRectF(0.0, 0.0, 10., 10.)
+        return QRectF(0.0, 0.0, 10.0, 10.0)
 
     def types(self):
-        return (IShapeItemType, )
-    
+        return (IShapeItemType,)
+
     def set_text_style(self, font=None, color=None):
         raise NotImplementedError
 
@@ -146,41 +147,44 @@ class AbstractLabelItem(QwtPlotItem):
     def set_selectable(self, state):
         """Set item selectable state"""
         self._can_select = state
-        
+
     def set_resizable(self, state):
         """Set item resizable state
         (or any action triggered when moving an handle, e.g. rotation)"""
         self._can_resize = state
-        
+
     def set_movable(self, state):
         """Set item movable state"""
         self._can_move = state
-        
+
     def set_rotatable(self, state):
         """Set item rotatable state"""
         self._can_rotate = state
 
     def can_select(self):
         return True
+
     def can_resize(self):
         return False
+
     def can_move(self):
         return True
+
     def can_rotate(self):
-        return False #TODO: Implement labels rotation?
+        return False  # TODO: Implement labels rotation?
 
     def set_readonly(self, state):
         """Set object readonly state"""
         self._readonly = state
-        
+
     def is_readonly(self):
         """Return object readonly state"""
         return self._readonly
-        
+
     def set_private(self, state):
         """Set object as private"""
         self._private = state
-        
+
     def is_private(self):
         """Return True if object is private"""
         return self._private
@@ -197,7 +201,7 @@ class AbstractLabelItem(QwtPlotItem):
             return
         self.selected = True
         w = self.border_pen.width()
-        self.border_pen.setWidth(w+1)
+        self.border_pen.setWidth(w + 1)
         self.invalidate_plot()
 
     def unselect(self):
@@ -216,12 +220,12 @@ class AbstractLabelItem(QwtPlotItem):
         yMap = plot.canvasMap(self.yAxis())
         x, y = self.get_top_left(xMap, yMap, canvasRect)
         rct = QRectF(x, y, rect.width(), rect.height())
-        inside = rct.contains( pos.x(), pos.y())
+        inside = rct.contains(pos.x(), pos.y())
         if inside:
-            return self.click_inside(pos.x()-x, pos.y()-y)
+            return self.click_inside(pos.x() - x, pos.y() - y)
         else:
             return 1000.0, None, False, None
-    
+
     def click_inside(self, locx, locy):
         return 2.0, 1, True, None
 
@@ -231,28 +235,27 @@ class AbstractLabelItem(QwtPlotItem):
     def get_item_parameters(self, itemparams):
         self.update_item_parameters()
         itemparams.add("LabelParam", self, self.labelparam)
-    
+
     def set_item_parameters(self, itemparams):
-        update_dataset(self.labelparam, itemparams.get("LabelParam"),
-                       visible_only=True)
+        update_dataset(self.labelparam, itemparams.get("LabelParam"), visible_only=True)
         self.labelparam.update_label(self)
         if self.selected:
             self.select()
-    
+
     def move_local_point_to(self, handle, pos, ctrl=None):
         """Move a handle as returned by hit_test to the new position pos
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         if handle != -1:
             return
-    
+
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
         in canvas coordinates"""
         if self.G in ANCHORS or not self.labelparam.move_anchor:
             # Move canvas offset
             lx, ly = self.C
-            lx += new_pos.x()-old_pos.x()
-            ly += new_pos.y()-old_pos.y()
+            lx += new_pos.x() - old_pos.x()
+            ly += new_pos.y() - old_pos.y()
             self.C = lx, ly
             self.labelparam.xc, self.labelparam.yc = lx, ly
         else:
@@ -263,14 +266,14 @@ class AbstractLabelItem(QwtPlotItem):
             lx0, ly0 = self.G
             cx = plot.transform(self.xAxis(), lx0)
             cy = plot.transform(self.yAxis(), ly0)
-            cx += new_pos.x()-old_pos.x()
-            cy += new_pos.y()-old_pos.y()
+            cx += new_pos.x() - old_pos.x()
+            cy += new_pos.y() - old_pos.y()
             lx1 = plot.invTransform(self.xAxis(), cx)
             ly1 = plot.invTransform(self.yAxis(), cy)
             self.G = lx1, ly1
             self.labelparam.xg, self.labelparam.yg = lx1, ly1
             plot.SIG_ITEM_MOVED.emit(self, lx0, ly0, lx1, ly1)
-        
+
     def move_with_selection(self, delta_x, delta_y):
         """
         Translate the shape together with other selected items
@@ -279,7 +282,7 @@ class AbstractLabelItem(QwtPlotItem):
         if self.G in ANCHORS or not self.labelparam.move_anchor:
             return
         lx0, ly0 = self.G
-        lx1, ly1 = lx0+delta_x, ly0+delta_y
+        lx1, ly1 = lx0 + delta_x, ly0 + delta_y
         self.G = lx1, ly1
         self.labelparam.xg, self.labelparam.yg = lx1, ly1
 
@@ -289,28 +292,28 @@ class AbstractLabelItem(QwtPlotItem):
         if self.border_pen.width() > 0:
             painter.setPen(self.border_pen)
             painter.drawRect(x, y, w, h)
-        
+
 
 class LabelItem(AbstractLabelItem):
     __implements__ = (IBasePlotItem, ISerializableType)
 
     def __init__(self, text=None, labelparam=None):
-        self.text_string = '' if text is None else text
+        self.text_string = "" if text is None else text
         self.text = QTextDocument()
         super(LabelItem, self).__init__(labelparam)
-    
+
     def __reduce__(self):
         return (self.__class__, (self.text_string, self.labelparam))
-    
+
     def serialize(self, writer):
         """Serialize object to HDF5 writer"""
         super(LabelItem, self).serialize(writer)
-        writer.write(self.text_string, group_name='text')
-    
+        writer.write(self.text_string, group_name="text")
+
     def deserialize(self, reader):
         """Deserialize object from HDF5 reader"""
         super(LabelItem, self).deserialize(reader)
-        self.set_text(reader.read('text', func=reader.read_unicode))
+        self.set_text(reader.read("text", func=reader.read_unicode))
 
     def types(self):
         return (IShapeItemType, ISerializableType)
@@ -318,20 +321,20 @@ class LabelItem(AbstractLabelItem):
     def set_pos(self, x, y):
         self.G = x, y
         self.labelparam.xg, self.labelparam.yg = x, y
-        
+
     def get_plain_text(self):
         return to_text_string(self.text.toPlainText())
-        
+
     def set_text(self, text=None):
         if text is not None:
             self.text_string = text
         self.text.setHtml("<div>%s</div>" % self.text_string)
-        
+
     def set_text_style(self, font=None, color=None):
         if font is not None:
             self.text.setDefaultFont(font)
         if color is not None:
-            self.text.setDefaultStyleSheet('div { color: %s; }' % color)
+            self.text.setDefaultStyleSheet("div { color: %s; }" % color)
         self.set_text()
 
     def get_text_rect(self):
@@ -354,12 +357,14 @@ class LabelItem(AbstractLabelItem):
         painter.translate(x, y)
         self.text.drawContents(painter)
 
+
 assert_interfaces_valid(LabelItem)
 
 
 LEGEND_WIDTH = 30  # Length of the sample line
 LEGEND_SPACEH = 5  # Spacing between border, sample, text, border
 LEGEND_SPACEV = 3  # Vertical space between items
+
 
 class LegendBoxItem(AbstractLabelItem):
     __implements__ = (IBasePlotItem, ISerializableType)
@@ -384,14 +389,14 @@ class LegendBoxItem(AbstractLabelItem):
                 continue
             text = QTextDocument()
             text.setDefaultFont(self.font)
-            text.setDefaultStyleSheet('div { color: %s; }' % self.color)
+            text.setDefaultStyleSheet("div { color: %s; }" % self.color)
             text.setHtml("<div>%s</div>" % item.curveparam.label)
             text_items.append((text, item.pen(), item.brush(), item.symbol()))
         return text_items
 
     def include_item(self, item):
         return item.isVisible()
-    
+
     def get_legend_size(self, items):
         width = 0
         height = 0
@@ -402,8 +407,8 @@ class LegendBoxItem(AbstractLabelItem):
             if sz.height() > height:
                 height = sz.height()
 
-        TW = LEGEND_SPACEH*3+LEGEND_WIDTH+width
-        TH = len(items) * (height+LEGEND_SPACEV) + LEGEND_SPACEV
+        TW = LEGEND_SPACEH * 3 + LEGEND_WIDTH + width
+        TH = len(items) * (height + LEGEND_SPACEV) + LEGEND_SPACEV
         self.sizes = TW, TH, width, height
         return self.sizes
 
@@ -425,31 +430,35 @@ class LegendBoxItem(AbstractLabelItem):
         x, y = self.get_top_left(xMap, yMap, canvasRect)
         self.draw_frame(painter, x, y, TW, TH)
 
-        y0 = y+LEGEND_SPACEV
-        x0 = x+LEGEND_SPACEH
+        y0 = y + LEGEND_SPACEV
+        x0 = x + LEGEND_SPACEH
         for text, ipen, ibrush, isymbol in items:
-            isymbol.drawSymbols(painter,
-                                [QPointF(x0+LEGEND_WIDTH/2, y0+height/2)])
+            isymbol.drawSymbols(
+                painter, [QPointF(x0 + LEGEND_WIDTH / 2, y0 + height / 2)]
+            )
             painter.save()
             painter.setPen(ipen)
             painter.setBrush(ibrush)
-            painter.drawLine( x0, y0+height/2, x0+LEGEND_WIDTH, y0+height/2)
-            x1 = x0+LEGEND_SPACEH+LEGEND_WIDTH
+            painter.drawLine(x0, y0 + height / 2, x0 + LEGEND_WIDTH, y0 + height / 2)
+            x1 = x0 + LEGEND_SPACEH + LEGEND_WIDTH
             painter.translate(x1, y0)
             text.drawContents(painter)
             painter.restore()
-            y0 += height+LEGEND_SPACEV
+            y0 += height + LEGEND_SPACEV
 
     def click_inside(self, lx, ly):
         # hit_test already called get_text_rect for us...
         _TW, _TH, _width, height = self.sizes
-        line = (ly - LEGEND_SPACEV) / (height+LEGEND_SPACEV)
+        line = (ly - LEGEND_SPACEV) / (height + LEGEND_SPACEV)
         line = int(line)
-        if LEGEND_SPACEH <= lx <= (LEGEND_WIDTH+LEGEND_SPACEH):
+        if LEGEND_SPACEH <= lx <= (LEGEND_WIDTH + LEGEND_SPACEH):
             # We hit a legend line, select the corresponding curve
             # and do as if we weren't hit...
-            items = [item for item in self.plot().get_items()
-                     if self.include_item(item) and isinstance(item, CurveItem)]
+            items = [
+                item
+                for item in self.plot().get_items()
+                if self.include_item(item) and isinstance(item, CurveItem)
+            ]
             if line < len(items):
                 return 1000.0, None, False, items[line]
         return 2.0, 1, True, None
@@ -460,15 +469,18 @@ class LegendBoxItem(AbstractLabelItem):
     def get_item_parameters(self, itemparams):
         self.update_item_parameters()
         itemparams.add("LegendParam", self, self.labelparam)
-    
+
     def set_item_parameters(self, itemparams):
-        update_dataset(self.labelparam, itemparams.get("LegendParam"),
-                       visible_only=True)
+        update_dataset(
+            self.labelparam, itemparams.get("LegendParam"), visible_only=True
+        )
         self.labelparam.update_label(self)
         if self.selected:
             self.select()
 
+
 assert_interfaces_valid(LegendBoxItem)
+
 
 class SelectedLegendBoxItem(LegendBoxItem):
     def __init__(self, dataset=None, itemlist=None):
@@ -481,7 +493,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
 
     def include_item(self, item):
         return LegendBoxItem.include_item(self, item) and item in self.itemlist
-        
+
     def add_item(self, item):
         self.itemlist.append(item)
 
@@ -489,6 +501,7 @@ class SelectedLegendBoxItem(LegendBoxItem):
 class ObjectInfo(object):
     def get_text(self):
         return ""
+
 
 class RangeInfo(ObjectInfo):
     """ObjectInfo handling XRangeSelection shape informations: x, dx
@@ -508,6 +521,7 @@ class RangeInfo(ObjectInfo):
               lambda x, dx: (x, dx))
     disp = make.info_label('BL', comp, title="titre")
     """
+
     def __init__(self, label, xrangeselection, function=None):
         self.label = to_text_string(label)
         self.range = xrangeselection
@@ -517,9 +531,10 @@ class RangeInfo(ObjectInfo):
 
     def get_text(self):
         x0, x1 = self.range.get_range()
-        x = .5*(x0+x1)
-        dx = .5*(x1-x0)
+        x = 0.5 * (x0 + x1)
+        dx = 0.5 * (x1 - x0)
         return self.label % self.func(x, dx)
+
 
 class RangeComputation(ObjectInfo):
     """ObjectInfo showing curve computations relative to a XRangeSelection 
@@ -530,6 +545,7 @@ class RangeComputation(ObjectInfo):
     xrangeselection: XRangeSelection object
     function: input arguments are x, y arrays (extraction of arrays 
     corresponding to the xrangeselection X-axis range)"""
+
     def __init__(self, label, curve, xrangeselection, function=None):
         self.label = to_text_string(label)
         self.curve = curve
@@ -537,7 +553,7 @@ class RangeComputation(ObjectInfo):
         if function is None:
             function = lambda x, dx: (x, dx)
         self.func = function
-        
+
     def set_curve(self, curve):
         self.curve = curve
 
@@ -555,10 +571,12 @@ class RangeComputation(ObjectInfo):
                 vectors.append(None)
             elif i0 == i1:
                 import numpy as np
+
                 vectors.append(np.array([np.NaN]))
             else:
                 vectors.append(vector[i0:i1])
         return self.label % self.func(*vectors)
+
 
 class RangeComputation2d(ObjectInfo):
     def __init__(self, label, image, rect, function):
@@ -582,7 +600,7 @@ class DataInfoLabel(LabelItem):
         if isinstance(infos, ObjectInfo):
             infos = [infos]
         self.infos = infos
-    
+
     def __reduce__(self):
         return (self.__class__, (self.labelparam, self.infos))
 
@@ -597,4 +615,5 @@ class DataInfoLabel(LabelItem):
             text = []
         for info in self.infos:
             text.append(info.get_text())
-        self.set_text( "<br/>".join(text) )
+        self.set_text("<br/>".join(text))
+

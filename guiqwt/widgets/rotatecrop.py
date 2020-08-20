@@ -26,7 +26,7 @@ Reference
    :inherited-members:
 """
 
-from guidata.qt.QtGui import QCheckBox
+from qtpy.QtWidgets import QCheckBox
 
 # Local imports
 from guiqwt.config import _
@@ -38,11 +38,12 @@ from guiqwt.widgets import base
 class RotateCropMixin(base.BaseTransformMixin):
     """Rotate & Crop mixin class, to be mixed with a class providing the 
     get_plot method, like ImageDialog or RotateCropWidget (see below)"""
+
     def __init__(self):
         base.BaseTransformMixin.__init__(self)
         self.crop_rect = None
 
-    #------BaseTransformMixin API----------------------------------------------
+    # ------BaseTransformMixin API----------------------------------------------
     def add_buttons_to_layout(self, layout):
         """Add tool buttons to layout"""
         # Show crop rectangle checkbox
@@ -52,7 +53,7 @@ class RotateCropMixin(base.BaseTransformMixin):
         layout.addWidget(show_crop)
         layout.addSpacing(15)
         base.BaseTransformMixin.add_buttons_to_layout(self, layout)
-    
+
     def set_item(self, item):
         """Set associated item -- must be a TrImageItem object"""
         base.BaseTransformMixin.set_item(self, item)
@@ -65,12 +66,12 @@ class RotateCropMixin(base.BaseTransformMixin):
         x0, y0, x1, y1 = self.item.get_crop_coordinates()
         crect.set_rect(x0, y0, x1, y1)
         plot.replot()
-        
+
     def reset_transformation(self):
         """Reset transformation"""
         x0, y0, x1, y1 = self.item.border_rect.get_rect()
         self.crop_rect.set_rect(x0, y0, x1, y1)
-    
+
     def apply_transformation(self):
         """Apply transformation, e.g. crop or rotate"""
         # Let's crop!
@@ -78,20 +79,20 @@ class RotateCropMixin(base.BaseTransformMixin):
         xmin, ymin = i_points.min(axis=0)
         xmax, ymax = i_points.max(axis=0)
         xc0, yc0, xc1, yc1 = self.crop_rect.shape.get_rect()
-        left = max([0, xc0-xmin])
-        right = max([0, xmax-xc1])
-        top = max([0, yc0-ymin])
-        bottom = max([0, ymax-yc1])
+        left = max([0, xc0 - xmin])
+        right = max([0, xmax - xc1])
+        top = max([0, yc0 - ymin])
+        bottom = max([0, ymax - yc1])
         self.item.set_crop(left, top, right, bottom)
-#        print "set_crop:", left, top, right, bottom
+        #        print "set_crop:", left, top, right, bottom
         self.item.compute_bounds()
         self.get_plot().replot()
-    
+
     def compute_transformation(self):
         """Compute transformation, return compute output array"""
         return get_image_in_shape(self.crop_rect, apply_interpolation=False)
-    
-    #------Private API---------------------------------------------------------
+
+    # ------Private API---------------------------------------------------------
     def show_crop_rect(self, state):
         """Show/hide cropping rectangle shape"""
         self.crop_rect.setVisible(state)
@@ -103,16 +104,19 @@ class RotateCropDialog(base.BaseTransformDialog, RotateCropMixin):
     """Rotate & Crop Dialog
     
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
+
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
         RotateCropMixin.__init__(self)
-        base.BaseTransformDialog.__init__(self, parent, wintitle=wintitle,
-                                          options=options, resize_to=resize_to)
+        base.BaseTransformDialog.__init__(
+            self, parent, wintitle=wintitle, options=options, resize_to=resize_to
+        )
 
 
 class RotateCropWidget(base.BaseTransformWidget, RotateCropMixin):
     """Rotate & Crop Widget
     
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
+
     def __init__(self, parent, options=None):
         base.BaseTransformWidget.__init__(self, parent, options=options)
         RotateCropMixin.__init__(self)
@@ -122,4 +126,5 @@ class MultipleRotateCropWidget(base.BaseMultipleTransformWidget):
     """Multiple Rotate & Crop Widget
     
     Rotate and crop several :py:class:`guiqwt.image.TrImageItem` plot items"""
+
     TRANSFORM_WIDGET_CLASS = RotateCropWidget

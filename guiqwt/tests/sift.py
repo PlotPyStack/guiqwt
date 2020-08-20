@@ -14,7 +14,7 @@ from __future__ import unicode_literals, print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 
-from guidata.qt.QtGui import (
+from qtpy.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QSplitter,
@@ -25,12 +25,11 @@ from guidata.qt.QtGui import (
     QTabWidget,
     QMenu,
     QApplication,
-    QCursor,
-    QFont,
 )
-from guidata.qt.QtCore import Qt, QT_VERSION_STR, Signal
-from guidata.qt import PYQT5
-from guidata.qt.compat import getopenfilenames, getsavefilename
+from qtpy.QtGui import QFont, QCursor
+from qtpy.QtCore import Qt, __version__, Signal
+from qtpy import PYQT5
+from qtpy.compat import getopenfilenames, getsavefilename
 
 import sys
 import platform
@@ -53,7 +52,7 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string
+from qtpy.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget

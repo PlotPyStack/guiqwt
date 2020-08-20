@@ -22,12 +22,12 @@ Reference
 .. autofunction:: create_qtdesigner_plugin
 """
 
-from guidata.qt import uic
-from guidata.qt.QtDesigner import QPyDesignerCustomWidgetPlugin
-from guidata.qt.QtGui import QIcon
+from qtpy import uic
+from qtpy.QtDesigner import QPyDesignerCustomWidgetPlugin
+from qtpy.QtGui import QIcon
 
 from guidata.configtools import get_icon
-from guidata.py3compat import io
+from qtpy.py3compat import io
 
 
 def loadui(fname, replace_class="QwtPlot"):
@@ -39,23 +39,34 @@ def loadui(fname, replace_class="QwtPlot"):
     object.
     """
     uifile_text = open(fname).read().replace(replace_class, "QFrame")
-    ui, base_class = uic.loadUiType( io.StringIO(uifile_text) )
+    ui, base_class = uic.loadUiType(io.StringIO(uifile_text))
+
     class Form(base_class, ui):
         def __init__(self, parent=None):
             super(Form, self).__init__(parent)
             self.setupUi(self)
+
     return Form
 
 
 def compileui(fname, replace_class="QwtPlot"):
     uifile_text = open(fname).read().replace("QwtPlot", "QFrame")
-    uic.compileUi(io.StringIO(uifile_text),
-                  open(fname.replace(".ui", "_ui.py"), 'w'),
-                  pyqt3_wrapper=True )
-    
-    
-def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
-                             icon=None, tooltip="", whatsthis=""):
+    uic.compileUi(
+        io.StringIO(uifile_text),
+        open(fname.replace(".ui", "_ui.py"), "w"),
+        pyqt3_wrapper=True,
+    )
+
+
+def create_qtdesigner_plugin(
+    group,
+    module_name,
+    class_name,
+    widget_options={},
+    icon=None,
+    tooltip="",
+    whatsthis="",
+):
     """Return a custom QtDesigner plugin class
     
     Example:
@@ -64,47 +75,50 @@ def create_qtdesigner_plugin(group, module_name, class_name, widget_options={},
                              tooltip = "", whatsthis = ""):
     """
     Widget = getattr(__import__(module_name, fromlist=[class_name]), class_name)
-    
+
     class CustomWidgetPlugin(QPyDesignerCustomWidgetPlugin):
-        def __init__(self, parent = None):
+        def __init__(self, parent=None):
             QPyDesignerCustomWidgetPlugin.__init__(self)
             self.initialized = False
-    
+
         def initialize(self, core):
             if self.initialized:
                 return
             self.initialized = True
-    
+
         def isInitialized(self):
             return self.initialized
-        
+
         def createWidget(self, parent):
             return Widget(parent, **widget_options)
-        
+
         def name(self):
             return class_name
-        
+
         def group(self):
             return group
-        
+
         def icon(self):
             if icon is not None:
                 return get_icon(icon)
             else:
                 return QIcon()
-            
+
         def toolTip(self):
             return tooltip
-        
+
         def whatsThis(self):
             return whatsthis
-        
+
         def isContainer(self):
             return False
-        
+
         def domXml(self):
-            return '<widget class="%s" name="%s" />\n' % (class_name,
-                                                          class_name.lower())
+            return '<widget class="%s" name="%s" />\n' % (
+                class_name,
+                class_name.lower(),
+            )
+
         def includeFile(self):
             return module_name
 

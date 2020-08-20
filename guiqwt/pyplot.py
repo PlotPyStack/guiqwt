@@ -103,15 +103,21 @@ Reference
 from __future__ import print_function
 
 import sys
-from guidata.qt.QtGui import (QMainWindow, QPrinter, QPainter, QFrame,
-                              QVBoxLayout, QGridLayout, QToolBar, QPixmap,
-                              QImageWriter)
-from guidata.qt.QtCore import QRect, Qt, QBuffer, QIODevice
-from guidata.qt import PYQT5
+from qtpy.QtWidgets import (
+    QMainWindow,
+    QFrame,
+    QVBoxLayout,
+    QGridLayout,
+    QToolBar,
+)
+from qtpy.QtGui import QPixmap, QPainter, QImageWriter
+from qtpy.QtPrintSupport import QPrinter
+from qtpy.QtCore import QRect, Qt, QBuffer, QIODevice
+from qtpy import PYQT5
 
 import guidata
 from guidata.configtools import get_icon
-from guidata.py3compat import is_text_string, to_text_string
+from qtpy.py3compat import is_text_string, to_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -138,7 +144,7 @@ class Window(QMainWindow):
         self.contrast = ContrastAdjustment(None)
         self.xcsw = XCrossSection(None)
         self.ycsw = YCrossSection(None)
-        
+
         self.manager = PlotManager(self)
         self.toolbar = QToolBar(_("Tools"), self)
         self.manager.add_toolbar(self.toolbar, "default")
@@ -155,7 +161,7 @@ class Window(QMainWindow):
         self.frame = frame
 
         self.setWindowTitle(wintitle)
-        self.setWindowIcon(get_icon('guiqwt.svg'))
+        self.setWindowIcon(get_icon("guiqwt.svg"))
 
     def closeEvent(self, event):
         global _figures, _current_fig, _current_axes
@@ -168,7 +174,7 @@ class Window(QMainWindow):
         self.xcsw.close()
         self.ycsw.close()
         event.accept()
-        
+
     def add_plot(self, i, j, plot):
         self.layout.addWidget(plot, i, j)
         self.manager.add_plot(plot)
@@ -181,20 +187,20 @@ class Window(QMainWindow):
             if item is not None:
                 plot.set_active_item(item)
                 item.unselect()
-            
+
     def add_panels(self, images=False):
         self.manager.add_panel(self.itemlist)
         if images:
             for panel in (self.ycsw, self.xcsw, self.contrast):
                 panel.hide()
                 self.manager.add_panel(panel)
-            
+
     def register_tools(self, images=False):
         if images:
             self.manager.register_all_image_tools()
         else:
             self.manager.register_all_curve_tools()
-    
+
     def display(self):
         self.show()
         self.replot()
@@ -232,7 +238,7 @@ class Figure(object):
         if not self.win:
             self.build_window()
         self.win.display()
-        
+
     def save(self, fname, format, draft):
         if is_text_string(fname):
             if format == "pdf":
@@ -245,7 +251,7 @@ class Figure(object):
                 printer.setOutputFormat(QPrinter.PdfFormat)
                 printer.setOrientation(QPrinter.Landscape)
                 printer.setOutputFileName(fname)
-                printer.setCreator('guiqwt.pyplot')
+                printer.setCreator("guiqwt.pyplot")
                 self.print_(printer)
             else:
                 if self.win is None:
@@ -258,7 +264,7 @@ class Figure(object):
         else:
             # Buffer
             fd = fname
-            assert hasattr(fd, 'write'), "object is not file-like as expected"
+            assert hasattr(fd, "write"), "object is not file-like as expected"
             if self.win is None:
                 self.show()
             pixmap = QPixmap.grabWidget(self.win.centralWidget())
@@ -268,26 +274,27 @@ class Figure(object):
             fd.write(buff.data())
             buff.close()
             fd.seek(0)
-        
+
     def print_(self, device):
         if not self.win:
             self.build_window()
         W = device.width()
         H = device.height()
         from numpy import array
+
         coords = array(list(self.axes.keys()))
         imin = coords[:, 0].min()
         imax = coords[:, 0].max()
         jmin = coords[:, 1].min()
         jmax = coords[:, 1].max()
-        w = W/(jmax-jmin+1)
-        h = H/(imax-imin+1)
+        w = W / (jmax - jmin + 1)
+        h = H / (imax - imin + 1)
         paint = QPainter(device)
         for (i, j), ax in list(self.axes.items()):
-            oy = (i-imin)*h
-            ox = (j-jmin)*w
+            oy = (i - imin) * h
+            ox = (j - jmin) * w
             ax.widget.print_(paint, QRect(ox, oy, w, h))
-        
+
 
 def do_mainloop(mainloop):
     global _current_fig
@@ -296,7 +303,7 @@ def do_mainloop(mainloop):
     elif mainloop:
         app = guidata.qapplication()
         app.exec_()
-        
+
 
 class Axes(object):
     def __init__(self):
@@ -307,13 +314,13 @@ class Axes(object):
         self.grid = False
         self.xlabel = ("", "")
         self.ylabel = ("", "")
-        self.xcolor = ("black", "black") # axis label colors
-        self.ycolor = ("black", "black") # axis label colors
+        self.xcolor = ("black", "black")  # axis label colors
+        self.ycolor = ("black", "black")  # axis label colors
         self.zlabel = None
         self.yreverse = False
         self.colormap = "jet"
-        self.xscale = 'lin'
-        self.yscale = 'lin'
+        self.xscale = "lin"
+        self.yscale = "lin"
         self.xlimits = None
         self.ylimits = None
         self.widget = None
@@ -324,11 +331,11 @@ class Axes(object):
 
     def set_grid(self, grid):
         self.grid = grid
-        
+
     def set_xlim(self, xmin, xmax):
         self.xlimits = xmin, xmax
         self._update_plotwidget()
-        
+
     def set_ylim(self, ymin, ymax):
         self.ylimits = ymin, ymax
         self._update_plotwidget()
@@ -349,7 +356,7 @@ class Axes(object):
         self.widget = plot
         plot.do_autoscale()
         self._update_plotwidget()
-        
+
     def _update_plotwidget(self):
         p = self.main_widget
         if p is None:
@@ -358,21 +365,26 @@ class Axes(object):
             p.gridparam.maj_xenabled = True
             p.gridparam.maj_yenabled = True
             p.gridparam.update_grid(p)
-        p.set_axis_color('bottom', self.xcolor[0])
-        p.set_axis_color('top', self.xcolor[1])
-        p.set_axis_color('left', self.ycolor[0])
-        p.set_axis_color('right', self.ycolor[1])
+        p.set_axis_color("bottom", self.xcolor[0])
+        p.set_axis_color("top", self.xcolor[1])
+        p.set_axis_color("left", self.ycolor[0])
+        p.set_axis_color("right", self.ycolor[1])
         if self.xlimits is not None:
-            p.set_axis_limits('bottom', *self.xlimits)
+            p.set_axis_limits("bottom", *self.xlimits)
         if self.ylimits is not None:
-            p.set_axis_limits('left', *self.ylimits)
+            p.set_axis_limits("left", *self.ylimits)
 
     def setup_image(self, i, j, win):
-        p = ImagePlot(win, xlabel=self.xlabel, ylabel=self.ylabel,
-                      zlabel=self.zlabel, yreverse=self.yreverse)
+        p = ImagePlot(
+            win,
+            xlabel=self.xlabel,
+            ylabel=self.ylabel,
+            zlabel=self.zlabel,
+            yreverse=self.yreverse,
+        )
         self.main_widget = p
         win.add_plot(i, j, p)
-        for item in self.images+self.plots:
+        for item in self.images + self.plots:
             if item in self.images:
                 item.set_color_map(self.colormap)
             p.add_item(item)
@@ -393,16 +405,17 @@ class Axes(object):
         if self.legend_position is not None:
             p.add_item(make.legend(self.legend_position))
         return p
-            
+
 
 def _make_figure_title(N=None):
     global _figures
     if N is None:
-        N = len(_figures)+1
+        N = len(_figures) + 1
     if is_text_string(N):
         return N
     else:
         return "Figure %d" % N
+
 
 def figure(N=None):
     """Create a new figure"""
@@ -417,6 +430,7 @@ def figure(N=None):
     _current_axes = None
     return f
 
+
 def gcf():
     """Get current figure"""
     global _current_fig
@@ -425,6 +439,7 @@ def gcf():
     else:
         return figure()
 
+
 def gca():
     """Get current axes"""
     global _current_axes
@@ -432,7 +447,8 @@ def gca():
         axes = gcf().get_axes(1, 1)
         _current_axes = axes
     return _current_axes
- 
+
+
 def show(mainloop=True):
     """
     Show all figures and enter Qt event loop    
@@ -443,6 +459,7 @@ def show(mainloop=True):
         fig.show()
     if not _interactive:
         do_mainloop(mainloop)
+
 
 def _show_if_interactive():
     global _interactive
@@ -466,12 +483,13 @@ def subplot(n, m, k):
         show()
     """
     global _current_axes
-    lig = (k-1)/m
-    col = (k-1)%m
+    lig = (k - 1) / m
+    col = (k - 1) % m
     fig = gcf()
     axe = fig.get_axes(lig, col)
     _current_axes = axe
     return axe
+
 
 def plot(*args, **kwargs):
     """
@@ -494,6 +512,7 @@ def plot(*args, **kwargs):
     _show_if_interactive()
     return curves
 
+
 def plotyy(x1, y1, x2, y2):
     """
     Plot curves with two different y axes
@@ -507,13 +526,14 @@ def plotyy(x1, y1, x2, y2):
         show()
     """
     axe = gca()
-    curve1 = make.mcurve(x1, y1, yaxis='left')
-    curve2 = make.mcurve(x2, y2, yaxis='right')
+    curve1 = make.mcurve(x1, y1, yaxis="left")
+    curve2 = make.mcurve(x2, y2, yaxis="right")
     axe.ycolor = (curve1.curveparam.line.color, curve2.curveparam.line.color)
     axe.add_plot(curve1)
     axe.add_plot(curve2)
     _show_if_interactive()
     return [curve1, curve2]
+
 
 def hist(data, bins=None, logscale=None, title=None, color=None):
     """
@@ -527,11 +547,13 @@ def hist(data, bins=None, logscale=None, title=None, color=None):
         show()
     """
     axe = gca()
-    curve = make.histogram(data, bins=bins, logscale=logscale,
-                           title=title, color=color, yaxis='left')
+    curve = make.histogram(
+        data, bins=bins, logscale=logscale, title=title, color=color, yaxis="left"
+    )
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
+
 
 def semilogx(*args, **kwargs):
     """
@@ -545,12 +567,13 @@ def semilogx(*args, **kwargs):
         show()
     """
     axe = gca()
-    axe.xscale = 'log'
+    axe.xscale = "log"
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
-    
+
+
 def semilogy(*args, **kwargs):
     """
     Plot curves with logarithmic y-axis scale
@@ -563,12 +586,13 @@ def semilogy(*args, **kwargs):
         show()
     """
     axe = gca()
-    axe.yscale = 'log'
+    axe.yscale = "log"
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
-    
+
+
 def loglog(*args, **kwargs):
     """
     Plot curves with logarithmic x-axis and y-axis scales
@@ -581,12 +605,13 @@ def loglog(*args, **kwargs):
         show()
     """
     axe = gca()
-    axe.xscale = 'log'
-    axe.yscale = 'log'
+    axe.xscale = "log"
+    axe.yscale = "log"
     curve = make.mcurve(*args, **kwargs)
     axe.add_plot(curve)
     _show_if_interactive()
     return [curve]
+
 
 def errorbar(*args, **kwargs):
     """
@@ -605,10 +630,13 @@ def errorbar(*args, **kwargs):
     _show_if_interactive()
     return [curve]
 
+
 def imread(fname, to_grayscale=False):
     """Read data from *fname*"""
     from guiqwt import io
+
     return io.imread(fname, to_grayscale=to_grayscale)
+
 
 def imshow(data, interpolation=None, mask=None):
     """
@@ -626,6 +654,7 @@ def imshow(data, interpolation=None, mask=None):
     """
     axe = gca()
     import numpy as np
+
     if isinstance(data, np.ma.MaskedArray) and mask is None:
         mask = data.mask
         data = data.data
@@ -634,15 +663,18 @@ def imshow(data, interpolation=None, mask=None):
     else:
         img = make.maskedimage(data, mask, show_mask=True)
     if interpolation is not None:
-        interp_dict = {'nearest': INTERP_NEAREST,
-                       'linear': INTERP_LINEAR,
-                       'antialiasing': INTERP_AA}
+        interp_dict = {
+            "nearest": INTERP_NEAREST,
+            "linear": INTERP_LINEAR,
+            "antialiasing": INTERP_AA,
+        }
         assert interpolation in interp_dict, "invalid interpolation option"
         img.set_interpolation(interp_dict[interpolation], size=5)
     axe.add_image(img)
     axe.yreverse = True
     _show_if_interactive()
     return [img]
+
 
 def pcolor(*args):
     """
@@ -667,21 +699,25 @@ def pcolor(*args):
     _show_if_interactive()
     return [img]
 
+
 def interactive(state):
     """Toggle interactive mode"""
     global _interactive
     _interactive = state
 
+
 def ion():
     """Turn interactive mode on"""
     interactive(True)
+
 
 def ioff():
     """Turn interactive mode off"""
     interactive(False)
 
-#TODO: The following functions (title, xlabel, ...) should update an already 
-#      shown figure to be compatible with interactive mode -- for now it just 
+
+# TODO: The following functions (title, xlabel, ...) should update an already
+#      shown figure to be compatible with interactive mode -- for now it just
 #      works if these functions are called before showing the figure
 def title(text):
     """Set current figure title"""
@@ -691,11 +727,13 @@ def title(text):
     fig.title = text
     _figures[text] = fig
 
+
 def xlabel(bottom="", top=""):
     """Set current x-axis label"""
     assert is_text_string(bottom) and is_text_string(top)
     axe = gca()
     axe.xlabel = (bottom, top)
+
 
 def ylabel(left="", right=""):
     """Set current y-axis label"""
@@ -703,12 +741,14 @@ def ylabel(left="", right=""):
     axe = gca()
     axe.ylabel = (left, right)
 
+
 def zlabel(label):
     """Set current z-axis label"""
     assert is_text_string(label)
     axe = gca()
     axe.zlabel = label
-    
+
+
 def yreverse(reverse):
     """
     Set y-axis direction of increasing values
@@ -723,27 +763,35 @@ def yreverse(reverse):
     axe = gca()
     axe.yreverse = reverse
 
+
 def grid(act):
     """Toggle grid visibility"""
     axe = gca()
     axe.set_grid(act)
+
 
 def legend(pos="TR"):
     """Add legend to current axes (pos='TR', 'TL', 'BR', ...)"""
     axe = gca()
     axe.add_legend(pos)
 
+
 def colormap(name):
     """Set color map to *name*"""
     axe = gca()
     axe.colormap = name
 
+
 def _add_colormaps(glbs):
     from guiqwt.colormap import get_colormap_list
+
     for cmap_name in get_colormap_list():
         glbs[cmap_name] = lambda name=cmap_name: colormap(name)
         glbs[cmap_name].__doc__ = "Set color map to '%s'" % cmap_name
+
+
 _add_colormaps(globals())
+
 
 def close(N=None, all=False):
     """Close figure"""
@@ -759,6 +807,7 @@ def close(N=None, all=False):
         fig = figure(N)
     fig.close()
 
+
 def savefig(fname, format=None, draft=False):
     """
     Save figure
@@ -767,14 +816,13 @@ def savefig(fname, format=None, draft=False):
     """
     if not is_text_string(fname) and format is None:
         # Buffer/fd
-        format = 'png'
+        format = "png"
     if format is None:
         format = fname.rsplit(".", 1)[-1].lower()
-        fmts = [str(fmt).lower()
-                for fmt in QImageWriter.supportedImageFormats()]
-        assert format in fmts, _("Function 'savefig' currently supports the "
-                                 "following formats:\n%s"
-                                 ) % ','.join(fmts)
+        fmts = [str(fmt).lower() for fmt in QImageWriter.supportedImageFormats()]
+        assert format in fmts, _(
+            "Function 'savefig' currently supports the " "following formats:\n%s"
+        ) % ",".join(fmts)
     else:
         format = format.lower()
     fig = gcf()

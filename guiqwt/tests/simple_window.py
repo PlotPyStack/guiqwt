@@ -9,9 +9,9 @@
 
 SHOW = True  # Show test in GUI-based test launcher
 
-from guidata.qt.QtGui import QMainWindow, QMessageBox, QSplitter, QListWidget
-from guidata.qt.QtCore import QSize, QT_VERSION_STR, Qt
-from guidata.qt.compat import getopenfilename
+from qtpy.QtWidgets import QMainWindow, QMessageBox, QSplitter, QListWidget
+from qtpy.QtCore import QSize, __version__, Qt
+from qtpy.compat import getopenfilename
 
 import sys, platform
 import numpy as np
@@ -22,7 +22,7 @@ from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 from guidata.utils import update_dataset
-from guidata.py3compat import to_text_string
+from qtpy.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import ImageWidget
@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
                 VERSION,
                 _("Developped by"),
                 platform.python_version(),
-                QT_VERSION_STR,
+                __version__,
                 _("on"),
                 platform.system(),
             ),

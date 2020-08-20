@@ -101,37 +101,70 @@ Reference
 
 import weakref
 
-from guidata.qt.QtGui import (QDialogButtonBox, QVBoxLayout, QGridLayout,
-                              QToolBar, QDialog, QHBoxLayout, QMenu,
-                              QActionGroup, QSplitter, QSizePolicy,
-                              QApplication, QWidget, QMainWindow)
-from guidata.qt.QtCore import Qt
-from guidata.qt import PYQT5
+from qtpy.QtWidgets import (
+    QDialogButtonBox,
+    QVBoxLayout,
+    QGridLayout,
+    QToolBar,
+    QDialog,
+    QHBoxLayout,
+    QMenu,
+    QActionGroup,
+    QSplitter,
+    QSizePolicy,
+    QApplication,
+    QWidget,
+    QMainWindow,
+)
+from qtpy.QtCore import Qt
+from qtpy import PYQT5
 
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid
 from guidata.qthelpers import create_action
-from guidata.py3compat import is_text_string
+from qtpy.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _
 from guiqwt.baseplot import BasePlot
 from guiqwt.curve import CurvePlot, PlotItemList
 from guiqwt.image import ImagePlot
-from guiqwt.tools import (SelectTool, RectZoomTool, ColormapTool, HelpTool,
-                          ReverseYAxisTool, BasePlotMenuTool, DeleteItemTool,
-                          ItemListPanelTool, AntiAliasingTool, PrintTool,
-                          DisplayCoordsTool, AxisScaleTool, SaveAsTool,
-                          AspectRatioTool, ContrastPanelTool, XCSPanelTool,
-                          YCSPanelTool, SnapshotTool, DummySeparatorTool,
-                          CrossSectionTool, AverageCrossSectionTool, AboutTool,
-                          ImageStatsTool, ExportItemDataTool, EditItemDataTool,
-                          ItemCenterTool, SignalStatsTool, CopyToClipboardTool)
+from guiqwt.tools import (
+    SelectTool,
+    RectZoomTool,
+    ColormapTool,
+    HelpTool,
+    ReverseYAxisTool,
+    BasePlotMenuTool,
+    DeleteItemTool,
+    ItemListPanelTool,
+    AntiAliasingTool,
+    PrintTool,
+    DisplayCoordsTool,
+    AxisScaleTool,
+    SaveAsTool,
+    AspectRatioTool,
+    ContrastPanelTool,
+    XCSPanelTool,
+    YCSPanelTool,
+    SnapshotTool,
+    DummySeparatorTool,
+    CrossSectionTool,
+    AverageCrossSectionTool,
+    AboutTool,
+    ImageStatsTool,
+    ExportItemDataTool,
+    EditItemDataTool,
+    ItemCenterTool,
+    SignalStatsTool,
+    CopyToClipboardTool,
+)
 from guiqwt.interfaces import IPlotManager
 
 
 class DefaultPlotID(object):
     pass
+
 
 class PlotManager(object):
     """
@@ -140,12 +173,13 @@ class PlotManager(object):
     :py:class:`guiqwt.image.ImagePlot` objects), panels, 
     tools (see :py:mod:`guiqwt.tools`) and toolbars
     """
+
     __implements__ = (IPlotManager,)
 
     def __init__(self, main):
-        self.main = main # The main parent widget
-        self.plots = {} # maps ids to instances of BasePlot
-        self.panels = {} # Qt widgets that need to know about the plots
+        self.main = main  # The main parent widget
+        self.plots = {}  # maps ids to instances of BasePlot
+        self.panels = {}  # Qt widgets that need to know about the plots
         self.tools = []
         self.toolbars = {}
         self.active_tool = None
@@ -153,7 +187,7 @@ class PlotManager(object):
         self.default_plot = None
         self.default_toolbar = None
         self.synchronized_plots = {}
-        self.groups = {} # Action groups for grouping QActions
+        self.groups = {}  # Action groups for grouping QActions
         # Keep track of the registration sequence (plots, panels, tools):
         self._first_tool_flag = True
 
@@ -185,7 +219,7 @@ class PlotManager(object):
         plot.SIG_ITEMS_CHANGED.connect(self.update_tools_status)
         plot.SIG_ACTIVE_ITEM_CHANGED.connect(self.update_tools_status)
         plot.SIG_PLOT_AXIS_CHANGED.connect(self.plot_axis_changed)
-        
+
     def set_default_plot(self, plot):
         """
         Set default plot
@@ -193,7 +227,7 @@ class PlotManager(object):
         The default plot is the plot on which tools and panels will act.
         """
         self.default_plot = plot
-        
+
     def get_default_plot(self):
         """
         Return default plot
@@ -215,7 +249,7 @@ class PlotManager(object):
         assert not self.tools, "tools must be added after panels"
         self.panels[panel.PANEL_ID] = panel
         panel.register_panel(self)
-        
+
     def configure_panels(self):
         """
         Call all the registred panels 'configure_panel' methods to finalize the 
@@ -237,13 +271,13 @@ class PlotManager(object):
         self.toolbars[toolbar_id] = toolbar
         if self.default_toolbar is None:
             self.default_toolbar = toolbar
-            
+
     def set_default_toolbar(self, toolbar):
         """
         Set default toolbar
         """
         self.default_toolbar = toolbar
-        
+
     def get_default_toolbar(self):
         """
         Return default toolbar
@@ -274,13 +308,13 @@ class PlotManager(object):
         if len(self.tools) == 1:
             self.default_tool = tool
         return tool
-        
+
     def get_tool(self, ToolKlass):
         """Return tool instance from its class"""
         for tool in self.tools:
             if isinstance(tool, ToolKlass):
                 return tool
-        
+
     def add_separator_tool(self, toolbar_id=None):
         """
         Register a separator tool to the plot manager: the separator tool is 
@@ -292,7 +326,7 @@ class PlotManager(object):
                     toolbar_id = _id
                     break
         self.add_tool(DummySeparatorTool, toolbar_id)
-        
+
     def set_default_tool(self, tool):
         """
         Set default tool
@@ -380,7 +414,7 @@ class PlotManager(object):
         Panel IDs are listed in module guiqwt.panels
         """
         return self.panels.get(panel_id, None)
-        
+
     def get_itemlist_panel(self):
         """
         Convenience function to get the `item list panel`
@@ -388,8 +422,9 @@ class PlotManager(object):
         Return None if the item list panel has not been added to this manager
         """
         from guiqwt import panels
+
         return self.get_panel(panels.ID_ITEMLIST)
-        
+
     def get_contrast_panel(self):
         """
         Convenience function to get the `contrast adjustment panel`
@@ -398,8 +433,9 @@ class PlotManager(object):
         to this manager
         """
         from guiqwt import panels
+
         return self.get_panel(panels.ID_CONTRAST)
-        
+
     def set_contrast_range(self, zmin, zmax):
         """
         Convenience function to set the `contrast adjustment panel` range
@@ -412,7 +448,7 @@ class PlotManager(object):
             widget.get_contrast_panel().set_range(zmin, zmax)
         """
         self.get_contrast_panel().set_range(zmin, zmax)
-        
+
     def get_xcs_panel(self):
         """
         Convenience function to get the `X-axis cross section panel`
@@ -421,8 +457,9 @@ class PlotManager(object):
         to this manager
         """
         from guiqwt import panels
+
         return self.get_panel(panels.ID_XCS)
-        
+
     def get_ycs_panel(self):
         """
         Convenience function to get the `Y-axis cross section panel`
@@ -431,8 +468,9 @@ class PlotManager(object):
         to this manager
         """
         from guiqwt import panels
+
         return self.get_panel(panels.ID_YCS)
-        
+
     def update_cross_sections(self):
         """
         Convenience function to update the `cross section panels` at once
@@ -466,7 +504,7 @@ class PlotManager(object):
         for tool in self.tools:
             tool.setup_context_menu(menu, plot)
         return menu
-        
+
     def update_tools_status(self, plot=None):
         """
         Update tools for current plot
@@ -476,16 +514,33 @@ class PlotManager(object):
         for tool in self.tools:
             tool.update_status(plot)
 
-    def create_action(self, title, triggered=None, toggled=None,
-                      shortcut=None, icon=None, tip=None, checkable=None,
-                      context=Qt.WindowShortcut, enabled=None):
+    def create_action(
+        self,
+        title,
+        triggered=None,
+        toggled=None,
+        shortcut=None,
+        icon=None,
+        tip=None,
+        checkable=None,
+        context=Qt.WindowShortcut,
+        enabled=None,
+    ):
         """
         Create a new QAction
         """
-        return create_action(self.main, title, triggered=triggered,
-                             toggled=toggled, shortcut=shortcut,
-                             icon=icon, tip=tip, checkable=checkable,
-                             context=context, enabled=enabled)
+        return create_action(
+            self.main,
+            title,
+            triggered=triggered,
+            toggled=toggled,
+            shortcut=shortcut,
+            icon=icon,
+            tip=tip,
+            checkable=checkable,
+            context=context,
+            enabled=enabled,
+        )
 
     # The following methods provide some sets of tools that
     # are often registered together
@@ -560,7 +615,7 @@ class PlotManager(object):
             self.add_tool(YCSPanelTool)
             self.add_tool(CrossSectionTool)
             self.add_tool(AverageCrossSectionTool)
-        
+
     def register_other_tools(self):
         """
         Register other common tools
@@ -580,7 +635,7 @@ class PlotManager(object):
         self.add_tool(PrintTool)
         self.add_tool(HelpTool)
         self.add_tool(AboutTool)
-        
+
     def register_all_curve_tools(self):
         """
         Register standard, curve-related and other tools
@@ -607,7 +662,7 @@ class PlotManager(object):
         self.add_separator_tool()
         self.update_tools_status()
         self.get_default_tool().activate()
-        
+
     def register_all_image_tools(self):
         """
         Register standard, image-related and other tools
@@ -634,12 +689,12 @@ class PlotManager(object):
         self.add_separator_tool()
         self.update_tools_status()
         self.get_default_tool().activate()
-        
+
     def synchronize_axis(self, axis, plots):
         for plot_id in plots:
             synclist = self.synchronized_plots.setdefault(plot_id, [])
             for plot2_id in plots:
-                if plot_id==plot2_id:
+                if plot_id == plot2_id:
                     continue
                 item = (axis, plot2_id)
                 if item not in synclist:
@@ -657,13 +712,14 @@ class PlotManager(object):
             ub = scalediv.upperBound()
             other.setAxisScale(axis, lb, ub)
             other.replot()
-        
+
+
 assert_interfaces_valid(PlotManager)
 
 
-#===============================================================================
+# ===============================================================================
 # Curve Plot Widget/Dialog with integrated Item list widget
-#===============================================================================
+# ===============================================================================
 def configure_plot_splitter(qsplit, decreasing_size=True):
     qsplit.setChildrenCollapsible(False)
     qsplit.setHandleWidth(4)
@@ -676,6 +732,7 @@ def configure_plot_splitter(qsplit, decreasing_size=True):
         qsplit.setStretchFactor(1, 1)
         qsplit.setSizes([1, 2])
 
+
 class SubplotWidget(QSplitter):
     """Construct a Widget that helps managing several plots
     together handled by the same manager
@@ -684,6 +741,7 @@ class SubplotWidget(QSplitter):
     the add_itemlist method can be called after having declared
     all the subplots
     """
+
     def __init__(self, manager, parent=None, **kwargs):
         super(SubplotWidget, self).__init__(parent, **kwargs)
         self.setOrientation(Qt.Horizontal)
@@ -711,6 +769,7 @@ class SubplotWidget(QSplitter):
             plot_id = id(plot)
         self.manager.add_plot(plot, plot_id)
 
+
 class BaseCurveWidget(QSplitter):
     """
     Construct a BaseCurveWidget object, which includes:
@@ -721,21 +780,39 @@ class BaseCurveWidget(QSplitter):
     connected to each other.
     See children class :py:class:`guiqwt.plot.CurveWidget`
     """
-    def __init__(self, parent=None, title=None,
-                 xlabel=None, ylabel=None, xunit=None, yunit=None,
-                 section="plot", show_itemlist=False, gridparam=None,
-                 curve_antialiasing=None, **kwargs):
+
+    def __init__(
+        self,
+        parent=None,
+        title=None,
+        xlabel=None,
+        ylabel=None,
+        xunit=None,
+        yunit=None,
+        section="plot",
+        show_itemlist=False,
+        gridparam=None,
+        curve_antialiasing=None,
+        **kwargs
+    ):
         if PYQT5:
             super(BaseCurveWidget, self).__init__(parent, **kwargs)
             self.setOrientation(Qt.Horizontal)
         else:
             QSplitter.__init__(self, Qt.Horizontal, parent)
-        
+
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
-        self.plot = CurvePlot(parent=self, title=title, xlabel=xlabel,
-                              ylabel=ylabel, xunit=xunit, yunit=yunit,
-                              section=section, gridparam=gridparam)
+
+        self.plot = CurvePlot(
+            parent=self,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            xunit=xunit,
+            yunit=yunit,
+            section=section,
+            gridparam=gridparam,
+        )
         if curve_antialiasing is not None:
             self.plot.set_antialiasing(curve_antialiasing)
         self.addWidget(self.plot)
@@ -743,6 +820,7 @@ class BaseCurveWidget(QSplitter):
         self.itemlist.setVisible(show_itemlist)
         self.addWidget(self.itemlist)
         configure_plot_splitter(self)
+
 
 class CurveWidget(BaseCurveWidget, PlotManager):
     """
@@ -757,21 +835,48 @@ class CurveWidget(BaseCurveWidget, PlotManager):
         * yunit: (left axis unit, right axis unit) or left axis unit only
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, parent=None, title=None,
-                 xlabel=None, ylabel=None, xunit=None, yunit=None,
-                 section="plot", show_itemlist=False, gridparam=None,
-                 panels=None):
+
+    def __init__(
+        self,
+        parent=None,
+        title=None,
+        xlabel=None,
+        ylabel=None,
+        xunit=None,
+        yunit=None,
+        section="plot",
+        show_itemlist=False,
+        gridparam=None,
+        panels=None,
+    ):
         if PYQT5:
-            super(CurveWidget, self).__init__(parent=parent, title=title,
-                        xlabel=xlabel, ylabel=ylabel, xunit=xunit, yunit=yunit,
-                        section=section, show_itemlist=show_itemlist,
-                        gridparam=gridparam, main=self)
+            super(CurveWidget, self).__init__(
+                parent=parent,
+                title=title,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                xunit=xunit,
+                yunit=yunit,
+                section=section,
+                show_itemlist=show_itemlist,
+                gridparam=gridparam,
+                main=self,
+            )
         else:
-            BaseCurveWidget.__init__(self, parent, title,
-                                     xlabel, ylabel, xunit, yunit,
-                                     section, show_itemlist, gridparam)
+            BaseCurveWidget.__init__(
+                self,
+                parent,
+                title,
+                xlabel,
+                ylabel,
+                xunit,
+                yunit,
+                section,
+                show_itemlist,
+                gridparam,
+            )
             PlotManager.__init__(self, main=self)
-        
+
         # Configuring plot manager
         self.add_plot(self.plot)
         self.add_panel(self.itemlist)
@@ -779,22 +884,29 @@ class CurveWidget(BaseCurveWidget, PlotManager):
             for panel in panels:
                 self.add_panel(panel)
 
+
 class CurveWidgetMixin(PlotManager):
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
-                 toolbar=False, options=None, panels=None):
+    def __init__(
+        self,
+        wintitle="guiqwt plot",
+        icon="guiqwt.svg",
+        toolbar=False,
+        options=None,
+        panels=None,
+    ):
         PlotManager.__init__(self, main=self)
 
         self.plot_layout = QGridLayout()
-        
+
         if options is None:
             options = {}
         self.plot_widget = None
         self.create_plot(options)
-        
+
         if panels is not None:
             for panel in panels:
                 self.add_panel(panel)
-        
+
         self.toolbar = QToolBar(_("Tools"))
         if not toolbar:
             self.toolbar.hide()
@@ -802,14 +914,14 @@ class CurveWidgetMixin(PlotManager):
         # Configuring widget layout
         self.setup_widget_properties(wintitle=wintitle, icon=icon)
         self.setup_widget_layout()
-        
+
         # Configuring plot manager
         self.add_toolbar(self.toolbar, "default")
         self.register_tools()
-        
+
     def setup_widget_layout(self):
         raise NotImplementedError
-        
+
     def setup_widget_properties(self, wintitle, icon):
         self.setWindowTitle(wintitle)
         if is_text_string(icon):
@@ -841,12 +953,12 @@ class CurveWidgetMixin(PlotManager):
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
         self.plot_widget = BaseCurveWidget(self, **options)
-        self.plot_layout.addWidget(self.plot_widget,
-                                   row, column, rowspan, columnspan)
-        
+        self.plot_layout.addWidget(self.plot_widget, row, column, rowspan, columnspan)
+
         # Configuring plot manager
         self.add_plot(self.plot_widget.plot)
         self.add_panel(self.plot_widget.itemlist)
+
 
 class CurveDialog(QDialog, CurveWidgetMixin):
     """
@@ -862,22 +974,42 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg", edit=False,
-                 toolbar=False, options=None, parent=None, panels=None):
+
+    def __init__(
+        self,
+        wintitle="guiqwt plot",
+        icon="guiqwt.svg",
+        edit=False,
+        toolbar=False,
+        options=None,
+        parent=None,
+        panels=None,
+    ):
         if not PYQT5:
             QDialog.__init__(self, parent)
         self.edit = edit
         self.button_box = None
         self.button_layout = None
         if PYQT5:
-            super(CurveDialog, self).__init__(parent, wintitle=wintitle,
-                    icon=icon, toolbar=toolbar, options=options, panels=panels)
+            super(CurveDialog, self).__init__(
+                parent,
+                wintitle=wintitle,
+                icon=icon,
+                toolbar=toolbar,
+                options=options,
+                panels=panels,
+            )
         else:
-            CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
-                                      toolbar=toolbar, options=options,
-                                      panels=panels)
+            CurveWidgetMixin.__init__(
+                self,
+                wintitle=wintitle,
+                icon=icon,
+                toolbar=toolbar,
+                options=options,
+                panels=panels,
+            )
         self.setWindowFlags(Qt.Window)
-        
+
     def setup_widget_layout(self):
         vlayout = QVBoxLayout(self)
         vlayout.addWidget(self.toolbar)
@@ -887,7 +1019,7 @@ class CurveDialog(QDialog, CurveWidgetMixin):
             self.button_layout = QHBoxLayout()
             self.install_button_layout()
             vlayout.addLayout(self.button_layout)
-        
+
     def install_button_layout(self):
         """
         Install standard buttons (OK, Cancel) in dialog button box layout 
@@ -900,7 +1032,8 @@ class CurveDialog(QDialog, CurveWidgetMixin):
         bbox.rejected.connect(self.reject)
         self.button_layout.addWidget(bbox)
         self.button_box = bbox
-        
+
+
 class CurveWindow(QMainWindow, CurveWidgetMixin):
     """
     Construct a CurveWindow object: plotting window with integrated plot 
@@ -914,25 +1047,44 @@ class CurveWindow(QMainWindow, CurveWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, wintitle="guiqwt plot", icon="guiqwt.svg",
-                 toolbar=False, options=None, parent=None, panels=None):
+
+    def __init__(
+        self,
+        wintitle="guiqwt plot",
+        icon="guiqwt.svg",
+        toolbar=False,
+        options=None,
+        parent=None,
+        panels=None,
+    ):
         if PYQT5:
-            super(CurveWindow, self).__init__(parent, wintitle=wintitle,
-                    icon=icon, toolbar=toolbar, options=options, panels=panels)
+            super(CurveWindow, self).__init__(
+                parent,
+                wintitle=wintitle,
+                icon=icon,
+                toolbar=toolbar,
+                options=options,
+                panels=panels,
+            )
         else:
             QMainWindow.__init__(self, parent)
-            CurveWidgetMixin.__init__(self, wintitle=wintitle, icon=icon, 
-                                     toolbar=toolbar, options=options,
-                                     panels=panels)
-        
+            CurveWidgetMixin.__init__(
+                self,
+                wintitle=wintitle,
+                icon=icon,
+                toolbar=toolbar,
+                options=options,
+                panels=panels,
+            )
+
     def setup_widget_layout(self):
         self.addToolBar(self.toolbar)
         widget = QWidget()
         widget.setLayout(self.plot_layout)
         self.setCentralWidget(widget)
-        
+
     def closeEvent(self, event):
-        # Closing panels (necessary if at least one of these panels has no 
+        # Closing panels (necessary if at least one of these panels has no
         # parent widget: otherwise, this panel will stay open after the main
         # window has been closed which is not the expected behavior)
         for panel in self.panels:
@@ -940,9 +1092,9 @@ class CurveWindow(QMainWindow, CurveWidgetMixin):
         QMainWindow.closeEvent(self, event)
 
 
-#===============================================================================
+# ===============================================================================
 # Image Plot Widget/Dialog with integrated Levels Histogram and other widgets
-#===============================================================================
+# ===============================================================================
 class BaseImageWidget(QSplitter):
     """
     Construct a BaseImageWidget object, which includes:
@@ -959,42 +1111,71 @@ class BaseImageWidget(QSplitter):
     connected to each other.
     See children class :py:class:`guiqwt.plot.ImageWidget`
     """
-    def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
-                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
-                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
-                 show_contrast=False, show_itemlist=False, show_xsection=False,
-                 show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None, curve_antialiasing=None, **kwargs):
+
+    def __init__(
+        self,
+        parent=None,
+        title="",
+        xlabel=("", ""),
+        ylabel=("", ""),
+        zlabel=None,
+        xunit=("", ""),
+        yunit=("", ""),
+        zunit=None,
+        yreverse=True,
+        colormap="jet",
+        aspect_ratio=1.0,
+        lock_aspect_ratio=True,
+        show_contrast=False,
+        show_itemlist=False,
+        show_xsection=False,
+        show_ysection=False,
+        xsection_pos="top",
+        ysection_pos="right",
+        gridparam=None,
+        curve_antialiasing=None,
+        **kwargs
+    ):
         if PYQT5:
             super(BaseImageWidget, self).__init__(parent, **kwargs)
             self.setOrientation(Qt.Vertical)
         else:
             QSplitter.__init__(self, Qt.Vertical, parent)
-        
+
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
+
         self.sub_splitter = QSplitter(Qt.Horizontal, self)
-        self.plot = ImagePlot(parent=self, title=title,
-                              xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
-                              xunit=xunit, yunit=yunit, zunit=zunit,
-                              yreverse=yreverse, aspect_ratio=aspect_ratio,
-                              lock_aspect_ratio=lock_aspect_ratio,
-                              gridparam=gridparam)
+        self.plot = ImagePlot(
+            parent=self,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            zlabel=zlabel,
+            xunit=xunit,
+            yunit=yunit,
+            zunit=zunit,
+            yreverse=yreverse,
+            aspect_ratio=aspect_ratio,
+            lock_aspect_ratio=lock_aspect_ratio,
+            gridparam=gridparam,
+        )
         if curve_antialiasing is not None:
             self.plot.set_antialiasing(curve_antialiasing)
 
         from guiqwt.cross_section import YCrossSection
-        self.ycsw = YCrossSection(self, position=ysection_pos,
-                                  xsection_pos=xsection_pos)
+
+        self.ycsw = YCrossSection(
+            self, position=ysection_pos, xsection_pos=xsection_pos
+        )
         self.ycsw.setVisible(show_ysection)
-        
+
         from guiqwt.cross_section import XCrossSection
+
         self.xcsw = XCrossSection(self)
         self.xcsw.setVisible(show_xsection)
-        
+
         self.xcsw.SIG_VISIBILITY_CHANGED.connect(self.xcsw_is_visible)
-        
+
         self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
             self.xcsw_splitter.addWidget(self.xcsw)
@@ -1003,8 +1184,9 @@ class BaseImageWidget(QSplitter):
             self.xcsw_splitter.addWidget(self.plot)
             self.xcsw_splitter.addWidget(self.xcsw)
         self.xcsw_splitter.splitterMoved.connect(
-                                 lambda pos, index: self.adjust_ycsw_height())
-        
+            lambda pos, index: self.adjust_ycsw_height()
+        )
+
         self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
         if ysection_pos == "left":
             self.ycsw_splitter.addWidget(self.ycsw)
@@ -1012,40 +1194,44 @@ class BaseImageWidget(QSplitter):
         else:
             self.ycsw_splitter.addWidget(self.xcsw_splitter)
             self.ycsw_splitter.addWidget(self.ycsw)
-            
-        configure_plot_splitter(self.xcsw_splitter,
-                                decreasing_size=xsection_pos == "bottom")
-        configure_plot_splitter(self.ycsw_splitter,
-                                decreasing_size=ysection_pos == "right")
-        
+
+        configure_plot_splitter(
+            self.xcsw_splitter, decreasing_size=xsection_pos == "bottom"
+        )
+        configure_plot_splitter(
+            self.ycsw_splitter, decreasing_size=ysection_pos == "right"
+        )
+
         self.sub_splitter.addWidget(self.ycsw_splitter)
-        
+
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
         self.sub_splitter.addWidget(self.itemlist)
-        
+
         # Contrast adjustment (Levels histogram)
         from guiqwt.histogram import ContrastAdjustment
+
         self.contrast = ContrastAdjustment(self)
         self.contrast.setVisible(show_contrast)
         self.addWidget(self.contrast)
-        
+
         configure_plot_splitter(self)
         configure_plot_splitter(self.sub_splitter)
-        
+
     def adjust_ycsw_height(self, height=None):
         if height is None:
-            height = self.xcsw.height()-self.ycsw.toolbar.height()
+            height = self.xcsw.height() - self.ycsw.toolbar.height()
         self.ycsw.adjust_height(height)
         if height:
             QApplication.processEvents()
-        
+
     def xcsw_is_visible(self, state):
         if state:
             QApplication.processEvents()
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
+
 
 class ImageWidget(BaseImageWidget, PlotManager):
     """
@@ -1069,31 +1255,78 @@ class ImageWidget(BaseImageWidget, PlotManager):
           (string: "left", "right")
         * panels (optional): additionnal panels (list, tuple)
     """
-    def __init__(self, parent=None, title="",
-                 xlabel=("", ""), ylabel=("", ""), zlabel=None,
-                 xunit=("", ""), yunit=("", ""), zunit=None, yreverse=True,
-                 colormap="jet", aspect_ratio=1.0, lock_aspect_ratio=True,
-                 show_contrast=False, show_itemlist=False, show_xsection=False,
-                 show_ysection=False, xsection_pos="top", ysection_pos="right",
-                 gridparam=None, panels=None):
+
+    def __init__(
+        self,
+        parent=None,
+        title="",
+        xlabel=("", ""),
+        ylabel=("", ""),
+        zlabel=None,
+        xunit=("", ""),
+        yunit=("", ""),
+        zunit=None,
+        yreverse=True,
+        colormap="jet",
+        aspect_ratio=1.0,
+        lock_aspect_ratio=True,
+        show_contrast=False,
+        show_itemlist=False,
+        show_xsection=False,
+        show_ysection=False,
+        xsection_pos="top",
+        ysection_pos="right",
+        gridparam=None,
+        panels=None,
+    ):
         if PYQT5:
-            super(ImageWidget, self).__init__(parent=parent, title=title,
-                     xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
-                     xunit=xunit, yunit=yunit, zunit=zunit, yreverse=yreverse,
-                     colormap=colormap, aspect_ratio=aspect_ratio,
-                     lock_aspect_ratio=lock_aspect_ratio,
-                     show_contrast=show_contrast, show_itemlist=show_itemlist,
-                     show_xsection=show_xsection, show_ysection=show_ysection,
-                     xsection_pos=xsection_pos, ysection_pos=ysection_pos,
-                     gridparam=gridparam, main=self)
+            super(ImageWidget, self).__init__(
+                parent=parent,
+                title=title,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                zlabel=zlabel,
+                xunit=xunit,
+                yunit=yunit,
+                zunit=zunit,
+                yreverse=yreverse,
+                colormap=colormap,
+                aspect_ratio=aspect_ratio,
+                lock_aspect_ratio=lock_aspect_ratio,
+                show_contrast=show_contrast,
+                show_itemlist=show_itemlist,
+                show_xsection=show_xsection,
+                show_ysection=show_ysection,
+                xsection_pos=xsection_pos,
+                ysection_pos=ysection_pos,
+                gridparam=gridparam,
+                main=self,
+            )
         else:
-            BaseImageWidget.__init__(self, parent, title, xlabel, ylabel, zlabel,
-                     xunit, yunit, zunit, yreverse, colormap, aspect_ratio,
-                     lock_aspect_ratio, show_contrast, show_itemlist,
-                     show_xsection, show_ysection, xsection_pos, ysection_pos,
-                     gridparam)
+            BaseImageWidget.__init__(
+                self,
+                parent,
+                title,
+                xlabel,
+                ylabel,
+                zlabel,
+                xunit,
+                yunit,
+                zunit,
+                yreverse,
+                colormap,
+                aspect_ratio,
+                lock_aspect_ratio,
+                show_contrast,
+                show_itemlist,
+                show_xsection,
+                show_ysection,
+                xsection_pos,
+                ysection_pos,
+                gridparam,
+            )
             PlotManager.__init__(self, main=self)
-        
+
         # Configuring plot manager
         self.add_plot(self.plot)
         self.add_panel(self.itemlist)
@@ -1103,6 +1336,7 @@ class ImageWidget(BaseImageWidget, PlotManager):
         if panels is not None:
             for panel in panels:
                 self.add_panel(panel)
+
 
 class ImageWidgetMixin(CurveWidgetMixin):
     def register_tools(self):
@@ -1128,15 +1362,15 @@ class ImageWidgetMixin(CurveWidgetMixin):
         (:py:attr:`guiqwt.plot.CurveDialog.plot_layout`)
         """
         self.plot_widget = BaseImageWidget(self, **options)
-        self.plot_layout.addWidget(self.plot_widget,
-                                   row, column, rowspan, columnspan)
-        
+        self.plot_layout.addWidget(self.plot_widget, row, column, rowspan, columnspan)
+
         # Configuring plot manager
         self.add_plot(self.plot_widget.plot)
         self.add_panel(self.plot_widget.itemlist)
         self.add_panel(self.plot_widget.xcsw)
         self.add_panel(self.plot_widget.ycsw)
         self.add_panel(self.plot_widget.contrast)
+
 
 class ImageDialog(CurveDialog, ImageWidgetMixin):
     """
@@ -1152,7 +1386,9 @@ class ImageDialog(CurveDialog, ImageWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
+
     pass
+
 
 class ImageWindow(CurveWindow, ImageWidgetMixin):
     """
@@ -1166,4 +1402,5 @@ class ImageWindow(CurveWindow, ImageWidgetMixin):
         * parent: parent widget
         * panels (optional): additionnal panels (list, tuple)
     """
+
     pass

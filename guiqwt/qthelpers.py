@@ -31,21 +31,20 @@ Reference
 import sys
 import os.path as osp
 
-from guidata.qt.QtGui import QMessageBox
-from guidata.qt.compat import getsavefilename, getopenfilename, getopenfilenames
+from qtpy.QtWidgets import QMessageBox
+from qtpy.compat import getsavefilename, getopenfilename, getopenfilenames
 
-from guidata.py3compat import to_text_string
+from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.config import _
 from guiqwt import io
 
 
-#===============================================================================
+# ===============================================================================
 # Ready-to-use open/save dialogs
-#===============================================================================
-def exec_image_save_dialog(parent, data, template=None,
-                           basedir='', app_name=None):
+# ===============================================================================
+def exec_image_save_dialog(parent, data, template=None, basedir="", app_name=None):
     """
     Executes an image save dialog box (QFileDialog.getSaveFileName)
         * parent: parent widget (None means no parent)
@@ -59,28 +58,38 @@ def exec_image_save_dialog(parent, data, template=None,
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filename, _filter = getsavefilename(parent, _("Save as"), basedir,
-        io.iohandler.get_filters('save', dtype=data.dtype, template=template))
+    filename, _filter = getsavefilename(
+        parent,
+        _("Save as"),
+        basedir,
+        io.iohandler.get_filters("save", dtype=data.dtype, template=template),
+    )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
         filename = to_text_string(filename)
         kwargs = {}
-        if osp.splitext(filename)[1].lower() == '.dcm':
-            kwargs['template'] = template
+        if osp.splitext(filename)[1].lower() == ".dcm":
+            kwargs["template"] = template
         try:
             io.imwrite(filename, data, **kwargs)
             return filename
         except Exception as msg:
             import traceback
+
             traceback.print_exc()
-            QMessageBox.critical(parent,
-                 _('Error') if app_name is None else app_name,
-                 (_("%s could not be written:") % osp.basename(filename))+\
-                 "\n"+str(msg))
+            QMessageBox.critical(
+                parent,
+                _("Error") if app_name is None else app_name,
+                (_("%s could not be written:") % osp.basename(filename))
+                + "\n"
+                + str(msg),
+            )
             return
 
-def exec_image_open_dialog(parent, basedir='', app_name=None,
-                           to_grayscale=True, dtype=None):
+
+def exec_image_open_dialog(
+    parent, basedir="", app_name=None, to_grayscale=True, dtype=None
+):
     """
     Executes an image open dialog box (QFileDialog.getOpenFileName)
         * parent: parent widget (None means no parent)
@@ -93,24 +102,29 @@ def exec_image_open_dialog(parent, basedir='', app_name=None,
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filename, _filter = getopenfilename(parent, _("Open"), basedir,
-                                io.iohandler.get_filters('load', dtype=dtype))
+    filename, _filter = getopenfilename(
+        parent, _("Open"), basedir, io.iohandler.get_filters("load", dtype=dtype)
+    )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filename = to_text_string(filename)
     try:
         data = io.imread(filename, to_grayscale=to_grayscale)
     except Exception as msg:
         import traceback
+
         traceback.print_exc()
-        QMessageBox.critical(parent,
-             _('Error') if app_name is None else app_name,
-             (_("%s could not be opened:") % osp.basename(filename))+\
-             "\n"+str(msg))
+        QMessageBox.critical(
+            parent,
+            _("Error") if app_name is None else app_name,
+            (_("%s could not be opened:") % osp.basename(filename)) + "\n" + str(msg),
+        )
         return
     return filename, data
 
-def exec_images_open_dialog(parent, basedir='', app_name=None,
-                            to_grayscale=True, dtype=None):
+
+def exec_images_open_dialog(
+    parent, basedir="", app_name=None, to_grayscale=True, dtype=None
+):
     """
     Executes an image*s* open dialog box (QFileDialog.getOpenFileNames)
         * parent: parent widget (None means no parent)
@@ -123,8 +137,9 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
     sys.stdout = None
-    filenames, _filter = getopenfilenames(parent, _("Open"), basedir,
-                                io.iohandler.get_filters('load', dtype=dtype))
+    filenames, _filter = getopenfilenames(
+        parent, _("Open"), basedir, io.iohandler.get_filters("load", dtype=dtype)
+    )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     filenames = [to_text_string(fname) for fname in list(filenames)]
     for filename in filenames:
@@ -132,11 +147,15 @@ def exec_images_open_dialog(parent, basedir='', app_name=None,
             data = io.imread(filename, to_grayscale=to_grayscale)
         except Exception as msg:
             import traceback
+
             traceback.print_exc()
-            QMessageBox.critical(parent,
-                 _('Error') if app_name is None else app_name,
-                 (_("%s could not be opened:") % osp.basename(filename))+\
-                 "\n"+str(msg))
+            QMessageBox.critical(
+                parent,
+                _("Error") if app_name is None else app_name,
+                (_("%s could not be opened:") % osp.basename(filename))
+                + "\n"
+                + str(msg),
+            )
             return
         yield filename, data
-    
+

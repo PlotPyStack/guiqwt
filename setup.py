@@ -199,7 +199,7 @@ setup(name=LIBNAME, version=__version__,
                                                '.ui'))},
       data_files=[(r'Doc', [CHM_DOC])] if CHM_DOC else [],
       install_requires=["NumPy>=1.3", "SciPy>=0.7", "guidata>=1.7.0",
-                        "PythonQwt>=0.5.0", "Pillow"],
+                        "PythonQwt>=0.5.0", "Pillow", "QtPy"],
       extras_require = {
                         'Doc':  ["Sphinx>=1.1"],
                         'DICOM':  ["pydicom>=0.9.3"],
