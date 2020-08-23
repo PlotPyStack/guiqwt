@@ -1416,7 +1416,7 @@ class CurvePlot(BasePlot):
     AUTOSCALE_TYPES = (CurveItem, PolygonMapItem)
 
     #: Signal emitted by plot when plot axis has changed, e.g. when panning/zooming (arg: plot))
-    SIG_PLOT_AXIS_CHANGED = Signal("PyQt_PyObject")
+    SIG_PLOT_AXIS_CHANGED = Signal(object)
 
     def __init__(
         self,
@@ -1480,7 +1480,11 @@ class CurvePlot(BasePlot):
         # after the filter object has been destroyed by Python.
         canvas = self.canvas()
         if canvas:
-            canvas.removeEventFilter(self.filter)
+            try:
+                canvas.removeEventFilter(self.filter)
+            except RuntimeError:
+                # PySide2
+                pass
 
     # generic helper methods
     def canvas2plotitem(self, plot_item, x_canvas, y_canvas):

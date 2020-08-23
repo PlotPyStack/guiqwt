@@ -79,6 +79,7 @@ from math import fabs, sqrt, sin, cos, pi
 
 from qtpy.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
 from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
+from qtpy import PYSIDE2
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 from qtpy.py3compat import maxsize
@@ -683,6 +684,8 @@ class PolygonShape(AbstractShape):
         painter.setPen(pen)
         painter.setBrush(brush)
         points = self.transform_points(xMap, yMap)
+        if PYSIDE2:
+            points = list(points)
         if self.ADDITIONNAL_POINTS:
             shape_points = points[: -self.ADDITIONNAL_POINTS]
             other_points = points[-self.ADDITIONNAL_POINTS :]

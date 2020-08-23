@@ -12,9 +12,11 @@ from __future__ import print_function
 SHOW = True  # Show test in GUI-based test launcher
 import os
 
-print(os.environ["QT_API"])
 from qtpy.QtCore import QRectF
 from qtpy.QtGui import QImage
+from qtpy import API, PYSIDE2
+
+print("Qt API: " + API)
 
 import os
 import numpy as np
@@ -55,12 +57,17 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     paint.end()
     try:
         try:
+            # PyQt4 (at least until Qt 4.8)
             data = img.bits().asstring(img.numBytes())
         except AttributeError:
-            # PyQt5
-            data = img.bits().asstring(img.byteCount())
+            if PYSIDE2:
+                # PySide2
+                data = bytes(img.bits())
+            else:
+                # PyQt5
+                data = img.bits().asstring(img.byteCount())
     except SystemError:
-        # Python 3
+        # PyQt4 (4.11.3) and PyQt5 (5.3.2) on Python 3
         return
     npy = np.frombuffer(data, np.uint8)
     npy.shape = img.height(), int(img.bytesPerLine() / 4), 4

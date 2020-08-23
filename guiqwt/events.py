@@ -93,7 +93,7 @@ class StandardKeyMatch(EventMatch):
 
     def __init__(self, keysequence):
         super(StandardKeyMatch, self).__init__()
-        assert isinstance(keysequence, int)
+        assert isinstance(keysequence, (int, QKeySequence.StandardKey))
         self.keyseq = keysequence
 
     def get_event_types(self):
@@ -108,7 +108,7 @@ class MouseEventMatch(EventMatch):
 
     def __init__(self, evt_type, btn, modifiers=Qt.NoModifier):
         super(MouseEventMatch, self).__init__()
-        assert isinstance(modifiers, (int, Qt.KeyboardModifiers))
+        assert isinstance(modifiers, (int, Qt.KeyboardModifiers, Qt.KeyboardModifier))
         self.evt_type = evt_type
         self.button = btn
         self.modifiers = modifiers
@@ -336,7 +336,7 @@ class ClickHandler(QObject):
     """
 
     #: Signal emitted by ClickHandler on mouse click
-    SIG_CLICK_EVENT = Signal("PyQt_PyObject", "QEvent")
+    SIG_CLICK_EVENT = Signal(object, "QEvent")
 
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(ClickHandler, self).__init__()
@@ -377,16 +377,16 @@ class MenuHandler(ClickHandler):
 class QtDragHandler(DragHandler):
 
     #: Signal emitted by QtDragHandler when starting tracking
-    SIG_START_TRACKING = Signal("PyQt_PyObject", "QEvent")
+    SIG_START_TRACKING = Signal(object, "QEvent")
 
     #: Signal emitted by QtDragHandler when stopping tracking and not moving
-    SIG_STOP_NOT_MOVING = Signal("PyQt_PyObject", "QEvent")
+    SIG_STOP_NOT_MOVING = Signal(object, "QEvent")
 
     #: Signal emitted by QtDragHandler when stopping tracking and moving
-    SIG_STOP_MOVING = Signal("PyQt_PyObject", "QEvent")
+    SIG_STOP_MOVING = Signal(object, "QEvent")
 
     #: Signal emitted by QtDragHandler when moving
-    SIG_MOVE = Signal("PyQt_PyObject", "QEvent")
+    SIG_MOVE = Signal(object, "QEvent")
 
     def start_tracking(self, filter, event):
         DragHandler.start_tracking(self, filter, event)
@@ -654,7 +654,7 @@ class ObjectHandler(object):
 class RectangularSelectionHandler(DragHandler):
 
     #: Signal emitted by RectangularSelectionHandler when ending selection
-    SIG_END_RECT = Signal("PyQt_PyObject", "QPointF", "QPointF")
+    SIG_END_RECT = Signal(object, "QPointF", "QPointF")
 
     def __init__(self, filter, btn, mods=Qt.NoModifier, start_state=0):
         super(RectangularSelectionHandler, self).__init__(

@@ -128,47 +128,47 @@ class BasePlot(QwtPlot):
     DEFAULT_ACTIVE_YAXIS = Y_LEFT
 
     #: Signal emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
-    SIG_ITEM_MOVED = Signal("PyQt_PyObject", float, float, float, float)
+    SIG_ITEM_MOVED = Signal(object, float, float, float, float)
 
     #: Signal emitted by plot when a shapes.Marker position changes
-    SIG_MARKER_CHANGED = Signal("PyQt_PyObject")
+    SIG_MARKER_CHANGED = Signal(object)
 
     #: Signal emitted by plot when a shapes.Axes position (or the angle) changes
-    SIG_AXES_CHANGED = Signal("PyQt_PyObject")
+    SIG_AXES_CHANGED = Signal(object)
 
     #: Signal emitted by plot when an annotation.AnnotatedShape position changes
-    SIG_ANNOTATION_CHANGED = Signal("PyQt_PyObject")
+    SIG_ANNOTATION_CHANGED = Signal(object)
 
     #: Signal emitted by plot when the a shapes.XRangeSelection range changes
-    SIG_RANGE_CHANGED = Signal("PyQt_PyObject", float, float)
+    SIG_RANGE_CHANGED = Signal(object, float, float)
 
     #: Signal emitted by plot when item list has changed (item removed, added, ...)
-    SIG_ITEMS_CHANGED = Signal("PyQt_PyObject")
+    SIG_ITEMS_CHANGED = Signal(object)
 
     #: Signal emitted by plot when selected item has changed
-    SIG_ACTIVE_ITEM_CHANGED = Signal("PyQt_PyObject")
+    SIG_ACTIVE_ITEM_CHANGED = Signal(object)
 
     #: Signal emitted by plot when an item was deleted from the item list or using the
     #: delete item tool
-    SIG_ITEM_REMOVED = Signal("PyQt_PyObject")
+    SIG_ITEM_REMOVED = Signal(object)
 
     #: Signal emitted by plot when an item is selected
-    SIG_ITEM_SELECTION_CHANGED = Signal("PyQt_PyObject")
+    SIG_ITEM_SELECTION_CHANGED = Signal(object)
 
     #: Signal emitted by plot when plot's title or any axis label has changed
-    SIG_PLOT_LABELS_CHANGED = Signal("PyQt_PyObject")
+    SIG_PLOT_LABELS_CHANGED = Signal(object)
 
     #: Signal emitted by plot when any plot axis direction has changed
-    SIG_AXIS_DIRECTION_CHANGED = Signal("PyQt_PyObject", "PyQt_PyObject")
+    SIG_AXIS_DIRECTION_CHANGED = Signal(object, object)
 
     #: Signal emitted by plot when LUT has been changed by the user
-    SIG_LUT_CHANGED = Signal("PyQt_PyObject")
+    SIG_LUT_CHANGED = Signal(object)
 
     #: Signal emitted by plot when image mask has changed
-    SIG_MASK_CHANGED = Signal("PyQt_PyObject")
+    SIG_MASK_CHANGED = Signal(object)
 
     #: Signal emitted by cross section plot when cross section curve data has changed
-    SIG_CS_CURVE_CHANGED = Signal("PyQt_PyObject")
+    SIG_CS_CURVE_CHANGED = Signal(object)
 
     def __init__(self, parent=None, section="plot"):
         super(BasePlot, self).__init__(parent)
