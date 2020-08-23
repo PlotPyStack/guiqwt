@@ -6,7 +6,7 @@
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/guiqwt.svg)](https://pypi.python.org/pypi/guiqwt/)
 [![download count](https://img.shields.io/conda/dn/conda-forge/guiqwt.svg)](https://www.anaconda.com/download/)
 
-<img src="http://pythonhosted.org/guiqwt/_images/panorama.png">
+<img src="https://raw.githubusercontent.com/PierreRaybaut/guiqwt/master/doc/images/panorama.png">
 
 See [documentation](https://guiqwt.readthedocs.io/en/latest/) for more details on 
 the library and [changelog](CHANGELOG.md) for recent history of changes.
