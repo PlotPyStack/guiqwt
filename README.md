@@ -37,6 +37,7 @@ Extension to ``PythonQwt``:
 
 - Python 2.6+ or Python 3.2+
 - [PyQt4](https://pypi.python.org/pypi/PyQt4) 4.3+ or [PyQt5](https://pypi.python.org/pypi/PyQt5) 5.5+
+- [QtPy](https://pypi.org/project/QtPy/) >= 1.3
 - [PythonQwt](https://pypi.python.org/pypi/PythonQwt) 0.5+ (pure Python reimplementation of Qwt6 C++ library)
 - [guidata](https://pypi.python.org/pypi/guidata) 1.7+
 - [NumPy](https://pypi.python.org/pypi/NumPy) 1.6+

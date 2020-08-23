@@ -9,6 +9,7 @@ Requirements:
     * `PyQt4`_ 4.x (x>=3 ; recommended x>=4) or `PyQt5`_ 5.x (x>=5)
     * `PythonQwt`_ >=0.5
     * `guidata`_ >=1.7
+    * `QtPy`_ >= 1.3
     * `NumPy`_, `SciPy`_ and `Pillow`_
     
 Optional Python modules:
@@ -19,6 +20,7 @@ Optional Python modules:
 .. _PyQt5: https://pypi.python.org/pypi/PyQt5
 .. _PythonQwt: https://pypi.python.org/pypi/PythonQwt
 .. _guidata: https://pypi.python.org/pypi/guidata
+.. _qtpy: https://pypi.org/project/QtPy/
 .. _NumPy: https://pypi.python.org/pypi/NumPy
 .. _SciPy: https://pypi.python.org/pypi/SciPy
 .. _Pillow: https://pypi.python.org/pypi/Pillow
