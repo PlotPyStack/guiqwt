@@ -1,6 +1,13 @@
 # guiqwt Releases #
 
 
+### Version 3.0.5 ###
+
+Changes:
+
+* Added PySide2 support: guiqwt is now compatible with Python 2.7, Python 3.4+, PyQt4, 
+  PyQt5 and PySide2!
+
 ### Version 3.0.4 ###
 
 Bug fixes:
