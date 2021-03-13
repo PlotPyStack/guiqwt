@@ -1,6 +1,18 @@
 # guiqwt Releases #
 
 
+### Version 3.0.6 ###
+
+Changes:
+
+* Added support for more TIFF file formats using "tifffile" package when available
+* Speeding-up image alpha channel calculation (avoid slow NumPy "clip")
+* Image/colormap icons: now using exclusively the icon cache (optimization)
+
+Bug fixes:
+
+* Fixed error when adding item at specific Z-value after deleting items around that Z
+
 ### Version 3.0.5 ###
 
 Changes:
