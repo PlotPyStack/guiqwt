@@ -98,7 +98,7 @@ def get_colormap_list():
     return cmlist
 
 
-def build_icon_from_cmap(cmap, width=32, height=32):
+def build_icon_from_cmap(cmap, width=24, height=24):
     """
     Builds an icon representing the colormap
     """

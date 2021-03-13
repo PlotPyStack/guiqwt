@@ -302,7 +302,7 @@ from guiqwt.annotations import (
     AnnotatedPoint,
     AnnotatedObliqueRectangle,
 )
-from guiqwt.colormap import get_colormap_list, get_cmap, build_icon_from_cmap
+from guiqwt.colormap import get_colormap_list, build_icon_from_cmap_name
 from guiqwt.interfaces import (
     IColormapImageItemType,
     IPlotManager,
@@ -2422,15 +2422,14 @@ class ColormapTool(CommandTool):
         )
         self.action.setEnabled(False)
         self.action.setIconText("")
-        self.default_icon = build_icon_from_cmap(get_cmap("jet"), width=16, height=16)
+        self.default_icon = build_icon_from_cmap_name("jet")
         self.action.setIcon(self.default_icon)
 
     def create_action_menu(self, manager):
         """Create and return menu for the tool's action"""
         menu = QMenu()
         for cmap_name in get_colormap_list():
-            cmap = get_cmap(cmap_name)
-            icon = build_icon_from_cmap(cmap)
+            icon = build_icon_from_cmap_name(cmap_name)
             action = menu.addAction(icon, cmap_name)
             action.setEnabled(True)
         menu.triggered.connect(self.activate_cmap)
@@ -2466,10 +2465,9 @@ class ColormapTool(CommandTool):
             icon = self.default_icon
             if item:
                 self.action.setEnabled(True)
-                if item.get_color_map_name():
-                    icon = build_icon_from_cmap(
-                        item.get_color_map(), width=16, height=16
-                    )
+                cmap_name = item.get_color_map_name()
+                if cmap_name:
+                    icon = build_icon_from_cmap_name(cmap_name)
             else:
                 self.action.setEnabled(False)
             self.action.setIcon(icon)
