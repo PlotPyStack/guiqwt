@@ -478,7 +478,7 @@ class BaseImageItem(QwtPlotItem):
                 pix_alpha = alpha * (i / float(LUT_SIZE - 1))
             else:
                 pix_alpha = alpha
-            alpha_channel = np.uint32(255 * pix_alpha + 0.5).clip(0, 255) << 24
+            alpha_channel = max(min(np.uint32(255 * pix_alpha + 0.5), 255), 0) << 24
             cmap_a[i] = (
                 np.uint32((table.rgb(FULLRANGE, i / LUT_MAX)) & 0xFFFFFF)
                 | alpha_channel
