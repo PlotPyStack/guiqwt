@@ -192,6 +192,27 @@ iohandler = ImageIOHandler()
 
 
 # ==============================================================================
+# tifffile-based Private I/O functions
+# ==============================================================================
+
+def _imread_tiff(filename):
+    """Open a TIFF image and return a NumPy array"""
+    try:
+        import tifffile
+        return tifffile.imread(filename)
+    except ImportError:
+        return _imread_pil(filename)
+
+def _imwrite_tiff(filename, arr):
+    """Save a NumPy array to a TIFF file"""
+    try:
+        import tifffile
+        return tifffile.imread(filename, arr)
+    except ImportError:
+        return _imwrite_pil(filename, arr)
+
+
+# ==============================================================================
 # PIL-based Private I/O functions
 # ==============================================================================
 if sys.byteorder == "little":
@@ -408,7 +429,7 @@ iohandler.add(
     data_types=(np.uint8, np.uint16),
 )
 iohandler.add(
-    _("TIFF files"), "*.tif *.tiff", read_func=_imread_pil, write_func=_imwrite_pil
+    _("TIFF files"), "*.tif *.tiff", read_func=_imread_tiff, write_func=_imwrite_tiff
 )
 iohandler.add(
     _("8-bit images"),
