@@ -1605,7 +1605,7 @@ def get_items_in_rectangle(plot, p0, p1, item_type=None):
     item_type: default is `IExportROIImageItemType`"""
     if item_type is None:
         item_type = IExportROIImageItemType
-    items = plot.get_items(item_type=IExportROIImageItemType)
+    items = plot.get_items(item_type=item_type)
     src_qrect = get_plot_qrect(plot, p0, p1)
     return [it for it in items if src_qrect.intersects(it.boundingRect())]
 

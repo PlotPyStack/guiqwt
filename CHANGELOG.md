@@ -1,6 +1,12 @@
 # guiqwt Releases #
 
 
+### Version 3.0.7 ###
+
+Bug fixes:
+
+* Fixed image.get_items_in_rectangle function: item_type parameter was ignored
+
 ### Version 3.0.6 ###
 
 Changes:

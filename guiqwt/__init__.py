@@ -23,7 +23,7 @@ External resources:
 """
 
 
-__version__ = "3.0.6"
+__version__ = "3.0.7"
 __description__ = (
     "guiqwt is a set of tools for curve and image plotting " "(extension to PythonQwt)"
 )
