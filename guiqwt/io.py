@@ -207,7 +207,7 @@ def _imwrite_tiff(filename, arr):
     """Save a NumPy array to a TIFF file"""
     try:
         import tifffile
-        return tifffile.imread(filename, arr)
+        return tifffile.imwrite(filename, arr)
     except ImportError:
         return _imwrite_pil(filename, arr)
 
