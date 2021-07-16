@@ -18,7 +18,7 @@ from guiqwt.config import _
 def hist2d(X, Y):
     win = ImageDialog(edit=True, toolbar=True,
                       wintitle="2-D Histogram X0=(0,1), X1=(-1,-1)")
-    hist2d = make.histogram2D(X, Y, 200, 200)
+    hist2d = make.histogram2D(X, Y, 200, 200, computation=2)
     curve = make.curve(X[::50], Y[::50],
                        linestyle='', marker='+', title=_("Markers"))
     plot = win.get_plot()
