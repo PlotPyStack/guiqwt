@@ -3,8 +3,14 @@
 
 ### Version 3.0.7 ###
 
+Changes:
+
+* Added load test (eventually highlights high CPU usage with guiqwt.ImageWidget,
+  this issue was solved with PythonQwt v0.9.1 bugfix release)
+
 Bug fixes:
 
+* Fixed io.imwrite TIFF support
 * Fixed image.get_items_in_rectangle function: item_type parameter was ignored
 
 ### Version 3.0.6 ###
