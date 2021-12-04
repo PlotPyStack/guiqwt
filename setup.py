@@ -46,10 +46,10 @@ guiqwt: Python tools for curve and image plotting
 
 .. image:: https://raw.githubusercontent.com/PierreRaybaut/guiqwt/master/doc/images/panorama.png
 
-See `documentation`_ for more details on the library and `changelog`_ for 
+See `documentation`_ for more details on the library and `changelog`_ for
 recent history of changes.
 
-Copyright © 2009-2020 CEA, Pierre Raybaut, licensed under the terms of the 
+Copyright © 2009-2020 CEA, Pierre Raybaut, licensed under the terms of the
 `CECILL License`_.
 
 .. _documentation: https://guiqwt.readthedocs.io/en/latest/
@@ -60,12 +60,12 @@ Copyright © 2009-2020 CEA, Pierre Raybaut, licensed under the terms of the
 Overview
 --------
 
-Based on `PythonQwt`_ (a pure Python/PyQt reimplementation of the curve 
-plotting Qwt C++ library, included in guiqwt base source code) and on the 
-scientific modules NumPy and SciPy, ``guiqwt`` is a Python library providing 
-efficient 2D data-plotting features (curve/image visualization and related 
-tools) for interactive computing and signal/image processing application 
-development. It is based on Qt graphical user interfaces library, and 
+Based on `PythonQwt`_ (a pure Python/PyQt reimplementation of the curve
+plotting Qwt C++ library, included in guiqwt base source code) and on the
+scientific modules NumPy and SciPy, ``guiqwt`` is a Python library providing
+efficient 2D data-plotting features (curve/image visualization and related
+tools) for interactive computing and signal/image processing application
+development. It is based on Qt graphical user interfaces library, and
 currently supports both ``PyQt4`` and ``PyQt5``.
 
 Extension to `PythonQwt`_:
@@ -79,7 +79,7 @@ Extension to `PythonQwt`_:
 Building, installation, ...
 ---------------------------
 
-The following packages are **required**: `PyQt4`_ (or `PyQt5`_), 
+The following packages are **required**: `PyQt4`_ (or `PyQt5`_),
 `PythonQwt`_, `guidata`_, `NumPy`_, `SciPy`_ and `Pillow`_.
 
 .. _PyQt4: https://pypi.python.org/pypi/PyQt4
@@ -106,9 +106,9 @@ else:
 
 
 def build_chm_doc(libname):
-    """Return CHM documentation file (on Windows only), which is copied under 
-    {PythonInstallDir}\Doc, hence allowing Spyder to add an entry for opening 
-    package documentation in "Help" menu. This has no effect on a source 
+    """Return CHM documentation file (on Windows only), which is copied under
+    {PythonInstallDir}\Doc, hence allowing Spyder to add an entry for opening
+    package documentation in "Help" menu. This has no effect on a source
     distribution."""
     args = "".join(sys.argv)
     if "--no-doc" in sys.argv:
@@ -217,12 +217,15 @@ setup(
     install_requires=[
         "NumPy>=1.3",
         "SciPy>=0.7",
-        "guidata>=1.7.0",
+        "guidata>=1.9.0",
         "PythonQwt>=0.5.0",
         "Pillow",
         "QtPy>=1.3",
     ],
-    extras_require={"Doc": ["Sphinx>=1.1"], "DICOM": ["pydicom>=0.9.3"],},
+    extras_require={
+        "Doc": ["Sphinx>=1.1"],
+        "DICOM": ["pydicom>=0.9.3"],
+    },
     entry_points={
         "gui_scripts": [
             "guiqwt-tests-py%d = guiqwt.tests:run" % sys.version_info.major,
@@ -269,4 +272,3 @@ setup(
         "Programming Language :: Python :: 3",
     ],
 )
-

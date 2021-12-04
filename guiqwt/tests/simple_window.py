@@ -20,7 +20,12 @@ from guidata.dataset.datatypes import DataSet, GetAttrProp
 from guidata.dataset.dataitems import IntItem, FloatArrayItem, StringItem, ChoiceItem
 from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
-from guidata.qthelpers import create_action, add_actions, get_std_icon
+from guidata.qthelpers import (
+    create_action,
+    add_actions,
+    get_std_icon,
+    win32_fix_title_bar_background,
+)
 from guidata.utils import update_dataset
 from qtpy.py3compat import to_text_string
 
@@ -153,6 +158,7 @@ class CentralWidget(QSplitter):
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        win32_fix_title_bar_background(self)
         self.setup()
 
     def setup(self):
@@ -204,7 +210,13 @@ class MainWindow(QMainWindow):
         add_actions(help_menu, (about_action,))
 
         main_toolbar = self.addToolBar("Main")
-        add_actions(main_toolbar, (new_action, open_action,))
+        add_actions(
+            main_toolbar,
+            (
+                new_action,
+                open_action,
+            ),
+        )
 
         # Set central widget:
         toolbar = self.addToolBar("Image")

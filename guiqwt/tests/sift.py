@@ -49,7 +49,12 @@ from guidata.dataset.dataitems import (
 )
 from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
-from guidata.qthelpers import create_action, add_actions, get_std_icon
+from guidata.qthelpers import (
+    create_action,
+    add_actions,
+    get_std_icon,
+    win32_fix_title_bar_background,
+)
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
 from qtpy.py3compat import to_text_string
@@ -69,7 +74,7 @@ VERSION = "0.2.8"
 def normalize(yin, parameter="maximum"):
     """
     Normalize input array *yin* with respect to parameter *parameter*
-    
+
     Support values for *parameter*:
         'maximum' (default), 'amplitude', 'sum', 'energy'
     """
@@ -220,7 +225,11 @@ class ImageParamNew(DataSet):
     )
     type = ChoiceItem(
         _("Type"),
-        (("zeros", _("zeros")), ("empty", _("empty")), ("rand", _("random")),),
+        (
+            ("zeros", _("zeros")),
+            ("empty", _("empty")),
+            ("rand", _("random")),
+        ),
     )
 
 
@@ -1447,6 +1456,7 @@ class SiftProxy(object):
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        win32_fix_title_bar_background(self)
 
         self.setWindowIcon(get_icon("sift.svg"))
         self.setWindowTitle(APP_NAME)

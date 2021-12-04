@@ -13,7 +13,7 @@ guiqwt.widgets.fit
 
 The `fit` module provides an interactive curve fitting widget/dialog allowing:
     * to fit data manually (by moving sliders)
-    * or automatically (with standard optimization algorithms 
+    * or automatically (with standard optimization algorithms
       provided by :py:mod:`scipy`).
 
 Example
@@ -63,7 +63,7 @@ from numpy import inf  # Do not remove this import (used by optimization funcs)
 
 import guidata
 from guidata.utils import update_dataset, restore_dataset
-from guidata.qthelpers import create_groupbox
+from guidata.qthelpers import create_groupbox, win32_fix_title_bar_background
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import (
@@ -686,6 +686,7 @@ class FitDialog(QDialog, FitWidgetMixin):
                 auto_fit,
             )
         self.setWindowFlags(Qt.Window)
+        win32_fix_title_bar_background(self)
 
     def setup_widget_layout(self):
         FitWidgetMixin.setup_widget_layout(self)

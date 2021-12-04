@@ -11,6 +11,7 @@ filtertest1.py + plot manager"""
 SHOW = True  # Show test in GUI-based test launcher
 
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow
+from guidata.qthelpers import win32_fix_title_bar_background
 
 # ---Import plot widget base class
 from guiqwt.curve import CurvePlot
@@ -71,6 +72,7 @@ class FilterTestWidget(QWidget):
 class TestWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        win32_fix_title_bar_background(self)
         self.setWindowTitle("Signal filtering 2 (guiqwt)")
         self.setWindowIcon(get_icon("guiqwt.svg"))
 
@@ -121,4 +123,3 @@ def test():
 
 if __name__ == "__main__":
     test()
-

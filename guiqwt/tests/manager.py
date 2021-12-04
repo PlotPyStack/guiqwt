@@ -13,6 +13,7 @@ import os.path as osp
 
 from qtpy.QtWidgets import QMainWindow, QWidget, QGridLayout
 
+from guidata.qthelpers import win32_fix_title_bar_background
 from guiqwt.image import ImagePlot
 from guiqwt.curve import PlotItemList
 from guiqwt.histogram import ContrastAdjustment
@@ -50,6 +51,8 @@ class CentralWidget(QWidget):
 class Window(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+
+        win32_fix_title_bar_background(self)
 
         filename = osp.join(osp.dirname(__file__), "brain.png")
         image1 = make.image(filename=filename, title="Original", colormap="gray")

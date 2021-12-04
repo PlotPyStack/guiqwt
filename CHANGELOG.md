@@ -1,6 +1,18 @@
 # guiqwt Releases #
 
 
+### Version 3.1.0 ###
+
+Changes:
+
+* guiqwt now requires guidata >=v1.9.
+* Added support for dark theme mode on Windows (including windows title bar background),
+  MacOS and GNU/Linux.
+
+Bug fixes:
+
+*
+
 ### Version 3.0.7 ###
 
 Changes:
@@ -29,7 +41,7 @@ Bug fixes:
 
 Changes:
 
-* Added PySide2 support: guiqwt is now compatible with Python 2.7, Python 3.4+, PyQt4, 
+* Added PySide2 support: guiqwt is now compatible with Python 2.7, Python 3.4+, PyQt4,
   PyQt5 and PySide2!
 
 ### Version 3.0.4 ###
@@ -66,7 +78,7 @@ Other changes:
 Bug fixes:
 
 * I/O: fixed support for DICOM (supporting pydicom 0.9.5+ and 1.0)
-  
+
 Other changes:
 
 * Added CHM documentation to wheel package
@@ -106,7 +118,7 @@ Bug fixes:
 * Fixed Issue #46 (`guiqwt.io.imread`): fixed support for PNG images with transparency palette (Pillow)
 * Images with integers: avoid overflows when computing LUT
 * Fixed Issue #50: 16-bit images were saved (io.imwrite) using the wrong PIL mode
-  
+
 
 ### Version 2.3.2 ###
 
@@ -289,7 +301,7 @@ Other changes:
 ### Version 2.1.4 ###
 
 Since this version, `guiqwt` is compatible with PyQt4 API #1 *and* API #2.
-Please read carefully the coding guidelines which have been recently added to 
+Please read carefully the coding guidelines which have been recently added to
 the documentation.
 
 Bug fixes:

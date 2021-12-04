@@ -3,10 +3,10 @@
 guiqwt
 ======
 
-Based on `PythonQwt` (plotting widgets for Qt graphical user interfaces) and 
-on the scientific modules NumPy and SciPy, `guiqwt` is a Python library 
-providing efficient 2D data-plotting features (curve/image visualization 
-and related tools) for interactive computing and signal/image processing 
+Based on `PythonQwt` (plotting widgets for Qt graphical user interfaces) and
+on the scientific modules NumPy and SciPy, `guiqwt` is a Python library
+providing efficient 2D data-plotting features (curve/image visualization
+and related tools) for interactive computing and signal/image processing
 application development.
 
 .. image:: images/panorama.png
@@ -23,7 +23,7 @@ External resources:
 """
 
 
-__version__ = "3.0.7"
+__version__ = "3.1.0beta"
 __description__ = (
     "guiqwt is a set of tools for curve and image plotting " "(extension to PythonQwt)"
 )

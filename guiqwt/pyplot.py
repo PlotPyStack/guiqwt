@@ -11,18 +11,18 @@
 guiqwt.pyplot
 -------------
 
-The `pyplot` module provides an interactive plotting interface similar to 
+The `pyplot` module provides an interactive plotting interface similar to
 `Matplotlib`'s, i.e. with MATLAB-like syntax.
 
-The :py:mod:`guiqwt.pyplot` module was designed to be as close as possible 
-to the :py:mod:`matplotlib.pyplot` module, so that one could easily switch 
+The :py:mod:`guiqwt.pyplot` module was designed to be as close as possible
+to the :py:mod:`matplotlib.pyplot` module, so that one could easily switch
 between these two modules by simply changing the import statement. Basically,
-if `guiqwt` does support the plotting commands called in your script, replacing 
-``import matplotlib.pyplot`` by ``import guiqwt.pyplot`` should suffice, as 
+if `guiqwt` does support the plotting commands called in your script, replacing
+``import matplotlib.pyplot`` by ``import guiqwt.pyplot`` should suffice, as
 shown in the following example:
-    
+
     * Simple example using `matplotlib`::
-    
+
         import matplotlib.pyplot as plt
         import numpy as np
         x = np.linspace(-10, 10)
@@ -30,7 +30,7 @@ shown in the following example:
         plt.show()
 
     * Switching from `matplotlib` to `guiqwt` is trivial::
-    
+
         import guiqwt.pyplot as plt # only this line has changed!
         import numpy as np
         x = np.linspace(-10, 10)
@@ -117,6 +117,7 @@ from qtpy import PYQT5
 
 import guidata
 from guidata.configtools import get_icon
+from guidata.qthelpers import win32_fix_title_bar_background
 from qtpy.py3compat import is_text_string, to_text_string
 
 # Local imports
@@ -138,6 +139,7 @@ _current_axes = None
 class Window(QMainWindow):
     def __init__(self, wintitle):
         super(Window, self).__init__()
+        win32_fix_title_bar_background(self)
         self.default_tool = None
         self.plots = []
         self.itemlist = PlotItemList(None)
@@ -451,7 +453,7 @@ def gca():
 
 def show(mainloop=True):
     """
-    Show all figures and enter Qt event loop    
+    Show all figures and enter Qt event loop
     This should be the last line of your script
     """
     global _figures, _interactive
@@ -470,7 +472,7 @@ def _show_if_interactive():
 def subplot(n, m, k):
     """
     Create a subplot command
-    
+
     Example::
 
         import numpy as np
@@ -494,9 +496,9 @@ def subplot(n, m, k):
 def plot(*args, **kwargs):
     """
     Plot curves
-    
+
     Example::
-    
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         plot(x, np.sin(x), "r+")
@@ -516,9 +518,9 @@ def plot(*args, **kwargs):
 def plotyy(x1, y1, x2, y2):
     """
     Plot curves with two different y axes
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         plotyy(x, np.sin(x), x, np.cos(x))
@@ -538,9 +540,9 @@ def plotyy(x1, y1, x2, y2):
 def hist(data, bins=None, logscale=None, title=None, color=None):
     """
     Plot 1-D histogram
-    
+
     Example::
-        
+
         from numpy.random import normal
         data = normal(0, 1, (2000, ))
         hist(data)
@@ -558,9 +560,9 @@ def hist(data, bins=None, logscale=None, title=None, color=None):
 def semilogx(*args, **kwargs):
     """
     Plot curves with logarithmic x-axis scale
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         semilogx(x, np.sin(12*x), "g-")
@@ -577,9 +579,9 @@ def semilogx(*args, **kwargs):
 def semilogy(*args, **kwargs):
     """
     Plot curves with logarithmic y-axis scale
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         semilogy(x, np.sin(12*x), "g-")
@@ -596,9 +598,9 @@ def semilogy(*args, **kwargs):
 def loglog(*args, **kwargs):
     """
     Plot curves with logarithmic x-axis and y-axis scales
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         loglog(x, np.sin(12*x), "g-")
@@ -616,9 +618,9 @@ def loglog(*args, **kwargs):
 def errorbar(*args, **kwargs):
     """
     Plot curves with error bars
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
@@ -642,9 +644,9 @@ def imshow(data, interpolation=None, mask=None):
     """
     Display the image in *data* to current axes
     interpolation: 'nearest', 'linear' (default), 'antialiasing'
-    
+
     Example::
-        
+
         import numpy as np
         x = np.linspace(-5, 5, 1000)
         img = np.fromfunction(lambda x, y: np.sin((x/200.)*(y/200.)**2), (1000, 1000))
@@ -679,9 +681,9 @@ def imshow(data, interpolation=None, mask=None):
 def pcolor(*args):
     """
     Create a pseudocolor plot of a 2-D array
-    
+
     Example::
-    
+
         import numpy as np
         r = np.linspace(1., 16, 100)
         th = np.linspace(0., np.pi, 100)
@@ -752,10 +754,10 @@ def zlabel(label):
 def yreverse(reverse):
     """
     Set y-axis direction of increasing values
-    
+
     reverse = False (default)
         y-axis values increase from bottom to top
-    
+
     reverse = True
         y-axis values increase from top to bottom
     """
@@ -811,7 +813,7 @@ def close(N=None, all=False):
 def savefig(fname, format=None, draft=False):
     """
     Save figure
-    
+
     Currently supports PDF and PNG formats only
     """
     if not is_text_string(fname) and format is None:

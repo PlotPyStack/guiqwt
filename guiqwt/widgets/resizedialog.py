@@ -9,7 +9,7 @@
 resizedialog
 ------------
 
-The `resizedialog` module provides a dialog box providing essential GUI 
+The `resizedialog` module provides a dialog box providing essential GUI
 for entering parameters needed to resize an image:
 :py:class:`guiqwt.widgets.resizedialog.ResizeDialog`.
 
@@ -35,7 +35,7 @@ from qtpy.QtWidgets import (
 from qtpy.QtGui import QIntValidator
 from qtpy.QtCore import Qt
 
-
+from guidata.qthelpers import win32_fix_title_bar_background
 from guiqwt.config import _
 
 
@@ -50,6 +50,7 @@ def is_edit_valid(edit):
 class ResizeDialog(QDialog):
     def __init__(self, parent, new_size, old_size, text="", keep_original_size=False):
         QDialog.__init__(self, parent)
+        win32_fix_title_bar_background(self)
 
         intfunc = lambda tup: [int(val) for val in tup]
         if intfunc(new_size) == intfunc(old_size):

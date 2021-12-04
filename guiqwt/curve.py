@@ -14,73 +14,73 @@ guiqwt.curve
 The `curve` module provides curve-related objects:
     * :py:class:`guiqwt.curve.CurvePlot`: a 2d curve plotting widget
     * :py:class:`guiqwt.curve.CurveItem`: a curve plot item
-    * :py:class:`guiqwt.curve.ErrorBarCurveItem`: a curve plot item with 
+    * :py:class:`guiqwt.curve.ErrorBarCurveItem`: a curve plot item with
       error bars
     * :py:class:`guiqwt.curve.GridItem`
-    * :py:class:`guiqwt.curve.ItemListWidget`: base widget implementing the 
+    * :py:class:`guiqwt.curve.ItemListWidget`: base widget implementing the
       `plot item list panel`
     * :py:class:`guiqwt.curve.PlotItemList`: the `plot item list panel`
 
-``CurveItem`` and ``GridItem`` objects are plot items (derived from 
-QwtPlotItem) that may be displayed on a 2D plotting widget like 
+``CurveItem`` and ``GridItem`` objects are plot items (derived from
+QwtPlotItem) that may be displayed on a 2D plotting widget like
 :py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`.
 
 .. seealso::
-    
+
     Module :py:mod:`guiqwt.image`
         Module providing image-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
 
 Examples
 ~~~~~~~~
 
 Create a basic curve plotting widget:
-    * before creating any widget, a `QApplication` must be instantiated (that 
+    * before creating any widget, a `QApplication` must be instantiated (that
       is a `Qt` internal requirement):
-          
+
 >>> import guidata
 >>> app = guidata.qapplication()
 
-    * that is mostly equivalent to the following (the only difference is that 
-      the `guidata` helper function also installs the `Qt` translation 
+    * that is mostly equivalent to the following (the only difference is that
+      the `guidata` helper function also installs the `Qt` translation
       corresponding to the system locale):
-          
+
 >>> from PyQt4.QtGui import QApplication
 >>> app = QApplication([])
 
-    * now that a `QApplication` object exists, we may create the plotting 
+    * now that a `QApplication` object exists, we may create the plotting
       widget:
-          
+
 >>> from guiqwt.curve import CurvePlot
 >>> plot = CurvePlot(title="Example", xlabel="X", ylabel="Y")
 
 Create a curve item:
-    * from the associated plot item class (e.g. `ErrorBarCurveItem` to 
-      create a curve with error bars): the item properties are then assigned 
+    * from the associated plot item class (e.g. `ErrorBarCurveItem` to
+      create a curve with error bars): the item properties are then assigned
       by creating the appropriate style parameters object
       (e.g. :py:class:`guiqwt.styles.ErrorBarParam`)
-      
+
 >>> from guiqwt.curve import CurveItem
 >>> from guiqwt.styles import CurveParam
 >>> param = CurveParam()
 >>> param.label = 'My curve'
 >>> curve = CurveItem(param)
 >>> curve.set_data(x, y)
-      
+
     * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
-      
+
 >>> from guiqwt.builder import make
 >>> curve = make.curve(x, y, title='My curve')
 
 Attach the curve to the plotting widget:
-    
+
 >>> plot.add_item(curve)
 
 Display the plotting widget:
-    
+
 >>> plot.show()
 >>> app.exec_()
 
@@ -874,8 +874,8 @@ def _transform(map, v):
 
 
 def vmap(map, v):
-    """Transform coordinates while handling RuntimeWarning 
-    that could be raised by NumPy when trying to transform 
+    """Transform coordinates while handling RuntimeWarning
+    that could be raised by NumPy when trying to transform
     a zero in logarithmic scale for example"""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -885,7 +885,7 @@ def vmap(map, v):
 
 class ErrorBarCurveItem(CurveItem):
     """
-    Construct an error-bar curve `plot item` 
+    Construct an error-bar curve `plot item`
     with the parameters *errorbarparam*
     (see :py:class:`guiqwt.styles.ErrorBarParam`)
     """
@@ -941,7 +941,7 @@ class ErrorBarCurveItem(CurveItem):
     def set_data(self, x, y, dx=None, dy=None):
         """
         Set error-bar curve data:
-            
+
             * x: NumPy array
             * y: NumPy array
             * dx: float or NumPy array (non-constant error bars)
@@ -1201,13 +1201,13 @@ class ItemListWidget(QListWidget):
 
     def get_selected_items(self):
         """Return selected QwtPlot items
-        
+
         .. warning::
 
-            This is not the same as 
+            This is not the same as
             :py:data:`guiqwt.baseplot.BasePlot.get_selected_items`.
-            Some items could appear in itemlist without being registered in 
-            plot widget items (in particular, some items could be selected in 
+            Some items could appear in itemlist without being registered in
+            plot widget items (in particular, some items could be selected in
             itemlist without being selected in plot widget)
         """
         return [self.items[self.row(lw_item)] for lw_item in self.selectedItems()]
@@ -1398,9 +1398,9 @@ assert_interfaces_valid(PlotItemList)
 
 class CurvePlot(BasePlot):
     """
-    Construct a 2D curve plotting widget 
+    Construct a 2D curve plotting widget
     (this class inherits :py:class:`guiqwt.baseplot.BasePlot`)
-    
+
         * parent: parent widget
         * title: plot title
         * xlabel: (bottom axis title, top axis title) or bottom axis title only
@@ -1459,9 +1459,6 @@ class CurvePlot(BasePlot):
         self.curve_marker.setVisible(False)
         self.cross_marker.attach(self)
         self.curve_marker.attach(self)
-
-        # Background color
-        self.setCanvasBackground(Qt.white)
 
         self.curve_pointer = False
         self.canvas_pointer = False
@@ -1652,8 +1649,8 @@ class CurvePlot(BasePlot):
     def get_default_item(self):
         """Return default item, depending on plot's default item type
         (e.g. for a curve plot, this is a curve item type).
-        
-        Return nothing if there is more than one item matching 
+
+        Return nothing if there is more than one item matching
         the default item type."""
         items = self.get_items(item_type=self.DEFAULT_ITEM_TYPE)
         if len(items) == 1:
@@ -1663,7 +1660,7 @@ class CurvePlot(BasePlot):
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
-        
+
             * item: :py:data:`qwt.QwtPlotItem` object implementing
               the :py:data:`guiqwt.interfaces.IBasePlotItem` interface
             * z: item's z order (None -> z = max(self.get_items())+1)
@@ -1796,13 +1793,13 @@ class CurvePlot(BasePlot):
         Set plot and axes titles at once
 
             * title: plot title
-            * xlabel: (bottom axis title, top axis title) 
+            * xlabel: (bottom axis title, top axis title)
               or bottom axis title only
-            * ylabel: (left axis title, right axis title) 
+            * ylabel: (left axis title, right axis title)
               or left axis title only
-            * xunit: (bottom axis unit, top axis unit) 
+            * xunit: (bottom axis unit, top axis unit)
               or bottom axis unit only
-            * yunit: (left axis unit, right axis unit) 
+            * yunit: (left axis unit, right axis unit)
               or left axis unit only
         """
         if title is not None:
@@ -1873,4 +1870,3 @@ class CurvePlot(BasePlot):
         x0, x1 = self.get_axis_limits(xaxis)
         y0, y1 = self.get_axis_limits(yaxis)
         return x0, x1, y0, y1
-

@@ -14,6 +14,7 @@ SHOW = True  # Show test in GUI-based test launcher
 from qtpy.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QGridLayout
 import numpy as np
 
+from guidata.qthelpers import win32_fix_title_bar_background
 from guiqwt.plot import ImageWidget
 from guiqwt.builder import make
 
@@ -37,6 +38,7 @@ class PlotTab(QWidget):
 class LoadTest(QMainWindow):
     def __init__(self, nplots=150, ncols=6, nrows=5):
         super().__init__()
+        win32_fix_title_bar_background(self)
         self.tabw = QTabWidget()
         self.setCentralWidget(self.tabw)
         irow, icol, itab = 0, 0, 0

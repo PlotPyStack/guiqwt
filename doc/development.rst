@@ -1,17 +1,6 @@
 How to contribute
 =================
 
-Submitting changes
-------------------
-
-Due to confidentiality issues, we are not able *for now* to publish any source-
-controlled repository (even if we do have a `Mercurial` repository for the 
-project). However, this does not prevent motivated users from contributing to 
-the project by sending patches applied to the last published version of the 
-library. To compensate the absence of source repository, we try to update the 
-library as often as we can in order to keep the public source archive version 
-as close as possible to the internal development version.
-
 Coding guidelines
 -----------------
 
