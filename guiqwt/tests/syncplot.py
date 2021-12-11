@@ -84,7 +84,9 @@ def test():
                 "Relative position <b>outside</b>", (x[0], y[0]), (-10, -10), "BR"
             ),
         ],
-        [make.curve(x2, y2, color="g"),],
+        [
+            make.curve(x2, y2, color="g"),
+        ],
         [
             make.curve(x, sin(2 * y), color="r"),
             make.label("Relative position <i>inside</i>", (x[0], y[0]), (10, 10), "TL"),

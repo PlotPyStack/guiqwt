@@ -7,16 +7,19 @@
 
 """FontParam test"""
 
-SHOW = False # Do not show test in GUI-based test launcher
+SHOW = False  # Do not show test in GUI-based test launcher
 
 from guiqwt.styles import FontParam
+
 
 def test():
     fp = FontParam()
     fp.edit()
     fp.edit()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import guidata
+
     _app = guidata.qapplication()
     test()

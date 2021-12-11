@@ -11,11 +11,12 @@ pyplot test
 Interactive plotting interface with MATLAB-like syntax
 """
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 import numpy as np
 
 from guiqwt.pyplot import *
+
 
 def main():
     x = np.linspace(-5, 5, 1000)
@@ -23,55 +24,57 @@ def main():
     subplot(2, 1, 1)
     plot(x, np.sin(x), "r+")
     plot(x, np.cos(x), "g-")
-    errorbar(x, -1+x**2/20+.2*np.random.rand(len(x)), x/20)
+    errorbar(x, -1 + x ** 2 / 20 + 0.2 * np.random.rand(len(x)), x / 20)
     xlabel("Axe x")
     ylabel("Axe y")
     subplot(2, 1, 2)
-    img = np.fromfunction(lambda x, y:
-                          np.sin((x/200.)*(y/200.)**2), (1000, 1000))
+    img = np.fromfunction(
+        lambda x, y: np.sin((x / 200.0) * (y / 200.0) ** 2), (1000, 1000)
+    )
     xlabel("pixels")
     ylabel("pixels")
     zlabel("intensity")
     gray()
     imshow(img)
-#    savefig("D:\\test1.pdf", draft=True)
+    #    savefig("D:\\test1.pdf", draft=True)
 
     figure("table plot")
     data = np.array([x, np.sin(x), np.cos(x)]).T
     plot(data)
-    
+
     figure("simple plot")
     subplot(1, 2, 1)
-    plot(x, np.tanh(x+np.sin(12*x)), "g-", label="Tanh")
+    plot(x, np.tanh(x + np.sin(12 * x)), "g-", label="Tanh")
     legend()
     subplot(1, 2, 2)
     plot(x, np.sinh(x), "r:", label="SinH")
-#    savefig("D:\\test2.pdf")
-#    savefig("D:\\test2.png")
+    #    savefig("D:\\test2.pdf")
+    #    savefig("D:\\test2.png")
     show()
-    
+
     figure("semilogx")
-    semilogx(x, np.sin(12*x), "g-")
+    semilogx(x, np.sin(12 * x), "g-")
     show()
-    
+
     figure("plotyy")
     plotyy(x, np.sin(x), x, np.cos(x))
     ylabel("sinus", "cosinus")
     show()
-    
+
     figure("hist")
     from numpy.random import normal
-    data = normal(0, 1, (2000, ))
+
+    data = normal(0, 1, (2000,))
     hist(data)
     show()
-    
+
     figure("pcolor 1")
-    r = np.linspace(1., 16, 100)
-    th = np.linspace(0., np.pi, 100)
+    r = np.linspace(1.0, 16, 100)
+    th = np.linspace(0.0, np.pi, 100)
     R, TH = np.meshgrid(r, th)
-    X = R*np.cos(TH)
-    Y = R*np.sin(TH)
-    Z = 4*TH+R
+    X = R * np.cos(TH)
+    Y = R * np.sin(TH)
+    Z = 4 * TH + R
     pcolor(X, Y, Z)
 
     figure("pcolor 2")
@@ -79,5 +82,6 @@ def main():
     hot()
     show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

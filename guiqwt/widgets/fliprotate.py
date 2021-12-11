@@ -39,7 +39,7 @@ from guiqwt.widgets import base
 
 
 class FlipRotateMixin(base.BaseTransformMixin):
-    """Rotate & Crop mixin class, to be mixed with a class providing the 
+    """Rotate & Crop mixin class, to be mixed with a class providing the
     get_plot method, like ImageDialog or FlipRotateWidget (see below)"""
 
     ROTATION_ANGLES = [str((i - 1) * 90) for i in range(4)]
@@ -128,7 +128,7 @@ class FlipRotateMixin(base.BaseTransformMixin):
 
 class FlipRotateDialog(base.BaseTransformDialog, FlipRotateMixin):
     """Flip & Rotate Dialog
-    
+
     Flip and rotate a :py:class:`guiqwt.image.TrImageItem` plot item"""
 
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
@@ -140,7 +140,7 @@ class FlipRotateDialog(base.BaseTransformDialog, FlipRotateMixin):
 
 class FlipRotateWidget(base.BaseTransformWidget, FlipRotateMixin):
     """Flip & Rotate Widget
-    
+
     Flip and rotate a :py:class:`guiqwt.image.TrImageItem` plot item"""
 
     def __init__(self, parent, options=None):
@@ -150,7 +150,7 @@ class FlipRotateWidget(base.BaseTransformWidget, FlipRotateMixin):
 
 class MultipleFlipRotateWidget(base.BaseMultipleTransformWidget):
     """Multiple Flip & Rotate Widget
-    
+
     Flip and rotate several :py:class:`guiqwt.image.TrImageItem` plot items"""
 
     TRANSFORM_WIDGET_CLASS = FlipRotateWidget

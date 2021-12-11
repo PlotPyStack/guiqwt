@@ -51,9 +51,9 @@ def exec_image_save_dialog(parent, data, template=None, basedir="", app_name=Non
         * data: image pixel array data
         * template: image template (pydicom dataset) for DICOM files
         * basedir: base directory ('' means current directory)
-        * app_name (opt.): application name (used as a title for an eventual 
+        * app_name (opt.): application name (used as a title for an eventual
           error message box in case something goes wrong when saving image)
-    
+
     Returns filename if dialog is accepted, None otherwise
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
@@ -94,10 +94,10 @@ def exec_image_open_dialog(
     Executes an image open dialog box (QFileDialog.getOpenFileName)
         * parent: parent widget (None means no parent)
         * basedir: base directory ('' means current directory)
-        * app_name (opt.): application name (used as a title for an eventual 
+        * app_name (opt.): application name (used as a title for an eventual
           error message box in case something goes wrong when saving image)
         * to_grayscale (default=True): convert image to grayscale
-    
+
     Returns (filename, data) tuple if dialog is accepted, None otherwise
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
@@ -129,10 +129,10 @@ def exec_images_open_dialog(
     Executes an image*s* open dialog box (QFileDialog.getOpenFileNames)
         * parent: parent widget (None means no parent)
         * basedir: base directory ('' means current directory)
-        * app_name (opt.): application name (used as a title for an eventual 
+        * app_name (opt.): application name (used as a title for an eventual
           error message box in case something goes wrong when saving image)
         * to_grayscale (default=True): convert image to grayscale
-    
+
     Yields (filename, data) tuples if dialog is accepted, None otherwise
     """
     saved_in, saved_out, saved_err = sys.stdin, sys.stdout, sys.stderr
@@ -158,4 +158,3 @@ def exec_images_open_dialog(
             )
             return
         yield filename, data
-

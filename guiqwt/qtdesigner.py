@@ -33,7 +33,7 @@ from qtpy.py3compat import io
 def loadui(fname, replace_class="QwtPlot"):
     """
     Return Widget or Window class from QtDesigner ui file 'fname'
-    
+
     The loadUiType function (PyQt4.uic) doesn't work correctly with guiqwt
     QtDesigner plugins because they don't inheritate from a PyQt4.QtGui
     object.
@@ -68,7 +68,7 @@ def create_qtdesigner_plugin(
     whatsthis="",
 ):
     """Return a custom QtDesigner plugin class
-    
+
     Example:
     create_qtdesigner_plugin(group = "guiqwt", module_name = "guiqwt.image",
                              class_name = "ImageWidget", icon = "image.png",

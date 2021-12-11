@@ -99,4 +99,3 @@ class PanelWidget(DockableWidget):
         DockableWidget.visibility_changed(self, enable)
         # For compatibility with the guiqwt.panels.PanelWidget interface:
         self.SIG_VISIBILITY_CHANGED.emit(self._isvisible)
-

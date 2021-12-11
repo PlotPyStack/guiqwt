@@ -7,7 +7,7 @@
 
 """Load/save items from/to HDF5 file"""
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 # WARNING:
 # This script requires read/write permissions on current directory
@@ -19,11 +19,12 @@ from guiqwt.tests.loadsaveitems_pickle import IOTest
 
 class HDF5Test(IOTest):
     FNAME = "loadsavecanvas.h5"
+
     def restore_items(self):
         reader = HDF5Reader(self.FNAME)
         self.plot.deserialize(reader)
         reader.close()
-    
+
     def save_items(self):
         writer = HDF5Writer(self.FNAME)
         self.plot.serialize(writer)
@@ -32,6 +33,7 @@ class HDF5Test(IOTest):
 
 if __name__ == "__main__":
     import guidata
+
     _app = guidata.qapplication()
     test = HDF5Test()
     test.run()

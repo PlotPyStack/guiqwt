@@ -405,7 +405,7 @@ class BaseImageItem(QwtPlotItem):
 
         .. note::
 
-            This is *not* the same as retrieving the canvas pixel coordinates 
+            This is *not* the same as retrieving the canvas pixel coordinates
             (which depends on the zoom level)
         """
         x, y = self.get_pixel_coordinates(x, y)
@@ -426,7 +426,7 @@ class BaseImageItem(QwtPlotItem):
         Return image level at coordinates (x0,y0)
 
         If x1,y1 are specified:
-            
+
           Return image levels (np.ndarray) in rectangular area (x0,y0,x1,y1)
         """
         i0, j0 = self.get_closest_indexes(x0, y0)
@@ -557,10 +557,10 @@ class BaseImageItem(QwtPlotItem):
     def draw_image(self, painter, canvasRect, src_rect, dst_rect, xMap, yMap):
         """
         Draw image with painter on canvasRect
-        
+
         .. warning::
 
-            `src_rect` and `dst_rect` are coordinates tuples 
+            `src_rect` and `dst_rect` are coordinates tuples
             (xleft, ytop, xright, ybottom)
         """
         dest = _scale_rect(
@@ -740,7 +740,9 @@ class BaseImageItem(QwtPlotItem):
     def get_histogram(self, nbins):
         """interface de IHistDataSource"""
         if self.data is None:
-            return [0,], [0, 1]
+            return [
+                0,
+            ], [0, 1]
         if self.histogram_cache is None or nbins != self.histogram_cache[0].shape[0]:
             # from guidata.utils import tic, toc
             if True:
@@ -843,7 +845,7 @@ assert_interfaces_valid(BaseImageItem)
 class RawImageItem(BaseImageItem):
     """
     Construct a simple image item
-    
+
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.RawImageParam` instance)
@@ -924,7 +926,7 @@ class RawImageItem(BaseImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
-        
+
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -987,7 +989,7 @@ assert_interfaces_valid(RawImageItem)
 class ImageItem(RawImageItem):
     """
     Construct a simple image item
-    
+
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.ImageParam` instance)
@@ -1184,7 +1186,7 @@ assert_interfaces_valid(ImageItem)
 class QuadGridItem(RawImageItem):
     """
     Construct a QuadGrid image
-    
+
         * X, Y, Z: A structured grid of quadrilaterals
           each quad is defined by (X[i], Y[i]), (X[i], Y[i+1]),
           (X[i+1], Y[i+1]), (X[i+1], Y[i])
@@ -1230,7 +1232,7 @@ class QuadGridItem(RawImageItem):
     def set_data(self, data, X=None, Y=None, lut_range=None):
         """
         Set Image item data
-        
+
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -1281,7 +1283,7 @@ assert_interfaces_valid(QuadGridItem)
 class TrImageItem(RawImageItem):
     """
     Construct a transformable image item
-    
+
         * data: 2D NumPy array
         * param (optional): image parameters
           (:py:class:`guiqwt.styles.TrImageParam` instance)
@@ -1534,7 +1536,7 @@ def assemble_imageitems(
     """
     Assemble together image items in qrect (`QRectF` object)
     and return resulting pixel data
-    
+
     .. warning::
 
         Does not support `XYImageItem` objects
@@ -1633,10 +1635,10 @@ def get_image_from_qrect(
     original_resolution=False,
     add_images=False,
 ):
-    """Return image array from `QRect` area (p0 and p1 are respectively the 
+    """Return image array from `QRect` area (p0 and p1 are respectively the
     top-left and bottom-right `QPointF` objects)
-    
-    adjust_range: None (return raw data, dtype=np.float32), 'original' 
+
+    adjust_range: None (return raw data, dtype=np.float32), 'original'
     (return data with original data type), 'normalize' (normalize range with
     original data type)"""
     assert adjust_range in (None, "normalize", "original")
@@ -1753,7 +1755,7 @@ def to_bins(x):
 class XYImageItem(RawImageItem):
     """
     Construct an image item with non-linear X/Y axes
-    
+
         * x: 1D NumPy array, must be increasing
         * y: 1D NumPy array, must be increasing
         * data: 2D NumPy array
@@ -1914,7 +1916,7 @@ assert_interfaces_valid(XYImageItem)
 class RGBImageItem(ImageItem):
     """
     Construct a RGB/RGBA image item
-    
+
         * data: NumPy array of uint8 (shape: NxMx[34] -- 3: RGB, 4: RGBA)
           (last dimension: 0: Red, 1: Green, 2: Blue {, 3:Alpha})
         * param (optional): image parameters
@@ -2035,7 +2037,7 @@ class MaskedArea(object):
 class MaskedImageItem(ImageItem):
     """
     Construct a masked image item
-    
+
         * data: 2D NumPy array
         * mask (optional): 2D NumPy array
         * param (optional): image parameters
@@ -2135,7 +2137,7 @@ class MaskedImageItem(ImageItem):
     def set_mask_filename(self, fname):
         """
         Set mask filename
-        
+
         There are two ways for pickling mask data of `MaskedImageItem` objects:
 
             1. using the mask filename (as for data itself)
@@ -2305,7 +2307,7 @@ class MaskedImageItem(ImageItem):
     def set_data(self, data, lut_range=None):
         """
         Set Image item data
-        
+
             * data: 2D NumPy array
             * lut_range: LUT range -- tuple (levelmin, levelmax)
         """
@@ -2327,7 +2329,7 @@ class MaskedImageItem(ImageItem):
 class ImageFilterItem(BaseImageItem):
     """
     Construct a rectangular area image filter item
-    
+
         * image: :py:class:`guiqwt.image.RawImageItem` instance
         * filter: function (x, y, data) --> data
         * param: image filter parameters
@@ -2355,7 +2357,7 @@ class ImageFilterItem(BaseImageItem):
     def set_image(self, image):
         """
         Set the image item on which the filter will be applied
-        
+
             * image: :py:class:`guiqwt.image.RawImageItem` instance
         """
         self.image = image
@@ -2363,7 +2365,7 @@ class ImageFilterItem(BaseImageItem):
     def set_filter(self, filter):
         """
         Set the filter function
-        
+
             * filter: function (x, y, data) --> data
         """
         self.filter = filter
@@ -2456,7 +2458,7 @@ class ImageFilterItem(BaseImageItem):
 class XYImageFilterItem(ImageFilterItem):
     """
     Construct a rectangular area image filter item
-    
+
         * image: :py:class:`guiqwt.image.XYImageItem` instance
         * filter: function (x, y, data) --> data
         * param: image filter parameters
@@ -2469,7 +2471,7 @@ class XYImageFilterItem(ImageFilterItem):
     def set_image(self, image):
         """
         Set the image item on which the filter will be applied
-        
+
             * image: :py:class:`guiqwt.image.XYImageItem` instance
         """
         ImageFilterItem.set_image(self, image)
@@ -2514,7 +2516,7 @@ assert_interfaces_valid(ImageFilterItem)
 class Histogram2DItem(BaseImageItem):
     """
     Construct a 2D histogram item
-    
+
         * X: data (1-D array)
         * Y: data (1-D array)
         * param (optional): style parameters
@@ -2656,7 +2658,9 @@ class Histogram2DItem(BaseImageItem):
     def get_histogram(self, nbins):
         """interface de IHistDataSource"""
         if self.data is None:
-            return [0,], [0, 1]
+            return [
+                0,
+            ], [0, 1]
         _min = _nanmin(self.data)
         _max = _nanmax(self.data)
         if self.data.dtype in (np.float64, np.float32):
@@ -2682,7 +2686,7 @@ class ImagePlot(CurvePlot):
     """
     Construct a 2D curve and image plotting widget
     (this class inherits :py:class:`guiqwt.curve.CurvePlot`)
-    
+
         * parent: parent widget
         * title: plot title (string)
         * xlabel, ylabel, zlabel: resp. bottom, left and right axis titles
@@ -2865,7 +2869,7 @@ class ImagePlot(CurvePlot):
         """
         Add a *plot item* instance to this *plot widget*
 
-            * item: :py:data:`qwt.QwtPlotItem` object implementing the 
+            * item: :py:data:`qwt.QwtPlotItem` object implementing the
               :py:data:`guiqwt.interfaces.IBasePlotItem` interface
             * z: item's z order (None -> z = max(self.get_items())+1)
               autoscale: True -> rescale plot to fit image bounds
@@ -2931,4 +2935,3 @@ class ImagePlot(CurvePlot):
 #        self.set_aspect_ratio(ratio=ratio)
 #        self.replot()
 # -----
-

@@ -110,7 +110,7 @@ class CrossSectionItem(ErrorBarCurveItem):
 
     def process_curve_data(self, x, y, dx=None, dy=None):
         """
-        Override this method to process data 
+        Override this method to process data
         before updating the displayed curve
         """
         self.set_data(x, y, dx, dy)
@@ -142,8 +142,8 @@ class CrossSectionItem(ErrorBarCurveItem):
 def get_rectangular_area(obj):
     """
     Return rectangular area covered by object
-    
-    Return None if object does not support this feature 
+
+    Return None if object does not support this feature
     (like markers, points, ...)
     """
     if hasattr(obj, "get_rect"):
@@ -507,11 +507,11 @@ class CrossSectionPlot(CurvePlot):
     def update_plot(self, obj=None, refresh=True):
         """
         Update cross section curve(s) associated to object *obj*
-        
+
         *obj* may be a marker or a rectangular shape
-        (see :py:class:`guiqwt.tools.CrossSectionTool` 
+        (see :py:class:`guiqwt.tools.CrossSectionTool`
         and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
-        
+
         If obj is None, update the cross sections of the last active object
         """
         if obj is None:
@@ -769,11 +769,11 @@ class CrossSectionWidget(PanelWidget):
     def update_plot(self, obj=None):
         """
         Update cross section curve(s) associated to object *obj*
-        
+
         *obj* may be a marker or a rectangular shape
-        (see :py:class:`guiqwt.tools.CrossSectionTool` 
+        (see :py:class:`guiqwt.tools.CrossSectionTool`
         and :py:class:`guiqwt.tools.AverageCrossSectionTool`)
-        
+
         If obj is None, update the cross sections of the last active object
         """
         self.cs_plot.update_plot(obj)

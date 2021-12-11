@@ -108,8 +108,8 @@ class AbstractShape(QwtPlotItem):
     """Interface pour les objets manipulables
     il n'est pas nécessaire de dériver de QwtShape si on
     réutilise une autre classe dérivée de QwtPlotItem
-    
-    La classe de base 
+
+    La classe de base
     """
 
     __implements__ = (IBasePlotItem,)
@@ -192,7 +192,7 @@ class AbstractShape(QwtPlotItem):
         """
         Return a tuple with four elements:
         (distance, attach point, inside, other_object)
-        
+
         distance : distance in pixels (canvas coordinates)
                    to the closest attach point
         attach point: handle of the attach point
@@ -219,7 +219,7 @@ class AbstractShape(QwtPlotItem):
         """
         Change the appearance of this item according
         to the parameter set provided
-        
+
         params is a list of Datasets of the same types as those returned
         by get_item_parameters
         """
@@ -385,7 +385,7 @@ class Marker(QwtPlotMarker):
         """
         Return a tuple with four elements:
         (distance, attach point, inside, other_object)
-        
+
         distance : distance in pixels (canvas coordinates)
                    to the closest attach point
         attach point: handle of the attach point
@@ -426,7 +426,7 @@ class Marker(QwtPlotMarker):
         """
         Change the appearance of this item according
         to the parameter set provided
-        
+
         params is a list of Datasets of the same types as those returned
         by get_item_parameters
         """
@@ -812,7 +812,7 @@ class SegmentShape(PolygonShape):
 
     def set_rect(self, x1, y1, x2, y2):
         """
-        Set the start point of this segment to (x1, y1) 
+        Set the start point of this segment to (x1, y1)
         and the end point of this line to (x2, y2)
         """
         self.set_points([(x1, y1), (x2, y2), (0.5 * (x1 + x2), 0.5 * (y1 + y2))])
@@ -864,7 +864,7 @@ class RectangleShape(PolygonShape):
 
     def set_rect(self, x1, y1, x2, y2):
         """
-        Set the coordinates of the rectangle's top-left corner to (x1, y1), 
+        Set the coordinates of the rectangle's top-left corner to (x1, y1),
         and of its bottom-right corner to (x2, y2).
         """
         self.set_points([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
@@ -927,17 +927,17 @@ class ObliqueRectangleShape(PolygonShape):
     def set_rect(self, x0, y0, x1, y1, x2, y2, x3, y3):
         """
         Set the rectangle corners coordinates:
-            
+
             (x0, y0): top-left corner
             (x1, y1): top-right corner
             (x2, y2): bottom-right corner
             (x3, y3): bottom-left corner
-            
+
         ::
-            
+
             x: additionnal points (handles used for rotation -- other handles
             being used for rectangle resizing)
-            
+
             (x0, y0)------>(x1, y1)
                 ↑             |
                 |             |

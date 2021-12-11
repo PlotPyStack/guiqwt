@@ -42,7 +42,7 @@ from guiqwt.config import _
 
 def scale_data_to_dtype(data, dtype):
     """Scale array `data` to fit datatype `dtype` dynamic range
-    
+
     WARNING: modifies data in place"""
     info = np.iinfo(dtype)
     dmin = data.min()
@@ -67,11 +67,11 @@ def eliminate_outliers(data, percent=2.0, bins=256):
 # ===============================================================================
 class FileType(object):
     """Filetype object:
-        * `name` : description of filetype,
-        * `read_func`, `write_func` : I/O callbacks,
-        * `extensions`: filename extensions (with a dot!) or filenames,
-        (list, tuple or space-separated string)
-        * `data_types`: supported data types"""
+    * `name` : description of filetype,
+    * `read_func`, `write_func` : I/O callbacks,
+    * `extensions`: filename extensions (with a dot!) or filenames,
+    (list, tuple or space-separated string)
+    * `data_types`: supported data types"""
 
     def __init__(
         self,
@@ -130,7 +130,7 @@ class ImageIOHandler(object):
 
     def get_filters(self, action, dtype=None, template=None):
         """Return file type filters for `action` (string: 'save' or 'load'),
-        `dtype` data type (None: all data types), and `template` (True if save 
+        `dtype` data type (None: all data types), and `template` (True if save
         function requires a template (e.g. DICOM files), False otherwise)"""
         filters = self.allfilters(action, dtype, template)
         for ftype in self.filetypes:
@@ -195,18 +195,22 @@ iohandler = ImageIOHandler()
 # tifffile-based Private I/O functions
 # ==============================================================================
 
+
 def _imread_tiff(filename):
     """Open a TIFF image and return a NumPy array"""
     try:
         import tifffile
+
         return tifffile.imread(filename)
     except ImportError:
         return _imread_pil(filename)
+
 
 def _imwrite_tiff(filename, arr):
     """Save a NumPy array to a TIFF file"""
     try:
         import tifffile
+
         return tifffile.imwrite(filename, arr)
     except ImportError:
         return _imwrite_pil(filename, arr)
@@ -458,10 +462,10 @@ iohandler.add(
 # ==============================================================================
 def imread(fname, ext=None, to_grayscale=False):
     """Return a NumPy array from an image filename `fname`.
-    
+
     If `to_grayscale` is True, convert RGB images to grayscale
     The `ext` (optional) argument is a string that specifies the file extension
-    which defines the input format: when not specified, the input format is 
+    which defines the input format: when not specified, the input format is
     guessed from filename."""
     if not is_text_string(fname):
         fname = to_text_string(fname)  # in case filename is a QString instance
@@ -477,12 +481,12 @@ def imread(fname, ext=None, to_grayscale=False):
 
 def imwrite(fname, arr, ext=None, dtype=None, max_range=None, **kwargs):
     """Save a NumPy array to an image filename `fname`.
-    
+
     If `to_grayscale` is True, convert RGB images to grayscale
     The `ext` (optional) argument is a string that specifies the file extension
-    which defines the input format: when not specified, the input format is 
+    which defines the input format: when not specified, the input format is
     guessed from filename.
-    If `max_range` is True, array data is scaled to fit the `dtype` (or data 
+    If `max_range` is True, array data is scaled to fit the `dtype` (or data
     type itself if `dtype` is None) dynamic range
     Warning: option `max_range` changes data in place"""
     if not is_text_string(fname):
@@ -621,8 +625,8 @@ def load_item(reader, group_name):
 
 def save_items(writer, items):
     """Save items to HDF5 file:
-        * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
-        * items: serializable plot items"""
+    * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
+    * items: serializable plot items"""
     counts = {}
     names = []
 
@@ -642,7 +646,7 @@ def save_items(writer, items):
 
 def load_items(reader):
     """Load items from HDF5 file:
-        * reader: :py:class:`guidata.hdf5io.HDF5Reader` object"""
+    * reader: :py:class:`guidata.hdf5io.HDF5Reader` object"""
     with reader.group("plot_items"):
         names = reader.read_sequence()
     items = []
@@ -662,4 +666,3 @@ if __name__ == "__main__":
     # Test if items can all be constructed from their Python module
     for name in SERIALIZABLE_ITEMS:
         print(name, "-->", item_class_from_name(name))
-

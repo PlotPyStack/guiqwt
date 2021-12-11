@@ -16,7 +16,20 @@ No other ``guiqwt`` module should import ``qwt`` or use any of its
 interfaces directly.
 """
 
-from qwt import (QwtPlot, QwtSymbol, QwtLinearScaleEngine, QwtLogScaleEngine,
-                 QwtText, QwtPlotCanvas, QwtLinearColorMap, QwtInterval,
-                 toQImage, QwtPlotGrid, QwtPlotItem, QwtScaleMap, QwtPlotCurve,
-                 QwtPlotMarker, QwtPlotRenderer)
+from qwt import (
+    QwtPlot,
+    QwtSymbol,
+    QwtLinearScaleEngine,
+    QwtLogScaleEngine,
+    QwtText,
+    QwtPlotCanvas,
+    QwtLinearColorMap,
+    QwtInterval,
+    toQImage,
+    QwtPlotGrid,
+    QwtPlotItem,
+    QwtScaleMap,
+    QwtPlotCurve,
+    QwtPlotMarker,
+    QwtPlotRenderer,
+)

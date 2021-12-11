@@ -126,10 +126,10 @@ class HistogramItem(CurveItem):
     def set_hist_source(self, src):
         """
         Set histogram source
-        
+
         *source*:
-            
-            Object with method `get_histogram`, e.g. objects derived from 
+
+            Object with method `get_histogram`, e.g. objects derived from
             :py:data:`guiqwt.image.ImageItem`
         """
         self.source = weakref.ref(src)
@@ -138,10 +138,10 @@ class HistogramItem(CurveItem):
     def get_hist_source(self):
         """
         Return histogram source
-        
+
         *source*:
-            
-            Object with method `get_histogram`, e.g. objects derived from 
+
+            Object with method `get_histogram`, e.g. objects derived from
             :py:data:`guiqwt.image.ImageItem`
         """
         if self.source is not None:

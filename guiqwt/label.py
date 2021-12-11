@@ -505,15 +505,15 @@ class ObjectInfo(object):
 
 class RangeInfo(ObjectInfo):
     """ObjectInfo handling XRangeSelection shape informations: x, dx
-    
+
     label: formatted string
     xrangeselection: XRangeSelection object
-    function: input arguments are x, dx ; returns objects used to format the 
+    function: input arguments are x, dx ; returns objects used to format the
     label. Default function is `lambda x, dx: (x, dx)`.
 
     Example:
     -------
-    
+
     x = linspace(-10, 10, 10)
     y = sin(sin(sin(x)))
     xrangeselection = make.range(-2, 2)
@@ -537,13 +537,13 @@ class RangeInfo(ObjectInfo):
 
 
 class RangeComputation(ObjectInfo):
-    """ObjectInfo showing curve computations relative to a XRangeSelection 
+    """ObjectInfo showing curve computations relative to a XRangeSelection
     shape.
-    
+
     label: formatted string
     curve: CurveItem object
     xrangeselection: XRangeSelection object
-    function: input arguments are x, y arrays (extraction of arrays 
+    function: input arguments are x, y arrays (extraction of arrays
     corresponding to the xrangeselection X-axis range)"""
 
     def __init__(self, label, curve, xrangeselection, function=None):
@@ -616,4 +616,3 @@ class DataInfoLabel(LabelItem):
         for info in self.infos:
             text.append(info.get_text())
         self.set_text("<br/>".join(text))
-

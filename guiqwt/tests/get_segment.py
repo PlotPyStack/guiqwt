@@ -13,7 +13,7 @@ This guiqwt tool provide a MATLAB-like "ginput" feature.
 
 from __future__ import print_function
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 import os.path as osp
 import numpy as np
@@ -29,8 +29,9 @@ def get_segment(item):
     win = ImageDialog(_("Select a segment then press OK to accept"), edit=True)
     default = win.add_tool(SelectTool)
     win.set_default_tool(default)
-    segtool = win.add_tool(AnnotatedSegmentTool, title="Test",
-                           switch_to_default_tool=True)
+    segtool = win.add_tool(
+        AnnotatedSegmentTool, title="Test", switch_to_default_tool=True
+    )
     segtool.activate()
     plot = win.get_plot()
     plot.add_item(item)
@@ -40,17 +41,20 @@ def get_segment(item):
         shape = segtool.get_last_final_shape()
         return shape.get_rect()
 
+
 def test():
     """Test"""
     # -- Create QApplication
     import guidata
+
     _app = guidata.qapplication()
     # --
     filename = osp.join(osp.dirname(__file__), "brain.png")
     image = make.image(filename=filename, colormap="bone")
     rect = get_segment(image)
     print("Coordinates:", rect)
-    print("Distance:", np.sqrt((rect[2]-rect[0])**2 + (rect[3]-rect[1])**2))
+    print("Distance:", np.sqrt((rect[2] - rect[0]) ** 2 + (rect[3] - rect[1]) ** 2))
+
 
 if __name__ == "__main__":
     test()

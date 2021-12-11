@@ -29,7 +29,7 @@ from guiqwt.plot import ImageWidget, ImageDialog
 class BaseTransformMixin(object):
     """Base transform widget mixin class (for manipulating TrImageItem objects)
 
-    This is to be mixed with a class providing the get_plot method, 
+    This is to be mixed with a class providing the get_plot method,
     like ImageDialog, or BaseTransformWidget (see below)"""
 
     def __init__(self):
@@ -151,7 +151,7 @@ class BaseTransformMixin(object):
 
 class BaseTransformDialog(ImageDialog):
     """Rotate & Crop Dialog
-    
+
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
 
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
@@ -203,7 +203,7 @@ class BaseTransformWidget(QWidget):
 
 class BaseMultipleTransformWidget(QTabWidget):
     """Base Multiple Transform Widget
-    
+
     Transform several :py:class:`guiqwt.image.TrImageItem` plot items"""
 
     TRANSFORM_WIDGET_CLASS = None
@@ -249,4 +249,3 @@ class BaseMultipleTransformWidget(QTabWidget):
         """Reject all changes"""
         for index in range(self.count()):
             self.widget(index).reject_changes()
-

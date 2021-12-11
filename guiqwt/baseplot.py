@@ -105,9 +105,9 @@ class BasePlot(QwtPlot):
     """
     An enhanced QwtPlot class that provides
     methods for handling plotitems and axes better
-    
+
     It distinguishes activatable items from basic QwtPlotItems.
-    
+
     Activatable items must support IBasePlotItem interface and should
     be added to the plot using add_item methods.
     """
@@ -253,7 +253,7 @@ class BasePlot(QwtPlot):
         """
         Read axes styles from section and options (one option
         for each axis in the order left, right, bottom, top)
-        
+
         Skip axis if option is None
         """
         for prm, option in zip(self.axes_styles, options):
@@ -490,7 +490,7 @@ class BasePlot(QwtPlot):
     def add_item(self, item, z=None):
         """
         Add a *plot item* instance to this *plot widget*
-        
+
         item: :py:data:`qwt.QwtPlotItem` object implementing
               the IBasePlotItem interface (guiqwt.interfaces)
         """
@@ -591,7 +591,7 @@ class BasePlot(QwtPlot):
         Save (serializable) items to file using the :py:mod:`pickle` protocol
             * iofile: file object or filename
             * selected=False: if True, will save only selected items
-            
+
         See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items`
         """
         if selected:
@@ -607,7 +607,7 @@ class BasePlot(QwtPlot):
         """
         Restore items from file using the :py:mod:`pickle` protocol
             * iofile: file object or filename
-            
+
         See also :py:meth:`guiqwt.baseplot.BasePlot.save_items`
         """
         import pickle
@@ -621,7 +621,7 @@ class BasePlot(QwtPlot):
         Save (serializable) items to HDF5 file:
             * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
             * selected=False: if True, will save only selected items
-            
+
         See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items_from_hdf5`
         """
         if selected:
@@ -635,7 +635,7 @@ class BasePlot(QwtPlot):
         """
         Restore items from HDF5 file:
             * reader: :py:class:`guidata.hdf5io.HDF5Reader` object
-            
+
         See also :py:meth:`guiqwt.baseplot.BasePlot.save_items_to_hdf5`
         """
         for item in io.load_items(reader):
@@ -661,9 +661,9 @@ class BasePlot(QwtPlot):
     def move_up(self, item_list):
         """Move item(s) up, i.e. to the foreground
         (swap item with the next item in z-order)
-        
+
         item: plot item *or* list of plot items
-        
+
         Return True if items have been moved effectively"""
         objects = self.get_items(z_sorted=True)
         items = sorted(list(item_list), reverse=True, key=lambda x: objects.index(x))
@@ -680,9 +680,9 @@ class BasePlot(QwtPlot):
     def move_down(self, item_list):
         """Move item(s) down, i.e. to the background
         (swap item with the previous item in z-order)
-        
+
         item: plot item *or* list of plot items
-        
+
         Return True if items have been moved effectively"""
         objects = self.get_items(z_sorted=True)
         items = sorted(list(item_list), reverse=False, key=lambda x: objects.index(x))
@@ -796,12 +796,12 @@ class BasePlot(QwtPlot):
         Return nearest item from position 'pos'
 
         If close_dist > 0:
-            
-            Return the first found item (higher z) which distance to 'pos' is 
+
+            Return the first found item (higher z) which distance to 'pos' is
             less than close_dist
 
         else:
-            
+
             Return the closest item
         """
         selobj, distance, inside, handle = None, maxsize, None, None
@@ -860,7 +860,7 @@ class BasePlot(QwtPlot):
         """
         Return a list of DataSets for a given parameter key
         the datasets will be edited and passed back to set_plot_parameters
-        
+
         this is a generic interface to help building context menus
         using the BasePlotMenuTool
         """

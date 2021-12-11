@@ -36,7 +36,7 @@ from guiqwt.widgets import base
 
 
 class RotateCropMixin(base.BaseTransformMixin):
-    """Rotate & Crop mixin class, to be mixed with a class providing the 
+    """Rotate & Crop mixin class, to be mixed with a class providing the
     get_plot method, like ImageDialog or RotateCropWidget (see below)"""
 
     def __init__(self):
@@ -102,7 +102,7 @@ class RotateCropMixin(base.BaseTransformMixin):
 
 class RotateCropDialog(base.BaseTransformDialog, RotateCropMixin):
     """Rotate & Crop Dialog
-    
+
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
 
     def __init__(self, parent, wintitle=None, options=None, resize_to=None):
@@ -114,7 +114,7 @@ class RotateCropDialog(base.BaseTransformDialog, RotateCropMixin):
 
 class RotateCropWidget(base.BaseTransformWidget, RotateCropMixin):
     """Rotate & Crop Widget
-    
+
     Rotate and crop a :py:class:`guiqwt.image.TrImageItem` plot item"""
 
     def __init__(self, parent, options=None):
@@ -124,7 +124,7 @@ class RotateCropWidget(base.BaseTransformWidget, RotateCropMixin):
 
 class MultipleRotateCropWidget(base.BaseMultipleTransformWidget):
     """Multiple Rotate & Crop Widget
-    
+
     Rotate and crop several :py:class:`guiqwt.image.TrImageItem` plot items"""
 
     TRANSFORM_WIDGET_CLASS = RotateCropWidget

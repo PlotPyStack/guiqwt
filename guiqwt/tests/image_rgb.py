@@ -7,16 +7,17 @@
 
 """RGB Image test, creating the RGBImageItem object via make.rgbimage"""
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 import os.path as osp
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 TESTDIR = osp.abspath(osp.dirname(__file__))
 IMGFILE = osp.join(TESTDIR, "..", "images", "items", "image.png")
+
 
 def imshow(filename):
     win = ImageDialog(edit=False, toolbar=True, wintitle="RGB image item test")
@@ -26,13 +27,16 @@ def imshow(filename):
     win.show()
     win.exec_()
 
+
 def test():
     """Test"""
     # -- Create QApplication
     import guidata
+
     _app = guidata.qapplication()
     # --
     imshow(IMGFILE)
+
 
 if __name__ == "__main__":
     test()

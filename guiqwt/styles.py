@@ -1149,7 +1149,10 @@ class QuadGridParam(DataSet):
 
     interpolation = ChoiceItem(
         _("Interpolation"),
-        [(0, _("Quadrangle interpolation")), (1, _("Flat")),],
+        [
+            (0, _("Quadrangle interpolation")),
+            (1, _("Flat")),
+        ],
         default=0,
         help=_(
             "Image interpolation type, "
@@ -1588,7 +1591,7 @@ class MarkerParam(DataSet):
         Set marker line style
 
         style:
-            
+
             * convenient values: '+', '-', '|' or None
             * `QwtPlotMarker.NoLine`, `QwtPlotMarker.Vertical`, ...
         """

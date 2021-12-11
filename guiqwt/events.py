@@ -185,7 +185,7 @@ class StatefulEventFilter(QObject):
 
     def set_state(self, state, event):
         """Change l'état courant.
-        
+
         Peut être appelé par les handlers pour annuler un
         changement d'état"""
         assert state in self.states

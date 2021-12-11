@@ -7,7 +7,7 @@
 
 """Resize test: using the scaler C++ engine to resize images"""
 
-SHOW = True # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 
 def test():
@@ -19,8 +19,9 @@ def test():
     data = io.imread(filename)
     dst_image = scaler.resize(data, (2000, 3000))
 
-    plt.imshow(dst_image, interpolation='nearest')
+    plt.imshow(dst_image, interpolation="nearest")
     plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test()
