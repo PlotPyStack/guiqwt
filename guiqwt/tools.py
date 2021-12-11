@@ -58,34 +58,34 @@ The `tools` module provides a collection of `plot tools` :
     * :py:class:`guiqwt.tools.ItemCenterTool`
     * :py:class:`guiqwt.tools.DeleteItemTool`
 
-A `plot tool` is an object providing various features to a plotting widget 
-(:py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`): 
+A `plot tool` is an object providing various features to a plotting widget
+(:py:class:`guiqwt.curve.CurvePlot` or :py:class:`guiqwt.image.ImagePlot`):
 buttons, menus, selection tools, image I/O tools, etc.
-To make it work, a tool has to be registered to the plotting widget's manager, 
-i.e. an instance of the :py:class:`guiqwt.plot.PlotManager` class (see 
+To make it work, a tool has to be registered to the plotting widget's manager,
+i.e. an instance of the :py:class:`guiqwt.plot.PlotManager` class (see
 the :py:mod:`guiqwt.plot` module for more details on the procedure).
 
-The `CurvePlot` and `ImagePlot` widgets do not provide any `PlotManager`: the 
-manager has to be created separately. On the contrary, the ready-to-use widgets 
+The `CurvePlot` and `ImagePlot` widgets do not provide any `PlotManager`: the
+manager has to be created separately. On the contrary, the ready-to-use widgets
 :py:class:`guiqwt.plot.CurveWidget` and :py:class:`guiqwt.plot.ImageWidget`
 are higher-level plotting widgets with integrated manager, tools and panels.
 
 .. seealso::
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
-    
+
     Module :py:mod:`guiqwt.curve`
         Module providing curve-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.image`
         Module providing image-related plot items and plotting widgets
 
 Example
 ~~~~~~~
 
-The following example add all the existing tools to an `ImageWidget` object 
+The following example add all the existing tools to an `ImageWidget` object
 for testing purpose:
 
 .. literalinclude:: /../guiqwt/tests/image_plot_tools.py
@@ -311,6 +311,7 @@ from guiqwt.interfaces import (
     ICurveItemType,
 )
 from guiqwt.panels import ID_XCS, ID_YCS, ID_OCS, ID_ITEMLIST, ID_CONTRAST
+from guiqwt.interfaces import IImageItemType
 
 
 class DefaultToolbarID:
@@ -375,8 +376,8 @@ class GuiTool(QObject):
     def update_status(self, plot):
         """called by to allow derived
         classes to update the states of actions based on the currently
-        active BasePlot 
-        
+        active BasePlot
+
         can also be called after an action modifying the BasePlot
         (e.g. in order to update action states when an item is deselected)
         """
@@ -676,7 +677,12 @@ class MultiLineTool(InteractiveTool):
         )
         filter.add_event(
             start_state,
-            KeyEventMatch((Qt.Key_Backspace, Qt.Key_Escape,)),
+            KeyEventMatch(
+                (
+                    Qt.Key_Backspace,
+                    Qt.Key_Escape,
+                )
+            ),
             self.cancel_point,
             start_state,
         )
@@ -1227,6 +1233,11 @@ class CrossSectionTool(RectangularShapeTool):
         super(CrossSectionTool, self).handle_final_shape(shape)
         self.register_shape(shape, final=True)
 
+    def update_status(self, plot):
+        if update_image_tool_status(self, plot):
+            item = plot.get_selected_items(item_type=IImageItemType)
+            self.action.setEnabled(len(item) > 0)
+
 
 class AverageCrossSectionTool(CrossSectionTool):
     SWITCH_TO_DEFAULT_TOOL = True
@@ -1746,7 +1757,6 @@ class SaveAsTool(CommandTool):
         # --> until this bug is fixed internally, disabling PDF output format
         #     when plot has image items.
         formats = "%s (*.png)" % _("PNG image")
-        from guiqwt.interfaces import IImageItemType
 
         for item in plot.get_items():
             if IImageItemType in item.types():
@@ -1931,7 +1941,7 @@ class SnapshotTool(RectangularActionTool):
 
 class RotateCropTool(CommandTool):
     """Rotate & Crop tool
-    
+
     See :py:class:`guiqwt.rotatecrop.RotateCropDialog` dialog."""
 
     def __init__(self, manager, toolbar_id=DefaultToolbarID, options=None):
