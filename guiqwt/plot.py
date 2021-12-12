@@ -554,14 +554,7 @@ class PlotManager(object):
         self.add_tool(RectZoomTool)
         self.add_tool(BasePlotMenuTool, "item")
         self.add_tool(ExportItemDataTool)
-        try:
-            try:
-                import spyderlib.widgets.objecteditor  # analysis:ignore
-            except ImportError:
-                import spyder.widgets.variableexplorer.objecteditor  # analysis:ignore
-            self.add_tool(EditItemDataTool)
-        except ImportError:
-            pass
+        self.add_tool(EditItemDataTool)
         self.add_tool(ItemCenterTool)
         self.add_tool(DeleteItemTool)
         self.add_separator_tool()

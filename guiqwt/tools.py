@@ -267,6 +267,7 @@ from qtpy.QtWidgets import (
 from qtpy.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
+from guidata.widgets.objecteditor import oedit
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
@@ -2294,12 +2295,6 @@ def edit_curve_data(item):
     else:
         x, y = item_data
         data = np.array([x, y]).T
-    try:
-        # Spyder 2
-        from spyderlib.widgets.objecteditor import oedit
-    except ImportError:
-        # Spyder 3
-        from spyder.widgets.variableexplorer.objecteditor import oedit
     if oedit(data) is not None:
         if data.shape[1] > 2:
             if data.shape[1] == 3:
@@ -2316,26 +2311,18 @@ def edit_curve_data(item):
             item.set_data(x, y)
 
 
-def edit_image_data(item):
-    """Edit image item data to file"""
-    try:
-        # Spyder 2
-        from spyderlib.widgets.objecteditor import oedit
-    except ImportError:
-        # Spyder 3
-        from spyder.widgets.variableexplorer.objecteditor import oedit
-    oedit(item.data)
-
-
 class EditItemDataTool(ItemManipulationBaseTool):
-    """Edit item data (requires `spyderlib`)"""
+    """Edit item data"""
 
     TITLE = _("Edit data...")
     ICON = "arredit.png"
 
     def __init__(self, manager, toolbar_id=None):
         super(EditItemDataTool, self).__init__(
-            manager, toolbar_id, curve_func=edit_curve_data, image_func=edit_image_data
+            manager,
+            toolbar_id,
+            curve_func=edit_curve_data,
+            image_func=lambda item: oedit(item.data),
         )
 
 

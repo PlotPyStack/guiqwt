@@ -6,12 +6,13 @@
 Changes:
 
 * guiqwt now requires guidata >=v1.9.
+* Removed spyderlib dependency (embedded console now provided by guidata).
 * Added support for dark theme mode on Windows (including windows title bar background),
   MacOS and GNU/Linux.
 
 Bug fixes:
 
-*
+* CrossSectionTool: enable tool only if there are actually image items on canvas
 
 ### Version 3.0.7 ###
 

@@ -11,9 +11,8 @@ Requirements:
     * `guidata`_ >=1.7
     * `QtPy`_ >= 1.3
     * `NumPy`_, `SciPy`_ and `Pillow`_
-    
+
 Optional Python modules:
-    * `spyderlib`_ 2.1 for Sift embedded Python console
     * `pydicom`_ >=0.9.3 for DICOM files I/O features
 
 .. _PyQt4: https://pypi.python.org/pypi/PyQt4
@@ -24,7 +23,6 @@ Optional Python modules:
 .. _NumPy: https://pypi.python.org/pypi/NumPy
 .. _SciPy: https://pypi.python.org/pypi/SciPy
 .. _Pillow: https://pypi.python.org/pypi/Pillow
-.. _spyderlib: https://pypi.python.org/pypi/Spyder
 .. _pydicom: https://pypi.python.org/pypi/pydicom
 
 Installation
@@ -32,13 +30,13 @@ Installation
 
 All platforms:
 
-    The ``setup.py`` script supports the following extra options for 
+    The ``setup.py`` script supports the following extra options for
     optimizing the image scaler engine with SSE2/SSE3 processors:
     ``--sse2`` and ``--sse3``
 
 On GNU/Linux and MacOS platforms:
     ``python setup.py build install``
-    
+
 On Windows platforms with MinGW:
     ``python setup.py build -c mingw32 install``
 

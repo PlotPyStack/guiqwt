@@ -26,7 +26,7 @@ from qtpy.QtWidgets import (
     QMenu,
     QApplication,
 )
-from qtpy.QtGui import QFont, QCursor
+from qtpy.QtGui import QCursor
 from qtpy.QtCore import Qt, __version__, Signal
 from qtpy import PYQT5
 from qtpy.compat import getopenfilenames, getsavefilename
@@ -55,6 +55,7 @@ from guidata.qthelpers import (
     get_std_icon,
     win32_fix_title_bar_background,
 )
+from guidata.widgets.console import DockableConsole
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
 from qtpy.py3compat import to_text_string
@@ -1398,54 +1399,6 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
             DockableWidgetMixin.__init__(self, parent)
 
 
-try:
-    try:
-        # Spyder 2
-        from spyderlib.widgets.internalshell import InternalShell
-    except ImportError:
-        # Spyder 3
-        from spyder.widgets.internalshell import InternalShell
-
-    class DockableConsole(InternalShell, DockableWidgetMixin):
-        LOCATION = Qt.BottomDockWidgetArea
-
-        def __init__(self, parent, namespace, message, commands=[]):
-            InternalShell.__init__(
-                self,
-                parent=parent,
-                namespace=namespace,
-                message=message,
-                commands=commands,
-                multithreaded=True,
-            )
-            DockableWidgetMixin.__init__(self, parent)
-            self.setup()
-
-        def setup(self):
-            font = QFont("Courier new")
-            font.setPointSize(10)
-            self.set_font(font)
-            self.set_codecompletion_auto(True)
-            self.set_calltips(True)
-            try:
-                # Spyder 2
-                self.setup_completion(size=(300, 180), font=font)
-            except TypeError:
-                pass
-            try:
-                self.traceback_available.connect(self.show_console)
-            except AttributeError:
-                pass
-
-        def show_console(self):
-            self.dockwidget.raise_()
-            self.dockwidget.show()
-
-
-except ImportError:
-    DockableConsole = None
-
-
 class SiftProxy(object):
     def __init__(self, win):
         self.win = win
@@ -1529,37 +1482,31 @@ class MainWindow(QMainWindow):
         self.proc_menu = self.menuBar().addMenu(_("Processing"))
         self.proc_menu.aboutToShow.connect(self.update_proc_menu)
 
-        # Eventually add an internal console (requires 'spyderlib')
+        # Add an internal console
         self.sift_proxy = SiftProxy(self)
-        if DockableConsole is None:
-            self.console = None
-        else:
-            import time, scipy.signal as sps, scipy.ndimage as spi
+        import time, scipy.signal as sps, scipy.ndimage as spi
 
-            ns = {
-                "sift": self.sift_proxy,
-                "np": np,
-                "sps": sps,
-                "spi": spi,
-                "os": os,
-                "sys": sys,
-                "osp": osp,
-                "time": time,
-            }
-            msg = (
-                "Example: sift.s[0] returns signal object #0\n"
-                "Modules imported at startup: "
-                "os, sys, os.path as osp, time, "
-                "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
-            )
-            self.console = DockableConsole(self, namespace=ns, message=msg)
-            self.add_dockwidget(self.console, _("Console"))
-            try:
-                self.console.interpreter.widget_proxy.sig_new_prompt.connect(
-                    lambda txt: self.refresh_lists()
-                )
-            except AttributeError:
-                print("sift: spyderlib is outdated", file=sys.stderr)
+        ns = {
+            "sift": self.sift_proxy,
+            "np": np,
+            "sps": sps,
+            "spi": spi,
+            "os": os,
+            "sys": sys,
+            "osp": osp,
+            "time": time,
+        }
+        msg = (
+            "Example: sift.s[0] returns signal object #0\n"
+            "Modules imported at startup: "
+            "os, sys, os.path as osp, time, "
+            "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+        )
+        self.console = DockableConsole(self, namespace=ns, message=msg)
+        self.add_dockwidget(self.console, _("Console"))
+        self.console.interpreter.widget_proxy.sig_new_prompt.connect(
+            lambda txt: self.refresh_lists()
+        )
 
         # View menu
         self.view_menu = view_menu = self.createPopupMenu()
@@ -1646,8 +1593,7 @@ class MainWindow(QMainWindow):
         )
 
     def closeEvent(self, event):
-        if self.console is not None:
-            self.console.exit_interpreter()
+        self.console.close()
         event.accept()
 
 
