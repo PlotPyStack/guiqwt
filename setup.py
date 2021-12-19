@@ -211,7 +211,7 @@ setup(
     install_requires=[
         "NumPy>=1.3",
         "SciPy>=0.7",
-        "guidata>=1.9.0",
+        "guidata>=2.0.0",
         "PythonQwt>=0.5.0",
         "Pillow",
         "QtPy>=1.3",
@@ -222,8 +222,8 @@ setup(
     },
     entry_points={
         "gui_scripts": [
-            "guiqwt-tests-py%d = guiqwt.tests:run" % sys.version_info.major,
-            "sift-py%d = guiqwt.tests.sift:run" % sys.version_info.major,
+            "guiqwt-tests = guiqwt.tests:run",
+            "sift = guiqwt.tests.sift:run",
         ]
     },
     ext_modules=[
@@ -261,8 +261,6 @@ setup(
         "Operating System :: OS Independent",
         "Operating System :: POSIX",
         "Operating System :: Unix",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
     ],
 )

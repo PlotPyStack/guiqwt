@@ -5,7 +5,7 @@ Dependencies
 ------------
 
 Requirements:
-    * Python 2.x (x>=6) or 3.x (x>=2)
+    * Python 3.x (x>=6)
     * `PyQt5`_ 5.x (x>=5)
     * `PythonQwt`_ >=0.5
     * `guidata`_ >=1.7
