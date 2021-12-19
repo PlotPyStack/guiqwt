@@ -100,7 +100,6 @@ Reference
 .. autofunction:: pcolor
 """
 
-from __future__ import print_function
 
 import sys
 from qtpy.QtWidgets import (
@@ -118,7 +117,6 @@ from qtpy import PYQT5
 import guidata
 from guidata.configtools import get_icon
 from guidata.qthelpers import win32_fix_title_bar_background
-from qtpy.py3compat import is_text_string, to_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -167,7 +165,7 @@ class Window(QMainWindow):
 
     def closeEvent(self, event):
         global _figures, _current_fig, _current_axes
-        figure_title = to_text_string(self.windowTitle())
+        figure_title = str(self.windowTitle())
         if _figures.pop(figure_title) == _current_fig:
             _current_fig = None
             _current_axes = None
@@ -242,7 +240,7 @@ class Figure(object):
         self.win.display()
 
     def save(self, fname, format, draft):
-        if is_text_string(fname):
+        if isinstance(fname, str):
             if format == "pdf":
                 self.app = guidata.qapplication()
                 if draft:
@@ -413,7 +411,7 @@ def _make_figure_title(N=None):
     global _figures
     if N is None:
         N = len(_figures) + 1
-    if is_text_string(N):
+    if isinstance(N, str):
         return N
     else:
         return "Figure %d" % N
@@ -732,21 +730,21 @@ def title(text):
 
 def xlabel(bottom="", top=""):
     """Set current x-axis label"""
-    assert is_text_string(bottom) and is_text_string(top)
+    assert isinstance(bottom, str) and isinstance(top, str)
     axe = gca()
     axe.xlabel = (bottom, top)
 
 
 def ylabel(left="", right=""):
     """Set current y-axis label"""
-    assert is_text_string(left) and is_text_string(right)
+    assert isinstance(left, str) and isinstance(right, str)
     axe = gca()
     axe.ylabel = (left, right)
 
 
 def zlabel(label):
     """Set current z-axis label"""
-    assert is_text_string(label)
+    assert isinstance(label, str)
     axe = gca()
     axe.zlabel = label
 
@@ -816,7 +814,7 @@ def savefig(fname, format=None, draft=False):
 
     Currently supports PDF and PNG formats only
     """
-    if not is_text_string(fname) and format is None:
+    if not isinstance(fname, str) and format is None:
         # Buffer/fd
         format = "png"
     if format is None:

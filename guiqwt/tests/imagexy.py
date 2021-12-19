@@ -7,7 +7,6 @@
 
 """Image with custom X/Y axes linear scales"""
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

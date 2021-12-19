@@ -10,8 +10,6 @@ SIFT, the Signal and Image Filtering Tool
 Simple signal and image processing application based on guiqwt and guidata
 """
 
-from __future__ import unicode_literals, print_function
-
 SHOW = True  # Show test in GUI-based test launcher
 
 from qtpy.QtWidgets import (
@@ -58,7 +56,6 @@ from guidata.qthelpers import (
 from guidata.widgets.console import DockableConsole
 from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
-from qtpy.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget
@@ -832,7 +829,7 @@ class SignalFT(ObjectFT):
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
         filenames = list(filenames)
         for filename in filenames:
-            filename = to_text_string(filename)
+            filename = str(filename)
             os.chdir(osp.dirname(filename))
             signal = SignalParam()
             signal.title = filename
@@ -886,7 +883,7 @@ class SignalFT(ObjectFT):
             )
             if not filename:
                 return
-            filename = to_text_string(filename)
+            filename = str(filename)
             os.chdir(osp.dirname(filename))
             obj = self.objects[row]
             try:
@@ -1374,7 +1371,7 @@ class DockablePlotWidget(DockableWidget):
         return self.plotwidget.plot
 
     def setup(self):
-        title = to_text_string(self.toolbar.windowTitle())
+        title = str(self.toolbar.windowTitle())
         self.plotwidget.add_toolbar(self.toolbar, title)
         if isinstance(self.plotwidget, ImageWidget):
             self.plotwidget.register_all_image_tools()

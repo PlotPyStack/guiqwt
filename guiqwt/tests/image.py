@@ -10,7 +10,6 @@
 # FIXME: unexpected behavior when changing the xmin/xmax/ymin/ymax values in
 #       the image parameters (2nd tab: "Axes")
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

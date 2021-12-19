@@ -12,11 +12,11 @@ guiqwt.cross_section
 --------------------
 
 The `cross_section` module provides cross section related objects:
-    * :py:class:`guiqwt.cross_section.XCrossSection`: the X-axis 
+    * :py:class:`guiqwt.cross_section.XCrossSection`: the X-axis
       `cross-section panel`
-    * :py:class:`guiqwt.cross_section.YCrossSection`: the Y-axis 
+    * :py:class:`guiqwt.cross_section.YCrossSection`: the Y-axis
       `cross-section panel`
-    * and other related objects which are exclusively used by the cross-section 
+    * and other related objects which are exclusively used by the cross-section
       panels
 
 Example
@@ -37,7 +37,6 @@ Reference
    :inherited-members:
 """
 
-from __future__ import print_function
 
 import weakref
 

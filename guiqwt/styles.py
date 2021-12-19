@@ -11,24 +11,24 @@
 guiqwt.styles
 -------------
 
-The `styles` module provides set of parameters (DataSet classes) to 
+The `styles` module provides set of parameters (DataSet classes) to
 configure `plot items` and `plot tools`.
 
 .. seealso::
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
-    
+
     Module :py:mod:`guiqwt.curve`
         Module providing curve-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.image`
         Module providing image-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.tools`
         Module providing the `plot tools`
-        
+
 Reference
 ~~~~~~~~~
 
@@ -133,7 +133,6 @@ from guidata.dataset.dataitems import (
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
 from guidata.utils import update_dataset
-from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker
@@ -973,7 +972,7 @@ class CurveParam(DataSet):
     baseline = FloatItem(_("Baseline"), default=0.0)
 
     def update_param(self, curve):
-        self.label = to_text_string(curve.title().text())
+        self.label = str(curve.title().text())
         self.symbol.update_param(curve.symbol())
         self.line.update_param(curve.pen())
         self.curvestyle = CURVESTYLE_NAME[curve.style()]
@@ -1096,7 +1095,7 @@ class BaseImageParam(DataSet):
     _end_formats = EndGroup(_("Statistics string formatting"))
 
     def update_param(self, image):
-        self.label = to_text_string(image.title().text())
+        self.label = str(image.title().text())
         self.colormap = image.get_color_map_name()
         interpolation = image.get_interpolation()
         mode = interpolation[0]
@@ -1178,7 +1177,7 @@ class QuadGridParam(DataSet):
     gridcolor = ColorItem(_("Grid lines color"), default="black")
 
     def update_param(self, image):
-        self.label = to_text_string(image.title().text())
+        self.label = str(image.title().text())
         self.colormap = image.get_color_map_name()
         interp, uflat, vflat = image.interpolate
         self.interpolation = interp
@@ -1632,7 +1631,7 @@ class ShapeParam(DataSet):
     ).set_pos(col=1)
 
     def update_param(self, obj):
-        self.label = to_text_string(obj.title().text())
+        self.label = str(obj.title().text())
         self.line.update_param(obj.pen)
         self.symbol.update_param(obj.symbol)
         self.fill.update_param(obj.brush)
@@ -1728,7 +1727,7 @@ class AnnotationParam(DataSet):
     def update_param(self, obj):
         self.show_label = obj.is_label_visible()
         self.show_computations = obj.area_computations_visible
-        self.title = to_text_string(obj.title().text())
+        self.title = str(obj.title().text())
         self.readonly = obj.is_readonly()
         self.private = obj.is_private()
 

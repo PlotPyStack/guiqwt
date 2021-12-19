@@ -21,8 +21,6 @@ Reference
    :inherited-members:
 """
 
-from __future__ import division, print_function
-
 from qtpy.QtWidgets import (
     QDialog,
     QDialogButtonBox,

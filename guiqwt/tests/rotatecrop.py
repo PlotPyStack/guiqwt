@@ -7,7 +7,6 @@
 
 """Rotate/crop test: using the scaler C++ engine to rotate/crop images"""
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

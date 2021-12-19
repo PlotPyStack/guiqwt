@@ -238,17 +238,6 @@ Reference
 # TODO: z(long-terme) à partir d'une sélection rectangulaire sur une image
 #      afficher un ArrayEditor montrant les valeurs de la zone sélectionnée
 
-from __future__ import unicode_literals
-
-try:
-    # PyQt4 4.3.3 on Windows (static DLLs) with py2exe installed:
-    # -> pythoncom must be imported first, otherwise py2exe's boot_com_servers
-    #    will raise an exception ("Unable to load DLL [...]") when calling any
-    #    of the QFileDialog static methods (getOpenFileName, ...)
-    import pythoncom
-except ImportError:
-    pass
-
 import sys
 import numpy as np
 import weakref
@@ -271,7 +260,6 @@ from guidata.widgets.objecteditor import oedit
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
-from qtpy.py3compat import is_text_string, to_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -1478,7 +1466,7 @@ class CommandTool(GuiTool):
         self, manager, title, icon=None, tip=None, toolbar_id=DefaultToolbarID
     ):
         self.title = title
-        if icon and is_text_string(icon):
+        if icon and isinstance(icon, str):
             self.icon = get_icon(icon)
         else:
             self.icon = icon
@@ -2016,7 +2004,7 @@ class OpenFileTool(CommandTool):
         sys.stdout = None
         filename, _f = getopenfilename(plot, _("Open"), self.directory, self.formats)
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-        filename = to_text_string(filename)
+        filename = str(filename)
         if filename:
             self.directory = osp.dirname(filename)
         return filename
@@ -2248,7 +2236,7 @@ def export_curve_data(item):
     fname, _f = getsavefilename(plot, title, "", _("Text file") + " (*.txt)")
     if fname:
         try:
-            np.savetxt(to_text_string(fname), data, delimiter=",")
+            np.savetxt(str(fname), data, delimiter=",")
         except RuntimeError as error:
             QMessageBox.critical(
                 plot,
@@ -2257,7 +2245,7 @@ def export_curve_data(item):
                 + "<br><br>"
                 + _("Error message:")
                 + "<br>"
-                + to_text_string(error),
+                + str(error),
             )
 
 
@@ -2397,7 +2385,7 @@ class DeleteItemTool(CommandTool):
 class FilterTool(CommandTool):
     def __init__(self, manager, filter, toolbar_id=None):
         super(FilterTool, self).__init__(
-            manager, to_text_string(filter.name), toolbar_id=toolbar_id
+            manager, str(filter.name), toolbar_id=toolbar_id
         )
         self.filter = filter
 

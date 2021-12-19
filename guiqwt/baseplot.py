@@ -11,8 +11,8 @@
 guiqwt.baseplot
 ---------------
 
-The `baseplot` module provides the `guiqwt` plotting widget base class: 
-:py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of 
+The `baseplot` module provides the `guiqwt` plotting widget base class:
+:py:class:`guiqwt.baseplot.BasePlot`. This is an enhanced version of
 `PythonQwt`'s QwtPlot plotting widget which supports the following features:
 
     * add to plot, del from plot, hide/show and save/restore `plot items` easily
@@ -21,20 +21,20 @@ The `baseplot` module provides the `guiqwt` plotting widget base class:
     * plot parameters editing
 
 .. warning::
-    :py:class:`guiqwt.baseplot.BasePlot` is rather an internal class 
-    than a ready-to-use plotting widget. The end user should prefer using 
+    :py:class:`guiqwt.baseplot.BasePlot` is rather an internal class
+    than a ready-to-use plotting widget. The end user should prefer using
     :py:class:`guiqwt.plot.CurvePlot` or :py:class:`guiqwt.plot.ImagePlot`.
 
 .. seealso::
-    
+
     Module :py:mod:`guiqwt.curve`
         Module providing curve-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.image`
         Module providing image-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
 
 Reference
@@ -45,17 +45,13 @@ Reference
    :inherited-members:
 """
 
-from __future__ import print_function
-
 import sys
 import numpy as np
 
 from qtpy.QtWidgets import QSizePolicy, QApplication
 from qtpy.QtPrintSupport import QPrinter
-from qtpy.QtGui import QColor, QPixmap
+from qtpy.QtGui import QColor
 from qtpy.QtCore import QSize, Qt, Signal
-from qtpy import PYQT5
-from qtpy.py3compat import to_text_string, is_text_string, maxsize
 
 from guidata.configtools import get_font
 
@@ -234,7 +230,7 @@ class BasePlot(QwtPlot):
 
     def get_title(self):
         """Get plot title"""
-        return to_text_string(self.title().text())
+        return str(self.title().text())
 
     def set_title(self, title):
         """Set plot title"""
@@ -307,7 +303,7 @@ class BasePlot(QwtPlot):
         color: color name (string) or QColor instance
         """
         axis_id = self.get_axis_id(axis_id)
-        if is_text_string(color):
+        if isinstance(color, str):
             color = QColor(color)
         self.axes_styles[axis_id].color = str(color.name())
         self.update_axis_style(axis_id)
@@ -444,15 +440,12 @@ class BasePlot(QwtPlot):
     def copy_to_clipboard(self):
         """Copy widget's window to clipboard"""
         clipboard = QApplication.clipboard()
-        if PYQT5:
-            pixmap = self.grab()
-        else:
-            pixmap = QPixmap.grabWidget(self)
+        pixmap = self.grab()
         clipboard.setPixmap(pixmap)
 
     def save_widget(self, fname):
         """Grab widget's window and save it to filename (\*.png, \*.pdf)"""
-        fname = to_text_string(fname)
+        fname = str(fname)
         if fname.lower().endswith(".pdf"):
             printer = QPrinter()
             printer.setOutputFormat(QPrinter.PdfFormat)
@@ -461,10 +454,7 @@ class BasePlot(QwtPlot):
             printer.setCreator("guidata")
             self.print_(printer)
         elif fname.lower().endswith(".png"):
-            if PYQT5:
-                pixmap = self.grab()
-            else:
-                pixmap = QPixmap.grabWidget(self)
+            pixmap = self.grab()
             pixmap.save(fname, "PNG")
         else:
             raise RuntimeError(_("Unknown file extension"))
@@ -804,7 +794,7 @@ class BasePlot(QwtPlot):
 
             Return the closest item
         """
-        selobj, distance, inside, handle = None, maxsize, None, None
+        selobj, distance, inside, handle = None, sys.maxsize, None, None
         for obj in self.get_items(z_sorted=True):
             if not obj.isVisible() or not obj.can_select():
                 continue
@@ -824,7 +814,7 @@ class BasePlot(QwtPlot):
         Return nearest item for which position 'pos' is inside of it
         (iterate over items with respect to their 'z' coordinate)
         """
-        selobj, distance, inside, handle = None, maxsize, None, None
+        selobj, distance, inside, handle = None, sys.maxsize, None, None
         for obj in self.get_items(z_sorted=True):
             if not obj.isVisible() or not obj.can_select():
                 continue

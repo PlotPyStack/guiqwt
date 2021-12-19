@@ -11,7 +11,6 @@ PolygonMapItem is intended to display maps ie items containing
 several hundreds of independent polygons.
 """
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

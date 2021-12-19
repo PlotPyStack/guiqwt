@@ -7,7 +7,6 @@
 
 """Tests around image transforms: rotation, translation, ..."""
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 import os
@@ -56,18 +55,14 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     paint.drawText(0, paint.fontMetrics().ascent(), chars)
     paint.end()
     try:
-        try:
-            # PyQt4 (at least until Qt 4.8)
-            data = img.bits().asstring(img.numBytes())
-        except AttributeError:
-            if PYSIDE2:
-                # PySide2
-                data = bytes(img.bits())
-            else:
-                # PyQt5
-                data = img.bits().asstring(img.byteCount())
+        if PYSIDE2:
+            # PySide2
+            data = bytes(img.bits())
+        else:
+            # PyQt5
+            data = img.bits().asstring(img.byteCount())
     except SystemError:
-        # PyQt4 (4.11.3) and PyQt5 (5.3.2) on Python 3
+        # PyQt5 (5.3.2) on Python 3
         return
     npy = np.frombuffer(data, np.uint8)
     npy.shape = img.height(), int(img.bytesPerLine() / 4), 4

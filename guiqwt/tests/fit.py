@@ -7,7 +7,6 @@
 
 """Curve fitting tools"""
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

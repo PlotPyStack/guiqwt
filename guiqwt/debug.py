@@ -13,12 +13,10 @@ The `debug` module contains some debugging functions (mostly dumping attributes
 of Qt Objects).
 """
 
-from __future__ import print_function
+import io
 
 from qtpy.QtGui import QImage, QInputEvent
 from qtpy.QtCore import Qt, QEvent
-
-from qtpy.py3compat import io
 
 
 def buttons_to_str(buttons):

@@ -27,7 +27,6 @@ from guidata.qthelpers import (
     win32_fix_title_bar_background,
 )
 from guidata.utils import update_dataset
-from qtpy.py3compat import to_text_string
 
 from guiqwt.config import _
 from guiqwt.plot import ImageWidget
@@ -149,7 +148,7 @@ class CentralWidget(QSplitter):
 
     def add_image_from_file(self, filename):
         image = ImageParam()
-        image.title = to_text_string(filename)
+        image.title = str(filename)
         image.data = io.imread(filename, to_grayscale=True)
         image.height, image.width = image.data.shape
         self.add_image(image)

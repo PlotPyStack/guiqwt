@@ -13,7 +13,7 @@ The `qtdesigner` module provides QtDesigner helper functions for `guiqwt`:
     * :py:func:`guiqwt.qtdesigner.loadui`
     * :py:func:`guiqwt.qtdesigner.compileui`
     * :py:func:`guiqwt.qtdesigner.create_qtdesigner_plugins`
-    
+
 Reference
 ~~~~~~~~~
 
@@ -22,20 +22,21 @@ Reference
 .. autofunction:: create_qtdesigner_plugin
 """
 
+import io
+
 from qtpy import uic
 from qtpy.QtDesigner import QPyDesignerCustomWidgetPlugin
 from qtpy.QtGui import QIcon
 
 from guidata.configtools import get_icon
-from qtpy.py3compat import io
 
 
 def loadui(fname, replace_class="QwtPlot"):
     """
     Return Widget or Window class from QtDesigner ui file 'fname'
 
-    The loadUiType function (PyQt4.uic) doesn't work correctly with guiqwt
-    QtDesigner plugins because they don't inheritate from a PyQt4.QtGui
+    The loadUiType function (PyQt5.uic) doesn't work correctly with guiqwt
+    QtDesigner plugins because they don't inheritate from a PyQt5.QtGui
     object.
     """
     uifile_text = open(fname).read().replace(replace_class, "QFrame")

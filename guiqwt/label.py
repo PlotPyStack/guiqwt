@@ -19,8 +19,8 @@ The `labels` module provides plot items related to labels and legends:
     * :py:class:`guiqwt.shapes.RangeComputation2d`
     * :py:class:`guiqwt.shapes.DataInfoLabel`
 
-A label or a legend is a plot item (derived from QwtPlotItem) that may be 
-displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+A label or a legend is a plot item (derived from QwtPlotItem) that may be
+displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot`
 or :py:class:`guiqwt.image.ImagePlot`.
 
 Reference
@@ -50,7 +50,6 @@ from qtpy.QtGui import QPen, QColor, QTextDocument
 from qtpy.QtCore import QRectF, QPointF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem
@@ -323,7 +322,7 @@ class LabelItem(AbstractLabelItem):
         self.labelparam.xg, self.labelparam.yg = x, y
 
     def get_plain_text(self):
-        return to_text_string(self.text.toPlainText())
+        return self.text.toPlainText()
 
     def set_text(self, text=None):
         if text is not None:
@@ -523,7 +522,7 @@ class RangeInfo(ObjectInfo):
     """
 
     def __init__(self, label, xrangeselection, function=None):
-        self.label = to_text_string(label)
+        self.label = str(label)
         self.range = xrangeselection
         if function is None:
             function = lambda x, dx: (x, dx)
@@ -547,7 +546,7 @@ class RangeComputation(ObjectInfo):
     corresponding to the xrangeselection X-axis range)"""
 
     def __init__(self, label, curve, xrangeselection, function=None):
-        self.label = to_text_string(label)
+        self.label = str(label)
         self.curve = curve
         self.range = xrangeselection
         if function is None:
@@ -580,7 +579,7 @@ class RangeComputation(ObjectInfo):
 
 class RangeComputation2d(ObjectInfo):
     def __init__(self, label, image, rect, function):
-        self.label = to_text_string(label)
+        self.label = str(label)
         self.image = image
         self.rect = rect
         self.func = function

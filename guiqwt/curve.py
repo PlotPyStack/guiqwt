@@ -48,7 +48,7 @@ Create a basic curve plotting widget:
       the `guidata` helper function also installs the `Qt` translation
       corresponding to the system locale):
 
->>> from PyQt4.QtGui import QApplication
+>>> from PyQt5.QtGui import QApplication
 >>> app = QApplication([])
 
     * now that a `QApplication` object exists, we may create the plotting
@@ -100,10 +100,9 @@ Reference
    :members:
 """
 
-from __future__ import with_statement, print_function
-
 import warnings
 import numpy as np
+import sys
 
 from qtpy.QtWidgets import (
     QMenu,
@@ -119,7 +118,6 @@ from qtpy.QtCore import Qt, QPointF, QLineF, QRectF, Signal
 from guidata.utils import assert_interfaces_valid, update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import create_action, add_actions
-from qtpy.py3compat import is_text_string, maxsize
 
 # Local imports
 from guiqwt.transitional import QwtPlotCurve, QwtPlotGrid, QwtPlotItem, QwtScaleMap
@@ -312,7 +310,7 @@ class GridItem(QwtPlotGrid):
         pass
 
     def hit_test(self, pos):
-        return maxsize, 0, False, None
+        return sys.maxsize, 0, False, None
 
     def move_local_point_to(self, handle, pos, ctrl=None):
         pass
@@ -509,7 +507,7 @@ class CurveItem(QwtPlotCurve):
         """Calcul de la distance d'un point à une courbe
         renvoie (dist, handle, inside)"""
         if self.is_empty():
-            return maxsize, 0, False, None
+            return sys.maxsize, 0, False, None
         plot = self.plot()
         ax = self.xAxis()
         ay = self.yAxis()
@@ -521,7 +519,7 @@ class CurveItem(QwtPlotCurve):
         tmpy = self._y - py
         if np.count_nonzero(tmpx) != len(tmpx) or np.count_nonzero(tmpy) != len(tmpy):
             # Avoid dividing by zero warning when computing dx or dy
-            return maxsize, 0, False, None
+            return sys.maxsize, 0, False, None
         dx = 1 / tmpx
         dy = 1 / tmpy
         i0 = dx.argmin()
@@ -790,7 +788,7 @@ class PolygonMapItem(QwtPlotItem):
         """Calcul de la distance d'un point à une courbe
         renvoie (dist, handle, inside)"""
         if self.is_empty():
-            return maxsize, 0, False, None
+            return sys.maxsize, 0, False, None
         plot = self.plot()
         # TODO
         return distance, i, False, None
@@ -1805,25 +1803,25 @@ class CurvePlot(BasePlot):
         if title is not None:
             self.set_title(title)
         if xlabel is not None:
-            if is_text_string(xlabel):
+            if isinstance(xlabel, str):
                 xlabel = (xlabel, "")
             for label, axis in zip(xlabel, ("bottom", "top")):
                 if label is not None:
                     self.set_axis_title(axis, label)
         if ylabel is not None:
-            if is_text_string(ylabel):
+            if isinstance(ylabel, str):
                 ylabel = (ylabel, "")
             for label, axis in zip(ylabel, ("left", "right")):
                 if label is not None:
                     self.set_axis_title(axis, label)
         if xunit is not None:
-            if is_text_string(xunit):
+            if isinstance(xunit, str):
                 xunit = (xunit, "")
             for unit, axis in zip(xunit, ("bottom", "top")):
                 if unit is not None:
                     self.set_axis_unit(axis, unit)
         if yunit is not None:
-            if is_text_string(yunit):
+            if isinstance(yunit, str):
                 yunit = (yunit, "")
             for unit, axis in zip(yunit, ("left", "right")):
                 if unit is not None:

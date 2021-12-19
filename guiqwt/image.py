@@ -43,7 +43,7 @@ Examples
 ~~~~~~~~
 
 Create a basic image plotting widget:
-    
+
     * before creating any widget, a `QApplication` must be instantiated (that
       is a `Qt` internal requirement):
 
@@ -54,7 +54,7 @@ Create a basic image plotting widget:
       the `guidata` helper function also installs the `Qt` translation
       corresponding to the system locale):
 
->>> from PyQt4.QtGui import QApplication
+>>> from PyQt5.QtGui import QApplication
 >>> app = QApplication([])
 
     * now that a `QApplication` object exists, we may create the plotting
@@ -69,7 +69,7 @@ Generate random data for testing purpose:
 >>> data = np.random.rand(100, 100)
 
 Create a simple image item:
-    
+
     * from the associated plot item class (e.g. `XYImageItem` to create
       an image with non-linear X/Y axes): the item properties are then
       assigned by creating the appropriate style parameters object
@@ -138,11 +138,8 @@ Reference
 .. autofunction:: get_image_from_plot
 """
 
-# FIXME: traceback in scaler when adding here 'from __future__ import division'
-
-from __future__ import print_function, unicode_literals
-
 import sys
+import os
 import os.path as osp
 from math import fabs
 
@@ -152,7 +149,6 @@ from qtpy.QtGui import QColor, QImage
 from qtpy.QtCore import QRectF, QPointF, QRect
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from qtpy.py3compat import getcwd, is_text_string
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtInterval
@@ -325,7 +321,7 @@ class BaseImageItem(QwtPlotItem):
     def get_filename(self):
         fname = self._filename
         if fname is not None and not osp.isfile(fname):
-            other_try = osp.join(getcwd(), osp.basename(fname))
+            other_try = osp.join(os.getcwd(), osp.basename(fname))
             if osp.isfile(other_try):
                 self.set_filename(other_try)
                 fname = other_try
@@ -464,7 +460,7 @@ class BaseImageItem(QwtPlotItem):
         if name_or_table is self.cmap_table:
             # This avoids rebuilding the LUT all the time
             return
-        if is_text_string(name_or_table):
+        if isinstance(name_or_table, str):
             table = get_cmap(name_or_table)
         else:
             table = name_or_table
@@ -877,7 +873,7 @@ class RawImageItem(BaseImageItem):
     def __setstate__(self, state):
         param, lut_range, fn_or_data, z = state
         self.imageparam = param
-        if is_text_string(fn_or_data):
+        if isinstance(fn_or_data, str):
             self.set_filename(fn_or_data)
             self.load_data()
         elif fn_or_data is not None:  # should happen only with previous API
@@ -1041,7 +1037,7 @@ class ImageItem(RawImageItem):
         self.set_xdata(xmin, xmax)
         self.set_ydata(ymin, ymax)
         self.imageparam = param
-        if is_text_string(fn_or_data):
+        if isinstance(fn_or_data, str):
             self.set_filename(fn_or_data)
             self.load_data()
         elif fn_or_data is not None:  # should happen only with previous API
@@ -1807,7 +1803,7 @@ class XYImageItem(RawImageItem):
     def __setstate__(self, state):
         param, lut_range, x, y, fn_or_data, z = state
         self.imageparam = param
-        if is_text_string(fn_or_data):
+        if isinstance(fn_or_data, str):
             self.set_filename(fn_or_data)
             self.load_data(lut_range)
         elif fn_or_data is not None:  # should happen only with previous API
@@ -2089,7 +2085,7 @@ class MaskedImageItem(ImageItem):
                 )
                 masked_areas.append(area)
         self.imageparam = param
-        if is_text_string(fn_or_data):
+        if isinstance(fn_or_data, str):
             self.set_filename(fn_or_data)
             self.load_data(lut_range)
         elif fn_or_data is not None:  # should happen only with previous API
@@ -2722,11 +2718,11 @@ class ImagePlot(CurvePlot):
         self.lock_aspect_ratio = lock_aspect_ratio
 
         if zlabel is not None:
-            if ylabel is not None and not is_text_string(ylabel):
+            if ylabel is not None and not isinstance(ylabel, str):
                 ylabel = ylabel[0]
             ylabel = (ylabel, zlabel)
         if zunit is not None:
-            if yunit is not None and not is_text_string(yunit):
+            if yunit is not None and not isinstance(yunit, str):
                 yunit = yunit[0]
             yunit = (yunit, zunit)
         super(ImagePlot, self).__init__(

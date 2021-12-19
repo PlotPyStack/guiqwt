@@ -19,8 +19,8 @@ The `shapes` module provides geometrical shapes:
     * :py:class:`guiqwt.shapes.Axes`
     * :py:class:`guiqwt.shapes.XRangeSelection`
 
-A shape is a plot item (derived from QwtPlotItem) that may be displayed 
-on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+A shape is a plot item (derived from QwtPlotItem) that may be displayed
+on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot`
 or :py:class:`guiqwt.image.ImagePlot`.
 
 .. seealso:: module :py:mod:`guiqwt.annotations`
@@ -29,19 +29,19 @@ Examples
 ~~~~~~~~
 
 A shape may be created:
-    * from the associated plot item class (e.g. `RectangleShape` to create a 
-      rectangle): the item properties are then assigned by creating the 
+    * from the associated plot item class (e.g. `RectangleShape` to create a
+      rectangle): the item properties are then assigned by creating the
       appropriate style parameters object
       (:py:class:`guiqwt.styles.ShapeParam`)
-      
+
 >>> from guiqwt.shapes import RectangleShape
 >>> from guiqwt.styles import ShapeParam
 >>> param = ShapeParam()
 >>> param.title = 'My rectangle'
 >>> rect_item = RectangleShape(0., 2., 4., 0., param)
-      
+
     * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
-      
+
 >>> from guiqwt.builder import make
 >>> rect_item = make.rectangle(0., 2., 4., 0., title='My rectangle')
 
@@ -74,6 +74,7 @@ Reference
    :inherited-members:
 """
 
+import sys
 import numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
@@ -82,7 +83,6 @@ from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
 from qtpy import PYSIDE2
 
 from guidata.utils import assert_interfaces_valid, update_dataset
-from qtpy.py3compat import maxsize
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
@@ -706,7 +706,7 @@ class PolygonShape(AbstractShape):
 
     def poly_hit_test(self, plot, ax, ay, pos):
         pos = QPointF(pos)
-        dist = maxsize
+        dist = sys.maxsize
         handle = -1
         Cx, Cy = pos.x(), pos.y()
         poly = QPolygonF()
@@ -727,7 +727,7 @@ class PolygonShape(AbstractShape):
     def hit_test(self, pos):
         """return (dist, handle, inside)"""
         if not self.plot():
-            return maxsize, 0, False, None
+            return sys.maxsize, 0, False, None
         return self.poly_hit_test(self.plot(), self.xAxis(), self.yAxis(), pos)
 
     def add_local_point(self, pos):
@@ -1134,7 +1134,7 @@ class EllipseShape(PolygonShape):
     def hit_test(self, pos):
         """return (dist, handle, inside)"""
         if not self.plot():
-            return maxsize, 0, False, None
+            return sys.maxsize, 0, False, None
         dist, handle, inside, other = self.poly_hit_test(
             self.plot(), self.xAxis(), self.yAxis(), pos
         )

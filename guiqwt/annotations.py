@@ -19,8 +19,8 @@ The `annotations` module provides annotated shapes:
     * :py:class:`guiqwt.annotations.AnnotatedEllipse`
     * :py:class:`guiqwt.annotations.AnnotatedCircle`
 
-An annotated shape is a plot item (derived from QwtPlotItem) that may be 
-displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+An annotated shape is a plot item (derived from QwtPlotItem) that may be
+displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot`
 or :py:class:`guiqwt.image.ImagePlot`.
 
 .. seealso:: module :py:mod:`guiqwt.shapes`
@@ -29,19 +29,19 @@ Examples
 ~~~~~~~~
 
 An annotated shape may be created:
-    * from the associated plot item class (e.g. `AnnotatedCircle` to 
-      create an annotated circle): the item properties are then assigned 
+    * from the associated plot item class (e.g. `AnnotatedCircle` to
+      create an annotated circle): the item properties are then assigned
       by creating the appropriate style parameters object
       (:py:class:`guiqwt.styles.AnnotationParam`)
-      
+
 >>> from guiqwt.annotations import AnnotatedCircle
 >>> from guiqwt.styles import AnnotationParam
 >>> param = AnnotationParam()
 >>> param.title = 'My circle'
 >>> circle_item = AnnotatedCircle(0., 2., 4., 0., param)
-      
+
     * or using the `plot item builder` (see :py:func:`guiqwt.builder.make`):
-      
+
 >>> from guiqwt.builder import make
 >>> circle_item = make.annotated_circle(0., 2., 4., 0., title='My circle')
 
@@ -67,8 +67,6 @@ Reference
    :members:
    :inherited-members:
 """
-
-from __future__ import unicode_literals
 
 import numpy as np
 

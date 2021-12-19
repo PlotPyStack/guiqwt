@@ -11,23 +11,23 @@
 guiqwt.builder
 --------------
 
-The `builder` module provides a builder singleton class 
+The `builder` module provides a builder singleton class
 used to simplify the creation of plot items.
 
 Example
 ~~~~~~~
 
-Before creating any widget, a `QApplication` must be instantiated 
+Before creating any widget, a `QApplication` must be instantiated
 (that is a `Qt` internal requirement):
-          
+
 >>> import guidata
 >>> app = guidata.qapplication()
 
-that is mostly equivalent to the following (the only difference is that 
-the `guidata` helper function also installs the `Qt` translation 
+that is mostly equivalent to the following (the only difference is that
+the `guidata` helper function also installs the `Qt` translation
 corresponding to the system locale):
-          
->>> from PyQt4.QtGui import QApplication
+
+>>> from PyQt5.QtGui import QApplication
 >>> app = QApplication([])
 
 now that a `QApplication` object exists, we may create the plotting widget:
@@ -58,7 +58,6 @@ Reference
 
 import os.path as osp
 from numpy import arange, array, zeros, meshgrid, ndarray
-from qtpy.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _, CONF, make_title
@@ -303,7 +302,7 @@ class PlotItemBuilder(object):
             return x, y
 
         if len(args) == 1:
-            if is_text_string(args[0]):
+            if isinstance(args[0], str):
                 x = array((), float)
                 y = array((), float)
                 style = args[0]
@@ -316,7 +315,7 @@ class PlotItemBuilder(object):
                     style = next(self.style)
         elif len(args) == 2:
             a1, a2 = args
-            if is_text_string(a2):
+            if isinstance(a2, str):
                 x, y = get_x_y_from_data(a1)
                 style = a2
             else:
@@ -342,7 +341,7 @@ class PlotItemBuilder(object):
             style = next(self.style)
         elif len(args) == 3:
             a1, a2, a3 = args
-            if is_text_string(a3):
+            if isinstance(a3, str):
                 y, dy = a1, a2
                 x = arange(len(y))
                 dx = zeros(len(y))
@@ -353,7 +352,7 @@ class PlotItemBuilder(object):
                 style = next(self.style)
         elif len(args) == 4:
             a1, a2, a3, a4 = args
-            if is_text_string(a4):
+            if isinstance(a4, str):
                 x, y, dy = a1, a2, a3
                 dx = zeros(len(y))
                 style = a4
@@ -569,12 +568,12 @@ class PlotItemBuilder(object):
             * dy: None, or scalar, or 1D NumPy array
             * color: curve color name
             * linestyle: curve line style (MATLAB-like string or attribute name
-              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
+              from the :py:class:`PyQt5.QtCore.Qt.PenStyle` enum
               (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine",
               "DashDotDotLine" or "NoPen")
             * linewidth: line width (pixels)
             * marker: marker shape (MATLAB-like string or attribute name from
-              the :py:class:`PyQt4.Qwt5.QwtSymbol.Style` enum (i.e. "Cross",
+              the :py:class:`qwt.symbol.QwtSymbol.Style` enum (i.e. "Cross",
               "Ellipse", "Star1", "XCross", "Rect", "Diamond", "UTriangle",
               "DTriangle", "RTriangle", "LTriangle", "Star2" or "NoSymbol")
             * markersize: marker size (pixels)
@@ -582,7 +581,7 @@ class PlotItemBuilder(object):
             * markeredgecolor: marker edge color name
             * shade: 0 <= float <= 1 (curve shade)
             * curvestyle: attribute name from the
-              :py:class:`PyQt4.Qwt5.QwtPlotCurve.CurveStyle` enum
+              :py:class:`qwt.plot_curve.QwtPlotCurve.CurveStyle` enum
               (i.e. "Lines", "Sticks", "Steps", "Dots" or "NoCurve")
             * baseline (float: default=0.0): the baseline is needed for filling
               the curve with a brush or the Sticks drawing style.
@@ -1288,7 +1287,7 @@ class PlotItemBuilder(object):
             * markerspacing: spacing between text and marker line
             * color: marker color name
             * linestyle: marker line style (MATLAB-like string or attribute name
-              from the :py:class:`PyQt4.QtCore.Qt.PenStyle` enum
+              from the :py:class:`PyQt5.QtCore.Qt.PenStyle` enum
               (i.e. "SolidLine" "DashLine", "DotLine", "DashDotLine",
               "DashDotDotLine" or "NoPen")
             * linewidth: line width (pixels)

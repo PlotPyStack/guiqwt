@@ -9,7 +9,7 @@
 qthelpers
 ---------
 
-The ``guiqwt.qthelpers`` module provides helper functions for developing 
+The ``guiqwt.qthelpers`` module provides helper functions for developing
 easily Qt-based graphical user interfaces with guiqwt.
 
 Ready-to-use open/save dialogs:
@@ -18,7 +18,7 @@ Ready-to-use open/save dialogs:
     :py:data:`guiqwt.qthelpers.exec_image_open_dialog`
         Executes an image open dialog box (QFileDialog.getOpenFileName)
     :py:data:`guiqwt.qthelpers.exec_images_open_dialog`
-        Executes an image*s* open dialog box (QFileDialog.getOpenFileNames)   
+        Executes an image*s* open dialog box (QFileDialog.getOpenFileNames)
 
 Reference
 ~~~~~~~~~
@@ -33,8 +33,6 @@ import os.path as osp
 
 from qtpy.QtWidgets import QMessageBox
 from qtpy.compat import getsavefilename, getopenfilename, getopenfilenames
-
-from qtpy.py3compat import to_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -66,7 +64,7 @@ def exec_image_save_dialog(parent, data, template=None, basedir="", app_name=Non
     )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
     if filename:
-        filename = to_text_string(filename)
+        filename = str(filename)
         kwargs = {}
         if osp.splitext(filename)[1].lower() == ".dcm":
             kwargs["template"] = template
@@ -106,7 +104,7 @@ def exec_image_open_dialog(
         parent, _("Open"), basedir, io.iohandler.get_filters("load", dtype=dtype)
     )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-    filename = to_text_string(filename)
+    filename = str(filename)
     try:
         data = io.imread(filename, to_grayscale=to_grayscale)
     except Exception as msg:
@@ -141,7 +139,7 @@ def exec_images_open_dialog(
         parent, _("Open"), basedir, io.iohandler.get_filters("load", dtype=dtype)
     )
     sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
-    filenames = [to_text_string(fname) for fname in list(filenames)]
+    filenames = [str(fname) for fname in list(filenames)]
     for filename in filenames:
         try:
             data = io.imread(filename, to_grayscale=to_grayscale)

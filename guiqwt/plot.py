@@ -100,6 +100,7 @@ Reference
 """
 
 import weakref
+from numpy.lib.arraysetops import isin
 
 from qtpy.QtWidgets import (
     QDialogButtonBox,
@@ -122,7 +123,6 @@ from qtpy import PYQT5
 from guidata.configtools import get_icon
 from guidata.utils import assert_interfaces_valid
 from guidata.qthelpers import create_action, win32_fix_title_bar_background
-from qtpy.py3compat import is_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -917,7 +917,7 @@ class CurveWidgetMixin(PlotManager):
 
     def setup_widget_properties(self, wintitle, icon):
         self.setWindowTitle(wintitle)
-        if is_text_string(icon):
+        if isinstance(icon, str):
             icon = get_icon(icon)
         if icon is not None:
             self.setWindowIcon(icon)

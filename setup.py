@@ -18,8 +18,6 @@ Licensed under the terms of the CECILL License
 # Building extensions:
 # python setup.py build_ext -c mingw32 --inplace
 
-from __future__ import print_function
-
 import setuptools  # analysis:ignore
 import numpy
 import sys
@@ -28,9 +26,6 @@ import os.path as osp
 import subprocess
 from numpy.distutils.core import setup, Extension
 from guidata.utils import get_subpackages, get_package_data, cythonize_all
-
-# TODO: copy qtdesigner plugins in Lib\site-packages\PyQt4\plugins\designer\python
-#      note: this directory doesn't exist for a default PyQt4 install
 
 
 LIBNAME = "guiqwt"
@@ -66,7 +61,7 @@ scientific modules NumPy and SciPy, ``guiqwt`` is a Python library providing
 efficient 2D data-plotting features (curve/image visualization and related
 tools) for interactive computing and signal/image processing application
 development. It is based on Qt graphical user interfaces library, and
-currently supports both ``PyQt4`` and ``PyQt5``.
+currently supports both ``PyQt5`` and ``PySide2``.
 
 Extension to `PythonQwt`_:
 
@@ -79,10 +74,9 @@ Extension to `PythonQwt`_:
 Building, installation, ...
 ---------------------------
 
-The following packages are **required**: `PyQt4`_ (or `PyQt5`_),
+The following packages are **required**: `PyQt5`_,
 `PythonQwt`_, `guidata`_, `NumPy`_, `SciPy`_ and `Pillow`_.
 
-.. _PyQt4: https://pypi.python.org/pypi/PyQt4
 .. _PyQt5: https://pypi.python.org/pypi/PyQt5
 .. _PythonQwt: https://pypi.python.org/pypi/PythonQwt
 .. _guidata: https://pypi.python.org/pypi/guidata

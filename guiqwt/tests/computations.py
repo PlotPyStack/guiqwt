@@ -7,8 +7,6 @@
 
 """Plot computations test"""
 
-from __future__ import unicode_literals
-
 SHOW = True  # Show test in GUI-based test launcher
 
 from guiqwt.plot import CurveDialog

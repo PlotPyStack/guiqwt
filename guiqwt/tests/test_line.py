@@ -7,7 +7,6 @@
 
 """Internal test related to pcolor feature"""
 
-from __future__ import print_function
 
 SHOW = False  # Show test in GUI-based test launcher
 

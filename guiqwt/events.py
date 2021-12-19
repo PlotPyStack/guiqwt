@@ -16,7 +16,6 @@ guiqwt.events
 The `event` module handles event management (states, event filter, ...).
 """
 
-from __future__ import print_function
 
 import weakref
 from qtpy.QtCore import QEvent, Qt, QObject, QPointF, Signal

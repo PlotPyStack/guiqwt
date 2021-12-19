@@ -7,7 +7,6 @@
 
 """guiqwt plot benchmarking"""
 
-from __future__ import print_function
 
 SHOW = False  # Show test in GUI-based test launcher
 
@@ -132,7 +131,7 @@ def run():
     from qtpy import API
     import guiqwt
 
-    qt_lib = {"pyqt": "PyQt4", "pyqt5": "PyQt5", "pyside": "PySide"}[API]
+    qt_lib = {"pyqt5": "PyQt5", "pyside": "PySide"}[API]
     title = "guiqwt plot benchmark [%s (Qt v%s), guiqwt v%s]" % (
         qt_lib,
         __version__,

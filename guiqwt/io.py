@@ -12,7 +12,7 @@ guiqwt.io
 ---------
 
 The `io` module provides input/output helper functions:
-    * :py:func:`guiqwt.io.imread`: load an image (.png, .tiff, 
+    * :py:func:`guiqwt.io.imread`: load an image (.png, .tiff,
       .dicom, etc.) and return its data as a NumPy array
     * :py:func:`guiqwt.io.imwrite`: save an array to an image file
     * :py:func:`guiqwt.io.load_items`: load plot items from HDF5
@@ -27,14 +27,11 @@ Reference
 .. autofunction:: save_items
 """
 
-from __future__ import print_function
 
 import sys
 import re
 import os.path as osp
 import numpy as np
-
-from qtpy.py3compat import is_text_string, to_text_string
 
 # Local imports
 from guiqwt.config import _
@@ -83,7 +80,7 @@ class FileType(object):
         requires_template=False,
     ):
         self.name = name
-        if is_text_string(extensions):
+        if isinstance(extensions, str):
             extensions = extensions.split()
         self.extensions = [osp.splitext(" " + ext)[1] for ext in extensions]
         self.read_func = read_func
@@ -467,8 +464,6 @@ def imread(fname, ext=None, to_grayscale=False):
     The `ext` (optional) argument is a string that specifies the file extension
     which defines the input format: when not specified, the input format is
     guessed from filename."""
-    if not is_text_string(fname):
-        fname = to_text_string(fname)  # in case filename is a QString instance
     if ext is None:
         _base, ext = osp.splitext(fname)
     arr = iohandler.get_readfunc(ext)(fname)
@@ -489,8 +484,6 @@ def imwrite(fname, arr, ext=None, dtype=None, max_range=None, **kwargs):
     If `max_range` is True, array data is scaled to fit the `dtype` (or data
     type itself if `dtype` is None) dynamic range
     Warning: option `max_range` changes data in place"""
-    if not is_text_string(fname):
-        fname = to_text_string(fname)  # in case filename is a QString instance
     if ext is None:
         _base, ext = osp.splitext(fname)
     if max_range:

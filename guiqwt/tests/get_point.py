@@ -11,7 +11,6 @@ SelectPointTool test
 This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

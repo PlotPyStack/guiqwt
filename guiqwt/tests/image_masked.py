@@ -8,11 +8,10 @@
 """
 Masked Image test, creating the MaskedImageItem object via make.maskedimage
 
-Masked image items are constructed using a masked array item. Masked data is 
+Masked image items are constructed using a masked array item. Masked data is
 ignored in computations, like the average cross sections.
 """
 
-from __future__ import print_function
 
 SHOW = True  # Show test in GUI-based test launcher
 

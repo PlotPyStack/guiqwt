@@ -1,6 +1,15 @@
 # guiqwt Releases #
 
 
+### Version 4.0.0 ###
+
+Changes:
+
+* Removed support for Python 2.7 and PyQt4 (guidata supports Python >=3.6 and PyQt5, PySide2, PyQt6, PySide6 through QtPy 2)
+* Added support for dark theme mode on Windows (including windows title bar background),
+  MacOS and GNU/Linux.
+
+
 ### Version 3.1.0 ###
 
 Changes:
