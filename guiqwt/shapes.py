@@ -103,7 +103,7 @@ from guiqwt.geometry import (
 )
 from guiqwt.baseplot import canvas_to_axes
 
-QT_API = os.environ['QT_API']
+QT_API = os.environ["QT_API"]
 
 
 class AbstractShape(QwtPlotItem):
@@ -686,7 +686,7 @@ class PolygonShape(AbstractShape):
         painter.setPen(pen)
         painter.setBrush(brush)
         points = self.transform_points(xMap, yMap)
-        if QT_API.startswith('pyside'):
+        if QT_API.startswith("pyside"):
             points = list(points)
         if self.ADDITIONNAL_POINTS:
             shape_points = points[: -self.ADDITIONNAL_POINTS]

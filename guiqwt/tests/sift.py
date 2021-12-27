@@ -1590,7 +1590,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         # TODO: Find out why this method is never called when closing main window
-        # with PySide6 (and potentially PyQt6 -- not tested), and then reenable the 
+        # with PySide6 (and potentially PyQt6 -- not tested), and then reenable the
         # console 'multithreaded' option
         self.console.close()
         event.accept()
