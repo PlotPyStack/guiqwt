@@ -1,6 +1,14 @@
 # guiqwt Releases #
 
 
+### Version 4.0.1 ###
+
+Changes:
+
+* Added support for PySide6
+* Fixed remaining Python 3 compatibility issues
+
+
 ### Version 4.0.0 ###
 
 Changes:

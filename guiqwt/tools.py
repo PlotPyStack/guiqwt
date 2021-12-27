@@ -319,8 +319,6 @@ class GuiTool(QObject):
         self.plots = set()
         self.action = self.create_action(manager)
         self.menu = self.create_action_menu(manager)
-        if self.menu is not None:
-            self.action.setMenu(self.menu)
         if toolbar_id is DefaultToolbarID:
             toolbar = manager.get_default_toolbar()
         else:
@@ -337,6 +335,7 @@ class GuiTool(QObject):
         toolbar.addAction(self.action)
         if self.menu is not None:
             widget = toolbar.widgetForAction(self.action)
+            widget.setMenu(self.menu)
             widget.setPopupMode(QToolButton.InstantPopup)
 
     def create_action_menu(self, manager):
@@ -1484,7 +1483,11 @@ class CommandTool(GuiTool):
         )
 
     def setup_context_menu(self, menu, plot):
-        menu.addAction(self.action)
+        if self.menu is not None:
+            self.menu.setTitle(self.action.text())
+            menu.addMenu(self.menu)
+        else:
+            menu.addAction(self.action)
 
     def activate(self, checked=True):
         plot = self.get_active_plot()
@@ -2541,7 +2544,6 @@ class ImageMaskTool(CommandTool):
                 removeshapes_a,
             ),
         )
-        self.action.setMenu(menu)
         return menu
 
     def update_status(self, plot):

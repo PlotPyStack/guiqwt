@@ -13,7 +13,7 @@ import os
 
 from qtpy.QtCore import QRectF
 from qtpy.QtGui import QImage
-from qtpy import API, PYSIDE2
+from qtpy import API
 
 print("Qt API: " + API)
 
@@ -55,8 +55,8 @@ def get_font_array(sz, chars=DEFAULT_CHARS):
     paint.drawText(0, paint.fontMetrics().ascent(), chars)
     paint.end()
     try:
-        if PYSIDE2:
-            # PySide2
+        if API.startswith("pyside"):
+            # PySide
             data = bytes(img.bits())
         else:
             # PyQt5

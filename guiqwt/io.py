@@ -644,9 +644,11 @@ def load_items(reader):
         names = reader.read_sequence()
     items = []
     for name in names:
-        klass_name = re.match(
-            r"([A-Z]+[A-Za-z0-9\_]*)\_([0-9]*)", name.decode()
-        ).groups()[0]
+        try:
+            name_str = name.decode()
+        except AttributeError:
+            name_str = name
+        klass_name = re.match(r"([A-Z]+[A-Za-z0-9\_]*)\_([0-9]*)", name_str).groups()[0]
         klass = item_class_from_name(klass_name)
         item = klass()
         with reader.group(name):

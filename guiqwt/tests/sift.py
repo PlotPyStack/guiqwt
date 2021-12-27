@@ -1389,11 +1389,8 @@ class DockableTabWidget(QTabWidget, DockableWidgetMixin):
     LOCATION = Qt.LeftDockWidgetArea
 
     def __init__(self, parent):
-        if PYQT5:
-            super(DockableTabWidget, self).__init__(parent, parent=parent)
-        else:
-            QTabWidget.__init__(self, parent)
-            DockableWidgetMixin.__init__(self, parent)
+        QTabWidget.__init__(self, parent)
+        DockableWidgetMixin.__init__(self)
 
 
 class SiftProxy(object):
@@ -1499,7 +1496,9 @@ class MainWindow(QMainWindow):
             "os, sys, os.path as osp, time, "
             "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
         )
-        self.console = DockableConsole(self, namespace=ns, message=msg)
+        self.console = DockableConsole(
+            self, namespace=ns, message=msg, multithreaded=False
+        )
         self.add_dockwidget(self.console, _("Console"))
         self.console.interpreter.widget_proxy.sig_new_prompt.connect(
             lambda txt: self.refresh_lists()
@@ -1590,6 +1589,9 @@ class MainWindow(QMainWindow):
         )
 
     def closeEvent(self, event):
+        # TODO: Find out why this method is never called when closing main window
+        # with PySide6 (and potentially PyQt6 -- not tested), and then reenable the 
+        # console 'multithreaded' option
         self.console.close()
         event.accept()
 
@@ -1600,7 +1602,10 @@ def run():
     app = qapplication()
     window = MainWindow()
     window.show()
-    app.exec_()
+    try:
+        app.exec()
+    except AttributeError:
+        app.exec_()
 
 
 if __name__ == "__main__":

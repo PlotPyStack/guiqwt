@@ -74,13 +74,13 @@ Reference
    :inherited-members:
 """
 
+import os
 import sys
 import numpy as np
 from math import fabs, sqrt, sin, cos, pi
 
 from qtpy.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
 from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
-from qtpy import PYSIDE2
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -102,6 +102,8 @@ from guiqwt.geometry import (
     compute_center,
 )
 from guiqwt.baseplot import canvas_to_axes
+
+QT_API = os.environ['QT_API']
 
 
 class AbstractShape(QwtPlotItem):
@@ -684,7 +686,7 @@ class PolygonShape(AbstractShape):
         painter.setPen(pen)
         painter.setBrush(brush)
         points = self.transform_points(xMap, yMap)
-        if PYSIDE2:
+        if QT_API.startswith('pyside'):
             points = list(points)
         if self.ADDITIONNAL_POINTS:
             shape_points = points[: -self.ADDITIONNAL_POINTS]
