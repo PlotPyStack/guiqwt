@@ -9,6 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/guiqwt/tests/__init__.py",
+            "cwd": "${workspaceFolder}/guiqwt/tests",
             "console": "integratedTerminal"
         },
         {
