@@ -2480,7 +2480,7 @@ class XYImageFilterItem(ImageFilterItem):
         i0, i1 = xMap.transform(x0), xMap.transform(x1)
         j0, j1 = yMap.transform(y0), yMap.transform(y1)
 
-        dstRect = QRect(i0, j0, i1 - i0, j1 - j0)
+        dstRect = QRect(int(i0), int(j0), int(i1 - i0), int(j1 - j0))
         if not dstRect.intersects(canvasRect):
             return
 

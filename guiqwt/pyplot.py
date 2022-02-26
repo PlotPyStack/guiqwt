@@ -483,7 +483,7 @@ def subplot(n, m, k):
         show()
     """
     global _current_axes
-    lig = (k - 1) / m
+    lig = (k - 1) // m
     col = (k - 1) % m
     fig = gcf()
     axe = fig.get_axes(lig, col)

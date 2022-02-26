@@ -1436,7 +1436,7 @@ class XRangeSelection(AbstractShape):
         dash.setWidth(1)
         painter.setPen(dash)
         painter.drawLine(
-            rct2.center().x(), rct2.top(), rct2.center().x(), rct2.bottom()
+            QLineF(rct2.center().x(), rct2.top(), rct2.center().x(), rct2.bottom())
         )
         painter.setPen(pen)
         x0, x1, y = self.get_handles_pos()
