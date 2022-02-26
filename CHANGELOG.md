@@ -1,6 +1,13 @@
 # guiqwt Releases #
 
 
+### Version 4.0.2 ###
+
+Changes:
+
+* Fixed Python 3.10/PyQt5 compatibility issues
+
+
 ### Version 4.0.1 ###
 
 Changes:
