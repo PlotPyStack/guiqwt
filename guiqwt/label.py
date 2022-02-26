@@ -47,7 +47,7 @@ Reference
 """
 
 from qtpy.QtGui import QPen, QColor, QTextDocument
-from qtpy.QtCore import QRectF, QPointF
+from qtpy.QtCore import QRectF, QPointF, QLineF
 
 from guidata.utils import assert_interfaces_valid, update_dataset
 
@@ -286,11 +286,12 @@ class AbstractLabelItem(QwtPlotItem):
         self.labelparam.xg, self.labelparam.yg = lx1, ly1
 
     def draw_frame(self, painter, x, y, w, h):
+        rectf = QRectF(x, y, w, h)
         if self.labelparam.bgalpha > 0.0:
-            painter.fillRect(x, y, w, h, self.bg_brush)
+            painter.fillRect(rectf, self.bg_brush)
         if self.border_pen.width() > 0:
             painter.setPen(self.border_pen)
-            painter.drawRect(x, y, w, h)
+            painter.drawRect(rectf)
 
 
 class LabelItem(AbstractLabelItem):
@@ -438,7 +439,9 @@ class LegendBoxItem(AbstractLabelItem):
             painter.save()
             painter.setPen(ipen)
             painter.setBrush(ibrush)
-            painter.drawLine(x0, y0 + height / 2, x0 + LEGEND_WIDTH, y0 + height / 2)
+            painter.drawLine(
+                QLineF(x0, y0 + height / 2, x0 + LEGEND_WIDTH, y0 + height / 2)
+            )
             x1 = x0 + LEGEND_SPACEH + LEGEND_WIDTH
             painter.translate(x1, y0)
             text.drawContents(painter)
