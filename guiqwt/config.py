@@ -15,10 +15,9 @@ The `config` module handles `guiqwt` configuration (options, images and icons).
 import os.path as osp
 
 from guidata.configtools import add_image_module_path, get_translation
+from guidata import qthelpers
 
-from guidata.external import darkdetect
-
-IS_DARK = darkdetect.isDark()
+IS_DARK = qthelpers.is_dark_mode()
 MAIN_FG_COLOR = "white" if IS_DARK else "black"
 MAIN_BG_COLOR = "#222222" if IS_DARK else "white"
 
