@@ -1,13 +1,19 @@
 # guiqwt Releases #
 
-## Version 4.0.3 ##
+## Version 4.1.0 ##
 
 Changes:
 
+* (guidata) Dark mode may now be overriden by QT_COLOR_MODE environment variable
+
+* Cross sections: added label to cross section curves, depending on the marker
+  position (e.g. "Cross section @ x=23.3"). This is a requested feature for
+  CodraFT (<https://pypi.org/project/CodraFT/>).
+
+Bug fixes:
+
 * Fixed ValueError with Levels histogram (occuring when removing an image item
   from plot if histogram has not yet been created)
-
-* (guidata) Dark mode may now be overriden by QT_COLOR_MODE environment variable
 
 * Fixed cross section "peritem mode" disabled bug with multiple image items
   (this bug is at least 10 years old... time passes by)

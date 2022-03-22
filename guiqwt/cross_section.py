@@ -296,21 +296,27 @@ class XCrossSectionItem(CrossSectionItem):
         """Get x-cross section data from source image"""
         source = self.get_source_image()
         rect = get_rectangular_area(obj)
+        fmt = source.imageparam.yformat
         if rect is None:
             # Object is a marker or an annotated point
             _x0, y0 = get_object_coordinates(obj)
+            self.curveparam.label = _("Cross section") + " @ y=" + (fmt % y0)
             if self.perimage_mode:
-                return source.get_xsection(y0, apply_lut=self.apply_lut)
+                data = source.get_xsection(y0, apply_lut=self.apply_lut)
             else:
-                return get_plot_x_section(obj, apply_lut=self.apply_lut)
+                data = get_plot_x_section(obj, apply_lut=self.apply_lut)
         else:
             if self.perimage_mode:
                 x0, y0, x1, y1 = rect
-                return source.get_average_xsection(
+                data = source.get_average_xsection(
                     x0, y0, x1, y1, apply_lut=self.apply_lut
                 )
             else:
-                return get_plot_average_x_section(obj, apply_lut=self.apply_lut)
+                data = get_plot_average_x_section(obj, apply_lut=self.apply_lut)
+                x0, y0, x1, y1 = obj.get_rect()
+            text = _("Average cross section")
+            self.curveparam.label = f'{text} @ y=[{fmt % y0} ; {fmt % y1}]'
+        return data
 
 
 class YCrossSectionItem(CrossSectionItem):
@@ -322,21 +328,27 @@ class YCrossSectionItem(CrossSectionItem):
         """Get y-cross section data from source image"""
         source = self.get_source_image()
         rect = get_rectangular_area(obj)
+        fmt = source.imageparam.xformat
         if rect is None:
             # Object is a marker or an annotated point
             x0, _y0 = get_object_coordinates(obj)
+            self.curveparam.label = _("Cross section") + " @ x=" + (fmt % x0)
             if self.perimage_mode:
-                return source.get_ysection(x0, apply_lut=self.apply_lut)
+                data = source.get_ysection(x0, apply_lut=self.apply_lut)
             else:
-                return get_plot_y_section(obj, apply_lut=self.apply_lut)
+                data = get_plot_y_section(obj, apply_lut=self.apply_lut)
         else:
             if self.perimage_mode:
                 x0, y0, x1, y1 = rect
-                return source.get_average_ysection(
+                data = source.get_average_ysection(
                     x0, y0, x1, y1, apply_lut=self.apply_lut
                 )
             else:
-                return get_plot_average_y_section(obj, apply_lut=self.apply_lut)
+                data = get_plot_average_y_section(obj, apply_lut=self.apply_lut)
+                x0, y0, x1, y1 = obj.get_rect()
+            text = _("Average cross section")
+            self.curveparam.label = f"{text} @ x=[{fmt % x0} ; {fmt % x1}]"
+        return data
 
 
 LUT_AXIS_TITLE = _("LUT scale") + (" (0-%d)" % LUT_MAX)
