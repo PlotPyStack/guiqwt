@@ -1,22 +1,31 @@
 # guiqwt Releases #
 
+## Version 4.0.3 ##
 
-### Version 4.0.2 ###
+Changes:
+
+* Fixed ValueError with Levels histogram (occuring when removing an image item
+  from plot if histogram has not yet been created)
+
+* (guidata) Dark mode may now be overriden by QT_COLOR_MODE environment variable
+
+* Fixed cross section "peritem mode" disabled bug with multiple image items
+  (this bug is at least 10 years old... time passes by)
+
+## Version 4.0.2 ##
 
 Changes:
 
 * Fixed Python 3.10/PyQt5 compatibility issues
 
-
-### Version 4.0.1 ###
+## Version 4.0.1 ##
 
 Changes:
 
 * Added support for PySide6
 * Fixed remaining Python 3 compatibility issues
 
-
-### Version 4.0.0 ###
+## Version 4.0.0 ##
 
 Changes:
 
@@ -24,8 +33,7 @@ Changes:
 * Added support for dark theme mode on Windows (including windows title bar background),
   MacOS and GNU/Linux.
 
-
-### Version 3.1.0 ###
+## Version 3.1.0 ##
 
 Changes:
 
@@ -38,7 +46,7 @@ Bug fixes:
 
 * CrossSectionTool: enable tool only if there are actually image items on canvas
 
-### Version 3.0.7 ###
+## Version 3.0.7 ##
 
 Changes:
 
@@ -50,7 +58,7 @@ Bug fixes:
 * Fixed io.imwrite TIFF support
 * Fixed image.get_items_in_rectangle function: item_type parameter was ignored
 
-### Version 3.0.6 ###
+## Version 3.0.6 ##
 
 Changes:
 
@@ -62,28 +70,26 @@ Bug fixes:
 
 * Fixed error when adding item at specific Z-value after deleting items around that Z
 
-### Version 3.0.5 ###
+## Version 3.0.5 ##
 
 Changes:
 
 * Added PySide2 support: guiqwt is now compatible with Python 2.7, Python 3.4+, PyQt4,
   PyQt5 and PySide2!
 
-### Version 3.0.4 ###
+## Version 3.0.4 ##
 
 Bug fixes:
 
 * Fixed Python 3.8 / NumPy 1.18 related issues (type errors).
 
-
-### Version 3.0.3 ###
+## Version 3.0.3 ##
 
 Bug fixes:
 
 * Fixed Spyder v3.0 compatibility issues.
 
-
-### Version 3.0.2 ###
+## Version 3.0.2 ##
 
 Bug fixes:
 
@@ -98,7 +104,7 @@ Other changes:
 * Documentation is now built into the "build/doctmp" directory, hence allowing to reuse the previous built doc from a package build to another
 * `plot.CurveWidgetMixin.create_plot` has now the same signature as its `ImageWidgetMixin` counterpart
 
-### Version 3.0.1 ###
+## Version 3.0.1 ##
 
 Bug fixes:
 
@@ -108,8 +114,7 @@ Other changes:
 
 * Added CHM documentation to wheel package
 
-
-### Version 3.0.0 ###
+## Version 3.0.0 ##
 
 Possible API compatibility issues:
 
@@ -144,8 +149,7 @@ Bug fixes:
 * Images with integers: avoid overflows when computing LUT
 * Fixed Issue #50: 16-bit images were saved (io.imwrite) using the wrong PIL mode
 
-
-### Version 2.3.2 ###
+## Version 2.3.2 ##
 
 Possible API compatibility issues:
 
@@ -162,19 +166,17 @@ Other changes:
   * Added support for writing DICOM files
   * Improved support for DICOM metadata
   * Added support for multiple images resizing
-* Updated py2exe example (switched to cxFreeze to show how it's done) following https://groups.google.com/group/guidata_guiqwt/browse_thread/thread/f8db01cf7149e964
+* Updated py2exe example (switched to cxFreeze to show how it's done) following <https://groups.google.com/group/guidata_guiqwt/browse_thread/thread/f8db01cf7149e964>
 * Updated the build in place batch script: building on Windows with Ms Visual C++
 
-
-### Version 2.3.1 ###
+## Version 2.3.1 ##
 
 Bug fixes:
 
 * Fixed build failures occuring on non-Windows platforms (Issue 54)
 * Fixed requirements in README and setup.py: guiqwt v2.3 requires guidata v1.6
 
-
-### Version 2.3.0 ###
+## Version 2.3.0 ##
 
 New features:
 
@@ -192,8 +194,7 @@ Bug fixes:
 * `guiqwt.annotations`: fixed bug when showing an AnnotatedShape object on an empty plot (unit was None)
 * Fixed `PolygonShape` items pickle support (save_items, restore_items)
 
-
-### Version 2.2.1 ###
+## Version 2.2.1 ##
 
 New features:
 
@@ -234,8 +235,7 @@ Bug fixes:
 * (Issue 33) tools.LoadItemsTool: parent constructor was not called
 * (Issue 36) plot.PlotManager: fixed typo when setting the plot manager to `plot_id`
 
-
-### Version 2.2.0 ###
+## Version 2.2.0 ##
 
 New features:
 
@@ -286,8 +286,7 @@ Bug fixes:
   * now fixing ROI orientation to avoid the negative size issue
   * now handling out of memory errors for big images
 
-
-### Version 2.1.6 ###
+## Version 2.1.6 ##
 
 Other changes:
 
@@ -314,16 +313,14 @@ Bug fixes:
 * Sift: upgraded deployment script for compatibility with guidata v1.4+
 * geometry.colvector: fixed major regression in coordinates calculations (significative impact on TrImageItem related features)
 
-
-### Version 2.1.5 ###
+## Version 2.1.5 ##
 
 Other changes:
 
 * guiqwt.io: added function 'eliminate_outliers' to cut image levels histogram (previously available only for display)
 * baseplot: added method 'copy_to_clipboard' + tools: added CopyToClipboardTool (copy canevas window to clipboard)
 
-
-### Version 2.1.4 ###
+## Version 2.1.4 ##
 
 Since this version, `guiqwt` is compatible with PyQt4 API #1 *and* API #2.
 Please read carefully the coding guidelines which have been recently added to
@@ -374,10 +371,10 @@ Possible API compatibility issues:
     * `get_diameter` was renamed to `get_tr_diameter`
     * `get_length` was renamed to `get_tr_length`
 * Removed the following deprecated classes in `guiqwt.plot`:
-    * CurvePlotWidget (renamed to CurveWidget)
-    * CurvePlotDialog (renamed to CurveDialog)
-    * ImagePlotWidget (renamed to ImageWidget)
-    * ImagePlotDialog (renamed to ImageDialog)
+  * CurvePlotWidget (renamed to CurveWidget)
+  * CurvePlotDialog (renamed to CurveDialog)
+  * ImagePlotWidget (renamed to ImageWidget)
+  * ImagePlotDialog (renamed to ImageDialog)
 
 Other changes:
 
@@ -397,8 +394,7 @@ Other changes:
 * plot.ImagePlot, plot.ImageWidget: added keyword arguments 'xunit', 'yunit' and 'zunit' to set axes units (same syntax as labels)
 * pyplot.imshow: added keyword argument 'mask' to support masked arrays display
 
-
-### Version 2.1.3 ###
+## Version 2.1.3 ##
 
 Bug fixes:
 
@@ -427,8 +423,7 @@ Other changes:
 * Cross sections/update_plot: added option 'refresh' (default: True) --> we do not want to refresh the cross section panel systematically after registering a new shape
 * Annotations/annotationparam: added 'readonly' and 'private' options (bugfix: these parameters are now pickled correctly for shapes)
 
-
-### Version 2.1.2 ###
+## Version 2.1.2 ##
 
 Bug fixes:
 
@@ -439,8 +434,7 @@ Other changes:
 
 * guiqwt.fit: code cleaning / reimplementing FitParam.create_widgets is now supported
 
-
-### Version 2.1.1 ###
+## Version 2.1.1 ##
 
 Bug fixes:
 
@@ -475,8 +469,7 @@ Other changes:
 * Added basic function computation on hist2d
 * Allowed Histogram2DItems to have VOI, palettes and transparent backgrounds
 
-
-### Version 2.1.0 ###
+## Version 2.1.0 ##
 
 Bug fixes:
 

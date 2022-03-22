@@ -13,14 +13,14 @@ guiqwt.histogram
 
 The `histogram` module provides histogram related objects:
     * :py:class:`guiqwt.histogram.HistogramItem`: an histogram plot item
-    * :py:class:`guiqwt.histogram.ContrastAdjustment`: the `contrast 
+    * :py:class:`guiqwt.histogram.ContrastAdjustment`: the `contrast
       adjustment panel`
-    * :py:class:`guiqwt.histogram.LevelsHistogram`: a curve plotting widget 
-      used by the `contrast adjustment panel` to compute, manipulate and 
+    * :py:class:`guiqwt.histogram.LevelsHistogram`: a curve plotting widget
+      used by the `contrast adjustment panel` to compute, manipulate and
       display the image levels histogram
 
-``HistogramItem`` objects are plot items (derived from QwtPlotItem) that may 
-be displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot` 
+``HistogramItem`` objects are plot items (derived from QwtPlotItem) that may
+be displayed on a 2D plotting widget like :py:class:`guiqwt.curve.CurvePlot`
 or :py:class:`guiqwt.image.ImagePlot`.
 
 Example
@@ -326,9 +326,11 @@ class LevelsHistogram(CurvePlot):
     def item_removed(self, item):
         for plot, items in list(self._tracked_items.items()):
             if item in items:
-                curve = items.pop(item)
-                self.del_items([curve])
-                self.replot()
+                try:
+                    self.del_item(item)
+                except ValueError:
+                    pass  # Histogram has not yet been created
+                items.pop(item)
                 break
 
     def active_item_changed(self, plot):
