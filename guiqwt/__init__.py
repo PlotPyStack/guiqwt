@@ -23,7 +23,7 @@ External resources:
 """
 
 
-__version__ = "4.1.0"
+__version__ = "4.1.1"
 __description__ = (
     "guiqwt is a set of tools for curve and image plotting " "(extension to PythonQwt)"
 )
@@ -39,7 +39,7 @@ def about(html=True, copyright_only=False):
     tf1 = (name, __version__, __description__)
     tf2 = (
         platform.python_version(),
-        "64 bits" if sys.maxsize > 2 ** 32 else "32 bits",
+        "64 bits" if sys.maxsize > 2**32 else "32 bits",
         QC.__version__,
         qwt.__version__,
         guidata.__version__,

@@ -1,5 +1,11 @@
 # guiqwt Releases #
 
+## Version 4.1.1 ##
+
+Bug fixes:
+
+* Fixed DICOM images support.
+
 ## Version 4.1.0 ##
 
 Changes:
