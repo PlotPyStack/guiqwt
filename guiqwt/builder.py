@@ -757,12 +757,12 @@ class PlotItemBuilder(object):
         data, filename, title = self._get_image_data(
             data, filename, title, to_grayscale=True
         )
-        if osp.splitext(filename)[1].lower() == ".dcm":
+        if isinstance(filename, str) and filename.lower().endswith(".dcm"):
             from pydicom import dicomio
 
             template = dicomio.read_file(filename, stop_before_pixels=True, force=True)
-            ipp = getattr(template, "ImagePositionPatient", ['0', '0', '0'])
-            pxs = getattr(template, "PixelSpacing", ['1', '1'])
+            ipp = getattr(template, "ImagePositionPatient", ["0", "0", "0"])
+            pxs = getattr(template, "PixelSpacing", ["1", "1"])
             ipx, ipy = float(ipp[0]), float(ipp[1])
             pixel_size = dx, dy = float(pxs[0]), float(pxs[1])
             xc = (0.5 * data.shape[1] - 1) * dx + ipx

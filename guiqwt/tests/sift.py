@@ -167,7 +167,10 @@ class ImageParam(DataSet):
         self.metadata = {}
         for attr_str in dir(value):
             if attr_str != "GroupLength":
-                self.metadata[attr_str] = getattr(value, attr_str)
+                try:
+                    self.metadata[attr_str] = getattr(value, attr_str)
+                except AttributeError:
+                    pass
 
     @property
     def template(self):
@@ -1334,7 +1337,9 @@ class ImageFT(ObjectFT):
             if osp.splitext(filename)[1].lower() == ".dcm":
                 from pydicom import dicomio
 
-                image.template = dicomio.read_file(filename, stop_before_pixels=True, force=True)
+                image.template = dicomio.read_file(
+                    filename, stop_before_pixels=True, force=True
+                )
             self.add_object(image)
 
     def save_image(self):
