@@ -757,6 +757,18 @@ class PlotItemBuilder(object):
         data, filename, title = self._get_image_data(
             data, filename, title, to_grayscale=True
         )
+        if osp.splitext(filename)[1].lower() == ".dcm":
+            from pydicom import dicomio
+
+            template = dicomio.read_file(filename, stop_before_pixels=True, force=True)
+            ipp = getattr(template, "ImagePositionPatient", ['0', '0', '0'])
+            pxs = getattr(template, "PixelSpacing", ['1', '1'])
+            ipx, ipy = float(ipp[0]), float(ipp[1])
+            pixel_size = dx, dy = float(pxs[0]), float(pxs[1])
+            xc = (0.5 * data.shape[1] - 1) * dx + ipx
+            yc = (0.5 * data.shape[0] - 1) * dy + ipy
+            center_on = xc, yc
+
         if data.ndim == 3:
             return self.rgbimage(
                 data=data,

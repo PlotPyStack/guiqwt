@@ -304,23 +304,15 @@ def _import_dcm():
 
     logger = logging.getLogger("pydicom")
     logger.setLevel(logging.CRITICAL)
-    try:
-        # pydicom 1.0
-        from pydicom import dicomio  # analysis:ignore
-    except ImportError:
-        # pydicom 0.9
-        import dicom as dicomio  # analysis:ignore
+    from pydicom import dicomio  # analysis:ignore
+
     logger.setLevel(logging.WARNING)
 
 
 def _imread_dcm(filename):
     """Open DICOM image with pydicom and return a NumPy array"""
-    try:
-        # pydicom 1.0
-        from pydicom import dicomio
-    except ImportError:
-        # pydicom 0.9
-        import dicom as dicomio
+    from pydicom import dicomio
+
     dcm = dicomio.read_file(filename, force=True)
     # **********************************************************************
     # The following is necessary until pydicom numpy support is improved:
@@ -343,17 +335,16 @@ def _imread_dcm(filename):
         dcm_is_little_endian = dcm.is_little_endian
     if dcm_is_little_endian != (sys.byteorder == "little"):
         arr.byteswap(True)
+    spp = getattr(dcm, "SamplesperPixel", 1)
     if hasattr(dcm, "NumberofFrames") and dcm.NumberofFrames > 1:
-        if dcm.SamplesperPixel > 1:
-            arr = arr.reshape(
-                dcm.SamplesperPixel, dcm.NumberofFrames, dcm.Rows, dcm.Columns
-            )
+        if spp > 1:
+            arr = arr.reshape(spp, dcm.NumberofFrames, dcm.Rows, dcm.Columns)
         else:
             arr = arr.reshape(dcm.NumberofFrames, dcm.Rows, dcm.Columns)
     else:
-        if dcm.SamplesperPixel > 1:
+        if spp > 1:
             if dcm.BitsAllocated == 8:
-                arr = arr.reshape(dcm.SamplesperPixel, dcm.Rows, dcm.Columns)
+                arr = arr.reshape(spp, dcm.Rows, dcm.Columns)
             else:
                 raise NotImplementedError(
                     "This code only handles "

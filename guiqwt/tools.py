@@ -1858,7 +1858,7 @@ def save_snapshot(plot, p0, p1, new_size=None):
         else:
             data = np.array(data, dtype=dtype)
     except MemoryError:
-        mbytes = int(destw * desth * 32.0 / (8 * 1024 ** 2))
+        mbytes = int(destw * desth * 32.0 / (8 * 1024**2))
         QMessageBox.critical(
             plot,
             _("Memory error"),
@@ -1888,12 +1888,8 @@ def save_snapshot(plot, p0, p1, new_size=None):
     elif ext.lower() == ".png":
         options.update(dict(dtype=np.uint8, max_range=True))
     elif ext.lower() == ".dcm":
-        try:
-            # pydicom 1.0
-            from pydicom import dicomio
-        except ImportError:
-            # pydicom 0.9
-            import dicom as dicomio
+        from pydicom import dicomio
+
         model_dcm = dicomio.read_file(model_fname)
         try:
             ps_attr = "ImagerPixelSpacing"
