@@ -764,7 +764,7 @@ class PlotItemBuilder(object):
             ipp = getattr(template, "ImagePositionPatient", ["0", "0", "0"])
             pxs = getattr(template, "PixelSpacing", ["1", "1"])
             ipx, ipy = float(ipp[0]), float(ipp[1])
-            pixel_size = dx, dy = float(pxs[0]), float(pxs[1])
+            pixel_size = dy, dx = float(pxs[0]), float(pxs[1])
             xc = (0.5 * data.shape[1] - 1) * dx + ipx
             yc = (0.5 * data.shape[0] - 1) * dy + ipy
             center_on = xc, yc
