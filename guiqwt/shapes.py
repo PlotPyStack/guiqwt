@@ -278,7 +278,7 @@ class Marker(QwtPlotMarker):
     """
 
     __implements__ = (IBasePlotItem,)
-    _readonly = True
+    _readonly = False
     _private = False
     _can_select = True
     _can_resize = True
@@ -299,6 +299,35 @@ class Marker(QwtPlotMarker):
         else:
             self.markerparam = markerparam
         self.markerparam.update_marker(self)
+
+    def __reduce__(self):
+        self.markerparam.update_param(self)
+        state = (self.markerparam, self.xValue(), self.yValue(), self.z())
+        return (Marker, (), state)
+
+    def __setstate__(self, state):
+        self.markerparam, xvalue, yvalue, z = state
+        self.setXValue(xvalue)
+        self.setYValue(yvalue)
+        self.setZ(z)
+        self.markerparam.update_marker(self)
+
+    def serialize(self, writer):
+        """Serialize object to HDF5 writer"""
+        self.markerparam.update_param(self)
+        writer.write(self.markerparam, group_name="markerparam")
+        writer.write(self.xValue(), group_name="x")
+        writer.write(self.yValue(), group_name="y")
+        writer.write(self.z(), group_name="z")
+
+    def deserialize(self, reader):
+        """Deserialize object from HDF5 reader"""
+        self.markerparam = MarkerParam(_("Marker"), icon="marker.png")
+        reader.read("markerparam", instance=self.markerparam)
+        self.markerparam.update_marker(self)
+        self.setXValue(reader.read("x"))
+        self.setYValue(reader.read("y"))
+        self.setZ(reader.read("z"))
 
     # ------QwtPlotItem API------------------------------------------------------
     def draw(self, painter, xmap, ymap, canvasrect):
@@ -1345,7 +1374,7 @@ class Axes(PolygonShape):
         ca, sa = cos(angle), sin(angle)
         d1x = xMap.transform(p1[0]) - xMap.transform(p0[0])
         d1y = yMap.transform(p1[1]) - yMap.transform(p0[1])
-        norm = sqrt(d1x ** 2 + d1y ** 2)
+        norm = sqrt(d1x**2 + d1y**2)
         if abs(norm) < 1e-6:
             return
         d1x *= sz / norm

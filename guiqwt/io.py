@@ -540,6 +540,7 @@ register_serializable_items(
 register_serializable_items(
     "guiqwt.shapes",
     [
+        "Marker",
         "PolygonShape",
         "PointShape",
         "SegmentShape",
