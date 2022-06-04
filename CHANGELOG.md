@@ -1,9 +1,10 @@
 # guiqwt Releases #
 
-## Version 4.1.1 ##
+## Version 4.1.2 ##
 
 Bug fixes:
 
+* Markers were not serializable/pickable as expected (like other shapes).
 * Fixed DICOM images support.
 
 ## Version 4.1.0 ##
