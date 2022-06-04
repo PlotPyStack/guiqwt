@@ -803,13 +803,13 @@ class LabelParam(DataSet):
         help=_("Label position relative to anchor point"),
     ).set_prop("display", hide=GetAttrProp("_multiselection"))
     xc = IntItem(
-        _("ΔX"),
+        "ΔX",
         default=5,
         help=_("Horizontal offset (pixels) relative to anchor point"),
     ).set_prop("display", hide=GetAttrProp("_multiselection"))
     yc = (
         IntItem(
-            _("ΔY"),
+            "ΔY",
             default=5,
             help=_("Vertical offset (pixels) relative to anchor point"),
         )
@@ -1136,7 +1136,10 @@ class QuadGridParam(DataSet):
         "display", hide=GetAttrProp("_multiselection")
     )
     alpha_mask = BoolItem(
-        _("Use image level as alpha"), _("Alpha channel"), default=False
+        _("Use image level as alpha"),
+        _("Alpha channel"),
+        default=False,
+        help=_("When enabled, highest level is opaque and lowest level is transparent"),
     )
     alpha = FloatItem(
         _("Global alpha"), default=1.0, min=0, max=1, help=_("Global alpha value")
@@ -1395,7 +1398,7 @@ class TrImageParam(RawImageParam):
         "display", hide=GetAttrProp("_multiselection")
     )
     vflip = BoolItem(_("Flip vertically"), default=False).set_prop("display", col=1)
-    pos_angle = FloatItem(_("θ (°)"), default=0.0).set_prop("display", col=0)
+    pos_angle = FloatItem("θ (°)", default=0.0).set_prop("display", col=0)
     _end_pos = EndGroup(_("Translate, rotate and flip"))
 
     def update_param(self, image):
