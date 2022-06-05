@@ -271,6 +271,7 @@ from guiqwt.events import (
     QtDragHandler,
     ZoomRectHandler,
     RectangularSelectionHandler,
+    PointSelectionHandler,
     ClickHandler,
 )
 from guiqwt.shapes import (
@@ -887,12 +888,15 @@ class RectangularActionTool(InteractiveTool):
         self.last_final_shape = weakref.ref(shape)
         return shape
 
+    def get_selection_handler(self, filter, start_state):
+        return RectangularSelectionHandler(
+            filter, Qt.LeftButton, start_state=start_state
+        )
+
     def setup_filter(self, baseplot):
         filter = baseplot.filter
         start_state = filter.new_state()
-        handler = RectangularSelectionHandler(
-            filter, Qt.LeftButton, start_state=start_state
-        )
+        handler = self.get_selection_handler(filter, start_state)
         shape, h0, h1 = self.get_shape()
         handler.set_shape(
             shape, h0, h1, self.setup_shape, avoid_null_shape=self.AVOID_NULL_SHAPE
@@ -990,6 +994,9 @@ class PointTool(RectangularShapeTool):
         shape = PointShape(0, 0)
         self.set_shape_style(shape)
         return shape, 0, 0
+
+    def get_selection_handler(self, filter, start_state):
+        return PointSelectionHandler(filter, Qt.LeftButton, start_state=start_state)
 
 
 class SegmentTool(RectangularShapeTool):

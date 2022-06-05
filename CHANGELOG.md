@@ -10,6 +10,8 @@ Changes:
 
 Bug fixes:
 
+* (Annotated)PointTool: fixed behavior (adding point without moving before
+  unreleasing mouse button now works)
 * Image visualization: fixed hard crash when zooming unreasonably inside a pixel
 * FitDialog: fixed issue #64 - resetting XRange when button is unchecked
 * Builder: fixed Issue #67 - when building curves with MATLAB-like syntax

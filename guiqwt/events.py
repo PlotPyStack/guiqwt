@@ -707,6 +707,11 @@ class RectangularSelectionHandler(DragHandler):
         self.SIG_END_RECT.emit(filter, self.start, event.pos())
 
 
+class PointSelectionHandler(RectangularSelectionHandler):
+    def stop_notmoving(self, filter, event):
+        self.stop_moving(filter, event)
+
+
 class ZoomRectHandler(RectangularSelectionHandler):
     def stop_moving_action(self, filter, event):
         filter.plot.do_zoom_rect_view(self.start, event.pos())
