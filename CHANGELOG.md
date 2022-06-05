@@ -7,6 +7,10 @@ Changes:
 * Curve markers: pressing "Control" (with "Shift") will hold marker visible
 * Markers were not serializable/pickable as expected (like other shapes).
 
+Bug fixes:
+
+* Image visualization: fixed hard crash when zooming unreasonably inside a pixel
+
 ## Version 4.1.1 ##
 
 Bug fixes:
