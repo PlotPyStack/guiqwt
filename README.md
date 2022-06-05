@@ -38,15 +38,14 @@ Extension to ``PythonQwt``:
 - Python 3.6+
 - [PyQt5](https://pypi.python.org/pypi/PyQt5) 5.5+
 - [QtPy](https://pypi.org/project/QtPy/) >= 1.3
-- [PythonQwt](https://pypi.python.org/pypi/PythonQwt) 0.5+ (pure Python reimplementation of Qwt6 C++ library)
-- [guidata](https://pypi.python.org/pypi/guidata) 1.7+
+- [PythonQwt](https://pypi.python.org/pypi/PythonQwt) 0.10+ (pure Python reimplementation of Qwt6 C++ library)
+- [guidata](https://pypi.python.org/pypi/guidata) 2.2+
 - [NumPy](https://pypi.python.org/pypi/NumPy) 1.6+
 - [SciPy](https://pypi.python.org/pypi/SciPy) 0.7+
 - [Pillow](https://pypi.python.org/pypi/Pillow)
 
 ### Optional modules
 
-- [spyder](https://pypi.python.org/pypi/spyder) 2.1+ for GUI-embedded console support
 - [pydicom](https://pypi.python.org/pypi/pydicom) 0.9.3+ for DICOM I/O support
 
 
@@ -64,14 +63,8 @@ optimizing the image scaler engine with SSE2/SSE3 processors:
 python setup.py build install
 ```
 
-### On Windows platforms with Microsoft Visual C/C++:
+### On Windows platforms with Microsoft Visual Studio:
 
 ```cmd
-python setup.py build install
-```
-
-### On Windows platforms with MinGW:
-
-```cmd
-python setup.py build -c mingw32 install
+python setup.py build -c msvc install
 ```
