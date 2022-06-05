@@ -1,10 +1,16 @@
 # guiqwt Releases #
 
-## Version 4.1.2 ##
+## Version 4.2.0 ##
+
+Changes:
+
+* Curve markers: pressing "Control" (with "Shift") will hold marker visible
+* Markers were not serializable/pickable as expected (like other shapes).
+
+## Version 4.1.1 ##
 
 Bug fixes:
 
-* Markers were not serializable/pickable as expected (like other shapes).
 * Fixed DICOM images support.
 
 ## Version 4.1.0 ##
