@@ -308,8 +308,7 @@ class PlotItemBuilder(object):
                 style = args[0]
             else:
                 x, y = get_x_y_from_data(args[0])
-                y_matrix = not isinstance(y, ndarray)
-                if y_matrix:
+                if not isinstance(y, ndarray):
                     style = [next(self.style) for yi in y]
                 else:
                     style = next(self.style)
@@ -328,7 +327,7 @@ class PlotItemBuilder(object):
             raise TypeError("Wrong number of arguments")
         if isinstance(x, (list, tuple)):
             x = array(x)
-        if isinstance(y, (list, tuple)) and not y_matrix:
+        if isinstance(y, (list, tuple)) and isinstance(y, ndarray):
             y = array(y)
         return x, y, style
 
