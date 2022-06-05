@@ -4,12 +4,15 @@
 
 Changes:
 
+* Added "tests/plot_timecurve.py": dynamic plot widget example
 * Curve markers: pressing "Control" (with "Shift") will hold marker visible
 * Markers were not serializable/pickable as expected (like other shapes).
 
 Bug fixes:
 
 * Image visualization: fixed hard crash when zooming unreasonably inside a pixel
+* FitDialog: fixed issue #64 - resetting XRange when button is unchecked
+* Builder: fixed Issue #67 - when building curves with MATLAB-like syntax
 
 ## Version 4.1.1 ##
 
