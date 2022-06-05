@@ -9,9 +9,9 @@
 fliprotate
 ----------
 
-The `FlipRotate` module provides a dialog box providing essential GUI elements 
+The `FlipRotate` module provides a dialog box providing essential GUI elements
 for rotating (arbitrary angle) and cropping an image:
-    
+
     * :py:class:`guiqwt.widgets.fliprotate.FlipRotateDialog`: dialog box
     * :py:class:`guiqwt.widgets.fliprotate.FlipRotateWidget`: equivalent widget
 
@@ -48,7 +48,7 @@ class FlipRotateMixin(base.BaseTransformMixin):
     def add_buttons_to_layout(self, layout):
         """Add tool buttons to layout"""
         # Image orientation
-        angle_label = QLabel(_("Angle (°):"))
+        angle_label = QLabel(_("Angle %s:") % "(°)")
         layout.addWidget(angle_label)
         self.angle_combo = QComboBox(self)
         self.angle_combo.addItems(self.ROTATION_ANGLES)

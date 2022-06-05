@@ -2146,14 +2146,15 @@ class HelpTool(CommandTool):
             plot,
             _("Help"),
             _(
-                """Keyboard/mouse shortcuts:
-  - single left-click: item (curve, image, ...) selection
-  - single right-click: context-menu relative to selected item
-  - shift: on-active-curve (or image) cursor
-  - alt: free cursor
-  - left-click + mouse move: move item (when available)
-  - middle-click + mouse move: pan
-  - right-click + mouse move: zoom"""
+                """<b>Keyboard/mouse shortcuts:</b><br><br>
+  - <u>single left-click</u>: item (curve, image, ...) selection<br>
+  - <u>single right-click</u>: context-menu relative to selected item<br>
+  - <u>shift</u>: on-active-curve (or image) cursor (+ <u>control</u> to maintain cursor visible)<br>
+  - <u>shift + control</u>: on-active-curve cursor (+ <u>control</u> to maintain cursor visible)<br>
+  - <u>alt</u>: free cursor<br>
+  - <u>left-click + mouse move</u>: move item (when available)<br>
+  - <u>middle-click + mouse move</u>: pan<br>
+  - <u>right-click + mouse move</u>: zoom"""
             ),
         )
 

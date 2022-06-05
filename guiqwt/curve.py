@@ -188,7 +188,7 @@ def test_seg_dist():
 
 
 def norm2(v):
-    return (v ** 2).sum(axis=1)
+    return (v**2).sum(axis=1)
 
 
 def seg_dist_v(P, X0, Y0, X1, Y1):
@@ -1451,6 +1451,7 @@ class CurvePlot(BasePlot):
         self.curve_marker = Marker(
             label_cb=self.get_coordinates_str, constraint_cb=self.on_active_curve
         )
+        self.__marker_stay_visible = False
         self.cross_marker.set_style(section, "marker/cross")
         self.curve_marker.set_style(section, "marker/curve")
         self.cross_marker.setVisible(False)
@@ -1522,19 +1523,19 @@ class CurvePlot(BasePlot):
             self.curve_marker.setVisible(True)
             self.curve_marker.move_local_point_to(0, pos)
             self.replot()
-            # self.move_curve_marker(self.curve_marker, xc, yc)
+            self.__marker_stay_visible = event.modifiers() & Qt.ControlModifier
         elif event.modifiers() & Qt.AltModifier or self.canvas_pointer:
             self.cross_marker.setZ(self.get_max_z() + 1)
             self.cross_marker.setVisible(True)
             self.curve_marker.setVisible(False)
             self.cross_marker.move_local_point_to(0, pos)
             self.replot()
-            # self.move_canvas_marker(self.cross_marker, xc, yc)
+            self.__marker_stay_visible = event.modifiers() & Qt.ControlModifier
         else:
             vis_cross = self.cross_marker.isVisible()
             vis_curve = self.curve_marker.isVisible()
             self.cross_marker.setVisible(False)
-            self.curve_marker.setVisible(False)
+            self.curve_marker.setVisible(self.__marker_stay_visible)
             if vis_cross or vis_curve:
                 self.replot()
 

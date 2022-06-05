@@ -946,10 +946,10 @@ class ImageFT(ObjectFT):
             self, _("Flip vertically"), triggered=self.flip_vertically
         )
         rot90_action = create_action(
-            self, _("Rotate 90° right"), triggered=self.rotate_270
+            self, _("Rotate %s right") % "90°", triggered=self.rotate_270
         )
         rot270_action = create_action(
-            self, _("Rotate 90° left"), triggered=self.rotate_90
+            self, _("Rotate %s left") % "90°", triggered=self.rotate_90
         )
         rotate_action = create_action(
             self, _("Rotate arbitrarily..."), triggered=self.rotate_arbitrarily

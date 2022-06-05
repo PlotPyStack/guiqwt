@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-06-04 21:08+0200\n"
+"POT-Creation-Date: 2022-06-05 08:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -106,8 +106,8 @@ msgstr "Ordonnées"
 msgid "X Axis"
 msgstr "Abscisses"
 
-#: guiqwt\builder.py:165 guiqwt\curve.py:243 guiqwt\curve.py:1466
-#: guiqwt\curve.py:1504
+#: guiqwt\builder.py:165 guiqwt\curve.py:243 guiqwt\curve.py:1467
+#: guiqwt\curve.py:1505
 msgid "Grid"
 msgstr "Grille"
 
@@ -274,15 +274,15 @@ msgid "Move to front"
 msgstr "Déplacer vers le premier plan"
 
 #: guiqwt\curve.py:1189 guiqwt\curve.py:1349 guiqwt\tests\sift.py:300
-#: guiqwt\tools.py:2360 guiqwt\tools.py:2377
+#: guiqwt\tools.py:2361 guiqwt\tools.py:2378
 msgid "Remove"
 msgstr "Supprimer"
 
-#: guiqwt\curve.py:1345 guiqwt\tools.py:2373
+#: guiqwt\curve.py:1345 guiqwt\tools.py:2374
 msgid "Do you really want to remove this item?"
 msgstr "Souhaitez-vous vraiment supprimer cet objet ?"
 
-#: guiqwt\curve.py:1347 guiqwt\tools.py:2375
+#: guiqwt\curve.py:1347 guiqwt\tools.py:2376
 msgid "Do you really want to remove selected items?"
 msgstr "Souhaitez-vous vraiment supprimer les objets sélectionnés ?"
 
@@ -928,7 +928,7 @@ msgstr "Alpha global"
 msgid "Global alpha value"
 msgstr "Valeur globale du canal alpha"
 
-#: guiqwt\styles.py:1075 guiqwt\styles.py:1149 guiqwt\tools.py:2403
+#: guiqwt\styles.py:1075 guiqwt\styles.py:1149 guiqwt\tools.py:2404
 msgid "Colormap"
 msgstr "Échelle de couleur"
 
@@ -978,7 +978,9 @@ msgstr "Axe des Z"
 
 #: guiqwt\styles.py:1142
 msgid "When enabled, highest level is opaque and lowest level is transparent"
-msgstr "Lorsque ce réglage est activé, les niveaux de l'image les plus élevés sont opaques tandis que les niveaux les plus faibles sont transparents"
+msgstr ""
+"Lorsque ce réglage est activé, les niveaux de l'image les plus élevés sont "
+"opaques tandis que les niveaux les plus faibles sont transparents"
 
 #: guiqwt\styles.py:1155
 msgid "Quadrangle interpolation"
@@ -1039,7 +1041,7 @@ msgstr "y|min"
 msgid "y|max"
 msgstr "y|max"
 
-#: guiqwt\styles.py:1319 guiqwt\styles.py:1324 guiqwt\tools.py:2470
+#: guiqwt\styles.py:1319 guiqwt\styles.py:1324 guiqwt\tools.py:2471
 msgid "Mask"
 msgstr "Masque"
 
@@ -1047,7 +1049,7 @@ msgstr "Masque"
 msgid "Filling value"
 msgstr "Valeur de remplissage"
 
-#: guiqwt\styles.py:1321 guiqwt\tools.py:2510
+#: guiqwt\styles.py:1321 guiqwt\tools.py:2511
 msgid "Show image mask"
 msgstr "Afficher le masque"
 
@@ -1172,7 +1174,7 @@ msgid ""
 "Bin count : counts the number of points per bin,\n"
 "For max, min, sum, product, average, compute the function of a third "
 "parameter (one by default)"
-
+msgstr ""
 
 #: guiqwt\styles.py:1510
 msgid "Automatic LUT range"
@@ -1253,12 +1255,12 @@ msgstr ""
 "Les formes privées ne sont pas affichées dans le panneau de liste des objets"
 
 #: guiqwt\styles.py:1666
-msgid "Arrow angle ()"
-msgstr "Angle de la flèche (°)"
+msgid "Arrow angle"
+msgstr "Angle de la flèche"
 
 #: guiqwt\styles.py:1667
-msgid "Arrow size (%)"
-msgstr "Taille de la flèche (%)"
+msgid "Arrow size"
+msgstr "Taille de la flèche"
 
 #: guiqwt\styles.py:1671
 msgid "Line (X-Axis)"
@@ -1569,12 +1571,12 @@ msgid "Rotation"
 msgstr "Rotation"
 
 #: guiqwt\tests\sift.py:949
-msgid "Rotate 90 right"
-msgstr "Rotation directe de 90°"
+msgid "Rotate %s right"
+msgstr "Rotation directe de %s"
 
 #: guiqwt\tests\sift.py:952
-msgid "Rotate 90 left"
-msgstr "Rotation inverse de 90°"
+msgid "Rotate %s left"
+msgstr "Rotation inverse de %s"
 
 #: guiqwt\tests\sift.py:955
 msgid "Rotate arbitrarily..."
@@ -2039,103 +2041,105 @@ msgstr "Aide"
 
 #: guiqwt\tools.py:2148
 msgid ""
-"Keyboard/mouse shortcuts:\n"
-"  - single left-click: item (curve, image, ...) selection\n"
-"  - single right-click: context-menu relative to selected item\n"
-"  - shift: on-active-curve (or image) cursor\n"
-"  - alt: free cursor\n"
-"  - left-click + mouse move: move item (when available)\n"
-"  - middle-click + mouse move: pan\n"
-"  - right-click + mouse move: zoom"
+"<b>Keyboard/mouse shortcuts:</b><br><br>\n"
+"  - <u>single left-click</u>: item (curve, image, ...) selection<br>\n"
+"  - <u>single right-click</u>: context-menu relative to selected item<br>\n"
+"  - <u>shift</u>: on-active-curve (or image) cursor (+ <u>control</u> to "
+"maintain cursor visible)<br>\n"
+"  - <u>shift + control</u>: on-active-curve cursor (+ <u>control</u> to "
+"maintain cursor visible)<br>\n"
+"  - <u>alt</u>: free cursor<br>\n"
+"  - <u>left-click + mouse move</u>: move item (when available)<br>\n"
+"  - <u>middle-click + mouse move</u>: pan<br>\n"
+"  - <u>right-click + mouse move</u>: zoom"
 msgstr ""
-"Raccourcis clavier et souris :\n"
-"  - clique gauche : sélection d'une courbe\n"
-"  - clique droit : menu contextuel\n"
-"  - shift : affichage d'un curseur sur la courbe ou l'image sélectionnée\n"
-"  - alt : curseur libre\n"
-"  - clique gauche + déplacement souris : déplacement de l'objet actif (si "
-"possible)\n"
-"  - clique du milieu + déplacement souris : translation dans le plan "
-"('pan')\n"
-"  - clique droit + déplacement souris : agrandissement ('zoom')"
+"<b>Raccourcis clavier et souris</b> :<br><br>  - <u>clic gauche</u> : "
+"sélection d'une courbe<br>  - <u>clic droit</u> : menu contextuel<br>  - "
+"<u>shift</u> : affichage d'un curseur sur la courbe ou l'image sélectionnée "
+"(+ <u>control</u> pour maintenir le curseur visible)<br>  - <u>alt</u> : "
+"curseur libre (+ <u>control</u> pour maintenir le curseur visible)<br>  - "
+"<u>clic gauche + déplacement souris</u> : déplacement de l'objet actif (si "
+"possible)<br>  - <u>clic du milieu + déplacement souris</u> : translation "
+"dans le plan ('pan')<br>  - <u>clic droit + déplacement souris</u> : "
+"agrandissement ('zoom')"
 
-#: guiqwt\tools.py:2164 guiqwt\tools.py:2171
+#: guiqwt\tools.py:2165 guiqwt\tools.py:2172
 msgid "About"
 msgstr "À propos de"
 
-#: guiqwt\tools.py:2232 guiqwt\tools.py:2242
+#: guiqwt\tools.py:2233 guiqwt\tools.py:2243
 msgid "Export"
 msgstr "Exporter"
 
-#: guiqwt\tools.py:2235
+#: guiqwt\tools.py:2236
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: guiqwt\tools.py:2243
+#: guiqwt\tools.py:2244
 msgid "Unable to export item data."
 msgstr "Impossible d'exporter les données de l'objet sélectionné."
 
-#: guiqwt\tools.py:2245
+#: guiqwt\tools.py:2246
 msgid "Error message:"
 msgstr "Message d'erreur :"
 
-#: guiqwt\tools.py:2259
+#: guiqwt\tools.py:2260
 msgid "Export data..."
 msgstr "Exporter les données..."
 
-#: guiqwt\tools.py:2304
+#: guiqwt\tools.py:2305
 msgid "Edit data..."
 msgstr "Modifier les données..."
 
-#: guiqwt\tools.py:2319
+#: guiqwt\tools.py:2320
 msgid "Center items"
 msgstr "Centrer des objets"
 
-#: guiqwt\tools.py:2404
+#: guiqwt\tools.py:2405
 msgid "Select colormap for active image"
 msgstr "Sélectionne l'échelle de couleurs de l'image active"
 
-#: guiqwt\tools.py:2472
+#: guiqwt\tools.py:2473
 msgid "Manage image masking areas"
 msgstr "Gestion des zones de masquage"
 
-#: guiqwt\tools.py:2483
+#: guiqwt\tools.py:2484
 msgid "Mask rectangular area (inside)"
 msgstr "Masquer l'intérieur d'une zone rectangulaire"
 
-#: guiqwt\tools.py:2490
+#: guiqwt\tools.py:2491
 msgid "Mask rectangular area (outside)"
 msgstr "Masquer l'extérieur d'une zone rectangulaire"
 
-#: guiqwt\tools.py:2497
+#: guiqwt\tools.py:2498
 msgid "Mask circular area (inside)"
 msgstr "Masquer l'intérieur d'une zone circulaire"
 
-#: guiqwt\tools.py:2504
+#: guiqwt\tools.py:2505
 msgid "Mask circular area (outside)"
 msgstr "Masquer l'extérieur d'une zone circulaire"
 
-#: guiqwt\tools.py:2513
+#: guiqwt\tools.py:2514
 msgid "Show masking shapes"
 msgstr "Afficher les formes de masquage"
 
-#: guiqwt\tools.py:2517
+#: guiqwt\tools.py:2518
 msgid "Apply mask"
 msgstr "Appliquer le masque"
 
-#: guiqwt\tools.py:2520 guiqwt\tools.py:2666
+#: guiqwt\tools.py:2521 guiqwt\tools.py:2667
 msgid "Clear mask"
 msgstr "Effacer le masque"
 
-#: guiqwt\tools.py:2523 guiqwt\tools.py:2578
+#: guiqwt\tools.py:2524 guiqwt\tools.py:2579
 msgid "Remove all masking shapes"
 msgstr "Supprimer toutes les formes de masquage"
 
-#: guiqwt\tools.py:2574
+#: guiqwt\tools.py:2575
 msgid "Do you really want to remove all masking shapes?"
 msgstr "Souhaitez-vous vraiment supprimer toutes les formes de masquage ?"
 
-#: guiqwt\tools.py:2663
+#: guiqwt\tools.py:2664
 msgid "Do you really want to clear the mask?"
 msgstr "Souhaitez-vous vraiment effacer le masque ?"
 
@@ -2240,8 +2244,8 @@ msgid "Fit"
 msgstr "Ajustement"
 
 #: guiqwt\widgets\fliprotate.py:51
-msgid "Angle ():"
-msgstr "Angle () :"
+msgid "Angle %s:"
+msgstr "Angle %s:"
 
 #: guiqwt\widgets\fliprotate.py:63
 msgid "Flip:"

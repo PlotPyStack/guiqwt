@@ -1663,8 +1663,8 @@ class ShapeParam(DataSet):
 
 
 class AxesShapeParam(DataSet):
-    arrow_angle = FloatItem(_("Arrow angle (°)"), min=0, max=90, nonzero=True)
-    arrow_size = FloatItem(_("Arrow size (%)"), min=0, max=100, nonzero=True)
+    arrow_angle = FloatItem(_("Arrow angle") + " (°)", min=0, max=90, nonzero=True)
+    arrow_size = FloatItem(_("Arrow size") + " (%)", min=0, max=100, nonzero=True)
     _styles = BeginTabGroup("Styles")
     # ------------------------------------------------------------------ Line tab
     ___line = BeginGroup(_("Line")).set_prop("display", icon="dashdot.png")
