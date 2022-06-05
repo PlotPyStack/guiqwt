@@ -282,7 +282,8 @@ def add_fitparam_widgets_to(layout, fitparams, refresh_callback, param_cols=1):
     row_nb = 0
     col_nb = 0
     for i, param in enumerate(fitparams):
-        param.create_widgets(layout.parent(), refresh_callback)
+        if not param.get_widgets():
+            param.create_widgets(layout.parent(), refresh_callback)
         widgets = param.get_widgets()
         w_colums = len(widgets) + 1
         row_contents += [
