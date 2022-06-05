@@ -812,17 +812,18 @@ def savefig(fname, format=None, draft=False):
     """
     Save figure
 
-    Currently supports PDF and PNG formats only
+    Currently supports QImageWriter formats only
+    (see https://doc.qt.io/qt-5/qimagewriter.html#supportedImageFormats)
     """
     if not isinstance(fname, str) and format is None:
         # Buffer/fd
         format = "png"
     if format is None:
         format = fname.rsplit(".", 1)[-1].lower()
-        fmts = [str(fmt).lower() for fmt in QImageWriter.supportedImageFormats()]
+        fmts = [fmt.data().decode() for fmt in QImageWriter.supportedImageFormats()]
         assert format in fmts, _(
             "Function 'savefig' currently supports the " "following formats:\n%s"
-        ) % ",".join(fmts)
+        ) % ", ".join(fmts)
     else:
         format = format.lower()
     fig = gcf()
