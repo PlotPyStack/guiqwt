@@ -1,5 +1,12 @@
 # guiqwt Releases #
 
+## Version 4.2.1 ##
+
+Bug fixes:
+
+* SnapshotTool / Resize dialog: default width/height were floats instead of
+  integers (the dialog OK button was disabled until fixing those values)
+
 ## Version 4.2.0 ##
 
 Changes:

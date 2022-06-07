@@ -1807,7 +1807,7 @@ def save_snapshot(plot, p0, p1, new_size=None):
     original_size = compute_trimageitems_original_size(items, src_w, src_h)
 
     if new_size is None:
-        new_size = (p1.x() - p0.x() + 1, p1.y() - p0.y() + 1)  # Screen size
+        new_size = (int(p1.x() - p0.x() + 1), int(p1.y() - p0.y() + 1))  # Screen size
 
     from guiqwt.widgets.resizedialog import ResizeDialog
 
