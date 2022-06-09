@@ -1,5 +1,13 @@
 # guiqwt Releases #
 
+## Version 4.2.2 ##
+
+Bug fixes:
+
+* Fixed tests/syncplot.py demonstrating how the curve plot axis
+synchronization feature works
+* Fixed Issue #93 / tests/histogram.py: bins/log scale parameters did nothing
+
 ## Version 4.2.1 ##
 
 Bug fixes:

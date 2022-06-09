@@ -1,66 +1,72 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2010 CEA
-# Ludovic Aubry
+# Copyright © 2010 Ludovic Aubry
+# Copyright © 2022 Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guidata/__init__.py for details)
 
-"""CurvePlotDialog test"""
+"""SyncPlotDialog test"""
 
+from guiqwt.config import _
+from guidata.configtools import get_icon
 
-# ===============================================================================
-# TODO: Make this test work!!
-# ===============================================================================
-
-
-SHOW = False  # Show test in GUI-based test launcher
-
-from qtpy.QtGui import QFont
+from qtpy import QtWidgets as QW
+from qtpy import QtGui as QG
 
 from guiqwt.baseplot import BasePlot
-from guiqwt.plot import CurveDialog, CurveWidget, PlotManager
+from guiqwt.plot import SubplotWidget, PlotManager
 from guiqwt.builder import make
 from guiqwt.curve import CurvePlot
 
+SHOW = False  # Show test in GUI-based test launcher
 
-class MyPlotDialog(CurveDialog):
-    def create_plot(self, options):
-        manager = PlotManager(None)
-        self.plotwidget = CurveWidget(self, manager=manager, **options)
-        manager.set_main(self.plotwidget)
+
+class SyncPlotDialog(QW.QDialog):
+    """Dialog demonstrating plot synchronization feature"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.__doc__)
+        self.setWindowIcon(get_icon("guiqwt.svg"))
+
+        self.manager = manager = PlotManager(None)
+        manager.set_main(self)
+        self.subplotwidget = spwidget = SubplotWidget(manager, parent=self)
+        self.setLayout(QW.QVBoxLayout())
+        toolbar = QW.QToolBar(_("Tools"))
+        manager.add_toolbar(toolbar)
+        self.layout().addWidget(toolbar)
+        self.layout().addWidget(spwidget)
+
         plot1 = CurvePlot(title="TL")
         plot2 = CurvePlot(title="TR")
         plot3 = CurvePlot(title="BL")
         plot4 = CurvePlot(title="BR")
-        self.plotwidget.add_plot(plot1, 0, 0, "1")
-        self.plotwidget.add_plot(plot2, 0, 1, "2")
-        self.plotwidget.add_plot(plot3, 1, 0, "3")
-        self.plotwidget.add_plot(plot4, 1, 1, "4")
-        self.plotwidget.finalize()
+        spwidget.add_subplot(plot1, 0, 0, "1")
+        spwidget.add_subplot(plot2, 0, 1, "2")
+        spwidget.add_subplot(plot3, 1, 0, "3")
+        spwidget.add_subplot(plot4, 1, 1, "4")
+        spwidget.add_itemlist()
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["1", "3"])
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["2", "4"])
         manager.synchronize_axis(BasePlot.Y_LEFT, ["1", "2"])
         manager.synchronize_axis(BasePlot.Y_LEFT, ["3", "4"])
 
-        self.layout.addWidget(self.plotwidget, 0, 0)
+        self.manager.register_all_curve_tools()
 
 
 def plot(items1, items2, items3, items4):
-    win = MyPlotDialog(
-        edit=False,
-        toolbar=True,
-        wintitle="CurvePlotDialog test",
-        options=dict(title="Title", xlabel="xlabel", ylabel="ylabel"),
-    )
+    """Plot items in SyncPlotDialog"""
+    dlg = SyncPlotDialog()
     items = [items1, items2, items3, items4]
-    for i, plot in enumerate(win.plotwidget.plots):
+    for i, plot in enumerate(dlg.subplotwidget.plots):
         for item in items[i]:
             plot.add_item(item)
-        plot.set_axis_font("left", QFont("Courier"))
+        plot.set_axis_font("left", QG.QFont("Courier"))
         plot.set_items_readonly(False)
-    win.get_panel("itemlist").show()
-    win.show()
-    win.exec_()
+    dlg.manager.get_panel("itemlist").show()
+    dlg.show()
+    dlg.exec_()
 
 
 def test():
