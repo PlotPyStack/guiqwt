@@ -105,7 +105,7 @@ class HistogramItem(CurveItem):
 
     __implements__ = (IBasePlotItem,)
 
-    def __init__(self, curveparam=None, histparam=None):
+    def __init__(self, curveparam=None, histparam=None, keep_weakref=False):
         self.hist_count = None
         self.hist_bins = None
         self.bins = None
@@ -113,6 +113,7 @@ class HistogramItem(CurveItem):
         self.source = None
         self.logscale = None
         self.old_logscale = None
+        self.keep_weakref = keep_weakref
         if curveparam is None:
             curveparam = CurveParam(_("Curve"), icon="curve.png")
             curveparam.curvestyle = "Steps"
@@ -132,7 +133,10 @@ class HistogramItem(CurveItem):
             Object with method `get_histogram`, e.g. objects derived from
             :py:data:`guiqwt.image.ImageItem`
         """
-        self.source = weakref.ref(src)
+        if self.keep_weakref:
+            self.source = weakref.ref(src)
+        else:
+            self.source = src
         self.update_histogram()
 
     def get_hist_source(self):
@@ -145,7 +149,9 @@ class HistogramItem(CurveItem):
             :py:data:`guiqwt.image.ImageItem`
         """
         if self.source is not None:
-            return self.source()
+            if self.keep_weakref:
+                return self.source()
+            return self.source
 
     def set_hist_data(self, data):
         """Set histogram data"""
@@ -294,7 +300,9 @@ class LevelsHistogram(CurvePlot):
 
         for item in items:
             if item not in known_items:
-                curve = HistogramItem(self.curveparam, self.histparam)
+                curve = HistogramItem(
+                    self.curveparam, self.histparam, keep_weakref=True
+                )
                 curve.set_hist_source(item)
                 self.add_item(curve, z=0)
                 known_items[item] = curve
