@@ -14,7 +14,6 @@ the library and [changelog](CHANGELOG.md) for recent history of changes.
 Copyright © 2009-2015 CEA, Pierre Raybaut, licensed under the terms of the
 [CECILL License](Licence_CeCILL_V2-en.txt).
 
-
 ## Overview
 
 Based on ``PythonQwt`` (a pure Python/PyQt reimplementation of the curve
@@ -30,40 +29,38 @@ Extension to ``PythonQwt``:
 * set of tools for curve and image plotting
 * GUI-based application development helpers
 
-
 ## Dependencies
 
 ### Requirements
 
-- Python 3.6+
-- [PyQt5](https://pypi.python.org/pypi/PyQt5) 5.5+
-- [QtPy](https://pypi.org/project/QtPy/) >= 1.3
-- [PythonQwt](https://pypi.python.org/pypi/PythonQwt) 0.10+ (pure Python reimplementation of Qwt6 C++ library)
-- [guidata](https://pypi.python.org/pypi/guidata) 2.2+
-- [NumPy](https://pypi.python.org/pypi/NumPy) 1.6+
-- [SciPy](https://pypi.python.org/pypi/SciPy) 0.7+
-- [Pillow](https://pypi.python.org/pypi/Pillow)
+* Python 3.6+
+* [PyQt5](https://pypi.python.org/pypi/PyQt5)
+* [QtPy](https://pypi.org/project/QtPy/)
+* [PythonQwt](https://pypi.python.org/pypi/PythonQwt) (pure Python reimplementation of Qwt6 C++ library)
+* [guidata](https://pypi.python.org/pypi/guidata)
+* [NumPy](https://pypi.python.org/pypi/NumPy)
+* [SciPy](https://pypi.python.org/pypi/SciPy)
+* [Pillow](https://pypi.python.org/pypi/Pillow)
 
 ### Optional modules
 
-- [pydicom](https://pypi.python.org/pypi/pydicom) 0.9.3+ for DICOM I/O support
-
+* [pydicom](https://pypi.python.org/pypi/pydicom) for DICOM I/O support
 
 ## Building/Installation
 
-### All platforms:
+### All platforms
 
 The setup.py script supports the following extra options for
 optimizing the image scaler engine with SSE2/SSE3 processors:
 ``--sse2`` or ``--sse3``.
 
-### On GNU/Linux and MacOS platforms:
+### On GNU/Linux and MacOS platforms
 
 ```bash
 python setup.py build install
 ```
 
-### On Windows platforms with Microsoft Visual Studio:
+### On Windows platforms with Microsoft Visual Studio
 
 ```cmd
 python setup.py build -c msvc install

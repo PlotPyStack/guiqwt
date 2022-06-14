@@ -1,6 +1,11 @@
 # guiqwt Releases #
 
-## Version 4.2.2 ##
+## Version 4.3.0 ##
+
+Changes:
+
+* Added "tests/loadsaveitems_json.py": JSON plot items (de)serialize test
+  (requires guidata v2.3)
 
 Bug fixes:
 

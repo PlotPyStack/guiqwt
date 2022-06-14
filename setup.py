@@ -211,7 +211,7 @@ setup(
     install_requires=[
         "NumPy>=1.3",
         "SciPy>=0.7",
-        "guidata>=2.2",
+        "guidata>=2.3",
         "PythonQwt>=0.10",
         "Pillow",
         "QtPy>=1.3",
