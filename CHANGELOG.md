@@ -5,7 +5,8 @@
 Changes:
 
 * Added "tests/loadsaveitems_json.py": JSON plot items (de)serialize test
-  (requires guidata v2.3)
+  (from CodraFT project,
+  <https://codra-ingenierie-informatique.github.io/CodraFT/>)
 
 Bug fixes:
 
