@@ -256,7 +256,7 @@ from qtpy.QtWidgets import (
 from qtpy.compat import getsavefilename, getopenfilename
 
 from guidata.qthelpers import get_std_icon, add_actions, add_separator
-from guidata.widgets.objecteditor import oedit
+from guidata.widgets.arrayeditor import ArrayEditor
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import BoolItem, FloatItem
@@ -2277,7 +2277,7 @@ class ExportItemDataTool(ItemManipulationBaseTool):
 
 
 def edit_curve_data(item):
-    """Edit curve item data to text file"""
+    """Edit curve item data in array editor"""
     item_data = item.get_data()
     if len(item_data) > 2:
         x, y, dx, dy = item_data
@@ -2290,7 +2290,10 @@ def edit_curve_data(item):
     else:
         x, y = item_data
         data = np.array([x, y]).T
-    if oedit(data) is not None:
+
+    dialog = ArrayEditor(item.plot())
+    dialog.setup_and_check(data)
+    if dialog.exec_():
         if data.shape[1] > 2:
             if data.shape[1] == 3:
                 x, y, tmp = data.T
@@ -2306,6 +2309,13 @@ def edit_curve_data(item):
             item.set_data(x, y)
 
 
+def edit_image_data(item):
+    """Edit image item data in array editor"""
+    dialog = ArrayEditor(item.plot())
+    dialog.setup_and_check(item.data)
+    dialog.exec_()
+
+
 class EditItemDataTool(ItemManipulationBaseTool):
     """Edit item data"""
 
@@ -2317,7 +2327,7 @@ class EditItemDataTool(ItemManipulationBaseTool):
             manager,
             toolbar_id,
             curve_func=edit_curve_data,
-            image_func=lambda item: oedit(item.data),
+            image_func=edit_image_data,
         )
 
 

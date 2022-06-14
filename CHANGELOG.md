@@ -4,8 +4,10 @@
 
 Bug fixes:
 
+* `EditItemDataTool`: now show directly an `ArrayEditor` dialog box
+  (instead of calling the `oedit` object editor function)
 * Fixed tests/syncplot.py demonstrating how the curve plot axis
-synchronization feature works
+  synchronization feature works
 * Fixed Issue #93 / tests/histogram.py: bins/log scale parameters did nothing
 
 ## Version 4.2.1 ##
