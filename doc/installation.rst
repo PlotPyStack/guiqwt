@@ -5,10 +5,10 @@ Dependencies
 ------------
 
 Requirements:
-    * Python 3.x (x>=6)
+    * Python 3.x (x>=7)
     * `PyQt5`_ 5.x (x>=5)
-    * `PythonQwt`_ >=0.5
-    * `guidata`_ >=1.7
+    * `PythonQwt`_ >=0.10
+    * `guidata`_ >=2.2
     * `QtPy`_ >= 1.3
     * `NumPy`_, `SciPy`_ and `Pillow`_
 
