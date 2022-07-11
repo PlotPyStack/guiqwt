@@ -33,7 +33,7 @@ Extension to ``PythonQwt``:
 
 ### Requirements
 
-* Python 3.6+
+* Python 3.7+
 * [PyQt5](https://pypi.python.org/pypi/PyQt5)
 * [QtPy](https://pypi.org/project/QtPy/)
 * [PythonQwt](https://pypi.python.org/pypi/PythonQwt) (pure Python reimplementation of Qwt6 C++ library)
