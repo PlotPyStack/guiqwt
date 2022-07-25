@@ -1431,21 +1431,20 @@ class PlotItemBuilder(object):
             AnnotatedRectangle, x0, y0, x1, y1, title, subtitle
         )
 
-    def annotated_ellipse(self, x0, y0, x1, y1, ratio, title=None, subtitle=None):
+    def annotated_ellipse(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
         Make an annotated ellipse `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedEllipse` object)
 
             * x0, y0, x1, y1: ellipse rectangle coordinates
-            * ratio: ratio between y-axis and x-axis lengths
             * title, subtitle: strings
         """
         param = self.__get_annotationparam(title, subtitle)
-        shape = AnnotatedEllipse(x0, y0, x1, y1, ratio, param)
+        shape = AnnotatedEllipse(x0, y0, x1, y1, param)
         shape.set_style("plot", "shape/drag")
         return shape
 
-    def annotated_circle(self, x0, y0, x1, y1, ratio, title=None, subtitle=None):
+    def annotated_circle(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
         Make an annotated circle `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedCircle` object)
@@ -1453,7 +1452,7 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: circle diameter coordinates
             * title, subtitle: strings
         """
-        return self.annotated_ellipse(x0, y0, x1, y1, 1.0, title, subtitle)
+        return self.annotated_ellipse(x0, y0, x1, y1, title, subtitle)
 
     def annotated_segment(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
