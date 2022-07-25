@@ -29,11 +29,12 @@ from guidata.utils import get_subpackages, get_package_data, cythonize_all
 
 
 LIBNAME = "guiqwt"
-from guiqwt import __version__
-from guiqwt import __description__
+__description__ = (
+    "guiqwt is a set of tools for curve and image plotting (extension to PythonQwt)"
+)
 
 # Remove module from list to allow building doc from build dir
-del sys.modules["guiqwt"]
+# del sys.modules["guiqwt"]
 
 LONG_DESCRIPTION = """\
 guiqwt: Python tools for curve and image plotting
@@ -90,13 +91,6 @@ See the `README`_ and `documentation`_ for more details.
 """
 
 KEYWORDS = ""
-CLASSIFIERS = ["Topic :: Scientific/Engineering"]
-if "beta" in __version__ or "b" in __version__:
-    CLASSIFIERS += ["Development Status :: 4 - Beta"]
-elif "alpha" in __version__ or "a" in __version__:
-    CLASSIFIERS += ["Development Status :: 3 - Alpha"]
-else:
-    CLASSIFIERS += ["Development Status :: 5 - Production/Stable"]
 
 
 def build_chm_doc(libname):
@@ -200,7 +194,8 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version=__version__,
+    version="4.3.1",  # Update here *AND* in __init__.py!
+    # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,
     packages=get_subpackages(LIBNAME),
@@ -254,7 +249,7 @@ setup(
     author_email="pierre.raybaut@gmail.com",
     url="https://github.com/PierreRaybaut/%s" % LIBNAME,
     license="CeCILL V2",
-    classifiers=CLASSIFIERS
+    classifiers=["Topic :: Scientific/Engineering"]
     + [
         "Operating System :: MacOS",
         "Operating System :: Microsoft :: Windows",

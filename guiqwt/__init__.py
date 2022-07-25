@@ -23,10 +23,8 @@ External resources:
 """
 
 
-__version__ = "4.3.0"
-__description__ = (
-    "guiqwt is a set of tools for curve and image plotting " "(extension to PythonQwt)"
-)
+__version__ = "4.3.1"  # Update here *AND* in setup.py!
+# (Until setup.py has been fully retrofitted, this manual sync is mandatory)
 
 
 def about(html=True, copyright_only=False):
@@ -36,7 +34,12 @@ def about(html=True, copyright_only=False):
     from qtpy import QtCore as QC
 
     name = __file__.split(osp.sep)[-2]
-    tf1 = (name, __version__, __description__)
+    tf1 = (
+        name,
+        __version__,
+        "guiqwt is a set of tools for curve and image plotting "
+        "(extension to PythonQwt)",
+    )
     tf2 = (
         platform.python_version(),
         "64 bits" if sys.maxsize > 2**32 else "32 bits",
