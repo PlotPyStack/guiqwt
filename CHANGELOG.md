@@ -1,5 +1,14 @@
 # guiqwt Releases #
 
+## Version 4.3.1 ##
+
+Bug fixes:
+
+* Added build dependencies (fixes Issue #95)
+* Fixed compatibility issue with Visual Studio 2015 and earlier
+* Fixed builder functions for annotated circle and ellipse (bad arguments)
+* Fixed default text color configuration for dark mode
+
 ## Version 4.3.0 ##
 
 Changes:
