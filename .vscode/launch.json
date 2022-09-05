@@ -10,14 +10,20 @@
             "request": "launch",
             "program": "${workspaceFolder}/guiqwt/tests/__init__.py",
             "cwd": "${workspaceFolder}/guiqwt/tests",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                // "QT_COLOR_MODE": "light",
+            }
         },
         {
             "name": "Python : Current file",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                // "QT_COLOR_MODE": "light",
+            }
         }
     ]
 }
