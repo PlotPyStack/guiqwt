@@ -128,10 +128,20 @@ from guiqwt.cross_section import XCrossSection, YCrossSection
 from guiqwt.builder import make
 
 
+_qapp = None
 _interactive = False
 _figures = {}
 _current_fig = None
 _current_axes = None
+
+
+def create_qapplication(exec_loop=False):
+    """Creating Qt application (only once) and eventually exec Qt main loop"""
+    global _qapp  # pylint: disable=global-statement
+    if _qapp is None:
+        _qapp = guidata.qapplication()
+    if exec_loop:
+        _qapp.exec()
 
 
 class Window(QMainWindow):
@@ -213,7 +223,6 @@ class Figure(object):
         self.axes = {}
         self.title = title
         self.win = None
-        self.app = None
 
     def get_axes(self, i, j):
         if (i, j) in self.axes:
@@ -224,7 +233,7 @@ class Figure(object):
         return ax
 
     def build_window(self):
-        self.app = guidata.qapplication()
+        create_qapplication()
         self.win = Window(wintitle=self.title)
         images = False
         for (i, j), ax in list(self.axes.items()):
@@ -242,7 +251,7 @@ class Figure(object):
     def save(self, fname, format, draft):
         if isinstance(fname, str):
             if format == "pdf":
-                self.app = guidata.qapplication()
+                create_qapplication()
                 if draft:
                     mode = QPrinter.ScreenResolution
                 else:
@@ -301,8 +310,7 @@ def do_mainloop(mainloop):
     if not _current_fig:
         print("Warning: must create a figure before showing it", file=sys.stderr)
     elif mainloop:
-        app = guidata.qapplication()
-        app.exec_()
+        create_qapplication(exec_loop=True)
 
 
 class Axes(object):
