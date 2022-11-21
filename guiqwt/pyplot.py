@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
-# Pierre Raybaut
+# Copyright © 2009-2010 CEA, Pierre Raybaut
+# Copyright © 2022 Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
@@ -102,16 +102,11 @@ Reference
 
 
 import sys
-from qtpy.QtWidgets import (
-    QMainWindow,
-    QFrame,
-    QVBoxLayout,
-    QGridLayout,
-    QToolBar,
-)
-from qtpy.QtGui import QPixmap, QPainter, QImageWriter
+
+from qtpy import QtWidgets as QW
+from qtpy import QtGui as QG
+from qtpy import QtCore as QC
 from qtpy.QtPrintSupport import QPrinter
-from qtpy.QtCore import QRect, Qt, QBuffer, QIODevice
 from qtpy import PYQT5
 
 import guidata
@@ -120,11 +115,9 @@ from guidata.qthelpers import win32_fix_title_bar_background
 
 # Local imports
 from guiqwt.config import _
-from guiqwt.plot import PlotManager
-from guiqwt.image import ImagePlot, INTERP_NEAREST, INTERP_LINEAR, INTERP_AA
-from guiqwt.curve import CurvePlot, PlotItemList
-from guiqwt.histogram import ContrastAdjustment
-from guiqwt.cross_section import XCrossSection, YCrossSection
+from guiqwt.plot import PlotManager, SubplotWidget
+from guiqwt.image import INTERP_NEAREST, INTERP_LINEAR, INTERP_AA, ImagePlot
+from guiqwt.curve import CurvePlot
 from guiqwt.builder import make
 
 
@@ -144,81 +137,57 @@ def create_qapplication(exec_loop=False):
         _qapp.exec()
 
 
-class Window(QMainWindow):
+class Window(QW.QMainWindow):
+    """Figure main window"""
+
     def __init__(self, wintitle):
         super(Window, self).__init__()
         win32_fix_title_bar_background(self)
-        self.default_tool = None
-        self.plots = []
-        self.itemlist = PlotItemList(None)
-        self.contrast = ContrastAdjustment(None)
-        self.xcsw = XCrossSection(None)
-        self.ycsw = YCrossSection(None)
-
-        self.manager = PlotManager(self)
-        self.toolbar = QToolBar(_("Tools"), self)
-        self.manager.add_toolbar(self.toolbar, "default")
-        self.toolbar.setMovable(True)
-        self.toolbar.setFloatable(True)
-        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
-
-        frame = QFrame(self)
-        self.setCentralWidget(frame)
-        self.layout = QGridLayout()
-        layout = QVBoxLayout(frame)
-        frame.setLayout(layout)
-        layout.addLayout(self.layout)
-        self.frame = frame
-
         self.setWindowTitle(wintitle)
         self.setWindowIcon(get_icon("guiqwt.svg"))
 
+        self.manager = PlotManager(self)
+        self.manager.set_main(self)
+        self.toolbar = QW.QToolBar(_("Tools"), self)
+        self.manager.add_toolbar(self.toolbar, "default")
+        self.toolbar.setMovable(True)
+        self.toolbar.setFloatable(True)
+        self.addToolBar(QC.Qt.TopToolBarArea, self.toolbar)
+
+        self.subplotw = SubplotWidget(self.manager, parent=self)
+        self.setCentralWidget(self.subplotw)
+
     def closeEvent(self, event):
+        """Reimplement QWidget base method"""
         global _figures, _current_fig, _current_axes
         figure_title = str(self.windowTitle())
         if _figures.pop(figure_title) == _current_fig:
             _current_fig = None
             _current_axes = None
-        self.itemlist.close()
-        self.contrast.close()
-        self.xcsw.close()
-        self.ycsw.close()
         event.accept()
 
     def add_plot(self, i, j, plot):
-        self.layout.addWidget(plot, i, j)
-        self.manager.add_plot(plot)
-        self.plots.append(plot)
+        self.subplotw.add_subplot(plot, i, j)
+
+    def setup_window(self):
+        self.subplotw.add_standard_panels(show_contrast=self.subplotw.has_images)
 
     def replot(self):
-        for plot in self.plots:
+        for plot in self.subplotw.plots:
             plot.replot()
             item = plot.get_default_item()
             if item is not None:
                 plot.set_active_item(item)
                 item.unselect()
 
-    def add_panels(self, images=False):
-        self.manager.add_panel(self.itemlist)
-        if images:
-            for panel in (self.ycsw, self.xcsw, self.contrast):
-                panel.hide()
-                self.manager.add_panel(panel)
-
-    def register_tools(self, images=False):
-        if images:
-            self.manager.register_all_image_tools()
-        else:
-            self.manager.register_all_curve_tools()
-
     def display(self):
         self.show()
         self.replot()
-        self.manager.get_default_tool().activate()
-        self.manager.update_tools_status()
 
 
 class Figure(object):
+    """Object representing a plot figure"""
+
     def __init__(self, title):
         self.axes = {}
         self.title = title
@@ -235,82 +204,37 @@ class Figure(object):
     def build_window(self):
         create_qapplication()
         self.win = Window(wintitle=self.title)
-        images = False
         for (i, j), ax in list(self.axes.items()):
             ax.setup_window(i, j, self.win)
-            if ax.images:
-                images = True
-        self.win.add_panels(images=images)
-        self.win.register_tools(images=images)
+        self.win.setup_window()
 
     def show(self):
         if not self.win:
             self.build_window()
         self.win.display()
 
-    def save(self, fname, format, draft):
+    def save(self, fname, format):
         if isinstance(fname, str):
-            if format == "pdf":
-                create_qapplication()
-                if draft:
-                    mode = QPrinter.ScreenResolution
-                else:
-                    mode = QPrinter.HighResolution
-                printer = QPrinter(mode)
-                printer.setOutputFormat(QPrinter.PdfFormat)
-                printer.setOrientation(QPrinter.Landscape)
-                printer.setOutputFileName(fname)
-                printer.setCreator("guiqwt.pyplot")
-                self.print_(printer)
+            if self.win is None:
+                self.show()
+            if PYQT5:
+                pixmap = self.win.centralWidget().grab()
             else:
-                if self.win is None:
-                    self.show()
-                if PYQT5:
-                    pixmap = self.win.centralWidget().grab()
-                else:
-                    pixmap = QPixmap.grabWidget(self.win.centralWidget())
-                pixmap.save(fname, format.upper())
+                pixmap = QG.QPixmap.grabWidget(self.win.centralWidget())
+            pixmap.save(fname, format.upper())
         else:
             # Buffer
             fd = fname
             assert hasattr(fd, "write"), "object is not file-like as expected"
             if self.win is None:
                 self.show()
-            pixmap = QPixmap.grabWidget(self.win.centralWidget())
-            buff = QBuffer()
-            buff.open(QIODevice.ReadWrite)
+            pixmap = QG.QPixmap.grabWidget(self.win.centralWidget())
+            buff = QC.QBuffer()
+            buff.open(QC.QIODevice.ReadWrite)
             pixmap.save(buff, format.upper())
             fd.write(buff.data())
             buff.close()
             fd.seek(0)
-
-    def print_(self, device):
-        if not self.win:
-            self.build_window()
-        W = device.width()
-        H = device.height()
-        from numpy import array
-
-        coords = array(list(self.axes.keys()))
-        imin = coords[:, 0].min()
-        imax = coords[:, 0].max()
-        jmin = coords[:, 1].min()
-        jmax = coords[:, 1].max()
-        w = W / (jmax - jmin + 1)
-        h = H / (imax - imin + 1)
-        paint = QPainter(device)
-        for (i, j), ax in list(self.axes.items()):
-            oy = (i - imin) * h
-            ox = (j - jmin) * w
-            ax.widget.print_(paint, QRect(ox, oy, w, h))
-
-
-def do_mainloop(mainloop):
-    global _current_fig
-    if not _current_fig:
-        print("Warning: must create a figure before showing it", file=sys.stderr)
-    elif mainloop:
-        create_qapplication(exec_loop=True)
 
 
 class Axes(object):
@@ -383,36 +307,34 @@ class Axes(object):
             p.set_axis_limits("left", *self.ylimits)
 
     def setup_image(self, i, j, win):
-        p = ImagePlot(
+        self.main_widget = plot = ImagePlot(
             win,
             xlabel=self.xlabel,
             ylabel=self.ylabel,
             zlabel=self.zlabel,
             yreverse=self.yreverse,
         )
-        self.main_widget = p
-        win.add_plot(i, j, p)
+        win.add_plot(i, j, plot)
         for item in self.images + self.plots:
             if item in self.images:
                 item.set_color_map(self.colormap)
-            p.add_item(item)
+            plot.add_item(item)
         if self.legend_position is not None:
-            p.add_item(make.legend(self.legend_position))
-        return p
+            plot.add_item(make.legend(self.legend_position))
+        return plot
 
     def setup_plot(self, i, j, win):
-        p = CurvePlot(win, xlabel=self.xlabel, ylabel=self.ylabel)
-        self.main_widget = p
-        win.add_plot(i, j, p)
+        self.main_widget = plot = CurvePlot(win, xlabel=self.xlabel, ylabel=self.ylabel)
+        win.add_plot(i, j, plot)
         for item in self.plots:
-            p.add_item(item)
-        p.enable_used_axes()
-        active_item = p.get_active_item(force=True)
-        p.set_scales(self.xscale, self.yscale)
+            plot.add_item(item)
+        plot.enable_used_axes()
+        active_item = plot.get_active_item(force=True)
+        plot.set_scales(self.xscale, self.yscale)
         active_item.unselect()
         if self.legend_position is not None:
-            p.add_item(make.legend(self.legend_position))
-        return p
+            plot.add_item(make.legend(self.legend_position))
+        return plot
 
 
 def _make_figure_title(N=None):
@@ -462,11 +384,14 @@ def show(mainloop=True):
     Show all figures and enter Qt event loop
     This should be the last line of your script
     """
-    global _figures, _interactive
+    global _figures, _interactive, _current_fig
     for fig in list(_figures.values()):
         fig.show()
     if not _interactive:
-        do_mainloop(mainloop)
+        if not _current_fig:
+            print("Warning: must create a figure before showing it", file=sys.stderr)
+        elif mainloop:
+            create_qapplication(exec_loop=True)
 
 
 def _show_if_interactive():
@@ -816,7 +741,7 @@ def close(N=None, all=False):
     fig.close()
 
 
-def savefig(fname, format=None, draft=False):
+def savefig(fname, format=None):
     """
     Save figure
 
@@ -828,11 +753,11 @@ def savefig(fname, format=None, draft=False):
         format = "png"
     if format is None:
         format = fname.rsplit(".", 1)[-1].lower()
-        fmts = [fmt.data().decode() for fmt in QImageWriter.supportedImageFormats()]
+        fmts = [fmt.data().decode() for fmt in QG.QImageWriter.supportedImageFormats()]
         assert format in fmts, _(
             "Function 'savefig' currently supports the " "following formats:\n%s"
         ) % ", ".join(fmts)
     else:
         format = format.lower()
     fig = gcf()
-    fig.save(fname, format, draft)
+    fig.save(fname, format)

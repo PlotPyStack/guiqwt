@@ -9,9 +9,11 @@
 
 from guiqwt.config import _
 from guidata.configtools import get_icon
+from guidata.qthelpers import win32_fix_title_bar_background
 
 from qtpy import QtWidgets as QW
 from qtpy import QtGui as QG
+from qtpy import QtCore as QC
 
 from guiqwt.baseplot import BasePlot
 from guiqwt.plot import SubplotWidget, PlotManager
@@ -21,22 +23,25 @@ from guiqwt.curve import CurvePlot
 SHOW = False  # Show test in GUI-based test launcher
 
 
-class SyncPlotDialog(QW.QDialog):
-    """Dialog demonstrating plot synchronization feature"""
+class SyncPlotWindow(QW.QMainWindow):
+    """Window demonstrating plot synchronization feature"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        win32_fix_title_bar_background(self)
         self.setWindowTitle(self.__doc__)
         self.setWindowIcon(get_icon("guiqwt.svg"))
 
         self.manager = manager = PlotManager(None)
         manager.set_main(self)
+        self.toolbar = QW.QToolBar(_("Tools"), self)
+        self.manager.add_toolbar(self.toolbar, "default")
+        self.toolbar.setMovable(True)
+        self.toolbar.setFloatable(True)
+        self.addToolBar(QC.Qt.TopToolBarArea, self.toolbar)
+
         self.subplotwidget = spwidget = SubplotWidget(manager, parent=self)
-        self.setLayout(QW.QVBoxLayout())
-        toolbar = QW.QToolBar(_("Tools"))
-        manager.add_toolbar(toolbar)
-        self.layout().addWidget(toolbar)
-        self.layout().addWidget(spwidget)
+        self.setCentralWidget(spwidget)
 
         plot1 = CurvePlot(title="TL")
         plot2 = CurvePlot(title="TR")
@@ -46,27 +51,24 @@ class SyncPlotDialog(QW.QDialog):
         spwidget.add_subplot(plot2, 0, 1, "2")
         spwidget.add_subplot(plot3, 1, 0, "3")
         spwidget.add_subplot(plot4, 1, 1, "4")
-        spwidget.add_itemlist()
+        spwidget.add_standard_panels()
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["1", "3"])
         manager.synchronize_axis(BasePlot.X_BOTTOM, ["2", "4"])
         manager.synchronize_axis(BasePlot.Y_LEFT, ["1", "2"])
         manager.synchronize_axis(BasePlot.Y_LEFT, ["3", "4"])
 
-        self.manager.register_all_curve_tools()
-
 
 def plot(items1, items2, items3, items4):
     """Plot items in SyncPlotDialog"""
-    dlg = SyncPlotDialog()
+    win = SyncPlotWindow()
     items = [items1, items2, items3, items4]
-    for i, plot in enumerate(dlg.subplotwidget.plots):
+    for i, plot in enumerate(win.subplotwidget.plots):
         for item in items[i]:
             plot.add_item(item)
         plot.set_axis_font("left", QG.QFont("Courier"))
         plot.set_items_readonly(False)
-    dlg.manager.get_panel("itemlist").show()
-    dlg.show()
-    dlg.exec_()
+    win.manager.get_panel("itemlist").show()
+    win.show()
 
 
 def test():
@@ -74,7 +76,7 @@ def test():
     # -- Create QApplication
     import guidata
 
-    _app = guidata.qapplication()
+    app = guidata.qapplication()
     # --
     from numpy import linspace, sin
 
@@ -103,6 +105,7 @@ def test():
             make.legend("TR"),
         ],
     )
+    app.exec()
 
 
 if __name__ == "__main__":

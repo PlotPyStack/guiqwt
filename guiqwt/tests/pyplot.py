@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
-# Pierre Raybaut
+# Copyright © 2009-2010 CEA, Pierre Raybaut
+# Copyright © 2022 Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
@@ -24,7 +24,7 @@ def main():
     subplot(2, 1, 1)
     plot(x, np.sin(x), "r+")
     plot(x, np.cos(x), "g-")
-    errorbar(x, -1 + x ** 2 / 20 + 0.2 * np.random.rand(len(x)), x / 20)
+    errorbar(x, -1 + x**2 / 20 + 0.2 * np.random.rand(len(x)), x / 20)
     xlabel("Axe x")
     ylabel("Axe y")
     subplot(2, 1, 2)
@@ -36,11 +36,14 @@ def main():
     zlabel("intensity")
     gray()
     imshow(img)
-    #    savefig("D:\\test1.pdf", draft=True)
+    # savefig("test1.png")
 
     figure("table plot")
     data = np.array([x, np.sin(x), np.cos(x)]).T
     plot(data)
+
+    figure("simple image")
+    imshow(img)
 
     figure("simple plot")
     subplot(1, 2, 1)
@@ -48,8 +51,7 @@ def main():
     legend()
     subplot(1, 2, 2)
     plot(x, np.sinh(x), "r:", label="SinH")
-    #    savefig("D:\\test2.pdf")
-    #    savefig("D:\\test2.png")
+    # savefig("test2.png")
     show()
 
     figure("semilogx")

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2009-2010 CEA
-# Pierre Raybaut
+# Copyright © 2009-2010 CEA, Pierre Raybaut
+# Copyright © 2022 Pierre Raybaut
 # Licensed under the terms of the CECILL License
 # (see guiqwt/__init__.py for details)
 
@@ -731,28 +731,105 @@ class SubplotWidget(QSplitter):
     together handled by the same manager
 
     Since the plots must be added to the manager before the panels
-    the add_itemlist method can be called after having declared
+    the add_standard_panels method can be called after having declared
     all the subplots
     """
 
+    # FIXME: Part of this class should be refactored with BaseImageWidget (at least
+    # the methods `add_standard_panels`,  `adjust_ycsw_height` and `xcsw_is_visible`).
+    # This will be done in `plotpy` (the library replacing `guiqwt` at the end of 2023).
+
     def __init__(self, manager, parent=None, **kwargs):
         super(SubplotWidget, self).__init__(parent, **kwargs)
-        self.setOrientation(Qt.Horizontal)
+        self.setOrientation(Qt.Vertical)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.sub_splitter = QSplitter(Qt.Horizontal, self)
+        self.sub_splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         self.manager = manager
         self.plots = []
         self.itemlist = None
-        main = QWidget()
+        self.xcsw = None
+        self.ycsw = None
+        self.contrast = None
+        self.mainwidget = QWidget()
         self.plotlayout = QGridLayout()
-        main.setLayout(self.plotlayout)
-        self.addWidget(main)
+        self.mainwidget.setLayout(self.plotlayout)
 
-    def add_itemlist(self, show_itemlist=False):
+    @property
+    def has_images(self):
+        """Return True if subplot widget contains images (i.e. `ImagePlot` instances)"""
+        return any(
+            [
+                isinstance(self.plotlayout.itemAt(index).widget(), ImagePlot)
+                for index in range(self.plotlayout.count())
+            ]
+        )
+
+    def add_standard_panels(
+        self,
+        show_itemlist=False,
+        show_xsection=False,
+        show_ysection=False,
+        show_contrast=False,
+    ):
+        """Add standard panels (item list, X/Y cross section, contrast)"""
+        if self.has_images:
+            from guiqwt.cross_section import XCrossSection, YCrossSection
+
+            self.ycsw = YCrossSection(self, position="right", xsection_pos="top")
+            self.ycsw.setVisible(show_ysection)
+            self.xcsw = XCrossSection(self)
+            self.xcsw.setVisible(show_xsection)
+            self.xcsw.SIG_VISIBILITY_CHANGED.connect(self.xcsw_is_visible)
+            self.xcsw_splitter = QSplitter(Qt.Vertical, self)
+            self.xcsw_splitter.addWidget(self.xcsw)
+            self.xcsw_splitter.addWidget(self.mainwidget)
+            self.xcsw_splitter.splitterMoved.connect(
+                lambda pos, index: self.adjust_ycsw_height()
+            )
+            self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
+            self.ycsw_splitter.addWidget(self.xcsw_splitter)
+            self.ycsw_splitter.addWidget(self.ycsw)
+            configure_plot_splitter(self.xcsw_splitter, decreasing_size=False)
+            configure_plot_splitter(self.ycsw_splitter, decreasing_size=True)
+            self.sub_splitter.addWidget(self.ycsw_splitter)
+        else:
+            self.sub_splitter.addWidget(self.mainwidget)
         self.itemlist = PlotItemList(self)
         self.itemlist.setVisible(show_itemlist)
-        self.addWidget(self.itemlist)
+        self.sub_splitter.addWidget(self.itemlist)
+        if self.has_images:
+            from guiqwt.histogram import ContrastAdjustment
+
+            self.contrast = ContrastAdjustment(self)
+            self.contrast.setVisible(show_contrast)
+            self.addWidget(self.contrast)
         configure_plot_splitter(self)
-        self.manager.add_panel(self.itemlist)
+        if self.has_images:
+            configure_plot_splitter(self.sub_splitter)
+        for panel in (self.itemlist, self.xcsw, self.ycsw, self.contrast):
+            if panel is not None:
+                self.manager.add_panel(panel)
+        if self.has_images:
+            self.manager.register_all_image_tools()
+        else:
+            self.manager.register_all_curve_tools()
+
+    def adjust_ycsw_height(self, height=None):
+        if height is None:
+            height = self.xcsw.height() - self.ycsw.toolbar.height()
+        self.ycsw.adjust_height(height)
+        if height:
+            QApplication.processEvents()
+
+    def xcsw_is_visible(self, state):
+        if state:
+            QApplication.processEvents()
+            self.adjust_ycsw_height()
+        else:
+            self.adjust_ycsw_height(0)
 
     def add_subplot(self, plot, i=0, j=0, plot_id=None):
         """Add a plot to the grid of plots"""
