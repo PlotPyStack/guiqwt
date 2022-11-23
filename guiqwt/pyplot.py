@@ -217,10 +217,7 @@ class Figure(object):
         if isinstance(fname, str):
             if self.win is None:
                 self.show()
-            if PYQT5:
-                pixmap = self.win.centralWidget().grab()
-            else:
-                pixmap = QG.QPixmap.grabWidget(self.win.centralWidget())
+            pixmap = self.win.centralWidget().grab()
             pixmap.save(fname, format.upper())
         else:
             # Buffer
@@ -228,7 +225,7 @@ class Figure(object):
             assert hasattr(fd, "write"), "object is not file-like as expected"
             if self.win is None:
                 self.show()
-            pixmap = QG.QPixmap.grabWidget(self.win.centralWidget())
+            pixmap = self.win.centralWidget().grab()
             buff = QC.QBuffer()
             buff.open(QC.QIODevice.ReadWrite)
             pixmap.save(buff, format.upper())
