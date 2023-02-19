@@ -1,5 +1,5 @@
 Cython==0.29.21
-numpy==1.21.0
+numpy==1.22.0
 PyQt5==5.15.0
 PyQt5-sip==12.8.0
 guidata==1.7.8
