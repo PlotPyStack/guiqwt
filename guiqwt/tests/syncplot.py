@@ -7,67 +7,74 @@
 
 """SyncPlotDialog test"""
 
-from guiqwt.config import _
 from guidata.configtools import get_icon
 from guidata.qthelpers import win32_fix_title_bar_background
-
-from qtpy import QtWidgets as QW
-from qtpy import QtGui as QG
-from qtpy import QtCore as QC
-
 from guiqwt.baseplot import BasePlot
-from guiqwt.plot import SubplotWidget, PlotManager
 from guiqwt.builder import make
+from guiqwt.config import _
 from guiqwt.curve import CurvePlot
+from guiqwt.plot import PlotManager, SubplotWidget
+from qtpy import QtGui as QG
+from qtpy import QtWidgets as QW
 
 SHOW = False  # Show test in GUI-based test launcher
 
 
 class SyncPlotWindow(QW.QMainWindow):
-    """Window demonstrating plot synchronization feature"""
+    """Window for showing plots, optionally synchronized"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, title=None):
         super().__init__(parent)
         win32_fix_title_bar_background(self)
-        self.setWindowTitle(self.__doc__)
+        self.setWindowTitle(self.__doc__ if title is None else title)
         self.setWindowIcon(get_icon("guiqwt.svg"))
 
-        self.manager = manager = PlotManager(None)
-        manager.set_main(self)
-        self.toolbar = QW.QToolBar(_("Tools"), self)
-        self.manager.add_toolbar(self.toolbar, "default")
-        self.toolbar.setMovable(True)
-        self.toolbar.setFloatable(True)
-        self.addToolBar(QC.Qt.TopToolBarArea, self.toolbar)
+        self.manager = PlotManager(None)
+        self.manager.set_main(self)
+        toolbar = QW.QToolBar(_("Tools"), self)
+        self.manager.add_toolbar(toolbar, "default")
+        toolbar.setMovable(True)
+        toolbar.setFloatable(True)
+        self.addToolBar(toolbar)
 
-        self.subplotwidget = spwidget = SubplotWidget(manager, parent=self)
-        self.setCentralWidget(spwidget)
+        self.subplotwidget = SubplotWidget(self.manager, parent=self)
+        self.setCentralWidget(self.subplotwidget)
 
-        plot1 = CurvePlot(title="TL")
-        plot2 = CurvePlot(title="TR")
-        plot3 = CurvePlot(title="BL")
-        plot4 = CurvePlot(title="BR")
-        spwidget.add_subplot(plot1, 0, 0, "1")
-        spwidget.add_subplot(plot2, 0, 1, "2")
-        spwidget.add_subplot(plot3, 1, 0, "3")
-        spwidget.add_subplot(plot4, 1, 1, "4")
-        spwidget.add_standard_panels()
-        manager.synchronize_axis(BasePlot.X_BOTTOM, ["1", "3"])
-        manager.synchronize_axis(BasePlot.X_BOTTOM, ["2", "4"])
-        manager.synchronize_axis(BasePlot.Y_LEFT, ["1", "2"])
-        manager.synchronize_axis(BasePlot.Y_LEFT, ["3", "4"])
+    def showEvent(self, event):
+        """Finalize window"""
+        self.subplotwidget.add_standard_panels()
+        QW.QApplication.instance().processEvents()
+        for plot in self.subplotwidget.plots:
+            plot.do_autoscale()
+        super().showEvent(event)
+
+    def add_plot(self, row, col, plot, sync=False, plot_id=None):
+        """Add plot to window"""
+        if plot_id is None:
+            plot_id = str(len(self.subplotwidget.plots) + 1)
+        self.subplotwidget.add_subplot(plot, row, col, plot_id)
+        if sync and len(self.subplotwidget.plots) > 1:
+            syncaxis = self.manager.synchronize_axis
+            for i_plot in range(len(self.subplotwidget.plots) - 1):
+                syncaxis(BasePlot.X_BOTTOM, [plot_id, f"{i_plot + 1}"])
+                syncaxis(BasePlot.Y_LEFT, [plot_id, f"{i_plot + 1}"])
 
 
 def plot(items1, items2, items3, items4):
     """Plot items in SyncPlotDialog"""
     win = SyncPlotWindow()
-    items = [items1, items2, items3, items4]
-    for i, plot in enumerate(win.subplotwidget.plots):
-        for item in items[i]:
+    row, col = 0, 0
+    for items in [items1, items2, items3, items4]:
+        plot = CurvePlot()
+        for item in items:
             plot.add_item(item)
         plot.set_axis_font("left", QG.QFont("Courier"))
         plot.set_items_readonly(False)
-    win.manager.get_panel("itemlist").show()
+        win.add_plot(row, col, plot, sync=True)
+        col += 1
+        if col == 2:
+            row += 1
+            col = 0
     win.show()
 
 

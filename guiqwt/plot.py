@@ -778,18 +778,20 @@ class SubplotWidget(QSplitter):
         if self.has_images:
             from guiqwt.cross_section import XCrossSection, YCrossSection
 
-            self.ycsw = YCrossSection(self, position="right", xsection_pos="top")
+            self.ycsw_splitter = QSplitter(Qt.Horizontal, self.sub_splitter)
+            self.ycsw = YCrossSection(
+                self.ycsw_splitter, position="right", xsection_pos="top"
+            )
             self.ycsw.setVisible(show_ysection)
-            self.xcsw = XCrossSection(self)
+            self.xcsw_splitter = QSplitter(Qt.Vertical, self.ycsw_splitter)
+            self.xcsw = XCrossSection(self.xcsw_splitter)
             self.xcsw.setVisible(show_xsection)
             self.xcsw.SIG_VISIBILITY_CHANGED.connect(self.xcsw_is_visible)
-            self.xcsw_splitter = QSplitter(Qt.Vertical, self)
             self.xcsw_splitter.addWidget(self.xcsw)
             self.xcsw_splitter.addWidget(self.mainwidget)
             self.xcsw_splitter.splitterMoved.connect(
                 lambda pos, index: self.adjust_ycsw_height()
             )
-            self.ycsw_splitter = QSplitter(Qt.Horizontal, self)
             self.ycsw_splitter.addWidget(self.xcsw_splitter)
             self.ycsw_splitter.addWidget(self.ycsw)
             configure_plot_splitter(self.xcsw_splitter, decreasing_size=False)

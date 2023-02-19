@@ -5,6 +5,7 @@
 Bug fixes:
 
 * Fixed Issue #90 / ImageItem's pixels are now centered on their coordinates
+* Fixed plot.SubplotWidget for showing images with axes synchronized
 
 ## Version 4.3.1 ##
 
