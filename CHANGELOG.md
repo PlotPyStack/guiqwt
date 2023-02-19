@@ -1,5 +1,11 @@
 # guiqwt Releases #
 
+## Version 4.3.2 ##
+
+Bug fixes:
+
+* Fixed Issue #90 / ImageItem's pixels are now centered on their coordinates
+
 ## Version 4.3.1 ##
 
 Bug fixes:

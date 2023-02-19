@@ -23,7 +23,7 @@ External resources:
 """
 
 
-__version__ = "4.3.1"  # Update here *AND* in setup.py!
+__version__ = "4.3.2"  # Update here *AND* in setup.py!
 # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
 
 

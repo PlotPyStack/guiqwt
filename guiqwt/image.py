@@ -1071,6 +1071,9 @@ class ImageItem(RawImageItem):
             xmin = 0.0
         if xmax is None:
             xmax = self.data.shape[1]
+        dx = 0.5 * (xmax - xmin) / self.data.shape[1]
+        xmin -= dx
+        xmax -= dx
         return xmin, xmax
 
     def get_ydata(self):
@@ -1080,6 +1083,9 @@ class ImageItem(RawImageItem):
             ymin = 0.0
         if ymax is None:
             ymax = self.data.shape[0]
+        dy = 0.5 * (ymax - ymin) / self.data.shape[0]
+        ymin -= dy
+        ymax -= dy
         return ymin, ymax
 
     def set_xdata(self, xmin=None, xmax=None):
