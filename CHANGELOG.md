@@ -5,7 +5,11 @@
 Bug fixes:
 
 * Fixed Issue #90 / ImageItem's pixels are now centered on their coordinates
-* Fixed plot.SubplotWidget for showing images with axes synchronized
+* plot.SubplotWidget w/image related panels: simplify both pyplot and
+  syncplot.py test
+* pyplot: fixed QApplication instance mgt issues
+* pyplot/Figure.save: fixed Qt5 compat. issue
+* io.load_items: fixed docstring
 
 ## Version 4.3.1 ##
 
