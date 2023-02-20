@@ -19,6 +19,7 @@ from guiqwt.plot import PlotManager, SubplotWidget
 from guiqwt.tests.image_coords import create_2d_gaussian
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
+from qtpy import QtCore as QC
 
 SHOW = True  # Show test in GUI-based test launcher
 
@@ -45,12 +46,16 @@ class SyncPlotWindow(QW.QMainWindow):
         """Add standard panels"""
         self.subplotwidget.add_standard_panels()
 
-    def showEvent(self, event):
-        """Show window"""
+    def rescale_plots(self):
+        """Rescale all plots"""
         QW.QApplication.instance().processEvents()
         for plot in self.subplotwidget.plots:
             plot.do_autoscale()
+
+    def showEvent(self, event):  # pylint: disable=C0103
+        """Reimplement Qt method"""
         super().showEvent(event)
+        QC.QTimer.singleShot(0, self.rescale_plots)
 
     def add_plot(self, row, col, plot, sync=False, plot_id=None):
         """Add plot to window"""
