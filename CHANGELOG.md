@@ -1,6 +1,6 @@
 # guiqwt Releases #
 
-## Version 4.3.2 ##
+## Version 4.3.3 ##
 
 Bug fixes:
 
@@ -10,6 +10,8 @@ Bug fixes:
 * pyplot: fixed QApplication instance mgt issues
 * pyplot/Figure.save: fixed Qt5 compat. issue
 * io.load_items: fixed docstring
+
+*Note*: v4.3.3 is functionally identical to v4.3.2 (translation file was missing in v4.3.2, hence the new release)
 
 ## Version 4.3.1 ##
 
