@@ -7,17 +7,20 @@
 
 """SyncPlotDialog test"""
 
+import numpy as np
 from guidata.configtools import get_icon
 from guidata.qthelpers import win32_fix_title_bar_background
 from guiqwt.baseplot import BasePlot
 from guiqwt.builder import make
 from guiqwt.config import _
-from guiqwt.curve import CurvePlot
+from guiqwt.curve import CurvePlot, CurveItem
+from guiqwt.image import ImagePlot
 from guiqwt.plot import PlotManager, SubplotWidget
+from guiqwt.tests.image_coords import create_2d_gaussian
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
-SHOW = False  # Show test in GUI-based test launcher
+SHOW = True  # Show test in GUI-based test launcher
 
 
 class SyncPlotWindow(QW.QMainWindow):
@@ -28,21 +31,22 @@ class SyncPlotWindow(QW.QMainWindow):
         win32_fix_title_bar_background(self)
         self.setWindowTitle(self.__doc__ if title is None else title)
         self.setWindowIcon(get_icon("guiqwt.svg"))
-
         self.manager = PlotManager(None)
         self.manager.set_main(self)
-        toolbar = QW.QToolBar(_("Tools"), self)
+        self.subplotwidget = SubplotWidget(self.manager, parent=self)
+        self.setCentralWidget(self.subplotwidget)
+        toolbar = QW.QToolBar(_("Tools"))
         self.manager.add_toolbar(toolbar, "default")
         toolbar.setMovable(True)
         toolbar.setFloatable(True)
         self.addToolBar(toolbar)
 
-        self.subplotwidget = SubplotWidget(self.manager, parent=self)
-        self.setCentralWidget(self.subplotwidget)
+    def add_panels(self):
+        """Add standard panels"""
+        self.subplotwidget.add_standard_panels()
 
     def showEvent(self, event):
-        """Finalize window"""
-        self.subplotwidget.add_standard_panels()
+        """Show window"""
         QW.QApplication.instance().processEvents()
         for plot in self.subplotwidget.plots:
             plot.do_autoscale()
@@ -60,12 +64,13 @@ class SyncPlotWindow(QW.QMainWindow):
                 syncaxis(BasePlot.Y_LEFT, [plot_id, f"{i_plot + 1}"])
 
 
-def plot(items1, items2, items3, items4):
+def plot(*itemlists):
     """Plot items in SyncPlotDialog"""
     win = SyncPlotWindow()
     row, col = 0, 0
-    for items in [items1, items2, items3, items4]:
-        plot = CurvePlot()
+    has_curves = any(isinstance(item, CurveItem) for item in itemlists[0])
+    for items in itemlists:
+        plot = CurvePlot() if has_curves else ImagePlot()
         for item in items:
             plot.add_item(item)
         plot.set_axis_font("left", QG.QFont("Courier"))
@@ -75,23 +80,21 @@ def plot(items1, items2, items3, items4):
         if col == 2:
             row += 1
             col = 0
+    win.add_panels()
+    contrast = win.subplotwidget.contrast
+    if contrast is not None:
+        contrast.show()
+    win.resize(800, 600)
     win.show()
 
 
-def test():
+def test_curves():
     """Test"""
-    # -- Create QApplication
-    import guidata
-
-    app = guidata.qapplication()
-    # --
-    from numpy import linspace, sin
-
-    x = linspace(-10, 10, 200)
+    x = np.linspace(-10, 10, 200)
     dy = x / 100.0
-    y = sin(sin(sin(x)))
-    x2 = linspace(-10, 10, 20)
-    y2 = sin(sin(sin(x2)))
+    y = np.sin(np.sin(np.sin(x)))
+    x2 = np.linspace(-10, 10, 20)
+    y2 = np.sin(np.sin(np.sin(x2)))
     plot(
         [
             make.curve(x, y, color="b"),
@@ -103,7 +106,7 @@ def test():
             make.curve(x2, y2, color="g"),
         ],
         [
-            make.curve(x, sin(2 * y), color="r"),
+            make.curve(x, np.sin(2 * y), color="r"),
             make.label("Relative position <i>inside</i>", (x[0], y[0]), (10, 10), "TL"),
         ],
         [
@@ -112,8 +115,27 @@ def test():
             make.legend("TR"),
         ],
     )
-    app.exec()
+    QW.QApplication.instance().exec()
+
+
+def test_images():
+    """Test"""
+    img1 = create_2d_gaussian(20, np.uint8, x0=-10, y0=-10, mu=7, sigma=10.0)
+    img2 = create_2d_gaussian(20, np.uint8, x0=-10, y0=-10, mu=5, sigma=8.0)
+    img3 = create_2d_gaussian(20, np.uint8, x0=-10, y0=-10, mu=3, sigma=6.0)
+
+    def makeim(data):
+        """Make image item"""
+        return make.image(data, interpolation="nearest")
+
+    plot([makeim(img1)], [makeim(img2)], [makeim(img3)])
+    QW.QApplication.instance().exec()
 
 
 if __name__ == "__main__":
-    test()
+    # -- Create QApplication
+    import guidata
+
+    _APP = guidata.qapplication()
+    test_curves()
+    test_images()
