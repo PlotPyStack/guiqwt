@@ -1129,7 +1129,7 @@ class EllipseShape(PolygonShape):
             xline.setLength(self.get_xline().length())
         xline.translate(xline.pointAt(0.5) - xline.p2())
         self.set_points(
-            [(xline.x1(), xline.y1()), (xline.x2(), xline.y2()), (x2, y2), (x3, y3)]
+            [(xline.x2(), xline.y2()), (xline.x1(), xline.y1()), (x2, y2), (x3, y3)]
         )
 
     def get_ydiameter(self):

@@ -1,5 +1,13 @@
 # guiqwt Releases #
 
+## Version 4.3.4 ##
+
+Bug fixes:
+
+* Fixed coords inversion in EllipseShape (circle)
+* tests/syncplot: added image synchronization test
+* tests/syncplot: fixed plot rescaling at initialization
+
 ## Version 4.3.3 ##
 
 Bug fixes:
