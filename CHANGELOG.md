@@ -4,6 +4,7 @@
 
 Bug fixes:
 
+* Fixed Issue #90 / Fixed remaining image coordinates/pixel alignment issue
 * Fixed coords inversion in EllipseShape (circle)
 * tests/syncplot: added image synchronization test
 * tests/syncplot: fixed plot rescaling at initialization
