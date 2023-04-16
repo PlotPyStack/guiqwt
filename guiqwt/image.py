@@ -1064,28 +1064,30 @@ class ImageItem(RawImageItem):
             setattr(self, attr, reader.read(attr, func=reader.read_float))
 
     # ---- Public API ----------------------------------------------------------
-    def get_xdata(self):
+    def get_xdata(self, aligned=True):
         """Return (xmin, xmax)"""
         xmin, xmax = self.xmin, self.xmax
         if xmin is None:
             xmin = 0.0
         if xmax is None:
             xmax = self.data.shape[1]
-        dx = 0.5 * (xmax - xmin) / self.data.shape[1]
-        xmin -= dx
-        xmax -= dx
+        if aligned:
+            dx = 0.5 * (xmax - xmin) / self.data.shape[1]
+            xmin -= dx
+            xmax -= dx
         return xmin, xmax
 
-    def get_ydata(self):
+    def get_ydata(self, aligned=True):
         """Return (ymin, ymax)"""
         ymin, ymax = self.ymin, self.ymax
         if ymin is None:
             ymin = 0.0
         if ymax is None:
             ymax = self.data.shape[0]
-        dy = 0.5 * (ymax - ymin) / self.data.shape[0]
-        ymin -= dy
-        ymax -= dy
+        if aligned:
+            dy = 0.5 * (ymax - ymin) / self.data.shape[0]
+            ymin -= dy
+            ymax -= dy
         return ymin, ymax
 
     def set_xdata(self, xmin=None, xmax=None):
@@ -1127,7 +1129,8 @@ class ImageItem(RawImageItem):
 
     def get_closest_coordinates(self, x, y):
         """Return closest image pixel coordinates"""
-        (xmin, xmax), (ymin, ymax) = self.get_xdata(), self.get_ydata()
+        xmin, xmax = self.get_xdata(aligned=False)
+        ymin, ymax = self.get_ydata(aligned=False)
         i, j = self.get_closest_indexes(x, y)
         xpix = np.linspace(xmin, xmax, self.data.shape[1] + 1)
         ypix = np.linspace(ymin, ymax, self.data.shape[0] + 1)

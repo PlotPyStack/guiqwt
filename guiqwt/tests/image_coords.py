@@ -12,6 +12,7 @@ import numpy as np
 from guidata import qapplication
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
+from guiqwt.tools import DisplayCoordsTool
 
 
 SHOW = True  # Show test in GUI-based test launcher
@@ -33,14 +34,17 @@ def imshow(data, makefunc, title=None):
     image = makefunc(data, interpolation="nearest")
     text = "First pixel should be centered on (0, 0) coordinates"
     label = make.label(text, (1, 1), (0, 0), "L")
+    rect = make.rectangle(5, 5, 10, 10, "Rectangle")
     cursors = []
     for i_cursor in range(0, 21, 10):
         cursors.append(make.vcursor(i_cursor, movable=False))
         cursors.append(make.hcursor(i_cursor, movable=False))
     plot = win.get_plot()
     plot.set_title(title)
-    for item in [image, label] + cursors:
+    for item in [image, label, rect] + cursors:
         plot.add_item(item)
+    plot.select_item(image)
+    win.get_tool(DisplayCoordsTool).activate_curve_pointer(True)
     win.show()
     win.exec()
 
