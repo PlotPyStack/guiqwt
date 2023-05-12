@@ -2820,6 +2820,8 @@ class ImagePlot(CurvePlot):
         dx1, dy1 = xmap.sDist(), fabs(ymap.sDist())
         x0, y0 = xmap.s1(), ymap.s1()
         x1, y1 = xmap.s2(), ymap.s2()
+        if x0 > x1:
+            x0, x1 = x1, x0
         if y0 > y1:
             y0, y1 = y1, y0
         if full_scale:
