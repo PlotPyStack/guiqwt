@@ -1509,7 +1509,7 @@ class TrImageItem(RawImageItem):
             dy = zoom * dy
         self.set_transform(x0, y0, angle, dx, dy, hflip, vflip)
         if self.plot():
-            self.plot().SIG_ITEM_MOVED.emit(self, nx, ny, nx, ny)
+            self.plot().SIG_ITEM_MOVED.emit(self, x0, y0, nx, ny)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
