@@ -743,7 +743,7 @@ class BaseImageItem(QwtPlotItem):
             # from guidata.utils import tic, toc
             if True:
                 # tic("histo1")
-                res = np.histogram(self.data, nbins)
+                res = np.histogram(self.data[~np.isnan(self.data)], nbins)
                 # toc("histo1")
             else:
                 # TODO: _histogram is faster, but caching is buggy
