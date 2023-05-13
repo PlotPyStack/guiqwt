@@ -232,6 +232,8 @@ class AbstractShape(QwtPlotItem):
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         pt = canvas_to_axes(self, pos)
         self.move_point_to(handle, pt, ctrl)
+        if self.plot():
+            self.plot().SIG_ITEM_HANDLE_MOVED.emit(self)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos

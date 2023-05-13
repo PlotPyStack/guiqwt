@@ -126,6 +126,9 @@ class BasePlot(QwtPlot):
     #: Signal emitted by plot when an IBasePlotItem object was moved (args: x0, y0, x1, y1)
     SIG_ITEM_MOVED = Signal(object, float, float, float, float)
 
+    #: Signal emitted by plot when an IBasePlotItem handle was moved
+    SIG_ITEM_HANDLE_MOVED = Signal(object)
+
     #: Signal emitted by plot when a shapes.Marker position changes
     SIG_MARKER_CHANGED = Signal(object)
 

@@ -1508,6 +1508,8 @@ class TrImageItem(RawImageItem):
             dx = zoom * dx
             dy = zoom * dy
         self.set_transform(x0, y0, angle, dx, dy, hflip, vflip)
+        if self.plot():
+            self.plot().SIG_ITEM_HANDLE_MOVED.emit(self)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
@@ -2406,6 +2408,8 @@ class ImageFilterItem(BaseImageItem):
         ctrl: True if <Ctrl> button is being pressed, False otherwise"""
         npos = canvas_to_axes(self, pos)
         self.border_rect.move_point_to(handle, npos)
+        if self.plot():
+            self.plot().SIG_ITEM_HANDLE_MOVED.emit(self)
 
     def move_local_shape(self, old_pos, new_pos):
         """Translate the shape such that old_pos becomes new_pos
