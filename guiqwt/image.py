@@ -2235,7 +2235,7 @@ class MaskedImageItem(ImageItem):
         if inside:
             self.data[iy0:iy1, ix0:ix1] = np.ma.masked
         else:
-            indexes = np.ones(self.data.shape, dtype=np.bool)
+            indexes = np.ones(self.data.shape, dtype=bool)
             indexes[iy0:iy1, ix0:ix1] = False
             self.data[indexes] = np.ma.masked
         if trace:
