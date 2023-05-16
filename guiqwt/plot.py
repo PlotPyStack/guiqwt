@@ -1301,7 +1301,7 @@ class BaseImageWidget(QSplitter):
 
     def xcsw_is_visible(self, state):
         if state:
-            QApplication.processEvents()
+            #QApplication.processEvents()
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
