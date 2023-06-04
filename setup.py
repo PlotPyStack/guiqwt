@@ -194,7 +194,7 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version="4.3.3",  # Update here *AND* in __init__.py!
+    version="4.4.0",  # Update here *AND* in __init__.py!
     # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,
