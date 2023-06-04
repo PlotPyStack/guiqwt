@@ -1,12 +1,22 @@
 # guiqwt Releases #
 
-## Version 4.3.4 ##
+## Version 4.4.0 ##
+
+Changes:
+
+* tests/syncplot: added image synchronization test
 
 Bug fixes:
 
-* Fixed Issue #90 / Fixed remaining image coordinates/pixel alignment issue
+* [Issue #104](https://github.com/PierreRaybaut/guiqwt/issues/104) - TrImageItem will emit a signal when the image is moved but not when resized
+* [Pull Request #103](https://github.com/PierreRaybaut/guiqwt/pull/103) - use np.isnan() to handle if image data contains nan values, by [@RussBerg](https://github.com/RussBerg)
+* [Issue #102](https://github.com/PierreRaybaut/guiqwt/issues/102) - image.py: get_histogram() will fail if image initialized with Nan values
+* [Pull Request #101](https://github.com/PierreRaybaut/guiqwt/pull/101) - corrected arguments names for specifying image center, by [@RussBerg](https://github.com/RussBerg)
+* [Issue #100](https://github.com/PierreRaybaut/guiqwt/issues/100) - Images: changing X-axis direction does not work with autoscale
+* [Issue #99](https://github.com/PierreRaybaut/guiqwt/issues/99) - trimage builder specifies wrong attributes for altering image center
+* [Issue #98](https://github.com/PierreRaybaut/guiqwt/issues/98) - numpy >= 1.20 incompatibilities
+* [Issue #90](https://github.com/PierreRaybaut/guiqwt/issues/90) -  Image visualization: should first pixel be centered at (0,0)
 * Fixed coords inversion in EllipseShape (circle)
-* tests/syncplot: added image synchronization test
 * tests/syncplot: fixed plot rescaling at initialization
 
 ## Version 4.3.3 ##
