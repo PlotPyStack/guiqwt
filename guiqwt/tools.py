@@ -1071,6 +1071,7 @@ class AnnotatedCircleTool(CircleTool):
 class AnnotatedEllipseTool(EllipseTool):
     def create_shape(self):
         annotation = AnnotatedEllipse(0, 0, 1, 1)
+        annotation.shape.switch_to_circle()
         self.set_shape_style(annotation)
         return annotation, 0, 1
 

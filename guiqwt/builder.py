@@ -57,62 +57,69 @@ Reference
 """
 
 import os.path as osp
-from numpy import arange, array, zeros, meshgrid, ndarray
+
+from numpy import arange, array, meshgrid, ndarray, zeros
+
+from guiqwt.annotations import (
+    AnnotatedCircle,
+    AnnotatedEllipse,
+    AnnotatedRectangle,
+    AnnotatedSegment,
+)
+from guiqwt.baseplot import BasePlot
 
 # Local imports
-from guiqwt.config import _, CONF, make_title
-from guiqwt.baseplot import BasePlot
+from guiqwt.config import CONF, _, make_title
 from guiqwt.curve import CurveItem, ErrorBarCurveItem, GridItem
 from guiqwt.histogram import HistogramItem, lut_range_threshold
 from guiqwt.image import (
+    Histogram2DItem,
     ImageItem,
+    MaskedImageItem,
     QuadGridItem,
+    RGBImageItem,
     TrImageItem,
     XYImageItem,
-    Histogram2DItem,
-    RGBImageItem,
-    MaskedImageItem,
-)
-from guiqwt.shapes import (
-    XRangeSelection,
-    RectangleShape,
-    EllipseShape,
-    SegmentShape,
-    Marker,
-)
-from guiqwt.annotations import AnnotatedRectangle, AnnotatedEllipse, AnnotatedSegment
-from guiqwt.styles import (
-    update_style_attr,
-    CurveParam,
-    ErrorBarParam,
-    style_generator,
-    LabelParam,
-    LegendParam,
-    ImageParam,
-    TrImageParam,
-    HistogramParam,
-    Histogram2DParam,
-    RGBImageParam,
-    MaskedImageParam,
-    XYImageParam,
-    ImageFilterParam,
-    MARKERS,
-    COLORS,
-    GridParam,
-    LineStyleParam,
-    AnnotationParam,
-    QuadGridParam,
-    LabelParamWithContents,
-    MarkerParam,
 )
 from guiqwt.label import (
+    DataInfoLabel,
     LabelItem,
     LegendBoxItem,
     RangeComputation,
     RangeComputation2d,
-    DataInfoLabel,
     RangeInfo,
     SelectedLegendBoxItem,
+)
+from guiqwt.shapes import (
+    EllipseShape,
+    Marker,
+    RectangleShape,
+    SegmentShape,
+    XRangeSelection,
+)
+from guiqwt.styles import (
+    COLORS,
+    MARKERS,
+    AnnotationParam,
+    CurveParam,
+    ErrorBarParam,
+    GridParam,
+    Histogram2DParam,
+    HistogramParam,
+    ImageFilterParam,
+    ImageParam,
+    LabelParam,
+    LabelParamWithContents,
+    LegendParam,
+    LineStyleParam,
+    MarkerParam,
+    MaskedImageParam,
+    QuadGridParam,
+    RGBImageParam,
+    TrImageParam,
+    XYImageParam,
+    style_generator,
+    update_style_attr,
 )
 
 # default offset positions for anchors
@@ -1371,19 +1378,19 @@ class PlotItemBuilder(object):
         """
         return self.__shape(RectangleShape, x0, y0, x1, y1, title)
 
-    def ellipse(self, x0, y0, x1, y1, title=None):
+    def ellipse(self, x0, y0, x1, y1, x2=None, y2=None, x3=None, y3=None, title=None):
         """
         Make an ellipse shape `plot item`
         (:py:class:`guiqwt.shapes.EllipseShape` object)
 
-            * x0, y0, x1, y1: ellipse x-axis coordinates
+            * x0, y0, x1, y1, x2, y2, x3, y3: ellipse coordinates
             * title: label name (optional)
         """
-        shape = EllipseShape(x0, y0, x1, y1)
-        shape.set_style("plot", "shape/drag")
-        if title is not None:
-            shape.setTitle(title)
-        return shape
+        item = self.__shape(EllipseShape, x0, y0, x1, y1, title)
+        item.switch_to_ellipse()
+        if x2 is not None and y2 is not None and x3 is not None and y3 is not None:
+            item.set_ydiameter(x2, y2, x3, y3)
+        return item
 
     def circle(self, x0, y0, x1, y1, title=None):
         """
@@ -1393,7 +1400,9 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: circle diameter coordinates
             * title: label name (optional)
         """
-        return self.ellipse(x0, y0, x1, y1, title=title)
+        item = self.__shape(EllipseShape, x0, y0, x1, y1, title)
+        item.switch_to_circle()
+        return item
 
     def segment(self, x0, y0, x1, y1, title=None):
         """
@@ -1431,18 +1440,30 @@ class PlotItemBuilder(object):
             AnnotatedRectangle, x0, y0, x1, y1, title, subtitle
         )
 
-    def annotated_ellipse(self, x0, y0, x1, y1, title=None, subtitle=None):
+    def annotated_ellipse(
+        self,
+        x0,
+        y0,
+        x1,
+        y1,
+        x2=None,
+        y2=None,
+        x3=None,
+        y3=None,
+        title=None,
+        subtitle=None,
+    ):
         """
         Make an annotated ellipse `plot item`
         (:py:class:`guiqwt.annotations.AnnotatedEllipse` object)
 
-            * x0, y0, x1, y1: ellipse rectangle coordinates
+            * x0, y0, x1, y1, x2, y2, x3, y3: ellipse coordinates
             * title, subtitle: strings
         """
-        param = self.__get_annotationparam(title, subtitle)
-        shape = AnnotatedEllipse(x0, y0, x1, y1, param)
-        shape.set_style("plot", "shape/drag")
-        return shape
+        item = self.__annotated_shape(AnnotatedEllipse, x0, y0, x1, y1, title, subtitle)
+        if x2 is not None and y2 is not None and x3 is not None and y3 is not None:
+            item.set_ydiameter(x2, y2, x3, y3)
+        return item
 
     def annotated_circle(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
@@ -1452,7 +1473,7 @@ class PlotItemBuilder(object):
             * x0, y0, x1, y1: circle diameter coordinates
             * title, subtitle: strings
         """
-        return self.annotated_ellipse(x0, y0, x1, y1, title, subtitle)
+        return self.__annotated_shape(AnnotatedCircle, x0, y0, x1, y1, title, subtitle)
 
     def annotated_segment(self, x0, y0, x1, y1, title=None, subtitle=None):
         """

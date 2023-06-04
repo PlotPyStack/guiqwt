@@ -76,32 +76,32 @@ Reference
 
 import os
 import sys
+from math import cos, fabs, pi, sin, sqrt
+
 import numpy as np
-from math import fabs, sqrt, sin, cos, pi
-
-from qtpy.QtGui import QPen, QBrush, QPolygonF, QTransform, QPainter
-from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
-
 from guidata.utils import assert_interfaces_valid, update_dataset
+from qtpy.QtCore import QLineF, QPointF, QRectF, Qt
+from qtpy.QtGui import QBrush, QPainter, QPen, QPolygonF, QTransform
 
-# Local imports
-from guiqwt.transitional import QwtPlotItem, QwtSymbol, QwtPlotMarker
+from guiqwt.baseplot import canvas_to_axes
 from guiqwt.config import CONF, _
-from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
-from guiqwt.styles import (
-    MarkerParam,
-    ShapeParam,
-    RangeShapeParam,
-    AxesShapeParam,
-    MARKERSTYLES,
-)
 from guiqwt.geometry import (
+    compute_center,
     vector_norm,
     vector_projection,
     vector_rotation,
-    compute_center,
 )
-from guiqwt.baseplot import canvas_to_axes
+from guiqwt.interfaces import IBasePlotItem, ISerializableType, IShapeItemType
+from guiqwt.styles import (
+    MARKERSTYLES,
+    AxesShapeParam,
+    MarkerParam,
+    RangeShapeParam,
+    ShapeParam,
+)
+
+# Local imports
+from guiqwt.transitional import QwtPlotItem, QwtPlotMarker, QwtSymbol
 
 QT_API = os.environ["QT_API"]
 
@@ -1103,6 +1103,9 @@ class EllipseShape(PolygonShape):
 
     def switch_to_ellipse(self):
         self.is_ellipse = True
+
+    def switch_to_circle(self):
+        self.is_ellipse = False
 
     def set_xdiameter(self, x0, y0, x1, y1):
         """Set the coordinates of the ellipse's X-axis diameter"""

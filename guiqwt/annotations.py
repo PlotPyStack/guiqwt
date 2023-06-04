@@ -69,29 +69,29 @@ Reference
 """
 
 import numpy as np
+from guidata.utils import assert_interfaces_valid, update_dataset
 
-from guidata.utils import update_dataset, assert_interfaces_valid
+from guiqwt.baseplot import canvas_to_axes
 
 # Local imports
 from guiqwt.config import CONF, _
-from guiqwt.styles import LabelParam, AnnotationParam
+from guiqwt.geometry import (
+    compute_angle,
+    compute_center,
+    compute_distance,
+    compute_rect_size,
+)
+from guiqwt.interfaces import IBasePlotItem, ISerializableType, IShapeItemType
+from guiqwt.label import DataInfoLabel
 from guiqwt.shapes import (
     AbstractShape,
-    RectangleShape,
     EllipseShape,
-    SegmentShape,
-    PointShape,
     ObliqueRectangleShape,
+    PointShape,
+    RectangleShape,
+    SegmentShape,
 )
-from guiqwt.label import DataInfoLabel
-from guiqwt.interfaces import IBasePlotItem, IShapeItemType, ISerializableType
-from guiqwt.geometry import (
-    compute_center,
-    compute_rect_size,
-    compute_distance,
-    compute_angle,
-)
-from guiqwt.baseplot import canvas_to_axes
+from guiqwt.styles import AnnotationParam, LabelParam
 
 
 class AnnotatedShape(AbstractShape):
@@ -577,6 +577,7 @@ class AnnotatedEllipse(AnnotatedShape):
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedShape.__init__(self, annotationparam)
         self.set_xdiameter(x1, y1, x2, y2)
+        self.shape.switch_to_ellipse()
 
     # ----Public API-------------------------------------------------------------
     def set_xdiameter(self, x0, y0, x1, y1):
@@ -655,6 +656,7 @@ class AnnotatedCircle(AnnotatedEllipse):
 
     def __init__(self, x1=0, y1=0, x2=0, y2=0, annotationparam=None):
         AnnotatedEllipse.__init__(self, x1, y1, x2, y2, annotationparam)
+        self.shape.switch_to_circle()
 
     def get_tr_diameter(self):
         """Return circle diameter after applying transform matrix"""
