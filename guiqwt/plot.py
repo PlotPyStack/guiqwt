@@ -823,12 +823,9 @@ class SubplotWidget(QSplitter):
         if height is None:
             height = self.xcsw.height() - self.ycsw.toolbar.height()
         self.ycsw.adjust_height(height)
-        if height:
-            QApplication.processEvents()
-
+        
     def xcsw_is_visible(self, state):
         if state:
-            QApplication.processEvents()
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
@@ -1296,12 +1293,9 @@ class BaseImageWidget(QSplitter):
         if height is None:
             height = self.xcsw.height() - self.ycsw.toolbar.height()
         self.ycsw.adjust_height(height)
-        if height:
-            QApplication.processEvents()
-
+        
     def xcsw_is_visible(self, state):
         if state:
-            QApplication.processEvents()
             self.adjust_ycsw_height()
         else:
             self.adjust_ycsw_height(0)
