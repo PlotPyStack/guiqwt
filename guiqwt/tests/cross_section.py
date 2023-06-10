@@ -7,7 +7,7 @@
 
 """Renders a cross section chosen by a cross marker"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp, numpy as np
 

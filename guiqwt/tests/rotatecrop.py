@@ -8,7 +8,7 @@
 """Rotate/crop test: using the scaler C++ engine to rotate/crop images"""
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp
 import numpy as np

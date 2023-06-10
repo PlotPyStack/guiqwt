@@ -12,7 +12,7 @@ This guiqwt tool provide a MATLAB-like "ginput" feature.
 """
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.plot import CurveDialog
 from guiqwt.tools import SelectPointTool

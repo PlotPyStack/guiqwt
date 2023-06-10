@@ -7,8 +7,6 @@
 
 """Plot computations test"""
 
-SHOW = False  # Show test in GUI-based test launcher
-
 
 def xyimagebug(offset):
     from guiqwt.plot import ImageDialog

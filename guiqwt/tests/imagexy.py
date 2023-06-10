@@ -8,7 +8,7 @@
 """Image with custom X/Y axes linear scales"""
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make

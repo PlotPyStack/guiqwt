@@ -7,7 +7,7 @@
 
 """Simple dialog box based on guiqwt and guidata"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import scipy.ndimage
 

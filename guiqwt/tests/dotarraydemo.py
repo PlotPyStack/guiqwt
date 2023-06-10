@@ -9,14 +9,14 @@
 Dot array example
 =================
 
-Example showing how to create a custom item (drawing dots of variable size) 
-and integrate the associated `guidata` dataset (GUI-based form) to edit its 
-parameters (directly into the same window as the plot itself, *and* within 
-the custom item parameters: right-click on the selectable item to open the 
+Example showing how to create a custom item (drawing dots of variable size)
+and integrate the associated `guidata` dataset (GUI-based form) to edit its
+parameters (directly into the same window as the plot itself, *and* within
+the custom item parameters: right-click on the selectable item to open the
 associated dialog box).
 """
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import numpy as np
 

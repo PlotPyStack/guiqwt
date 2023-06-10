@@ -7,8 +7,6 @@
 
 """Logarithmic scale test for curve plotting"""
 
-SHOW = False  # Do not show test in GUI-based test launcher
-
 from guiqwt.plot import CurveDialog
 from guiqwt.builder import make
 

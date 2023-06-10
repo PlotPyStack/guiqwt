@@ -8,7 +8,7 @@
 """Load/save items using Python's pickle protocol"""
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 # WARNING:
 # This script requires read/write permissions on current directory

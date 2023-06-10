@@ -9,11 +9,11 @@
 """
 Testing guiqwt QtDesigner plugins
 
-These plugins provide CurveWidget and ImageWidget objects 
+These plugins provide CurveWidget and ImageWidget objects
 embedding in GUI layouts directly from QtDesigner.
 """
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import sys, os.path as osp
 

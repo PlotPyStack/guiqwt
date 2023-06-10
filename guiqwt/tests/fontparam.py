@@ -7,7 +7,6 @@
 
 """FontParam test"""
 
-SHOW = False  # Do not show test in GUI-based test launcher
 
 from guiqwt.styles import FontParam
 

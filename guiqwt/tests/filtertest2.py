@@ -8,7 +8,7 @@
 """Simple filter testing application based on PyQt and guiqwt
 filtertest1.py + plot manager"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow
 from guidata.qthelpers import win32_fix_title_bar_background

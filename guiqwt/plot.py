@@ -70,7 +70,7 @@ Examples
 Simple example *without* the `plot manager`:
 
 .. literalinclude:: /../guiqwt/tests/filtertest1.py
-   :start-after: SHOW
+   :start-after: guitest: show
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 Simple example *with* the `plot manager`:
@@ -80,7 +80,7 @@ complex applications, using the `plot manager` allows to design highly versatile
 graphical user interfaces.
 
 .. literalinclude:: /../guiqwt/tests/filtertest2.py
-   :start-after: SHOW
+   :start-after: guitest: show
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 Reference

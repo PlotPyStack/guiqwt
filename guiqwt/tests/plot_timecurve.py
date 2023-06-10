@@ -33,7 +33,7 @@ from qwt import QwtScaleDraw, QwtText
 from guiqwt.builder import make
 from guiqwt.plot import CurveWidget
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 
 class DummyDevice(QC.QObject):

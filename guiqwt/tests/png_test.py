@@ -4,8 +4,6 @@
 
 """PNG icons test (finding unsupported ICC profile Qt warnings)"""
 
-SHOW = False  # Do not show test in GUI-based test launcher
-
 import sys
 import os
 import os.path as osp

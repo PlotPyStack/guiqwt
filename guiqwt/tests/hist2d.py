@@ -7,7 +7,7 @@
 
 """2-D Histogram test"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from numpy import random, array, dot, concatenate
 

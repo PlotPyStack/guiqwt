@@ -7,7 +7,7 @@
 
 """Load test: instantiating a large number of image widgets"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 # import cProfile
 # from pstats import Stats

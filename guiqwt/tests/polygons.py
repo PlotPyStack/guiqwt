@@ -12,7 +12,7 @@ several hundreds of independent polygons.
 """
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.plot import ImageDialog
 from guiqwt.curve import PolygonMapItem

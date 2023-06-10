@@ -27,7 +27,7 @@ from guiqwt.tests.loadsaveitems_pickle import IOTest
 
 from guidata.jsonio import JSONReader, JSONWriter
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 
 class JSONTest(IOTest):

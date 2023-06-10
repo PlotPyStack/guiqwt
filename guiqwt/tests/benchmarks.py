@@ -7,10 +7,6 @@
 
 """guiqwt plot benchmarking"""
 
-
-SHOW = False  # Show test in GUI-based test launcher
-
-
 import time
 import numpy as np
 

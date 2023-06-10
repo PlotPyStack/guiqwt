@@ -13,7 +13,7 @@ ignored in computations, like the average cross sections.
 """
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os, os.path as osp, pickle
 
@@ -21,7 +21,7 @@ from guiqwt.plot import ImageDialog
 from guiqwt.tools import ImageMaskTool
 from guiqwt.builder import make
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 FNAME = "image_masked.pickle"
 

@@ -7,7 +7,7 @@
 
 """Image superposition test"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp
 

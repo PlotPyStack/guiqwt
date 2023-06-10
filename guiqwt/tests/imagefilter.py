@@ -7,7 +7,7 @@
 
 """Image filter demo"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from scipy.ndimage import gaussian_filter
 

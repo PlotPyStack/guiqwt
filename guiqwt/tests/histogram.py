@@ -7,7 +7,7 @@
 
 """Histogram test"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.plot import CurveDialog
 from guiqwt.builder import make

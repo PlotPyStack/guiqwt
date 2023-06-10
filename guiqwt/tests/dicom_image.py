@@ -9,7 +9,7 @@
 
 Requires pydicom (>=0.9.3)"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp
 import guidata

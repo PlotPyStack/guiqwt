@@ -21,7 +21,7 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from qtpy import QtCore as QC
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 
 class SyncPlotWindow(QW.QMainWindow):

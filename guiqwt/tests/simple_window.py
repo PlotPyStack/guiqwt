@@ -7,7 +7,7 @@
 
 """Simple application based on guiqwt and guidata"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from qtpy.QtWidgets import QMainWindow, QMessageBox, QSplitter, QListWidget
 from qtpy.QtCore import QSize, __version__, Qt

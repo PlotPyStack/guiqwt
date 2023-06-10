@@ -7,8 +7,6 @@
 
 """Styles unit tests"""
 
-SHOW = False  # Do not show test in GUI-based test launcher
-
 import unittest
 
 from qtpy.QtCore import Qt, QSize

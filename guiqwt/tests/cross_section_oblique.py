@@ -7,7 +7,7 @@
 
 """Oblique averaged cross section test"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp
 

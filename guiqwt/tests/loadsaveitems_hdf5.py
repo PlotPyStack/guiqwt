@@ -7,7 +7,7 @@
 
 """Load/save items from/to HDF5 file"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 # WARNING:
 # This script requires read/write permissions on current directory

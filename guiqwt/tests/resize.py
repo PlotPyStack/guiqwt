@@ -7,7 +7,7 @@
 
 """Resize test: using the scaler C++ engine to resize images"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 
 def test():

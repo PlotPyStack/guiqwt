@@ -7,7 +7,7 @@
 
 """Shows how to customize a shape created with a tool like RectangleTool"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import os.path as osp
 

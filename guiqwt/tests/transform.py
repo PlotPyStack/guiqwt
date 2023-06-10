@@ -8,7 +8,7 @@
 """Tests around image transforms: rotation, translation, ..."""
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 import os
 
 from qtpy.QtCore import QRectF

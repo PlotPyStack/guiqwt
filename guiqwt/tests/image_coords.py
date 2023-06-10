@@ -15,7 +15,7 @@ from guiqwt.builder import make
 from guiqwt.tools import DisplayCoordsTool
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 
 def create_2d_gaussian(size, dtype, x0=0, y0=0, mu=0.0, sigma=2.0, amp=None):

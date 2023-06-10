@@ -11,7 +11,7 @@
 #       the image parameters (2nd tab: "Axes")
 
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import numpy as np
 

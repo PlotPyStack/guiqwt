@@ -7,9 +7,6 @@
 
 """Internal test related to pcolor feature"""
 
-
-SHOW = False  # Show test in GUI-based test launcher
-
 from guiqwt._scaler import _line_test as line
 from numpy import int32, zeros
 

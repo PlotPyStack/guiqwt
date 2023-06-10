@@ -7,7 +7,7 @@
 
 """Simple filter testing application based on PyQt and guiqwt"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton
 

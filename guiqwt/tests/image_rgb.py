@@ -7,13 +7,13 @@
 
 """RGB Image test, creating the RGBImageItem object via make.rgbimage"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
 import os.path as osp
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 TESTDIR = osp.abspath(osp.dirname(__file__))
 IMGFILE = osp.join(TESTDIR, "..", "images", "items", "image.png")

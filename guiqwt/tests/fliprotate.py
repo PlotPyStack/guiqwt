@@ -7,7 +7,7 @@
 
 """Flip/rotate test"""
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 from guiqwt.widgets.fliprotate import FlipRotateDialog, FlipRotateWidget
 from guiqwt.tests.rotatecrop import imshow, create_test_data

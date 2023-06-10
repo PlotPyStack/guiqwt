@@ -11,7 +11,7 @@ pyplot test
 Interactive plotting interface with MATLAB-like syntax
 """
 
-SHOW = True  # Show test in GUI-based test launcher
+# guitest: show
 
 import numpy as np
 

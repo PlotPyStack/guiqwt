@@ -20,7 +20,7 @@ Example
 ~~~~~~~
 
 .. literalinclude:: /../guiqwt/tests/fit.py
-   :start-after: SHOW
+   :start-after: guitest: show
    :end-before: Workaround for Sphinx v0.6 bug: empty 'end-before' directive
 
 .. image:: /images/screenshots/fit.png
