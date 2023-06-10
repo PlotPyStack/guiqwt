@@ -1245,6 +1245,8 @@ class BaseImageWidget(QSplitter):
         self.xcsw = XCrossSection(self)
         self.xcsw.setVisible(show_xsection)
 
+        self.xcsw.SIG_VISIBILITY_CHANGED.connect(self.xcsw_is_visible)
+
         self.xcsw_splitter = QSplitter(Qt.Vertical, self)
         if xsection_pos == "top":
             self.xcsw_splitter.addWidget(self.xcsw)
