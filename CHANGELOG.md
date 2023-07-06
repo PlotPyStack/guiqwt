@@ -4,6 +4,7 @@
 
 Changes:
 
+* guiqwt now requires guidata >=v3.0.
 * tests/syncplot: added image synchronization test
 
 Bug fixes:

@@ -8,7 +8,7 @@ Requirements:
     * Python 3.x (x>=7)
     * `PyQt5`_ 5.x (x>=5)
     * `PythonQwt`_ >=0.10
-    * `guidata`_ >=2.3
+    * `guidata`_ >=3.0
     * `QtPy`_ >= 1.3
     * `NumPy`_, `SciPy`_ and `Pillow`_
 

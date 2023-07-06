@@ -9,7 +9,7 @@
 """Create a stand-alone executable"""
 
 try:
-    from guidata.disthelpers import Distribution
+    from guidata.utils.disthelpers import Distribution
 except ImportError:
     raise ImportError("This script requires guidata 1.4+")
 
@@ -18,7 +18,7 @@ from guiqwt.tests import sift
 
 
 def create_executable():
-    """Build executable using ``guidata.disthelpers``"""
+    """Build executable using ``guidata.utils.disthelpers``"""
     dist = Distribution()
     dist.setup(
         name="Sift",

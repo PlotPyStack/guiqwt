@@ -25,7 +25,41 @@ import os
 import os.path as osp
 import subprocess
 from numpy.distutils.core import setup, Extension
-from guidata.utils import get_subpackages, get_package_data, cythonize_all
+
+
+def get_package_data(name, extlist, exclude_dirs=[]):
+    """
+    Return data files for package *name* with extensions in *extlist*
+    (search recursively in package directories)
+    """
+    assert isinstance(extlist, (list, tuple))
+    flist = []
+    # Workaround to replace os.path.relpath (not available until Python 2.6):
+    offset = len(name) + len(os.pathsep)
+    for dirpath, _dirnames, filenames in os.walk(name):
+        if dirpath not in exclude_dirs:
+            for fname in filenames:
+                if osp.splitext(fname)[1].lower() in extlist:
+                    flist.append(osp.join(dirpath, fname)[offset:])
+    return flist
+
+
+def get_subpackages(name):
+    """Return subpackages of package *name*"""
+    splist = []
+    for dirpath, _dirnames, _filenames in os.walk(name):
+        if osp.isfile(osp.join(dirpath, "__init__.py")):
+            splist.append(".".join(dirpath.split(os.sep)))
+    return splist
+
+
+def cythonize_all(relpath):
+    """Cythonize all Cython modules in relative path"""
+    from Cython.Compiler import Main
+
+    for fname in os.listdir(relpath):
+        if osp.splitext(fname)[1] == ".pyx":
+            Main.compile(osp.join(relpath, fname))
 
 
 LIBNAME = "guiqwt"
@@ -206,7 +240,7 @@ setup(
     install_requires=[
         "NumPy>=1.3",
         "SciPy>=0.7",
-        "guidata>=2.3",
+        "guidata>=3.0",
         "PythonQwt>=0.10",
         "Pillow",
         "QtPy>=1.3",

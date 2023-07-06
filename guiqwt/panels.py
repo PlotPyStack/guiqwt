@@ -9,36 +9,36 @@
 guiqwt.panels
 -------------
 
-The `panels` module provides :py:class:`guiqwt.panels.PanelWidget` (the 
-`panel` widget class from which all panels must derived from) and identifiers 
+The `panels` module provides :py:class:`guiqwt.panels.PanelWidget` (the
+`panel` widget class from which all panels must derived from) and identifiers
 for each kind of panel:
 
     * :py:data:`guiqwt.panels.ID_ITEMLIST`: ID of the `item list` panel
-    * :py:data:`guiqwt.panels.ID_CONTRAST`: ID of the `contrast 
+    * :py:data:`guiqwt.panels.ID_CONTRAST`: ID of the `contrast
       adjustment` panel
-    * :py:data:`guiqwt.panels.ID_XCS`: ID of the `X-axis cross section` 
+    * :py:data:`guiqwt.panels.ID_XCS`: ID of the `X-axis cross section`
       panel
-    * :py:data:`guiqwt.panels.ID_YCS`: ID of the `Y-axis cross section` 
+    * :py:data:`guiqwt.panels.ID_YCS`: ID of the `Y-axis cross section`
       panel
 
 .. seealso::
-        
+
     Module :py:mod:`guiqwt.plot`
-        Module providing ready-to-use curve and image plotting widgets and 
+        Module providing ready-to-use curve and image plotting widgets and
         dialog boxes
-    
+
     Module :py:mod:`guiqwt.curve`
         Module providing curve-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.image`
         Module providing image-related plot items and plotting widgets
-        
+
     Module :py:mod:`guiqwt.tools`
         Module providing the `plot tools`
 """
 
 from qtpy.QtCore import Signal
-from guidata.qtwidgets import DockableWidget
+from guidata.widgets.dockable import DockableWidget
 
 
 # ===============================================================================

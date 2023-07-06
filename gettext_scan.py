@@ -8,7 +8,7 @@
 """Scan this module to include new translatable strings
 must be run from toplevel directory !
 """
-from guidata.gettext_helpers import do_rescan
+from guidata.utils.gettext_helpers import do_rescan
 
 if __name__ == "__main__":
     do_rescan("guiqwt")

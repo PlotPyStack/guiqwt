@@ -148,7 +148,8 @@ import numpy as np
 from qtpy.QtGui import QColor, QImage
 from qtpy.QtCore import QRectF, QPointF, QRect
 
-from guidata.utils import assert_interfaces_valid, update_dataset
+from guidata.utils.misc import assert_interfaces_valid
+from guidata.utils import update_dataset
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtInterval
@@ -740,15 +741,11 @@ class BaseImageItem(QwtPlotItem):
                 0,
             ], [0, 1]
         if self.histogram_cache is None or nbins != self.histogram_cache[0].shape[0]:
-            # from guidata.utils import tic, toc
             if True:
-                # tic("histo1")
                 res = np.histogram(self.data[~np.isnan(self.data)], nbins)
-                # toc("histo1")
             else:
                 # TODO: _histogram is faster, but caching is buggy
                 # in this version
-                # tic("histo2")
                 _min = _nanmin(self.data)
                 _max = _nanmax(self.data)
                 if self.data.dtype in (np.float64, np.float32):
@@ -761,7 +758,6 @@ class BaseImageItem(QwtPlotItem):
                     bins = np.arange(_min, _max + 2, dtype=self.data.dtype)
                 res2 = np.zeros((bins.size + 1,), np.uint32)
                 _histogram(self.data.flatten(), bins, res2)
-                # toc("histo2")
                 res = res2[1:-1], bins
             self.histogram_cache = res
         else:

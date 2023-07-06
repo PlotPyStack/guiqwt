@@ -121,7 +121,7 @@ from qtpy.QtCore import Qt
 from qtpy import PYQT5
 
 from guidata.configtools import get_icon
-from guidata.utils import assert_interfaces_valid
+from guidata.utils.misc import assert_interfaces_valid
 from guidata.qthelpers import create_action, win32_fix_title_bar_background
 
 # Local imports
@@ -823,7 +823,7 @@ class SubplotWidget(QSplitter):
         if height is None:
             height = self.xcsw.height() - self.ycsw.toolbar.height()
         self.ycsw.adjust_height(height)
-        
+
     def xcsw_is_visible(self, state):
         if state:
             self.adjust_ycsw_height()
@@ -1293,7 +1293,7 @@ class BaseImageWidget(QSplitter):
         if height is None:
             height = self.xcsw.height() - self.ycsw.toolbar.height()
         self.ycsw.adjust_height(height)
-        
+
     def xcsw_is_visible(self, state):
         if state:
             self.adjust_ycsw_height()

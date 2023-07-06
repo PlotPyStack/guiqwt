@@ -610,7 +610,7 @@ def load_item(reader, group_name):
 
 def save_items(writer, items):
     """Save items to HDF5 file:
-    * writer: :py:class:`guidata.hdf5io.HDF5Writer` object
+    * writer: :py:class:`guidata.dataset.hdf5io.HDF5Writer` object
     * items: serializable plot items"""
     counts = {}
     names = []
@@ -631,8 +631,8 @@ def save_items(writer, items):
 
 def load_items(reader):
     """Load items from file (HDF5, JSON, ...):
-    * reader: :py:class:`guidata.hdf5io.HDF5Reader` or
-      :py:class:`guidata.jsonio.JSONReader` object"""
+    * reader: :py:class:`guidata.dataset.hdf5io.HDF5Reader` or
+      :py:class:`guidata.dataset.jsonio.JSONReader` object"""
     with reader.group("plot_items"):
         names = reader.read_sequence()
     items = []

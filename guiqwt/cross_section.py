@@ -45,7 +45,7 @@ from qtpy.QtCore import QSize, QPointF, Qt
 
 import numpy as np
 
-from guidata.utils import assert_interfaces_valid
+from guidata.utils.misc import assert_interfaces_valid
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions
 

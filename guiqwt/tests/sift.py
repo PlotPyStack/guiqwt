@@ -54,7 +54,7 @@ from guidata.qthelpers import (
     win32_fix_title_bar_background,
 )
 from guidata.widgets.console import DockableConsole
-from guidata.qtwidgets import DockableWidget, DockableWidgetMixin
+from guidata.widgets.dockable import DockableWidget, DockableWidgetMixin
 from guidata.utils import update_dataset
 
 from guiqwt.config import _

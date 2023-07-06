@@ -69,7 +69,8 @@ Reference
 """
 
 import numpy as np
-from guidata.utils import assert_interfaces_valid, update_dataset
+from guidata.utils import update_dataset
+from guidata.utils.misc import assert_interfaces_valid
 
 from guiqwt.baseplot import canvas_to_axes
 

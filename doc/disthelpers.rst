@@ -9,7 +9,7 @@ programs which may be executed without requiring a Python installation.
 Making such an executable program may be a non trivial task when the script
 dependencies include libraries with data or extensions, such as `PyQt5` or
 `guidata` and `guiqwt`. This task has been considerably simplified thanks to
-the helper functions provided by :py:mod:`guidata.disthelpers`.
+the helper functions provided by :py:mod:`guidata.utils.disthelpers`.
 
 Example
 ~~~~~~~

@@ -12,7 +12,7 @@
 # WARNING:
 # This script requires read/write permissions on current directory
 
-from guidata.hdf5io import HDF5Reader, HDF5Writer
+from guidata.dataset.hdf5io import HDF5Reader, HDF5Writer
 
 from guiqwt.tests.loadsaveitems_pickle import IOTest
 
