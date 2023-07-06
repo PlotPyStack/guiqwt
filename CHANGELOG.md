@@ -9,6 +9,7 @@ Changes:
 
 Bug fixes:
 
+* [Issue #107](https://github.com/PierreRaybaut/guiqwt/issues/107) - App with multiple ImageWidgets seg faults about 40+% of the time on startup
 * [Issue #104](https://github.com/PierreRaybaut/guiqwt/issues/104) - TrImageItem will emit a signal when the image is moved but not when resized
 * [Pull Request #103](https://github.com/PierreRaybaut/guiqwt/pull/103) - use np.isnan() to handle if image data contains nan values, by [@RussBerg](https://github.com/RussBerg)
 * [Issue #102](https://github.com/PierreRaybaut/guiqwt/issues/102) - image.py: get_histogram() will fail if image initialized with Nan values
