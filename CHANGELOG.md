@@ -1,5 +1,12 @@
 # guiqwt Releases #
 
+## Version 4.4.1 ##
+
+Changes:
+
+* guiqwt now requires guidata >=v3.0.1 (API compatibility issue with guidata v3.0.0)
+
+
 ## Version 4.4.0 ##
 
 Changes:

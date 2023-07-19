@@ -228,7 +228,7 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version="4.4.0",  # Update here *AND* in __init__.py!
+    version="4.4.1",  # Update here *AND* in __init__.py!
     # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,
@@ -240,7 +240,7 @@ setup(
     install_requires=[
         "NumPy>=1.3",
         "SciPy>=0.7",
-        "guidata>=3.0",
+        "guidata>=3.0.1",
         "PythonQwt>=0.10",
         "Pillow",
         "QtPy>=1.3",

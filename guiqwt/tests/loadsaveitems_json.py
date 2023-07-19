@@ -25,7 +25,7 @@ import os.path as osp
 
 from guiqwt.tests.loadsaveitems_pickle import IOTest
 
-from guidata.dataset.jsonio import JSONReader, JSONWriter
+from guidata.dataset.io import JSONReader, JSONWriter
 
 # guitest: show
 
