@@ -612,7 +612,7 @@ class BasePlot(QwtPlot):
     def serialize(self, writer, selected=False):
         """
         Save (serializable) items to HDF5 file:
-            * writer: :py:class:`guidata.dataset.hdf5io.HDF5Writer` object
+            * writer: :py:class:`guidata.dataset.io.HDF5Writer` object
             * selected=False: if True, will save only selected items
 
         See also :py:meth:`guiqwt.baseplot.BasePlot.restore_items_from_hdf5`
@@ -627,7 +627,7 @@ class BasePlot(QwtPlot):
     def deserialize(self, reader):
         """
         Restore items from HDF5 file:
-            * reader: :py:class:`guidata.dataset.hdf5io.HDF5Reader` object
+            * reader: :py:class:`guidata.dataset.io.HDF5Reader` object
 
         See also :py:meth:`guiqwt.baseplot.BasePlot.save_items_to_hdf5`
         """
