@@ -177,6 +177,7 @@ from guiqwt.styles import (
     MaskedImageParam,
     XYImageParam,
     RawImageParam,
+    LUTAlpha,
 )
 from guiqwt.shapes import RectangleShape
 from guiqwt import io
@@ -270,7 +271,7 @@ class BaseImageItem(QwtPlotItem):
 
         # BaseImageItem needs:
         # param.background
-        # param.alpha_mask
+        # param.alpha_function
         # param.alpha
         # param.colormap
         if param is None:
@@ -469,12 +470,22 @@ class BaseImageItem(QwtPlotItem):
         self.cmap = table.colorTable(FULLRANGE)
         cmap_a = self.lut[3]
         alpha = self.imageparam.alpha
-        alpha_mask = self.imageparam.alpha_mask
+        alpha_function = self.imageparam.alpha_function
         for i in range(LUT_SIZE):
-            if alpha_mask:
-                pix_alpha = alpha * (i / float(LUT_SIZE - 1))
-            else:
+            if alpha_function == LUTAlpha.NONE:
+                pix_alpha = 1.0
+            elif alpha_function == LUTAlpha.CONSTANT:
                 pix_alpha = alpha
+            else:
+                x = i / float(LUT_SIZE - 1)
+                if alpha_function == LUTAlpha.LINEAR:
+                    pix_alpha = alpha * x
+                elif alpha_function == LUTAlpha.SIGMOID:
+                    pix_alpha = alpha / (1 + np.exp(-10 * x))
+                elif alpha_function == LUTAlpha.TANH:
+                    pix_alpha = alpha * np.tanh(5 * x)
+                else:
+                    raise ValueError(f"Invalid alpha function {alpha_function}")
             alpha_channel = max(min(np.uint32(255 * pix_alpha + 0.5), 255), 0) << 24
             cmap_a[i] = (
                 np.uint32((table.rgb(FULLRANGE, i / LUT_MAX)) & 0xFFFFFF)
@@ -850,6 +861,7 @@ class RawImageItem(BaseImageItem):
         IVoiImageItemType,
         ISerializableType,
     )
+
     # ---- BaseImageItem API ---------------------------------------------------
     def get_default_param(self):
         """Return instance of the default imageparam DataSet"""
@@ -1951,7 +1963,7 @@ class RGBImageItem(ImageItem):
         R = data[..., 0].astype(np.uint32)
         G = data[..., 1].astype(np.uint32)
         B = data[..., 2].astype(np.uint32)
-        use_alpha = self.imageparam.alpha_mask
+        use_alpha = self.imageparam.alpha_function != LUTAlpha.NONE
         alpha = self.imageparam.alpha
         if NC > 3 and use_alpha:
             A = data[..., 3].astype(np.uint32)
@@ -2727,7 +2739,6 @@ class ImagePlot(CurvePlot):
         gridparam=None,
         section="plot",
     ):
-
         self.lock_aspect_ratio = lock_aspect_ratio
 
         if zlabel is not None:

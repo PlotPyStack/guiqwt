@@ -15,8 +15,9 @@ ignored in computations, like the average cross sections.
 
 # guitest: show
 
-import os, os.path as osp, pickle
+import os, os.path as osp, pickle, numpy as np
 
+from guiqwt import io
 from guiqwt.plot import ImageDialog
 from guiqwt.tools import ImageMaskTool
 from guiqwt.builder import make
@@ -39,8 +40,10 @@ if __name__ == "__main__":
         print("OK")
     else:
         fname = osp.join(osp.abspath(osp.dirname(__file__)), "brain.png")
+        data = io.imread(fname, to_grayscale=True)
+        data[data == 0] = np.nan
         image = make.maskedimage(
-            filename=fname,
+            data,
             colormap="gray",
             show_mask=True,
             xdata=[0, 20],

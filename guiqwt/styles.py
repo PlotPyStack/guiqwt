@@ -100,6 +100,7 @@ Reference
    :inherited-members:
 """
 
+import enum
 import numpy as np
 
 from qtpy.QtWidgets import QFontDialog
@@ -504,6 +505,7 @@ class LineStyleItem(ObjectItem):
 
 
 DataSetEditLayout.register(LineStyleItem, LineStyleItemWidget)
+
 
 # ===================================================
 # Common brush style parameters
@@ -1059,13 +1061,32 @@ def _create_choices():
     return choices
 
 
+class LUTAlpha(enum.Enum):
+    """LUT Alpha functions"""
+
+    NONE = 0
+    CONSTANT = 1
+    LINEAR = 2
+    SIGMOID = 3
+    TANH = 4
+
+
 class BaseImageParam(DataSet):
     _multiselection = False
     label = StringItem(_("Image title"), default=_("Image")).set_prop(
         "display", hide=GetAttrProp("_multiselection")
     )
-    alpha_mask = BoolItem(
-        _("Use image level as alpha"), _("Alpha channel"), default=False
+    alpha_function = ChoiceItem(
+        _("Alpha function"),
+        [
+            (LUTAlpha.NONE, _("None")),
+            (LUTAlpha.CONSTANT, _("Constant")),
+            (LUTAlpha.LINEAR, _("Linear")),
+            (LUTAlpha.SIGMOID, _("Sigmoid")),
+            (LUTAlpha.TANH, _("Hyperbolic tangent")),
+        ],
+        default=LUTAlpha.NONE,
+        help=_("Alpha function applied to the Look-Up Table"),
     )
     alpha = FloatItem(
         _("Global alpha"), default=1.0, min=0, max=1, help=_("Global alpha value")
@@ -1135,11 +1156,16 @@ class QuadGridParam(DataSet):
     label = StringItem(_("Image title"), default=_("Image")).set_prop(
         "display", hide=GetAttrProp("_multiselection")
     )
-    alpha_mask = BoolItem(
-        _("Use image level as alpha"),
-        _("Alpha channel"),
-        default=False,
-        help=_("When enabled, highest level is opaque and lowest level is transparent"),
+    alpha_function = ChoiceItem(
+        _("Alpha function"),
+        [
+            (LUTAlpha.NONE, _("None")),
+            (LUTAlpha.LINEAR, _("Linear")),
+            (LUTAlpha.SIGMOID, _("Sigmoid")),
+            (LUTAlpha.TANH, _("Tanh")),
+        ],
+        default=LUTAlpha.NONE,
+        help=_("Alpha function applied to the Look-Up Table"),
     )
     alpha = FloatItem(
         _("Global alpha"), default=1.0, min=0, max=1, help=_("Global alpha value")

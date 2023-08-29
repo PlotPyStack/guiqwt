@@ -23,6 +23,7 @@ import numpy as np
 from guiqwt.image import assemble_imageitems
 from guiqwt.plot import ImageDialog
 from guiqwt.builder import make
+from guiqwt.styles import LUTAlpha
 from guiqwt import io
 
 DEFAULT_CHARS = "".join([chr(c) for c in range(32, 256)])
@@ -173,7 +174,7 @@ def test():
     data = compute_image(N, N)
     m = data.min()
     M = data.max()
-    items = [make.trimage(data, alpha_mask=True, colormap="jet")]
+    items = [make.trimage(data, alpha_function=LUTAlpha.LINEAR, colormap="jet")]
     for type in (np.uint8, np.uint16, np.int8, np.int16):
         info = np.iinfo(type().dtype)
         s = float((info.max - info.min))

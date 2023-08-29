@@ -20,7 +20,7 @@ from guiqwt.tools import (
     FreeFormTool,
 )
 from guiqwt.builder import make
-from guiqwt.styles import style_generator, update_style_attr
+from guiqwt.styles import style_generator, update_style_attr, LUTAlpha
 
 STYLE = style_generator()
 
@@ -64,7 +64,9 @@ def test():
     # --
     filename = osp.join(osp.dirname(__file__), "brain.png")
     win = create_window()
-    image = make.image(filename=filename, colormap="bone", alpha_mask=True)
+    image = make.image(
+        filename=filename, colormap="bone", alpha_function=LUTAlpha.LINEAR
+    )
     plot = win.get_plot()
     plot.add_item(image)
     win.exec_()

@@ -1,5 +1,20 @@
 # guiqwt Releases #
 
+## Version 4.5.0 ##
+
+Changes:
+
+* Image lookup table (LUT):
+
+  * Initially, the LUT alpha channel was either constant (input parameter
+  `alpha` was a float between 0 and 1) or linearly dependent on the image
+  pixel values (when the `alpha_mask` parameter was enabled).
+
+  * Now, the LUT may be either constant (same as before) or dependent on
+  the image pixel values but not only linearly: the LUT alpha channel may
+  follow a linear, a sigmoid or an hyperbolic tangent function (see the new
+  `alpha_function` parameter). The old `alpha_mask` parameter was removed.
+
 ## Version 4.4.1 ##
 
 Changes:

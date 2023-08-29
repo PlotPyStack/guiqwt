@@ -120,6 +120,7 @@ from guiqwt.styles import (
     XYImageParam,
     style_generator,
     update_style_attr,
+    LUTAlpha,
 )
 
 # default offset positions for anchors
@@ -686,7 +687,7 @@ class PlotItemBuilder(object):
         return hist
 
     def __set_image_param(
-        self, param, title, alpha_mask, alpha, interpolation, **kwargs
+        self, param, title, alpha_function, alpha, interpolation, **kwargs
     ):
         if title:
             param.label = title
@@ -694,9 +695,9 @@ class PlotItemBuilder(object):
             global IMAGE_COUNT
             IMAGE_COUNT += 1
             param.label = make_title(_("Image"), IMAGE_COUNT)
-        if alpha_mask is not None:
-            assert isinstance(alpha_mask, bool)
-            param.alpha_mask = alpha_mask
+        if alpha_function is not None:
+            assert isinstance(alpha_function, LUTAlpha)
+            param.alpha_function = alpha_function
         if alpha is not None:
             assert 0.0 <= alpha <= 1.0
             param.alpha = alpha
@@ -738,7 +739,7 @@ class PlotItemBuilder(object):
         data=None,
         filename=None,
         title=None,
-        alpha_mask=None,
+        alpha_function=None,
         alpha=None,
         background_color=None,
         colormap=None,
@@ -780,7 +781,7 @@ class PlotItemBuilder(object):
                 data=data,
                 filename=filename,
                 title=title,
-                alpha_mask=alpha_mask,
+                alpha_function=alpha_function,
                 alpha=alpha,
             )
         assert data.ndim == 2, "Data must have 2 dimensions"
@@ -796,7 +797,7 @@ class PlotItemBuilder(object):
         self.__set_image_param(
             param,
             title,
-            alpha_mask,
+            alpha_function,
             alpha,
             interpolation,
             background=background_color,
@@ -821,7 +822,7 @@ class PlotItemBuilder(object):
         mask=None,
         filename=None,
         title=None,
-        alpha_mask=False,
+        alpha_function=LUTAlpha.NONE,
         alpha=1.0,
         xdata=[None, None],
         ydata=[None, None],
@@ -860,7 +861,7 @@ class PlotItemBuilder(object):
         self.__set_image_param(
             param,
             title,
-            alpha_mask,
+            alpha_function,
             alpha,
             interpolation,
             background=background_color,
@@ -886,7 +887,7 @@ class PlotItemBuilder(object):
         data=None,
         filename=None,
         title=None,
-        alpha_mask=False,
+        alpha_function=LUTAlpha.NONE,
         alpha=1.0,
         xdata=[None, None],
         ydata=[None, None],
@@ -917,7 +918,7 @@ class PlotItemBuilder(object):
         self.__set_image_param(
             param,
             title,
-            alpha_mask,
+            alpha_function,
             alpha,
             interpolation,
             xmin=xmin,
@@ -936,7 +937,7 @@ class PlotItemBuilder(object):
         Z,
         filename=None,
         title=None,
-        alpha_mask=None,
+        alpha_function=None,
         alpha=None,
         background_color=None,
         colormap=None,
@@ -948,7 +949,7 @@ class PlotItemBuilder(object):
         """
         param = QuadGridParam(title=_("Image"), icon="image.png")
         self.__set_image_param(
-            param, title, alpha_mask, alpha, interpolation, colormap=colormap
+            param, title, alpha_function, alpha, interpolation, colormap=colormap
         )
         image = QuadGridItem(X, Y, Z, param)
         return image
@@ -979,7 +980,7 @@ class PlotItemBuilder(object):
         data=None,
         filename=None,
         title=None,
-        alpha_mask=None,
+        alpha_function=None,
         alpha=None,
         background_color=None,
         colormap=None,
@@ -1014,7 +1015,7 @@ class PlotItemBuilder(object):
         self.__set_image_param(
             param,
             title,
-            alpha_mask,
+            alpha_function,
             alpha,
             interpolation,
             background=background_color,
@@ -1040,7 +1041,7 @@ class PlotItemBuilder(object):
         y,
         data,
         title=None,
-        alpha_mask=None,
+        alpha_function=None,
         alpha=None,
         background_color=None,
         colormap=None,
@@ -1064,7 +1065,7 @@ class PlotItemBuilder(object):
         self.__set_image_param(
             param,
             title,
-            alpha_mask,
+            alpha_function,
             alpha,
             interpolation,
             background=background_color,
