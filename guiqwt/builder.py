@@ -698,7 +698,7 @@ class PlotItemBuilder(object):
             param.label = make_title(_("Image"), IMAGE_COUNT)
         if alpha_function is not None:
             assert isinstance(alpha_function, LUTAlpha)
-            param.alpha_function = alpha_function
+            param.alpha_function = alpha_function.value
         if alpha is not None:
             assert 0.0 <= alpha <= 1.0
             param.alpha = alpha

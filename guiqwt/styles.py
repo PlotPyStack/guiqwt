@@ -1070,6 +1070,16 @@ class LUTAlpha(enum.Enum):
     SIGMOID = 3
     TANH = 4
 
+    def get_choices(self):
+        """Return the list of choices"""
+        return [
+            (LUTAlpha.NONE.value, _("None")),
+            (LUTAlpha.CONSTANT.value, _("Constant")),
+            (LUTAlpha.LINEAR.value, _("Linear")),
+            (LUTAlpha.SIGMOID.value, _("Sigmoid")),
+            (LUTAlpha.TANH.value, _("Hyperbolic tangent")),
+        ]
+
 
 class BaseImageParam(DataSet):
     _multiselection = False
@@ -1078,14 +1088,8 @@ class BaseImageParam(DataSet):
     )
     alpha_function = ChoiceItem(
         _("Alpha function"),
-        [
-            (LUTAlpha.NONE, _("None")),
-            (LUTAlpha.CONSTANT, _("Constant")),
-            (LUTAlpha.LINEAR, _("Linear")),
-            (LUTAlpha.SIGMOID, _("Sigmoid")),
-            (LUTAlpha.TANH, _("Hyperbolic tangent")),
-        ],
-        default=LUTAlpha.NONE,
+        LUTAlpha.NONE.get_choices(),
+        default=LUTAlpha.NONE.value,
         help=_("Alpha function applied to the Look-Up Table"),
     )
     alpha = FloatItem(
@@ -1158,13 +1162,8 @@ class QuadGridParam(DataSet):
     )
     alpha_function = ChoiceItem(
         _("Alpha function"),
-        [
-            (LUTAlpha.NONE, _("None")),
-            (LUTAlpha.LINEAR, _("Linear")),
-            (LUTAlpha.SIGMOID, _("Sigmoid")),
-            (LUTAlpha.TANH, _("Tanh")),
-        ],
-        default=LUTAlpha.NONE,
+        LUTAlpha.NONE.get_choices(),
+        default=LUTAlpha.NONE.value,
         help=_("Alpha function applied to the Look-Up Table"),
     )
     alpha = FloatItem(

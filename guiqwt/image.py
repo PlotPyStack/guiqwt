@@ -472,17 +472,17 @@ class BaseImageItem(QwtPlotItem):
         alpha = self.imageparam.alpha
         alpha_function = self.imageparam.alpha_function
         for i in range(LUT_SIZE):
-            if alpha_function == LUTAlpha.NONE:
+            if alpha_function == LUTAlpha.NONE.value:
                 pix_alpha = 1.0
-            elif alpha_function == LUTAlpha.CONSTANT:
+            elif alpha_function == LUTAlpha.CONSTANT.value:
                 pix_alpha = alpha
             else:
                 x = i / float(LUT_SIZE - 1)
-                if alpha_function == LUTAlpha.LINEAR:
+                if alpha_function == LUTAlpha.LINEAR.value:
                     pix_alpha = alpha * x
-                elif alpha_function == LUTAlpha.SIGMOID:
+                elif alpha_function == LUTAlpha.SIGMOID.value:
                     pix_alpha = alpha / (1 + np.exp(-10 * x))
-                elif alpha_function == LUTAlpha.TANH:
+                elif alpha_function == LUTAlpha.TANH.value:
                     pix_alpha = alpha * np.tanh(5 * x)
                 else:
                     raise ValueError(f"Invalid alpha function {alpha_function}")
@@ -1963,7 +1963,7 @@ class RGBImageItem(ImageItem):
         R = data[..., 0].astype(np.uint32)
         G = data[..., 1].astype(np.uint32)
         B = data[..., 2].astype(np.uint32)
-        use_alpha = self.imageparam.alpha_function != LUTAlpha.NONE
+        use_alpha = self.imageparam.alpha_function != LUTAlpha.NONE.value
         alpha = self.imageparam.alpha
         if NC > 3 and use_alpha:
             A = data[..., 3].astype(np.uint32)

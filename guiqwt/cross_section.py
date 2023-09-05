@@ -315,7 +315,7 @@ class XCrossSectionItem(CrossSectionItem):
                 data = get_plot_average_x_section(obj, apply_lut=self.apply_lut)
                 x0, y0, x1, y1 = obj.get_rect()
             text = _("Average cross section")
-            self.curveparam.label = f'{text} @ y=[{fmt % y0} ; {fmt % y1}]'
+            self.curveparam.label = f"{text} @ y=[{fmt % y0} ; {fmt % y1}]"
         return data
 
 
@@ -996,7 +996,8 @@ def compute_oblique_section(item, obj):
             TEMP_ITEM.set_data(dst_image)
         if False:
             from guiqwt.styles import LUTAlpha
-            TEMP_ITEM.imageparam.alpha_function = LUTAlpha.LINEAR
+
+            TEMP_ITEM.imageparam.alpha_function = LUTAlpha.LINEAR.value
             xmin, ymin = ixa, iya
             xmax, ymax = xmin + destw, ymin + desth
             TEMP_ITEM.imageparam.xmin = xmin
