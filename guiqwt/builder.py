@@ -63,6 +63,7 @@ from numpy import arange, array, meshgrid, ndarray, zeros
 from guiqwt.annotations import (
     AnnotatedCircle,
     AnnotatedEllipse,
+    AnnotatedPoint,
     AnnotatedRectangle,
     AnnotatedSegment,
 )
@@ -112,6 +113,7 @@ from guiqwt.styles import (
     LabelParamWithContents,
     LegendParam,
     LineStyleParam,
+    LUTAlpha,
     MarkerParam,
     MaskedImageParam,
     QuadGridParam,
@@ -120,7 +122,6 @@ from guiqwt.styles import (
     XYImageParam,
     style_generator,
     update_style_attr,
-    LUTAlpha,
 )
 
 # default offset positions for anchors
@@ -1465,6 +1466,19 @@ class PlotItemBuilder(object):
         if x2 is not None and y2 is not None and x3 is not None and y3 is not None:
             item.set_ydiameter(x2, y2, x3, y3)
         return item
+
+    def annotated_point(self, x0, y0, title=None, subtitle=None):
+        """
+        Make an annotated point `plot item`
+        (:py:class:`guiqwt.annotations.AnnotatedPoint` object)
+
+            * x0, y0: point coordinates
+            * title, subtitle: strings
+        """
+        param = self.__get_annotationparam(title, subtitle)
+        shape = AnnotatedPoint(x0, y0, param)
+        shape.set_style("plot", "shape/drag")
+        return shape
 
     def annotated_circle(self, x0, y0, x1, y1, title=None, subtitle=None):
         """
