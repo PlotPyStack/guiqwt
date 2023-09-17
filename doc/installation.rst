@@ -49,5 +49,5 @@ External resources:
     * Bug reports and feature requests: `GitHub`_
     * Help, support and discussions around the project: `GoogleGroup`_
 
-.. _GitHub: https://github.com/PierreRaybaut/guiqwt
+.. _GitHub: https://github.com/PlotPyStack/guiqwt
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt

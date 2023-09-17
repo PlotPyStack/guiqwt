@@ -1,5 +1,9 @@
 # guiqwt Releases #
 
+## Version 4.4.2 ##
+
+Moved project to the [PlotPyStack](https://github.com/PlotPyStack) organization.
+
 ## Version 4.4.1 ##
 
 Changes:
@@ -15,15 +19,15 @@ Changes:
 
 Bug fixes:
 
-* [Issue #107](https://github.com/PierreRaybaut/guiqwt/issues/107) - App with multiple ImageWidgets seg faults about 40+% of the time on startup
-* [Issue #104](https://github.com/PierreRaybaut/guiqwt/issues/104) - TrImageItem will emit a signal when the image is moved but not when resized
-* [Pull Request #103](https://github.com/PierreRaybaut/guiqwt/pull/103) - use np.isnan() to handle if image data contains nan values, by [@RussBerg](https://github.com/RussBerg)
-* [Issue #102](https://github.com/PierreRaybaut/guiqwt/issues/102) - image.py: get_histogram() will fail if image initialized with Nan values
-* [Pull Request #101](https://github.com/PierreRaybaut/guiqwt/pull/101) - corrected arguments names for specifying image center, by [@RussBerg](https://github.com/RussBerg)
-* [Issue #100](https://github.com/PierreRaybaut/guiqwt/issues/100) - Images: changing X-axis direction does not work with autoscale
-* [Issue #99](https://github.com/PierreRaybaut/guiqwt/issues/99) - trimage builder specifies wrong attributes for altering image center
-* [Issue #98](https://github.com/PierreRaybaut/guiqwt/issues/98) - numpy >= 1.20 incompatibilities
-* [Issue #90](https://github.com/PierreRaybaut/guiqwt/issues/90) -  Image visualization: should first pixel be centered at (0,0)
+* [Issue #107](https://github.com/PlotPyStack/guiqwt/issues/107) - App with multiple ImageWidgets seg faults about 40+% of the time on startup
+* [Issue #104](https://github.com/PlotPyStack/guiqwt/issues/104) - TrImageItem will emit a signal when the image is moved but not when resized
+* [Pull Request #103](https://github.com/PlotPyStack/guiqwt/pull/103) - use np.isnan() to handle if image data contains nan values, by [@RussBerg](https://github.com/RussBerg)
+* [Issue #102](https://github.com/PlotPyStack/guiqwt/issues/102) - image.py: get_histogram() will fail if image initialized with Nan values
+* [Pull Request #101](https://github.com/PlotPyStack/guiqwt/pull/101) - corrected arguments names for specifying image center, by [@RussBerg](https://github.com/RussBerg)
+* [Issue #100](https://github.com/PlotPyStack/guiqwt/issues/100) - Images: changing X-axis direction does not work with autoscale
+* [Issue #99](https://github.com/PlotPyStack/guiqwt/issues/99) - trimage builder specifies wrong attributes for altering image center
+* [Issue #98](https://github.com/PlotPyStack/guiqwt/issues/98) - numpy >= 1.20 incompatibilities
+* [Issue #90](https://github.com/PlotPyStack/guiqwt/issues/90) -  Image visualization: should first pixel be centered at (0,0)
 * Fixed coords inversion in EllipseShape (circle)
 * tests/syncplot: fixed plot rescaling at initialization
 

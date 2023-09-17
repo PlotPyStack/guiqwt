@@ -18,12 +18,12 @@ External resources:
     * Help, support and discussions around the project: `GoogleGroup`_
 
 .. _PyPI: https://pypi.python.org/pypi/guiqwt
-.. _GitHub: https://github.com/PierreRaybaut/guiqwt
+.. _GitHub: https://github.com/PlotPyStack/guiqwt
 .. _GoogleGroup: http://groups.google.fr/group/guidata_guiqwt
 """
 
 
-__version__ = "4.4.1"  # Update here *AND* in setup.py!
+__version__ = "4.4.2"  # Update here *AND* in setup.py!
 # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
 
 
