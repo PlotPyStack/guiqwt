@@ -2,9 +2,11 @@
 
 [![license](https://img.shields.io/pypi/l/guiqwt.svg)](./LICENSE)
 [![pypi version](https://img.shields.io/pypi/v/guiqwt.svg)](https://pypi.org/project/guiqwt/)
-[![PyPI status](https://img.shields.io/pypi/status/guiqwt.svg)](https://github.com/PierreRaybaut/guiqwt)
+[![PyPI status](https://img.shields.io/pypi/status/guiqwt.svg)](https://github.com/PlotPyStack/guiqwt)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/guiqwt.svg)](https://pypi.python.org/pypi/guiqwt/)
 [![download count](https://img.shields.io/conda/dn/conda-forge/guiqwt.svg)](https://www.anaconda.com/download/)
+
+ℹ️ Created in 2009 by Pierre Raybaut and maintained by the [PlotPyStack](https://github.com/PlotPyStack) organization.
 
 ------
 

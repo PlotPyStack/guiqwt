@@ -83,8 +83,8 @@ Copyright © 2009-2020 CEA, Pierre Raybaut, licensed under the terms of the
 `CECILL License`_.
 
 .. _documentation: https://guiqwt.readthedocs.io/en/latest/
-.. _changelog: https://github.com/PierreRaybaut/guiqwt/blob/master/CHANGELOG.md
-.. _CECILL License: https://github.com/PierreRaybaut/guiqwt/blob/master/Licence_CeCILL_V2-en.txt
+.. _changelog: https://github.com/PlotPyStack/guiqwt/blob/master/CHANGELOG.md
+.. _CECILL License: https://github.com/PlotPyStack/guiqwt/blob/master/Licence_CeCILL_V2-en.txt
 
 
 Overview
@@ -121,7 +121,7 @@ The following packages are **required**: `PyQt5`_,
 
 See the `README`_ and `documentation`_ for more details.
 
-.. _README: https://github.com/PierreRaybaut/guiqwt/blob/master/README.md
+.. _README: https://github.com/PlotPyStack/guiqwt/blob/master/README.md
 """
 
 KEYWORDS = ""
@@ -228,7 +228,7 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version="4.5.0",  # Update here *AND* in __init__.py!
+    version="4.4.2",  # Update here *AND* in __init__.py!
     # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,
@@ -281,7 +281,7 @@ setup(
     ],
     author="Pierre Raybaut",
     author_email="pierre.raybaut@gmail.com",
-    url="https://github.com/PierreRaybaut/%s" % LIBNAME,
+    url="https://github.com/PlotPyStack/%s" % LIBNAME,
     license="CeCILL V2",
     classifiers=["Topic :: Scientific/Engineering"]
     + [
