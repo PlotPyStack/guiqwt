@@ -12,13 +12,13 @@
 
 ## Important note
 
-<img src="https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/plotpy/master/doc/images/plotpy-banner.png">
+<img src="https://raw.githubusercontent.com/PlotPyStack/plotpy/master/doc/images/plotpy-banner.png">
 
-guiqwt will soon be replaced by [plotpy](https://github.com/Codra-Ingenierie-Informatique/plotpy) which is a complete rewrite of the library, under more permissive license terms (BSD) with a lot of improvements (automatic test suite with ~70% test coverage, unified curve/image ready-to-use widgets, new documentation, ...).
+guiqwt will soon be replaced by [plotpy](https://github.com/PlotPyStack/plotpy) which is a complete rewrite of the library, under more permissive license terms (BSD) with a lot of improvements (automatic test suite with ~70% test coverage, unified curve/image ready-to-use widgets, new documentation, ...).
 
 ------
 
-<img src="https://raw.githubusercontent.com/PierreRaybaut/guiqwt/master/doc/images/panorama.png">
+<img src="https://raw.githubusercontent.com/PlotPyStack/guiqwt/master/doc/images/panorama.png">
 
 See [documentation](https://guiqwt.readthedocs.io/en/latest/) for more details on
 the library and [changelog](CHANGELOG.md) for recent history of changes.

@@ -74,17 +74,22 @@ LONG_DESCRIPTION = """\
 guiqwt: Python tools for curve and image plotting
 =================================================
 
-.. image:: https://raw.githubusercontent.com/PierreRaybaut/guiqwt/master/doc/images/panorama.png
+.. image:: https://raw.githubusercontent.com/PlotPyStack/guiqwt/master/doc/images/panorama.png
+
+The guiqwt library is part of the `PlotPyStack`_ project, providing a set of
+tools for creating GUIs for scientific/technical applications with Python,
+Qt and SciPy/NumPy.
 
 See `documentation`_ for more details on the library and `changelog`_ for
 recent history of changes.
 
-Copyright © 2009-2020 CEA, Pierre Raybaut, licensed under the terms of the
+Copyright © 2009-2023 CEA, Pierre Raybaut, licensed under the terms of the
 `CECILL License`_.
 
 .. _documentation: https://guiqwt.readthedocs.io/en/latest/
 .. _changelog: https://github.com/PlotPyStack/guiqwt/blob/master/CHANGELOG.md
 .. _CECILL License: https://github.com/PlotPyStack/guiqwt/blob/master/Licence_CeCILL_V2-en.txt
+.. _PlotPyStack: https://github.com/PlotPyStack
 
 
 Overview
