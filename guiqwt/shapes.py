@@ -80,7 +80,7 @@ from math import cos, fabs, pi, sin, sqrt
 
 import numpy as np
 from guidata.utils.misc import assert_interfaces_valid
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 from qtpy.QtCore import QLineF, QPointF, QRectF, Qt
 from qtpy.QtGui import QBrush, QPainter, QPen, QPolygonF, QTransform
 

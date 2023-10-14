@@ -26,7 +26,7 @@ from guidata.qthelpers import (
     get_std_icon,
     win32_fix_title_bar_background,
 )
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 from guiqwt.config import _
 from guiqwt.plot import ImageWidget

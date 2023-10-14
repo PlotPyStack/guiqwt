@@ -132,7 +132,7 @@ from guidata.dataset.dataitems import (
 )
 from guidata.dataset.qtwidgets import DataSetEditLayout
 from guidata.dataset.qtitemwidgets import DataSetWidget
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 # Local imports
 from guiqwt.transitional import QwtPlot, QwtPlotCurve, QwtSymbol, QwtPlotMarker

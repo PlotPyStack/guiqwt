@@ -55,7 +55,7 @@ from guidata.qthelpers import (
 )
 from guidata.widgets.console import DockableConsole
 from guidata.widgets.dockable import DockableWidget, DockableWidgetMixin
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 from guiqwt.config import _
 from guiqwt.plot import CurveWidget, ImageWidget

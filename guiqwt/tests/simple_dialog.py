@@ -14,7 +14,7 @@ import scipy.ndimage
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import StringItem, IntItem, ChoiceItem
 from guidata.dataset.qtwidgets import DataSetShowGroupBox, DataSetEditGroupBox
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 from guiqwt.config import _
 from guiqwt.plot import ImageDialog

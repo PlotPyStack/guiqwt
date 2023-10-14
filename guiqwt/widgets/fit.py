@@ -60,7 +60,7 @@ import numpy as np
 from numpy import inf  # Do not remove this import (used by optimization funcs)
 
 import guidata
-from guidata.utils import update_dataset, restore_dataset
+from guidata.dataset import update_dataset, restore_dataset
 from guidata.qthelpers import create_groupbox, win32_fix_title_bar_background
 from guidata.configtools import get_icon
 from guidata.dataset.datatypes import DataSet

@@ -116,7 +116,7 @@ from qtpy.QtGui import QBrush, QColor, QPen, QPolygonF
 from qtpy.QtCore import Qt, QPointF, QLineF, QRectF, Signal
 
 from guidata.utils.misc import assert_interfaces_valid
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import create_action, add_actions
 

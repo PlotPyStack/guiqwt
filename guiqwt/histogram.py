@@ -52,7 +52,7 @@ from qtpy.QtWidgets import QHBoxLayout, QVBoxLayout, QToolBar
 from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem
 from guidata.utils.misc import assert_interfaces_valid
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 from guidata.configtools import get_icon, get_image_layout
 from guidata.qthelpers import add_actions, create_action
 

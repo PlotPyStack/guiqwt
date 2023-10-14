@@ -50,7 +50,7 @@ from qtpy.QtGui import QPen, QColor, QTextDocument
 from qtpy.QtCore import QRectF, QPointF, QLineF
 
 from guidata.utils.misc import assert_interfaces_valid
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem

@@ -149,7 +149,7 @@ from qtpy.QtGui import QColor, QImage
 from qtpy.QtCore import QRectF, QPointF, QRect
 
 from guidata.utils.misc import assert_interfaces_valid
-from guidata.utils import update_dataset
+from guidata.dataset import update_dataset
 
 # Local imports
 from guiqwt.transitional import QwtPlotItem, QwtInterval
