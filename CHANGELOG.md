@@ -1,5 +1,9 @@
 # guiqwt Releases #
 
+## Version 4.4.4 ##
+
+Added compatibility with Python 3.12.
+
 ## Version 4.4.3 ##
 
 Switched to guidata v3.1 (API breakage).

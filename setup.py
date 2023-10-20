@@ -24,7 +24,8 @@ import sys
 import os
 import os.path as osp
 import subprocess
-from numpy.distutils.core import setup, Extension
+from distutils.core import setup
+from setuptools import Extension
 
 
 def get_package_data(name, extlist, exclude_dirs=[]):
@@ -233,7 +234,7 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version="4.4.3",  # Update here *AND* in __init__.py!
+    version="4.4.4",  # Update here *AND* in __init__.py!
     # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,
