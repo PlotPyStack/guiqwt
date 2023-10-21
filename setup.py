@@ -283,6 +283,7 @@ setup(
                 osp.join("src", "scaler.hpp"),
                 osp.join("src", "debug.hpp"),
             ],
+            include_dirs=[numpy.get_include()],
         ),
     ],
     author="Pierre Raybaut",
