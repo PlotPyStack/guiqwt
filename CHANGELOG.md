@@ -1,5 +1,10 @@
 # guiqwt Releases #
 
+## Version 4.4.5 ##
+
+Added warning regarding package obsolescence.
+[PlotPy](https://github.com/PlotPyStack/plotpy) is the new version of guiqwt.
+
 ## Version 4.4.4 ##
 
 Added compatibility with Python 3.12.

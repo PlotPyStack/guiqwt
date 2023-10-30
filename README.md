@@ -14,7 +14,9 @@
 
 <img src="https://raw.githubusercontent.com/PlotPyStack/plotpy/master/doc/images/plotpy-banner.png">
 
-guiqwt will soon be replaced by [plotpy](https://github.com/PlotPyStack/plotpy) which is a complete rewrite of the library, under more permissive license terms (BSD) with a lot of improvements (automatic test suite with ~70% test coverage, unified curve/image ready-to-use widgets, new documentation, ...).
+guiqwt has been replaced by [PlotPy](https://github.com/PlotPyStack/plotpy) which is a complete rewrite of the library, under more permissive license terms (BSD) with a lot of improvements (automatic test suite with ~70% test coverage, unified curve/image ready-to-use widgets, new documentation, ...).
+We strongly recommend to use PlotPy instead of guiqwt. First, because guiqwt is not maintained anymore and second, because PlotPy is far more robust and tested.
+Moreover, you can easily migrate your existing guiqwt-based code to PlotPy thanks to the [migration guide](https://plotpy.readthedocs.io/en/latest/dev/guiqwt_to_plotpy.html).
 
 ------
 

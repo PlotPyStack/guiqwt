@@ -18,13 +18,14 @@ Licensed under the terms of the CECILL License
 # Building extensions:
 # python setup.py build_ext -c mingw32 --inplace
 
-import setuptools  # analysis:ignore
-import numpy
-import sys
 import os
 import os.path as osp
 import subprocess
+import sys
 from distutils.core import setup
+
+import numpy
+import setuptools  # analysis:ignore
 from setuptools import Extension
 
 
@@ -234,7 +235,7 @@ cythonize_all("src")
 
 setup(
     name=LIBNAME,
-    version="4.4.4",  # Update here *AND* in __init__.py!
+    version="4.4.5",  # Update here *AND* in __init__.py!
     # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
     description=__description__,
     long_description=LONG_DESCRIPTION,

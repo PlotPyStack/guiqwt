@@ -1,0 +1,180 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "gettext - Scan",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "gettext.bat",
+                "rescan",
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "UNATTENDED": "1",
+                    "PYTHONUTF8": "1",
+                    "PYTHON": "${env:PPSTACK_PYTHONEXE}",
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "gettext - Compile",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "gettext.bat",
+                "compile",
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "UNATTENDED": "1",
+                    "PYTHON": "${env:PPSTACK_PYTHONEXE}",
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Run Pylint",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "run_pylint.bat",
+                // "--disable=R0801,C0103,C0114,C0115,C0116,W0612,W0613",
+                "--disable=fixme,C,R,W",
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "UNATTENDED": "1",
+                    "PYTHON": "${env:PPSTACK_PYTHONEXE}",
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "Clean Up",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "clean_up.bat"
+            ],
+            "options": {
+                "cwd": "scripts",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build documentation",
+            "type": "shell",
+            "command": "cmd",
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "PYTHON": "${env:PPSTACK_PYTHONEXE}",
+                    "UNATTENDED": "1",
+                }
+            },
+            "args": [
+                "/c",
+                "build_doc.bat"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "Build all wheels",
+            "type": "shell",
+            "command": "cmd",
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "PYTHON": "${env:PPSTACK_PYTHONEXE}",
+                    "UNATTENDED": "1",
+                }
+            },
+            "args": [
+                "/c",
+                "build_wheels.bat"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Clean Up",
+            ]
+        }
+    ]
+}

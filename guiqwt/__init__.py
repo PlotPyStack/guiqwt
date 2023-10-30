@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
 """
+.. warning::
+
+    *guiqwt* has been replaced by a new package called `PlotPy`_, which is a complete
+    rewrite of the library, under more permissive license terms (BSD) with a lot of
+    improvements (automatic test suite with ~70% test coverage, unified curve/image
+    ready-to-use widgets, new documentation, ...).
+
+.. figure:: images/plotpy-banner.png
+   :align: center
+
+   We strongly recommend to use `PlotPy`_ instead of guiqwt. First, because guiqwt is
+   not maintained anymore and second, because `PlotPy`_ is far more robust and tested.
+   Moreover, you can easily migrate your existing guiqwt-based code to `PlotPy`_
+   thanks to the `migration guide <https://plotpy.readthedocs.io/en/latest/dev/guiqwt_to_plotpy.html>`_.
+
+.. _PlotPy: https://github.com/PlotPyStack/plotpy
+
 guiqwt
 ======
 
@@ -23,15 +40,23 @@ External resources:
 """
 
 
-__version__ = "4.4.4"  # Update here *AND* in setup.py!
+__version__ = "4.4.5"  # Update here *AND* in setup.py!
 # (Until setup.py has been fully retrofitted, this manual sync is mandatory)
 
 
 def about(html=True, copyright_only=False):
     """Return text about this package"""
-    import sys, os, os.path as osp, platform, guidata, guiqwt, qwt
-    from guiqwt.config import _
+    import os
+    import os.path as osp
+    import platform
+    import sys
+
+    import guidata
+    import qwt
     from qtpy import QtCore as QC
+
+    import guiqwt
+    from guiqwt.config import _
 
     name = __file__.split(osp.sep)[-2]
     tf1 = (
@@ -591,6 +616,14 @@ DATAPATH = LOCALEPATH = ""
 #    13.1 The Agreement is governed by French law. The Parties agree to
 #    endeavor to seek an amicable solution to any disagreements or disputes
 #    that may arise during the performance of the Agreement.
+#
+#    13.2 Failing an amicable solution within two (2) months as from their
+#    occurrence, and unless emergency proceedings are necessary, the
+#    disagreements or disputes shall be referred to the Paris Courts having
+#    jurisdiction, by the more diligent Party.
+#
+#
+#    Version 2.0 dated 2006-09-05.
 #
 #    13.2 Failing an amicable solution within two (2) months as from their
 #    occurrence, and unless emergency proceedings are necessary, the
